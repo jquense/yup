@@ -22,11 +22,12 @@
     "sinon": "^1.10.3",
     "mocha": "^1.21.4",
     "gulp-plumber": "^0.6.5",
-    "gulp": "^3.8.7",
+    "gulp": "~3.8.8",
     "gulp-mocha": "^1.0.0"
   },
   "dependencies": {
     "lodash": "^2.4.1",
-    "clank": "^1.0.0"
+    "clank": "^1.0.0",
+    "fn-name": "~1.0.1"
   }
 }
