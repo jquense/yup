@@ -1,0 +1,32 @@
+{
+  "name": "miniature",
+  "version": "1.0.0",
+  "description": "client model and persistence mechanism",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R spec ./test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theporchrat/miniature.git"
+  },
+  "author": "@theporchrat Jason Quense",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/theporchrat/miniature/issues"
+  },
+  "homepage": "https://github.com/theporchrat/miniature",
+  "devDependencies": {
+    "sinon-chai": "^2.5.0",
+    "chai": "^1.9.1",
+    "sinon": "^1.10.3",
+    "mocha": "^1.21.4",
+    "gulp-plumber": "^0.6.5",
+    "gulp": "^3.8.7",
+    "gulp-mocha": "^1.0.0"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1",
+    "clank": "^1.0.0"
+  }
+}
