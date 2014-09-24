@@ -28,6 +28,7 @@
   "dependencies": {
     "lodash": "^2.4.1",
     "clank": "^1.0.0",
-    "fn-name": "~1.0.1"
+    "fn-name": "~1.0.1",
+    "property-expr": "~1.0.1"
   }
 }

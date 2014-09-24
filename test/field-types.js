@@ -2,16 +2,15 @@ var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
   , _      = require('lodash')
+  , v = require('../lib/util/validators')
   , fieldTypes = require('../lib/fieldTypes');
 
 chai.use(sinonChai);
 chai.should();
 
 
-describe( 'when using field types', function(){
-
-
-  it('should cast numbers correctly', function(){
+describe('Number fields', function(){ 
+  it('should CAST number correctly', function(){
     
     var inst = new fieldTypes.Number({ type: 4, defaultValue: 0 })
 
@@ -24,7 +23,23 @@ describe( 'when using field types', function(){
 
   })
 
-  it('should cast strings correctly', function(){
+  it('should VALIDATE number correctly', function(){
+    var inst = fieldTypes.Number.create({
+      validations: [ v.required(), v.min(4) ] 
+    })
+
+    inst.validate(5).should.equal(true)
+    inst.validate(3).should.equal(false)
+
+    inst.validate()
+    inst.errors.length.should.equal(1)
+    inst.errors[0].should.contain('required')
+  })
+})
+
+describe('String fields', function(){
+
+  it('should CAST correctly', function(){
     
     var inst = new fieldTypes.String()
 
@@ -35,4 +50,101 @@ describe( 'when using field types', function(){
     inst.cast(false).should.equal('false')
     inst.cast(true).should.equal('true')
   })
+
+  it('should VALIDATE correctly', function(){
+    var inst = fieldTypes.String.create({
+      validations: [ v.required(), v.min(4) ] 
+    })
+
+    inst.validate('hello').should.equal(true)
+    inst.validate('hel').should.equal(false)
+
+    inst.validate()
+    inst.errors.length.should.equal(1)
+    inst.errors[0].should.contain('required')
+  })
+})
+
+describe('Boolean fields', function(){
+
+  it('should CAST correctly', function(){
+    
+    var inst = new fieldTypes.Boolean()
+
+    inst.cast('true').should.equal(true)
+    inst.cast('1').should.equal(true)
+    inst.cast(1).should.eql(true)
+    inst.cast(0).should.equal(false)
+    inst.cast(false).should.equal(false)
+    inst.cast('false').should.equal(false)
+    inst.cast(null).should.equal(false)
+  })
+
+  it('should VALIDATE correctly', function(){
+    var inst = fieldTypes.Boolean.create({
+      validations: [ v.required() ] 
+    })
+
+    inst.validate(false).should.equal(true)
+    inst.validate(3).should.equal(false)
+
+    inst.validate()
+    inst.errors.length.should.equal(1)
+    inst.errors[0].should.contain('required')
+  })
+
+})
+
+describe('Date fields', function(){
+
+  it('should CAST correctly', function(){
+    
+    var inst = new fieldTypes.Date()
+
+    inst.cast(new Date).should.be.a('date')
+    inst.cast('jan 15 2014').should.eql(new Date(2014,0,15))
+    inst.cast('2014-09-23T19:25:25Z').should.eql(new Date(1411500325000))
+  })
+
+  it('should VALIDATE correctly', function(){
+    var inst = fieldTypes.Date.create({
+      validations: [ v.required(), v.max(new Date(2014, 5, 15)) ] 
+    })
+
+    inst.validate(new Date(2014,0,15)).should.equal(true)
+    inst.validate(new Date(2014,7,15)).should.equal(false)
+    inst.validate('5').should.equal(false)
+
+    inst.validate()
+    inst.errors.length.should.equal(1)
+    inst.errors[0].should.contain('required')
+  })
+})
+
+describe('Mixed fields', function(){
+
+  it('should CAST correctly', function(){
+    
+    var inst = new fieldTypes.Mixed()
+
+    inst.cast('true').should.equal('true')
+    inst.cast('1').should.equal('1')
+    inst.cast(1).should.eql(1)
+    inst.cast(0).should.equal(0)
+    inst.cast(false).should.equal(false)
+  })
+
+  it('should VALIDATE correctly', function(){
+    var inst = fieldTypes.Boolean.create({
+      validations: [ v.required() ] 
+    })
+
+    inst.validate(false).should.equal(true)
+    inst.validate(null).should.equal(false)
+
+    inst.validate()
+    inst.errors.length.should.equal(1)
+    inst.errors[0].should.contain('required')
+  })
+
 })
