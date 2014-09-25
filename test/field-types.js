@@ -28,10 +28,10 @@ describe('Number fields', function(){
       validations: [ v.required(), v.min(4) ] 
     })
 
-    inst.validate(5).should.equal(true)
-    inst.validate(3).should.equal(false)
+    inst.isValid(5).should.equal(true)
+    inst.isValid(3).should.equal(false)
 
-    inst.validate()
+    inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')
   })
@@ -56,10 +56,10 @@ describe('String fields', function(){
       validations: [ v.required(), v.min(4) ] 
     })
 
-    inst.validate('hello').should.equal(true)
-    inst.validate('hel').should.equal(false)
+    inst.isValid('hello').should.equal(true)
+    inst.isValid('hel').should.equal(false)
 
-    inst.validate()
+    inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')
   })
@@ -85,10 +85,10 @@ describe('Boolean fields', function(){
       validations: [ v.required() ] 
     })
 
-    inst.validate(false).should.equal(true)
-    inst.validate(3).should.equal(false)
+    inst.isValid(false).should.equal(true)
+    inst.isValid(3).should.equal(false)
 
-    inst.validate()
+    inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')
   })
@@ -111,11 +111,11 @@ describe('Date fields', function(){
       validations: [ v.required(), v.max(new Date(2014, 5, 15)) ] 
     })
 
-    inst.validate(new Date(2014,0,15)).should.equal(true)
-    inst.validate(new Date(2014,7,15)).should.equal(false)
-    inst.validate('5').should.equal(false)
+    inst.isValid(new Date(2014,0,15)).should.equal(true)
+    inst.isValid(new Date(2014,7,15)).should.equal(false)
+    inst.isValid('5').should.equal(false)
 
-    inst.validate()
+    inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')
   })
@@ -139,10 +139,10 @@ describe('Mixed fields', function(){
       validations: [ v.required() ] 
     })
 
-    inst.validate(false).should.equal(true)
-    inst.validate(null).should.equal(false)
+    inst.isValid(false).should.equal(true)
+    inst.isValid(null).should.equal(false)
 
-    inst.validate()
+    inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')
   })
