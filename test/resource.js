@@ -13,8 +13,8 @@ chai.should();
 describe('Resources', function(){
   var userSpec = {
         url: '/user/${userId}',
+        id: 'userId',
         schema: {
-          id: 'userId',
           fields: {
             userId: Number,
             name: String,

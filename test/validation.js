@@ -14,21 +14,28 @@ describe( 'when using validator creators', function(){
   it('should create the correct object', function(){
     var v = validators.range(5, 10);
 
-    v.should.have.keys(['isValid', 'message'])
+    v.should.have.keys(['isValid'])
     v.isValid.should.be.a('function')
-    v.message.should.be.a('string')
+    //v.message.should.be.a('string')
 
     //console.log(v, v.validator(15))
   })
 
   it('should accept a new message', function(){
     
-    validators.range(5, 10, 'all whaaaat').message.should.equal('all whaaaat')
+    var v = validators.range(5, 10, 'all whaaaat')
+    v.isValid(4, new fieldTypes.Number)
+    v.error.should.equal('all whaaaat')
   })
 
   it('should interpolate the message', function(){
-    validators.range(5, 10, 'all ${min} and ${ max }')
-      .message.should.equal('all 5 and 10')
+    var v = validators.range(5, 10, '${name} all ${min} and ${ max }')
+
+    v.isValid(4, fieldTypes.Number.create({ path: 'steve'}) )
+    v.error.should.equal('steve all 5 and 10')
+
+    v.isValid(4, fieldTypes.Number.create({ path: 'jimmy'}))
+    v.error.should.equal('jimmy all 5 and 10')
   })
 
 })

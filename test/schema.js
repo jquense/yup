@@ -59,9 +59,10 @@ describe( 'Schema', function(){
 
   it( 'should validate correctly', function(){
     var schema = new Schema({
+      path: 'hi.steve',
       validate: function(obj){
         if( (obj.string.length + obj.number) < 15)
-          return "bad combo"
+          return "${name} bad combo"
       },
       fields: {
         number: { type: Number, validations: [ v.required(), v.range(7,10) ] },
@@ -78,7 +79,7 @@ describe( 'Schema', function(){
     schema.isValid({ number: 6, string: "huzzah"}).should.equal(false)
 
     schema.errors.length.should.equal(2)
-    schema.errors[1].should.equal('bad combo')
+    schema.errors[1].should.equal('hi.steve bad combo')
 
     schema
       .isValid({ number: 7, string: "huzzahfdfdd", nested: { string: 'cool' }, nestedArray: [ { nest: 4 }, { nest: '5' }]})
