@@ -66,6 +66,7 @@ describe( 'Schema', function(){
       fields: {
         number: { type: Number, validations: [ v.required(), v.range(7,10) ] },
         string: { type: String, validations: [ v.min(5) ]},
+        nestedArray: [{ nest: { type: String, validations: [ v.required() ] }}],
         nested: {
           fields: { 
             string: { type: String, validations: [ v.matches(/cool/)] } 
@@ -80,8 +81,52 @@ describe( 'Schema', function(){
     schema.errors[1].should.equal('bad combo')
 
     schema
-      .isValid({ number: 7, string: "huzzahfdfdd", nested: { string: 'cool' }})
-      .should.equal(true)
+      .isValid({ number: 7, string: "huzzahfdfdd", nested: { string: 'cool' }, nestedArray: [ { nest: 4 }, { nest: '5' }]})
+      .should.equal(false)
 
+    schema.should.have.deep.property('errors.length').that.equals(1)
+  })
+
+
+  it( 'should cast a valid object', function(){
+    var schema = Schema.create({
+          strict: true,
+          fields: {
+            string: String,
+            arrayOfString: [ String ],
+            nested: { nest: String },
+            nestedArray: [ { nest: String } ]
+          }
+        })
+
+    var obj = schema.cast({
+            nope: 5
+          , string: 'hello'
+          , arrayOfString: [ 1, 'he', true ]
+          , nested: { nest: 4 }
+          , nestedArray: [{ nest: 4 }, { nest: 5 }] 
+        })
+
+
+    obj.should.have.keys('string', 'arrayOfString', 'nested', 'nestedArray')
+      .and.have.property('nested')
+      .that.has.key('nest')
+
+    obj.should.have.property('nestedArray')
+      .that.eqls([{ nest: '4' }, { nest: '5' } ])
+
+    obj.should.not.have.property('nope')
+
+    obj.string.should.be.a('string')
+    obj.nested.nest.should.be.a('string')
+    obj.arrayOfString.should.eql([ '1', 'he', 'true' ])
+
+    //-- not strict
+    schema.strict = false;
+
+    var obj = schema.cast({ nope: 5, string: 'hello', arrayOfString: [ 1, 'he', true ], nested: { nest: 4 } })
+
+    obj.should.have.property('nope')
+    obj.nope.should.be.a('number')
   })
 })

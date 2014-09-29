@@ -17,18 +17,19 @@
   },
   "homepage": "https://github.com/theporchrat/miniature",
   "devDependencies": {
-    "sinon-chai": "^2.5.0",
     "chai": "^1.9.1",
-    "sinon": "^1.10.3",
-    "mocha": "^1.21.4",
-    "gulp-plumber": "^0.6.5",
     "gulp": "~3.8.8",
-    "gulp-mocha": "^1.0.0"
+    "gulp-mocha": "^1.0.0",
+    "gulp-plumber": "^0.6.5",
+    "mocha": "^1.21.4",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "lodash": "^2.4.1",
     "clank": "^1.0.0",
+    "component-ajax": "0.0.2",
     "fn-name": "~1.0.1",
+    "lodash": "^2.4.1",
     "property-expr": "~1.0.1"
   }
 }
