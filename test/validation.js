@@ -16,9 +16,6 @@ describe( 'when using validator creators', function(){
 
     v.should.have.keys(['isValid'])
     v.isValid.should.be.a('function')
-    //v.message.should.be.a('string')
-
-    //console.log(v, v.validator(15))
   })
 
   it('should accept a new message', function(){
