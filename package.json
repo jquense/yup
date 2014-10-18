@@ -1,6 +1,6 @@
 {
-  "name": "miniature",
-  "version": "1.0.0",
+  "name": "yep",
+  "version": "0.1.0",
   "description": "client model and persistence mechanism",
   "main": "index.js",
   "scripts": {

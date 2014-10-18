@@ -1,20 +1,20 @@
-Miniature
+Yup
 =======================
 
-a js object schema validation. The api and style is definately inspired by/stolen from [Joi](https://github.com/hapijs/joi) which is an amazing library but generally too big and feature rich for my browser validation needs. Miniature is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+a js object schema validation. The api and style is definately inspired by/stolen from [Joi](https://github.com/hapijs/joi) which is an amazing library but generally too big and feature rich for my browser validation needs. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
 ## Usage
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
   
-    var mini = require('miniature')
+    var yup = require('yup')
 
-    var schema = mini.object().shape({
-      name:      mini.string().required(),
-      age:       mini.number().required().positive().integer(),
-      email:     mini.string().email(),
-      website    mini.string().url(),
-      createdOn: mini.date().default(function() { 
+    var schema = yup.object().shape({
+      name:      yup.string().required(),
+      age:       yup.number().required().positive().integer(),
+      email:     yup.string().email(),
+      website    yup.string().url(),
+      createdOn: yup.date().default(function() { 
         return new Date 
       }),
     })
@@ -39,7 +39,7 @@ You define and create schema objects. Schema objects are immutable, so each call
 Creates a schema that matches all types. All types inherit from this base type
 
 ```javascript
-var schema = mini.mixed();
+var schema = yup.mixed();
 schema.isValid() //=> true
 ```
 
@@ -85,7 +85,7 @@ Mark the schema as required. All field values asside from `undefined` meet this 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 
 ```javascript
-var schema = mini.mixed().oneOf(['jimmy', 42]);
+var schema = yup.mixed().oneOf(['jimmy', 42]);
 schema.isValid(42)       //=> true
 schema.isValid('jimmy')  //=> true
 schema.isValid(new Date) //=> false
@@ -96,7 +96,7 @@ schema.isValid(new Date) //=> false
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 
 ```javascript
-var schema = mini.mixed().notOneOf(['jimmy', 42]);
+var schema = yup.mixed().notOneOf(['jimmy', 42]);
 schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
@@ -108,7 +108,7 @@ Adds a validation function to the validation chain. Validations are run after an
 for the `message` argument you can provide a string which is will interpolate certain keys if specified, all validations are given a `path` value which indicates location.
 
 ```javascript
-var schema = mini.mixed().validation('${path} is invalid!', function(value){
+var schema = yup.mixed().validation('${path} is invalid!', function(value){
   return value !== 'jimmy'
 });
 schema.isValid('jimmy') //=> true
@@ -124,7 +124,7 @@ Adds a transformation to the transform chain. Transformations are part of the ca
 Transformations are useful for arbitrarily altering how the object is cast.
 
 ```javascript
-var schema = mini.string().transform(function(value){
+var schema = yup.string().transform(function(value){
   return value.toUpperCase()
 });
 schema.cast('jimmy') //=> 'JIMMY'
@@ -141,13 +141,13 @@ schema.cast('jimmy') //=> 'JIMMY'
 Define a string schema. __note: strings are nullable by default.__ 
 
 ```javascript
-var schema = mini.string();
+var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
 
 #### `string.min(limit, message)`
 
-Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
+Set an yupmum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
 #### `string.max(limit, message)`
 
@@ -189,13 +189,13 @@ Transforms the string value to uppercase.
 Define a number schema.
 
 ```javascript
-var schema = mini.number();
+var schema = yup.number();
 schema.isValid(10) //=> true
 ```
 
 #### `number.min(limit, message)`
 
-Set the minimum value allowed.
+Set the yupmum value allowed.
 
 #### `number.max(limit, message)`
 
@@ -223,7 +223,7 @@ Rounds the value by the specified method (defaults to 'round').
 Define a boolean schema.
 
 ```javascript
-var schema = mini.boolean();
+var schema = yup.boolean();
 schema.isValid(true) //=> true
 ```
 
@@ -232,13 +232,13 @@ schema.isValid(true) //=> true
 Define a Date schema. By default ISO date strings will parse correctly.
 
 ```javascript
-var schema = mini.date();
+var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
 
 #### `date.min(limit, message)`
 
-Set the minimum date allowed.
+Set the yupmum date allowed.
 
 #### `date.max(limit, message)`
 
@@ -249,7 +249,7 @@ Set the maximum date allowed.
 Define an array schema. Arrays can be typed or not, When specifying the element type, `cast` and `isValid` will apply to the elements as well. Options passed into `isValid` are passed also passed to child schemas.
 
 ```javascript
-var schema = mini.array().of(number().min(2));
+var schema = yup.array().of(number().min(2));
 schema.isValid([2, 3])   //=> true
 schema.isValid([1, -24]) //=> false
 
@@ -262,7 +262,7 @@ Specify the schema of array elements. It can be any schemaType, and is not requi
 
 #### `array.min(limit, message)`
 
-Set an minimum length limit for the array.
+Set an yupmum length limit for the array.
 
 #### `array.max(limit, message)`
 
@@ -289,7 +289,7 @@ array()
 Define an object schema. Options passed into `isValid` are passed also passed to child schemas.
 
 ```javascript
-mini.object().shape({
+yup.object().shape({
   name:      string().required(),
   age:       number().required().positive().integer(),
   email:     string().email(),
