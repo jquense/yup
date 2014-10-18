@@ -99,6 +99,14 @@ describe('Object types', function(){
     //console.log(inst.errors)
   })
 
+  it('should call shape with constructed with an arg', function(){
+    var inst = object({
+          prop: mixed(),
+        })
+
+    inst.should.have.deep.property('fields.prop')
+  })
+
   it('should handle empty keys', function(){
     var inst = object().shape({
           prop: mixed(),

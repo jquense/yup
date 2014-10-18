@@ -1,21 +1,21 @@
 {
-  "name": "yep",
-  "version": "0.1.0",
-  "description": "client model and persistence mechanism",
+  "name": "yup",
+  "version": "0.2.0",
+  "description": "Dead simple Object schema validation",
   "main": "index.js",
   "scripts": {
     "test": "mocha -R spec ./test/*.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/theporchrat/miniature.git"
+    "url": "https://github.com/theporchrat/yup.git"
   },
   "author": "@theporchrat Jason Quense",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/theporchrat/miniature/issues"
+    "url": "https://github.com/theporchrat/yup/issues"
   },
-  "homepage": "https://github.com/theporchrat/miniature",
+  "homepage": "https://github.com/theporchrat/yup",
   "devDependencies": {
     "chai": "^1.9.1",
     "gulp": "~3.8.8",

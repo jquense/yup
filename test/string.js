@@ -25,7 +25,7 @@ describe('String types', function(){
     inst.cast(false).should.equal('false')
     inst.cast(true).should.equal('true')
 
-    chai.expect(inst.cast()).to.equal('')
+    chai.expect(inst.cast()).to.equal(undefined)
 
     inst.trim().cast(' 3  ').should.equal('3')
     inst.lowercase().cast('HellO JohN').should.equal('hello john')
@@ -35,7 +35,6 @@ describe('String types', function(){
   it('should handle DEFAULT', function(){
     var inst = string()
 
-    inst.default().should.equal('')
     inst.default('my_value').required().default().should.equal('my_value')
   })
 
@@ -44,15 +43,15 @@ describe('String types', function(){
 
     inst.isType('5').should.equal(true)
     inst.isType(false).should.equal(false)
-    inst.isType(null).should.equal(true)
+    inst.isType(null).should.equal(false)
     inst.nullable(false).isType(null).should.equal(false)
   })
 
   it('should VALIDATE correctly', function(){
     var inst = string().required().min(4).strict()
 
-    string().strict().isValid(null).should.equal(true)
-    string().strict().nullable(false).isValid(null).should.equal(false)
+    string().strict().isValid(null).should.equal(false)
+    string().strict().nullable(true).isValid(null).should.equal(true)
 
     inst.isValid('hello').should.equal(true)
     inst.isValid('hel').should.equal(false)
