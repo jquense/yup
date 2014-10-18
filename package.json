@@ -26,8 +26,7 @@
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "clank": "theporchrat/clank",
-    "component-ajax": "0.0.2",
+    "case": "^1.0.3",
     "fn-name": "~1.0.1",
     "lodash": "^2.4.1",
     "property-expr": "~1.0.1"

@@ -1,3 +1,5 @@
+'use strict';
+/*global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -17,7 +19,7 @@ chai.should();
 describe('Object types', function(){
 
   it('should CAST correctly', function(){
-    
+
     var inst = object()
       , obj = {
           num: '5',
@@ -54,7 +56,7 @@ describe('Object types', function(){
       dte: new Date(1411500325000),
       nested: { str: '5' },
       arrNested: [
-        { num: 5 }, 
+        { num: 5 },
         { num: 5 }
       ]
     })
@@ -115,15 +117,49 @@ describe('Object types', function(){
           other: mixed(),
         })
 
-
-    inst.validation('${path} oops', function(value){
-      console.log(value)
+    inst = inst.validation('${path} oops', function(value){
+      return false
     })
-    .isValid({}).should.equal(true)
-    
-    inst.shape({ prop: mixed().required() })
-      .isValid({}).should.equal(false)
 
+    inst.isValid({}).should.equal(false)
+
+    inst.errors[0].should.equal('this oops')
+  })
+
+  it('should alias or move keys', function(){
+    var inst = object().shape({
+          myProp: mixed(),
+          Other: mixed(),
+        })
+        .from('prop', 'myProp')
+        .from('other', 'Other', true)
+
+    inst.cast({ prop: 5, other: 6})
+      .should.eql({ myProp: 5, other: 6, Other: 6 })
+  })
+
+  it('should camelCase keys', function(){
+    var inst = object().shape({
+          conStat: number(),
+          caseStatus: number(),
+          hiJohn: number()
+        })
+      .camelCase()
+
+    inst.cast({ CON_STAT: 5, CaseStatus: 6, 'hi john': 4 })
+      .should.eql({ conStat: 5, caseStatus: 6, hiJohn: 4 })
+  })
+
+  it('should CONSTANT_CASE keys', function(){
+    var inst = object().shape({
+          CON_STAT: number(),
+          CASE_STATUS: number(),
+          HI_JOHN: number()
+        })
+      .constantCase()
+
+    inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
+      .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })
   })
 
 })
