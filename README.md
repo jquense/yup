@@ -1,7 +1,7 @@
-Mini
+Miniature
 =======================
 
-a js object schema validation. The api and style is definately inspired by/stolen from [Joi](https://github.com/hapijs/joi) which is an amazing library but generally too big and feature rich for my browser validation needs. Mini is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+a js object schema validation. The api and style is definately inspired by/stolen from [Joi](https://github.com/hapijs/joi) which is an amazing library but generally too big and feature rich for my browser validation needs. Miniature is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
 ## Usage
 
