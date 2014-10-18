@@ -1,3 +1,5 @@
+'use strict';
+/* global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -11,7 +13,7 @@ chai.should();
 describe('String types', function(){
 
   it('should CAST correctly', function(){
-    
+
     var inst = string()
 
     inst.cast(5).should.equal('5')
@@ -22,6 +24,8 @@ describe('String types', function(){
     inst.cast('3').should.equal('3')
     inst.cast(false).should.equal('false')
     inst.cast(true).should.equal('true')
+
+    chai.expect(inst.cast()).to.equal('')
 
     inst.trim().cast(' 3  ').should.equal('3')
     inst.lowercase().cast('HellO JohN').should.equal('hello john')
@@ -45,14 +49,14 @@ describe('String types', function(){
   })
 
   it('should VALIDATE correctly', function(){
-    var inst = string().required().min(4)
+    var inst = string().required().min(4).strict()
 
-    string().isValid(null).should.equal(true)
-    string().nullable(false).isValid(null).should.equal(false)
+    string().strict().isValid(null).should.equal(true)
+    string().strict().nullable(false).isValid(null).should.equal(false)
 
     inst.isValid('hello').should.equal(true)
     inst.isValid('hel').should.equal(false)
-    
+
     inst.isValid('')
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')

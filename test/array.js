@@ -1,3 +1,5 @@
+'use strict';
+/* global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -32,7 +34,7 @@ describe('Array types', function(){
   it('should handle DEFAULT', function(){
     var inst = array()
 
-    inst.default().should.eql([])
+    chai.expect(inst.default()).to.equal(undefined)
     inst.default(function(){ return [1,2,3] }).default().should.eql([1,2,3])
   })
 
@@ -68,4 +70,14 @@ describe('Array types', function(){
     inst.errors[0].should.contain('required')
   })
 
+  it('should compact arrays', function(){
+    var arr  = ['', 1, 0, 4, false, null]
+      , inst = array()
+
+    inst.compact().cast(arr)
+      .should.eql([1,4])
+
+    inst.compact(function(v){ return v == null })
+      .cast(arr).should.eql(['',1, 0, 4, false])
+  })
 })

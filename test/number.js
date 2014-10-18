@@ -1,3 +1,5 @@
+'use strict';
+/* global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -10,7 +12,7 @@ chai.should();
 describe('Number types', function(){
 
   it('should CAST correctly', function(){
-    
+
     var inst = number(), date = new Date
 
     chai.expect(
@@ -31,7 +33,7 @@ describe('Number types', function(){
   })
 
   it('should handle DEFAULT', function(){
-    var inst = number()
+    var inst = number().default(0)
 
     inst.default().should.equal(0)
     inst.default(5).required().default().should.equal(5)
@@ -56,7 +58,7 @@ describe('Number types', function(){
 
     inst.isValid(5).should.equal(true)
     inst.isValid(2).should.equal(false)
-    
+
     inst.isValid()
     inst.errors.length.should.equal(1)
     inst.errors[0].should.contain('required')

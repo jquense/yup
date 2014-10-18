@@ -1,3 +1,5 @@
+'use strict';
+/* global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -24,7 +26,7 @@ describe('Boolean types', function(){
   it('should handle DEFAULT', function(){
     var inst = bool()
 
-    inst.default().should.equal(false)
+    chai.expect(inst.default()).to.equal(undefined)
     inst.default(true).required().default().should.equal(true)
   })
 
