@@ -144,7 +144,7 @@ describe('Object types', function(){
           caseStatus: number(),
           hiJohn: number()
         })
-        .camelCase()
+        .camelcase()
 
     inst.cast({ CON_STAT: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ conStat: 5, caseStatus: 6, hiJohn: 4 })
@@ -156,7 +156,7 @@ describe('Object types', function(){
           CASE_STATUS: number(),
           HI_JOHN: number()
         })
-        .constantCase()
+        .constantcase()
 
     inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })

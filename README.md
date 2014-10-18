@@ -43,11 +43,11 @@ var schema = mini.mixed();
 schema.isValid() //=> true
 ```
 
-#### `clone()`
+#### `mixed.clone()`
 
 Creates a new instance of the schema. Clone is used internally to return a new schema with every schema state change. 
 
-#### `isValid(value, options)`
+#### `mixed.isValid(value, options)`
 
 Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), throw by the schema.
 
@@ -55,32 +55,32 @@ the `options` argument is an object hash containing any schema options you may w
 
 - `strict` -> boolean: default `false`
 
-#### `cast(value)`
+#### `mixed.cast(value)`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will cast to `5` when useing the `number()` type. Failed casts generally return `null`, but may also results like `NaN` and unexpected strings.
 
-#### `isType(value)`
+#### `mixed.isType(value)`
 
 Runs a type check against the passed in `value`. It returns true if it matches, it does not cast the value.
 
-#### `strict()`
+#### `mixed.strict()`
 
 Sets the `strict` option to `true`, telling the schema to not try and cast the passed in value before validating it.
 
-#### `default(value)`
+#### `mixed.default(value)`
 
 Sets a default value to use when the value is missing. The `value` argument can also be a function that returns a default value (useful for setting defaults of by reference types like arrays or objects).
 
-#### `nullable(isNullable)`
+#### `mixed.nullable(isNullable)`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
 `null` is treated as an empty value and will fail `isType` checks.
 
-#### `required(msg)`
+#### `mixed.required(msg)`
 
 Mark the schema as required. All field values asside from `undefined` meet this requirement.
 
-#### `oneOf(arrayOfValues)`
+#### `mixed.oneOf(arrayOfValues)`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 
@@ -91,7 +91,7 @@ schema.isValid('jimmy')  //=> true
 schema.isValid(new Date) //=> false
 ```
 
-#### `notOneOf(arrayOfValues)`
+#### `mixed.notOneOf(arrayOfValues)`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 
@@ -101,7 +101,7 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
-#### `validation(message, fn)`
+#### `mixed.validation(message, fn)`
 
 Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily.
 
@@ -117,7 +117,7 @@ schema.isValid('john') //=> false
 schema.errors // => [ 'this is invalid!']
 ```
 
-#### `transform(fn)`
+#### `mixed.transform(fn)`
 
 Adds a transformation to the transform chain. Transformations are part of the casting process and run after the value is coerced, but before validations. Some types have built in transformations. 
 
@@ -145,15 +145,15 @@ var schema = mini.string();
 schema.isValid('hello') //=> true
 ```
 
-#### `min(limit, message)`
+#### `string.min(limit, message)`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `max(limit, message)`
+#### `string.max(limit, message)`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
-#### `matches(regex, message)`
+#### `string.matches(regex, message)`
 
 Provide an arbitrary `regex` to match the value against.
 
@@ -163,13 +163,26 @@ v.isValid('hi').should.equal(true)
 v.isValid('nope').should.equal(false)
 ```
 
-#### `email(message)`
+#### `string.email(message)`
 
 Validates the value as an email address via a regex.
 
-#### `url(message)`
+#### `string.url(message)`
 
 Validates the value as a valid URL via a regex.
+
+
+#### `string.trim()`
+
+Transforms string values by removing leading and trailing whitespace.
+
+#### `string.lowercase()`
+
+Transforms the string value to lowercase.
+
+#### `string.uppercase()`
+
+Transforms the string value to uppercase.
 
 ### number
 
@@ -180,23 +193,23 @@ var schema = mini.number();
 schema.isValid(10) //=> true
 ```
 
-#### `min(limit, message)`
+#### `number.min(limit, message)`
 
 Set the minimum value allowed.
 
-#### `max(limit, message)`
+#### `number.max(limit, message)`
 
 Set the maximum value allowed.
 
-#### `positive(message)`
+#### `number.positive(message)`
 
 Value must be a positive number.
 
-#### `negative(message)`
+#### `number.negative(message)`
 
 Value mut be a negative number.
 
-#### `integer()`
+#### `number.integer()`
 
 Transformation that coerces the value into an integer via truncation ` value | 0`
 
@@ -223,11 +236,11 @@ var schema = mini.date();
 schema.isValid(new Date) //=> true
 ```
 
-#### `min(limit, message)`
+#### `date.min(limit, message)`
 
 Set the minimum date allowed.
 
-#### `max(limit, message)`
+#### `date.max(limit, message)`
 
 Set the maximum date allowed.
 
@@ -243,19 +256,19 @@ schema.isValid([1, -24]) //=> false
 schema.cast(['2', '3'])  //=> [2, 3] 
 ```
 
-### `of(type)`
+### `array.of(type)`
 
 Specify the schema of array elements. It can be any schemaType, and is not required.
 
-#### `min(limit, message)`
+#### `array.min(limit, message)`
 
 Set an minimum length limit for the array.
 
-#### `max(limit, message)`
+#### `array.max(limit, message)`
 
 Set an maximum length limit for the array.
 
-### `compact(rejector)`
+### `array.compact(rejector)`
 
 Removes falsey values from the array. Providing a rejector function lets you specify the rejection criteria yourself.
 
@@ -284,11 +297,11 @@ mini.object().shape({
 }) 
 ```
 
-#### `shape(schemaHash)`
+#### `object.shape(schemaHash)`
 
 Define the keys of the object and the schemas for said keys.
 
-#### `from(fromKey, toKey, alias)`
+#### `object.from(fromKey, toKey, alias)`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
@@ -304,10 +317,10 @@ var schema = object()
 inst.cast({ prop: 5, other: 6}) // => { myProp: 5, other: 6, Other: 6 }
 ```
 
-#### `camelCase()`
+#### `object.camelcase()`
 
 Transforms all object keys to camelCase
 
-#### `constantCase()`
+#### `object.constantcase()`
 
 Transforms all object keys to CONSTANT_CASE.
