@@ -90,6 +90,7 @@ describe('Object types', function(){
         )
       })
 
+    console.log(inst._deps)
     inst.isValid(obj).should.equal(false)
     inst.errors[0].should.contain('this.nested.str')
 
@@ -146,6 +147,30 @@ describe('Object types', function(){
       .should.eql({ myProp: 5, other: 6, Other: 6 })
   })
 
+  it.only('should handle conditionals', function(){
+    var inst = object().shape({
+          noteDate: number()
+            .when('hasRb', { is: true, then: number().min(5) })
+            .when('other', function(v){ 
+              if (v === 4) return this.max(6)
+            }),
+          hasRb:    bool(), 
+          other:    number().min(1)
+        })
+
+    inst.isValid({  rand: 5, hasRb: true,  noteDate: 7, other: 4 }).should.equal(false)
+    // inst.isValid({  hasRb: true,  noteDate: 1, other: 4 }).should.equal(false)
+
+    // inst.isValid({  hasRb: true,  noteDate: 7, other: 6 }).should.equal(true)
+    // inst.isValid({  hasRb: true,  noteDate: 7, other: 4 }).should.equal(false)
+
+    // inst.isValid({  hasRb: false, noteDate: 4, other: 4 }).should.equal(true)
+
+    // inst.isValid({  hasRb: true,  noteDate: 1, other: 4 }).should.equal(false)
+    // inst.isValid({  hasRb: true,  noteDate: 6, other: 4 }).should.equal(true)
+
+  })
+
   it('should camelCase keys', function(){
     var inst = object().shape({
           conStat: number(),
@@ -169,5 +194,6 @@ describe('Object types', function(){
     inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })
   })
+
 
 })

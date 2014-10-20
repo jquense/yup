@@ -47,6 +47,10 @@ schema.isValid() //=> true
 
 Creates a new instance of the schema. Clone is used internally to return a new schema with every schema state change. 
 
+#### `mixed.concat(schema)`
+
+Creates a new instance of the schema by combining two schemas.
+
 #### `mixed.isValid(value, options)`
 
 Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), throw by the schema.

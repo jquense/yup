@@ -3,6 +3,7 @@ var chai  = require('chai')
   , sinonChai = require("sinon-chai")
   , _      = require('lodash')
   , mixed = require('../lib/mixed')
+  , number = require('../lib/number')
   , string = require('../lib/string');
 
 chai.use(sinonChai);
@@ -49,6 +50,25 @@ describe( 'Mixed Types ', function(){
 
     inst.isValid(5).should.equal(true)
     inst.strict().isValid(5).should.equal(false)
+  })
+
+  it.only('should handle conditionals', function(){
+    var inst = mixed().when('prop', { is: 5, then: mixed().required() })
+
+    inst._validate(undefined, {}, { parent: { prop: 5 }}).should.equal(false)
+    inst._validate(undefined, {}, { parent: { prop: 1 }}).should.equal(true)
+    inst._validate('hello', {},   { parent: { prop: 5 }}).should.equal(true)
+
+    inst = string().when('prop', { 
+      is:        5, 
+      then:      string().required(), 
+      otherwise: string().min(4) 
+    })
+
+    inst._validate(undefined, {}, { parent: { prop: 5 }}).should.equal(false)
+    inst._validate('hello', {}, { parent: { prop: 1 }}).should.equal(true)
+    inst._validate('hel', {}, { parent: { prop: 1 }}).should.equal(false)
+    //inst.errors
   })
 
 })
