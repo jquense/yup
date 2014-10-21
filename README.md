@@ -1,7 +1,9 @@
 Yup
 =======================
 
-a js object schema validation. The api and style is definately inspired by/stolen from [Joi](https://github.com/hapijs/joi) which is an amazing library but generally too big and feature rich for my browser validation needs. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+a js object schema validation. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for my client use. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+
+Yup is also a little less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties taht depend on more than one other sibling property.
 
 ## Usage
 
@@ -221,11 +223,13 @@ schema.isValid(10) //=> true
 
 #### `number.min(limit, message)`
 
-Set the yupmum value allowed.
+Set the yupmum value allowed. The `${min}` interpolation can be used in the 
+`message` argument.
 
 #### `number.max(limit, message)`
 
-Set the maximum value allowed.
+Set the maximum value allowed. The `${max}` interpolation can be used in the 
+`message` argument.
 
 #### `number.positive(message)`
 
@@ -235,9 +239,10 @@ Value must be a positive number.
 
 Value mut be a negative number.
 
-#### `number.integer()`
+#### `number.integer(message)`
 
-Transformation that coerces the value into an integer via truncation ` value | 0`
+Transformation that coerces the value into an integer via truncation 
+` value | 0`. If `strict()` is set it will only validate that the value is an integer.
 
 #### `round(type)` - 'floor', 'ceil', 'round'
 
@@ -288,11 +293,11 @@ Specify the schema of array elements. It can be any schemaType, and is not requi
 
 #### `array.min(limit, message)`
 
-Set an yupmum length limit for the array.
+Set an yupmum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
 #### `array.max(limit, message)`
 
-Set an maximum length limit for the array.
+Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
 ### `array.compact(rejector)`
 
