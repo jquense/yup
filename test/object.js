@@ -90,7 +90,7 @@ describe('Object types', function(){
         )
       })
 
-    console.log(inst._deps)
+    //console.log(inst._deps)
     inst.isValid(obj).should.equal(false)
     inst.errors[0].should.contain('this.nested.str')
 
@@ -147,7 +147,7 @@ describe('Object types', function(){
       .should.eql({ myProp: 5, other: 6, Other: 6 })
   })
 
-  it.only('should handle conditionals', function(){
+  it('should handle conditionals', function(){
     var inst = object().shape({
           noteDate: number()
             .when('stats.isBig', { is: true, then: number().min(5) })

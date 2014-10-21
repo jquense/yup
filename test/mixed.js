@@ -1,3 +1,5 @@
+'use strict';
+/*global describe, it */
 var chai  = require('chai')
   , sinon = require("sinon")
   , sinonChai = require("sinon-chai")
@@ -23,7 +25,7 @@ describe( 'Mixed Types ', function(){
     next.should.be.an.instanceOf(mixed)
   })
 
-  
+
   it('should limit values', function(){
     var inst = mixed().oneOf(['hello', 5])
 
@@ -52,17 +54,17 @@ describe( 'Mixed Types ', function(){
     inst.strict().isValid(5).should.equal(false)
   })
 
-  it.only('should handle conditionals', function(){
+  it('should handle conditionals', function(){
     var inst = mixed().when('prop', { is: 5, then: mixed().required() })
 
     inst._validate(undefined, {}, { parent: { prop: 5 }}).should.equal(false)
     inst._validate(undefined, {}, { parent: { prop: 1 }}).should.equal(true)
     inst._validate('hello', {},   { parent: { prop: 5 }}).should.equal(true)
 
-    inst = string().when('prop', { 
-      is:        5, 
-      then:      string().required(), 
-      otherwise: string().min(4) 
+    inst = string().when('prop', {
+      is:        5,
+      then:      string().required(),
+      otherwise: string().min(4)
     })
 
     inst._validate(undefined, {}, { parent: { prop: 5 }}).should.equal(false)
