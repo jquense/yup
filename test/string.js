@@ -88,4 +88,17 @@ describe('String types', function(){
     v.isValid(5).should.equal(true)
     v.isValid(new Date).should.equal(false)
   })
+
+  it('should validate transforms', function(){
+    string().trim().isValid(' 3  ').should.equal(true)
+    string().lowercase().isValid('HellO JohN').should.equal(true)
+    string().uppercase().isValid('HellO JohN').should.equal(true)
+
+    string().trim().isValid(' 3  ', { strict: true })
+      .should.equal(false)
+    string().lowercase().isValid('HellO JohN', { strict: true })
+      .should.equal(false)
+    string().uppercase().isValid('HellO JohN', { strict: true })
+      .should.equal(false)
+  })
 })
