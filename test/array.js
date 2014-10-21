@@ -55,8 +55,7 @@ describe('Array types', function(){
 
   it('should VALIDATE correctly', function(){
 
-    var inst = array().required()
-                  .of(number().max(5))
+    var inst = array().required().of(number().max(5))
 
     array().isValid(null).should.equal(false)
     array().nullable().isValid(null).should.equal(true)

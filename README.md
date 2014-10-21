@@ -176,17 +176,18 @@ Validates the value as an email address via a regex.
 Validates the value as a valid URL via a regex.
 
 
-#### `string.trim()`
+#### `string.trim(msg)`
 
-Transforms string values by removing leading and trailing whitespace.
+Transforms string values by removing leading and trailing whitespace. If 
+`strict()` is set it will only validate that the value is trimmed.
 
-#### `string.lowercase()`
+#### `string.lowercase(msg)`
 
-Transforms the string value to lowercase.
+Transforms the string value to lowercase. If `strict()` is set it will only validate that the value is lowercase.
 
-#### `string.uppercase()`
+#### `string.uppercase(msg)`
 
-Transforms the string value to uppercase.
+Transforms the string value to uppercase. If `strict()` is set it will only validate that the value is uppercase.
 
 ### number
 

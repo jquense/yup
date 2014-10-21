@@ -150,25 +150,24 @@ describe('Object types', function(){
   it.only('should handle conditionals', function(){
     var inst = object().shape({
           noteDate: number()
-            .when('hasRb', { is: true, then: number().min(5) })
-            .when('other', function(v){ 
+            .when('stats.isBig', { is: true, then: number().min(5) })
+            .when('other', function(v){
               if (v === 4) return this.max(6)
             }),
-          hasRb:    bool(), 
-          other:    number().min(1)
+          stats: object({ isBig: bool() }),
+          other: number().min(1)
         })
 
-    inst.isValid({  rand: 5, hasRb: true,  noteDate: 7, other: 4 }).should.equal(false)
-    // inst.isValid({  hasRb: true,  noteDate: 1, other: 4 }).should.equal(false)
+    inst.isValid({ stats: { isBig: true }, rand: 5, noteDate: 7, other: 4 }).should.equal(false)
+    inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.equal(false)
 
-    // inst.isValid({  hasRb: true,  noteDate: 7, other: 6 }).should.equal(true)
-    // inst.isValid({  hasRb: true,  noteDate: 7, other: 4 }).should.equal(false)
+    inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 6 }).should.equal(true)
+    inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 4 }).should.equal(false)
 
-    // inst.isValid({  hasRb: false, noteDate: 4, other: 4 }).should.equal(true)
+    inst.isValid({ stats: { isBig: false }, noteDate: 4, other: 4 }).should.equal(true)
 
-    // inst.isValid({  hasRb: true,  noteDate: 1, other: 4 }).should.equal(false)
-    // inst.isValid({  hasRb: true,  noteDate: 6, other: 4 }).should.equal(true)
-
+    inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.equal(false)
+    inst.isValid({ stats: { isBig: true }, noteDate: 6, other: 4 }).should.equal(true)
   })
 
   it('should camelCase keys', function(){
