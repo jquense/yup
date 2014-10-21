@@ -53,21 +53,22 @@ Creates a new instance of the schema by combining two schemas.
 
 #### `mixed.isValid(value, options)`
 
-Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), throw by the schema.
+Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema.
 
-the `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
+The `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
 
 - `strict` -> boolean: default `false`
+- `context` -> an object hash containing any context for validating schema conditions (see: `when()`)
 
 #### `mixed.cast(value)`
 
-Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will cast to `5` when useing the `number()` type. Failed casts generally return `null`, but may also results like `NaN` and unexpected strings.
+Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also return results like `NaN` and unexpected strings.
 
 #### `mixed.isType(value)`
 
-Runs a type check against the passed in `value`. It returns true if it matches, it does not cast the value.
+Runs a type check against the passed in `value`. It returns true if it matches, it does not cast the value. When `nullable()` is set `null` is considered a valid value of the type.
 
-#### `mixed.strict()`
+#### `mixed.strict()` (default: `false`)
 
 Sets the `strict` option to `true`, telling the schema to not try and cast the passed in value before validating it.
 
@@ -75,10 +76,10 @@ Sets the `strict` option to `true`, telling the schema to not try and cast the p
 
 Sets a default value to use when the value is missing. The `value` argument can also be a function that returns a default value (useful for setting defaults of by reference types like arrays or objects).
 
-#### `mixed.nullable(isNullable)`
+#### `mixed.nullable(isNullable)` (default: `false`)
 
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
-`null` is treated as an empty value and will fail `isType` checks.
+`null` is treated as an empty value and will fail `isType()` checks.
 
 #### `mixed.required(msg)`
 
@@ -143,9 +144,9 @@ schema.errors // => [ 'this is invalid!']
 
 #### `mixed.transform(fn)`
 
-Adds a transformation to the transform chain. Transformations are part of the casting process and run after the value is coerced, but before validations. Some types have built in transformations. 
+Adds a transformation to the transform chain. Transformations are part of the casting process and run after the value is coerced to the type, but before validations. Transformations will not be applied unless `strict` is `true`. Some types have built in transformations. 
 
-Transformations are useful for arbitrarily altering how the object is cast.
+Transformations are useful for arbitrarily altering how the object is cast. You should take care not to mutate the passed in value if possible.
 
 ```javascript
 var schema = yup.string().transform(function(value){
@@ -157,7 +158,7 @@ schema.cast('jimmy') //=> 'JIMMY'
 #### Static Methods
 
 - `Mixed.create(props)` - creates a new instance of a type with the specified props
-- `Mixed.extend(protoProps)` - Backbone-esque object inheritanc. extend returns a new constructor function that inherits from the type. All types inherit `mixed` in this manner.
+- `Mixed.extend(protoProps)` - Backbone-esque object inheritance. extend returns a new constructor function that inherits from the type. All types inherit `mixed` in this manner. Be sure to include a `constructor` property it is not automatically created.
 
 
 ### string
