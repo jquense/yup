@@ -105,6 +105,26 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
+#### `mixed.when(key, options | function)`
+
+Adjust the schema based on a sibling or sibling children fields. You can provide an object literal where the key `is` is a yup schema type, `then` provides the true schema and/or `otherwise` for the failure condition. Alternatively you can provide a function the returns a schema ( the `this` value is the current schema). `when` conditions are additive. 
+
+```javascript
+var inst = yup.object({
+      isBig: yup.boolean(), 
+      other: yup.number(),
+      count: yup.number()
+        .when('isBig', { 
+          is: true, 
+          then:      yup.number().min(5), 
+          otherwise: yup.number().min(0) 
+        })
+        .when('other', function(v){ 
+          if (v === 4) return this.max(6)
+        })
+    })
+```
+
 #### `mixed.validation(message, fn)`
 
 Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily.
