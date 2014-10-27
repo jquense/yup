@@ -97,6 +97,8 @@ describe('Object types', function(){
     obj.arr[1] = 8
     inst.isValid(obj).should.equal(false)
     inst.errors[0].should.contain('this.arr[1]')
+
+    inst.isValid().should.equal(true)
     //console.log(inst.errors)
   })
 
@@ -106,6 +108,31 @@ describe('Object types', function(){
         })
 
     inst.should.have.deep.property('fields.prop')
+  })
+
+  it('should create a reasonable default', function(){
+    object({
+        str: string(),
+        nest: object({
+          str: string().default('hi'),
+        })
+    })
+    .default().should.eql({ nest: { str: 'hi' } })
+
+    object({
+        str: string(),
+        nest: object({ str: string().default('hi') })
+    })
+    .default({ boom: 'hi'})
+    .default()
+    .should.eql({ boom: 'hi'})
+
+
+    chai.expect(object({
+        str: string(),
+        nest: object({ str: string() })
+    })
+    .default()).to.equal(undefined)
   })
 
   it('should handle empty keys', function(){
