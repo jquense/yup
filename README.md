@@ -3,7 +3,7 @@ Yup
 
 a js object schema validation. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for my client use. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
-Yup is also a little less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties taht depend on more than one other sibling property.
+Yup is also a little less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
 
 ## Usage
 
@@ -174,7 +174,7 @@ schema.isValid('hello') //=> true
 
 #### `string.min(limit, message)`
 
-Set an yupmum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
+Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
 #### `string.max(limit, message)`
 
@@ -223,7 +223,7 @@ schema.isValid(10) //=> true
 
 #### `number.min(limit, message)`
 
-Set the yupmum value allowed. The `${min}` interpolation can be used in the 
+Set the minimum value allowed. The `${min}` interpolation can be used in the 
 `message` argument.
 
 #### `number.max(limit, message)`
@@ -269,7 +269,7 @@ schema.isValid(new Date) //=> true
 
 #### `date.min(limit, message)`
 
-Set the yupmum date allowed.
+Set the minimum date allowed.
 
 #### `date.max(limit, message)`
 
@@ -293,7 +293,7 @@ Specify the schema of array elements. It can be any schemaType, and is not requi
 
 #### `array.min(limit, message)`
 
-Set an yupmum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
+Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
 #### `array.max(limit, message)`
 
