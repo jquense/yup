@@ -66,7 +66,28 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
-  it.only('should respect callback interfaces', function(done){
+  it('should allow custom validation of either style', function(){
+    var inst = string()
+      .validation('test a', function(val){
+        return Promise.resolve(val === 'jim')
+      })
+      .validation('test b', function(val, done){
+        process.nextTick(function(){
+          done(null, val !== 'jim')
+        })   
+      }, true)
+
+    return Promise.all([
+      inst.validate('jim').should.be.rejected.then(function(e){
+        e.errors[0].should.equal('test b')
+      }),
+      inst.validate('joe').should.be.rejected.then(function(e){
+        e.errors[0].should.equal('test a')
+      })
+    ])
+  })
+
+  it('should respect callback interfaces', function(done){
     var inst = string().oneOf(['hello', '5'])
 
     inst.isValid(5, function(err, valid){

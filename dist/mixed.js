@@ -195,7 +195,7 @@ SchemaType.prototype = {
     return next
   },
 
-  validation:function(msg, fn){
+  validation:function(msg, fn, passInDoneCallback){
     var opts = msg
       , next = this.clone()
       , hashKey, errorMsg;
@@ -217,8 +217,13 @@ SchemaType.prototype = {
     return next
 
     function validate(value, state) {
-      return Promise
-        .resolve(fn.call(this, value))
+      var self = this, result;
+
+      result = passInDoneCallback
+        ? new Promise(function(resolve, reject)  {return fn.call(self, value, createCallback(resolve, reject));})
+        : Promise.resolve(fn.call(this, value))
+
+      return result
         .then(function(valid){
           if (!valid) 
             throw new ValidationError(errorMsg(_.extend({}, state, opts.params)))
@@ -311,16 +316,16 @@ function nodeify(promise, cb){
   if(typeof cb !== 'function') 
     return promise
 
-  console.log('attaching')
   promise
-    .then(function(v){
-      console.log('then')
-      return v
-    }, function(v){
-      console.log('catch', v)
-      throw v
-    })
     .then(function(val)  {return cb(null, val);})
     .catch(function(err)  {return cb(err);})
     
+}
+
+
+function createCallback(resolve, reject){
+  return function(err, valid){
+    if (err) return reject(err)
+    resolve(valid)
+  }
 }

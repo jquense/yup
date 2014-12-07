@@ -1,9 +1,15 @@
 Yup
 =======================
 
-aup is a js object schema validation. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for my browser needs. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+Yup is a js object schema validator. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for a general browser use. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
-Yup is also a little less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
+Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
+
+## Changes
+
+- __breaking__ `isValid` is now async, provide a node style callback, or use the promise the method returns to read the validity. This change allows 
+for more robust validations, specifically remote ones for client code (or db queries for server code). The `cast` method is still, and will remain, synchronuous.
+- added `validate` method (also async) which resolves to the value, and rejects with a new `ValidationError`
 
 ## Usage
 
@@ -167,16 +173,21 @@ var inst = yup.object({
     })
 ```
 
-#### `mixed.validation(message, fn)`
+#### `mixed.validation(message, fn, [callbackStyleAsync])`
 
-Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily.
+Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. The validation function should either return `true` or `false` directly, or return a promsie that resolves `true` or `false. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
 
 for the `message` argument you can provide a string which is will interpolate certain keys if specified, all validations are given a `path` value which indicates location.
 
 ```javascript
 var schema = yup.mixed().validation('${path} is invalid!', function(value){
-  return value !== 'jimmy'
+  return value !== 'jimmy' //or return a Promise here
 });
+
+//or callback style
+var schema = yup.mixed().validation('${path} is invalid!', function(value, done){
+  done(null, value !== 'jimmy') //error is for exceptions, not an invalid value
+}, true);
 
 schema.isValid('jimmy') //=> true
 
@@ -357,7 +368,7 @@ array()
 
 ### object
 
-Define an object schema. Options passed into `isValid` are passed also passed to child schemas.
+Define an object schema. Options passed into `isValid` are also passed to child schemas.
 
 ```javascript
 yup.object().shape({
