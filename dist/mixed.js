@@ -44,7 +44,7 @@ SchemaType.prototype = {
       _.transform(this, function(obj, val, key){
         obj[key] = val.clone
           ? val.clone()
-          : _.isArray(val)
+          : Array.isArray(val)
             ? val.slice()
             : _.isPlainObject(val)
               ? _.clone(val)
@@ -56,7 +56,7 @@ SchemaType.prototype = {
   concat: function(schema){
     var next = this.clone()
     return _.merge(next, schema.clone(), function(a, b){
-      if(_.isArray(a)) return a.concat(b)
+      if(Array.isArray(a)) return a.concat(b)
     })
   },
 
@@ -107,10 +107,8 @@ SchemaType.prototype = {
 
     var errors = [];
 
-    if( !state.isCast && !isStrict ){
+    if( !state.isCast && !isStrict )
       value = schema._cast(value, _opts)
-      state.isCast = true
-    }
 
     if ( value !== undefined && !schema.isType(value) ){
       errors.push('value: ' + value + " is must be a " + schema._type + " type")
@@ -134,7 +132,7 @@ SchemaType.prototype = {
 
     return Promise
       .all(schema.validations.map(function(fn)  {return fn.call(schema, value, state);}))
-      .then( function()  {
+      .then(function()  {
         if ( errors.length ) 
           throw new ValidationError(errors)
 
@@ -142,20 +140,25 @@ SchemaType.prototype = {
       });
   },
 
-  validate:function(value, options){
-    return this._validate(value, options, {})
+  validate:function(value, options, cb){
+    if (typeof options === 'function')
+      cb = options, options = {}
+
+    return nodeify(this._validate(value, options, {}), cb)
   },
 
-  isValid:function(value, options){
-    return this
-      .validate(value, options, {})
-      .then(
-        function()  {return true;}, 
-        function(err)  {
+  isValid:function(value, options, cb){
+    if (typeof options === 'function')
+      cb = options, options = {}
+
+    return nodeify(this
+      .validate(value, options)
+      .then(function()  {return true;})
+      .catch(function(err)  {
         if ( err instanceof ValidationError) return false
         throw err
-      })
-  },
+      }), cb)
+    },
 
   default: function(def){
     if( arguments.length === 0)
@@ -174,7 +177,7 @@ SchemaType.prototype = {
 
   required:function(msg){
     return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
+      { hashKey: 'required',  message:  msg || locale.required },
       function(value, params){
         return value !== undefined && this.isType(value)
       })
@@ -284,10 +287,10 @@ SchemaType.extend = function(spec){
 
 
 function add(arr, item){
-  if(_.isFunction(item) || (!_.isArray(item) && _.isObject(item) ))
+  if(typeof item === 'function' || (!Array.isArray(item) && _.isObject(item) ))
     throw new TypeError
 
-  if( !has(arr, item)) arr.push(item)
+  if(!has(arr, item)) arr.push(item)
 }
 
 function remove(arr, item){
@@ -303,3 +306,21 @@ function has(arr, item){
   })
 }
 
+function nodeify(promise, cb){
+
+  if(typeof cb !== 'function') 
+    return promise
+
+  console.log('attaching')
+  promise
+    .then(function(v){
+      console.log('then')
+      return v
+    }, function(v){
+      console.log('catch', v)
+      throw v
+    })
+    .then(function(val)  {return cb(null, val);})
+    .catch(function(err)  {return cb(err);})
+    
+}

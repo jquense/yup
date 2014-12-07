@@ -1,15 +1,15 @@
 'use strict';
-var mixed = require('./lib/mixed')
-  //, dynamic = require('./lib/dynamic');
+var mixed = require('./dist/mixed')
+  //, dynamic = require('./dist/dynamic');
 
 module.exports = {
   mixed:   mixed,
-  string:  require('./lib/string'),
-  number:  require('./lib/number'),
-  boolean: require('./lib/boolean'),
-  date:    require('./lib/date'),
-  object:  require('./lib/object'),
-  array:   require('./lib/array')
+  string:  require('./dist/string'),
+  number:  require('./dist/number'),
+  boolean: require('./dist/boolean'),
+  date:    require('./dist/date'),
+  object:  require('./dist/object'),
+  array:   require('./dist/array')
 }
 
 

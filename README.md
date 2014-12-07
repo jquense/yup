@@ -1,7 +1,7 @@
 Yup
 =======================
 
-a js object schema validation. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for my client use. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+aup is a js object schema validation. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for my browser needs. Yup is a lean lib in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
 Yup is also a little less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
 
@@ -25,8 +25,11 @@ You define and create schema objects. Schema objects are immutable, so each call
     schema.isValid({
       name: 'jimmy',
       age: 24
+    })
+    .then(function(valid){
+      valid // => true  
     })  
-    // => true
+
 
     //you can try and type cast objects to the defined schema
     schema.cast({
@@ -42,7 +45,9 @@ Creates a schema that matches all types. All types inherit from this base type
 
 ```javascript
 var schema = yup.mixed();
-schema.isValid() //=> true
+schema.isValid(undefined, function(valid){
+  valid //=> true
+}) 
 ```
 
 #### `mixed.clone()`
@@ -53,9 +58,43 @@ Creates a new instance of the schema. Clone is used internally to return a new s
 
 Creates a new instance of the schema by combining two schemas.
 
-#### `mixed.isValid(value, options)`
+#### `mixed.validate(value, [options, callback])`
 
-Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema.
+Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise. This method is __asynchronous__ 
+and returns a Promise object, that is fulfilled with the value, or rejected with a `ValidationError`. If you are more comfortable with 
+Node style callbacks, then you can provide one to be called when the validation is complete (called with the Error as the first argument, and value 
+as the second).
+
+```javascript
+schema.validate({ name: 'jimmy',age: 24 })
+  .then(function(value){
+    value // => { name: 'jimmy',age: 24 }  
+  })
+
+schema.validate({ name: 'jimmy', age: 'hi' })
+  .catch(function(err){
+    err.name   // 'ValidationError'
+    err.errors // => ['age must be a number']
+  })
+
+//or with callbacks
+
+schema.validate({ name: 'jimmy',age: 24 }, function(err, value){
+  err === null // true
+  value        // => { name: 'jimmy',age: 24 }  
+})
+
+schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
+  err.name   // 'ValidationError'
+  err.errors // => ['age must be a number']
+  value === undefined // true
+})
+```
+
+#### `mixed.isValid(value, [options, callback])`
+
+Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema. `isValid` is __asynchronous__ and returns a Promise object. If you are more comfortable with 
+Node style callbacks, then you can provide one to be called when the validation is complete.
 
 The `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
 
@@ -138,6 +177,7 @@ for the `message` argument you can provide a string which is will interpolate ce
 var schema = yup.mixed().validation('${path} is invalid!', function(value){
   return value !== 'jimmy'
 });
+
 schema.isValid('jimmy') //=> true
 
 schema.isValid('john') //=> false
@@ -186,8 +226,8 @@ Provide an arbitrary `regex` to match the value against.
 
 ```javascript
 var v = string().matches(/(hi|bye)/);
-v.isValid('hi').should.equal(true)
-v.isValid('nope').should.equal(false)
+v.isValid('hi').should.eventually.equal(true)
+v.isValid('nope').should.eventually.equal(false)
 ```
 
 #### `string.email(message)`

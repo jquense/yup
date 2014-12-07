@@ -2,6 +2,7 @@
 /*global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
+  , ValidationError = require('../dist/util/validation-error')
   , Promise = require('es6-promise').Promise
   , mixed = require('../dist/mixed')
   , string = require('../dist/string');
@@ -63,6 +64,21 @@ describe( 'Mixed Types ', function(){
       inst.isValid(5).should.eventually.equal(true),
       inst.strict().isValid(5).should.eventually.equal(false)
     ])
+  })
+
+  it.only('should respect callback interfaces', function(done){
+    var inst = string().oneOf(['hello', '5'])
+
+    inst.isValid(5, function(err, valid){
+      valid.should.equal(true)
+      chai.expect(err).to.equal(null)
+
+      inst.strict().validate(5, function(err, value){
+        err.should.be.an.instanceOf(ValidationError)
+        chai.expect(value).to.equal(undefined)
+        done()
+      })
+    })
   })
 
   it('should handle conditionals', function(){
