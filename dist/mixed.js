@@ -107,8 +107,10 @@ SchemaType.prototype = {
 
     var errors = [];
 
-    if( !state.isCast && !isStrict )
+    if( !state.isCast && !isStrict ){
       value = schema._cast(value, _opts)
+      state.isCast = true
+    }
 
     if ( value !== undefined && !schema.isType(value) ){
       errors.push('value: ' + value + " is must be a " + schema._type + " type")
@@ -131,8 +133,8 @@ SchemaType.prototype = {
     }
 
     return Promise
-      .all(schema.validations.map(fn => fn.call(schema, value, state)))
-      .then( () => {
+      .all(schema.validations.map(function(fn)  {return fn.call(schema, value, state);}))
+      .then( function()  {
         if ( errors.length ) 
           throw new ValidationError(errors)
 
@@ -140,16 +142,16 @@ SchemaType.prototype = {
       });
   },
 
-  validate(value, options){
+  validate:function(value, options){
     return this._validate(value, options, {})
   },
 
-  isValid(value, options){
+  isValid:function(value, options){
     return this
       .validate(value, options, {})
       .then(
-        () => true, 
-        (err) => {
+        function()  {return true;}, 
+        function(err)  {
         if ( err instanceof ValidationError) return false
         throw err
       })
@@ -164,13 +166,13 @@ SchemaType.prototype = {
     return next
   },
 
-  strict(){
+  strict:function(){
     var next = this.clone()
     next._options.strict = true
     return next
   },
 
-  required(msg){
+  required:function(msg){
     return this.validation(
       {  hashKey: 'required',  message:  msg || locale.required },
       function(value, params){
@@ -178,19 +180,19 @@ SchemaType.prototype = {
       })
   },
 
-  nullable(value){
+  nullable:function(value){
     var next = this.clone()
     next._nullable = value === false ? false : true
     return next
   },
 
-  transform(fn){
+  transform:function(fn){
     var next = this.clone();
     next.transforms.push(fn)
     return next
   },
 
-  validation(msg, fn){
+  validation:function(msg, fn){
     var opts = msg
       , next = this.clone()
       , hashKey, errorMsg;
@@ -221,7 +223,7 @@ SchemaType.prototype = {
     }
   },
 
-  when(key, options){
+  when:function(key, options){
     var next = this.clone();
 
     next._deps.push(key)
@@ -229,7 +231,7 @@ SchemaType.prototype = {
     return next
   },
 
-  oneOf(enums, msg) {
+  oneOf:function(enums, msg) {
     var next = this.clone()
 
     if( !!next.validations.length )

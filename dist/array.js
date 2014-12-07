@@ -51,13 +51,13 @@ var _Array = module.exports = SchemaObject.extend({
         if ( !subType ) return value
 
         return Promise
-          .all(value.map((item, key) => {
+          .all(value.map(function(item, key)  {
             var path  = (_state.path || '') + '['+ key + ']'
-              , state = _.defaults({ path, key, parent: value }, _state);
+              , state = _.defaults({ path:path, key:key, parent: value }, _state);
 
             return subType._validate(item, _opts, state)
           }))
-          .then(() => value)
+          .then(function()  {return value;})
       })
   },
 

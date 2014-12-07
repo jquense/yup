@@ -1,11 +1,13 @@
 'use strict';
 /* global describe, it */
 var chai  = require('chai')
-  , sinon = require("sinon")
+  , Promise = require('es6-promise').Promise
+  , ValidationError = require('../dist/util/validation-error')
   , sinonChai = require("sinon-chai")
-  , _      = require('lodash')
-  , string = require('../lib/string');
+  , chaiAsPromised = require('chai-as-promised')
+  , string = require('../dist/string');
 
+chai.use(chaiAsPromised);
 chai.use(sinonChai);
 chai.should();
 
@@ -50,55 +52,71 @@ describe('String types', function(){
   it('should VALIDATE correctly', function(){
     var inst = string().required().min(4).strict()
 
-    string().strict().isValid(null).should.equal(false)
-    string().strict().nullable(true).isValid(null).should.equal(true)
+    return Promise.all([
 
-    inst.isValid('hello').should.equal(true)
-    inst.isValid('hel').should.equal(false)
+      string().strict().isValid(null).should.eventually.equal(false),
 
-    inst.isValid('')
-    inst.errors.length.should.equal(1)
-    inst.errors[0].should.contain('required')
+      string().strict().nullable(true).isValid(null).should.eventually.equal(true),
+
+      inst.isValid('hello').should.eventually.equal(true),
+
+      inst.isValid('hel').should.eventually.equal(false),
+
+      inst.validate('').should.be.rejected.then(function(err){
+        err.errors.length.should.equal(1)
+        err.errors[0].should.contain('required')
+      })
+    ])   
   })
 
   it('should check MATCHES correctly', function(){
     var v = string().matches(/(hi|bye)/);
 
-    v.isValid('hi').should.equal(true)
-    v.isValid('nope').should.equal(false)
-    v.isValid('bye').should.equal(true)
+    return Promise.all([
+      v.isValid('hi').should.eventually.equal(true),
+      v.isValid('nope').should.eventually.equal(false),
+      v.isValid('bye').should.eventually.equal(true)
+    ])
   })
 
   it('should check MIN correctly', function(){
     var v = string().min(5);
 
-    v.isValid('hiiofff').should.equal(true)
-    v.isValid('big').should.equal(false)
-    v.isValid('noffasfasfasf saf').should.equal(true)
+    return Promise.all([
+      v.isValid('hiiofff').should.eventually.equal(true),
+      v.isValid('big').should.eventually.equal(false),
+      v.isValid('noffasfasfasf saf').should.eventually.equal(true)
+    ])
 
   })
 
   it('should check MAX correctly', function(){
     var v = string().max(5);
 
-    v.isValid('adgf').should.equal(true)
-    v.isValid('bigdfdsfsdf').should.equal(false)
-    v.isValid('no').should.equal(true)
+    return Promise.all([
+      v.isValid('adgf').should.eventually.equal(true),
+      v.isValid('bigdfdsfsdf').should.eventually.equal(false),
+      v.isValid('no').should.eventually.equal(true),
 
-    v.isValid(5).should.equal(true)
-    v.isValid(new Date).should.equal(false)
+      v.isValid(5).should.eventually.equal(true),
+      v.isValid(new Date).should.eventually.equal(false),
+    ])
   })
 
   it('should validate transforms', function(){
-    string().trim().isValid(' 3  ').should.equal(true)
-    string().lowercase().isValid('HellO JohN').should.equal(true)
-    string().uppercase().isValid('HellO JohN').should.equal(true)
+    return Promise.all([
+      string().trim().isValid(' 3  ').should.eventually.equal(true),
+      string().lowercase().isValid('HellO JohN').should.eventually.equal(true),
+      string().uppercase().isValid('HellO JohN').should.eventually.equal(true),
 
-    string().trim().isValid(' 3  ', { strict: true })
-      .should.equal(false)
-    string().lowercase().isValid('HellO JohN', { strict: true })
-      .should.equal(false)
-    string().uppercase().isValid('HellO JohN', { strict: true })
-      .should.equal(false)
+      string().trim().isValid(' 3  ', { strict: true })
+        .should.eventually.equal(false),
+
+      string().lowercase().isValid('HellO JohN', { strict: true })
+        .should.eventually.equal(false),
+
+      string().uppercase().isValid('HellO JohN', { strict: true })
+        .should.eventually.equal(false)
+    ])
   })
 })

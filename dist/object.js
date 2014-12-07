@@ -77,7 +77,7 @@ var _Object = module.exports = SchemaObject.extend({
 
     return SchemaObject.prototype._validate
       .call(this, _value, _opts, _state)
-      .then((value) => {
+      .then(function(value)  {
         if(!_.isObject(value)) // only iterate though actual objects
           return value
 
@@ -87,9 +87,9 @@ var _Object = module.exports = SchemaObject.extend({
               , path  = (_state.path ?  (_state.path + '.') : '') + key;
              
              return field._validate(value[key], _opts
-                    , _.defaults({ key, path, parent: value }, _state))
+                    , _.defaults({ key:key, path:path, parent: value }, _state))
           }))
-          .then(() => value)
+          .then(function()  {return value;})
       })
   },
 

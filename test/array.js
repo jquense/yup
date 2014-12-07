@@ -1,19 +1,14 @@
 'use strict';
 /* global describe, it */
 var chai  = require('chai')
-  , sinon = require("sinon")
-  , sinonChai = require("sinon-chai")
-  , _      = require('lodash')
-  , string = require('../lib/string')
-  , date = require('../lib/date')
-  , number = require('../lib/number')
-  , bool = require('../lib/boolean')
-  , array = require('../lib/array')
-  , object = require('../lib/object');
+  , chaiAsPromised = require('chai-as-promised')
+  , Promise = require('es6-promise').Promise
+  , string = require('../dist/string')
+  , number = require('../dist/number')
+  , array = require('../dist/array');
 
-chai.use(sinonChai);
+chai.use(chaiAsPromised);
 chai.should();
-
 
 describe('Array types', function(){
 
@@ -57,16 +52,26 @@ describe('Array types', function(){
 
     var inst = array().required().of(number().max(5))
 
-    array().isValid(null).should.equal(false)
-    array().nullable().isValid(null).should.equal(true)
+    return Promise.all([
+      array().isValid(null).should.eventually.equal(false),
+      array().nullable().isValid(null).should.eventually.equal(true),
 
-    inst.isValid(['gg', 3]).should.equal(false)
-    inst.isValid(['4', 3]).should.equal(true)
-    inst.isValid(['7', 3]).should.equal(false)
+      inst.isValid(['gg', 3]).should.eventually.equal(false),
+      
+      inst.isValid(['4', 3]).should.eventually.equal(true),
 
-    inst.isValid()
-    inst.errors.length.should.equal(1)
-    inst.errors[0].should.contain('required')
+      inst.validate(['4', 3]).should.be.fulfilled.then(function(val){
+        val.should.eql([4, 3])
+      }),
+
+      inst.validate(['7', 3]).should.be.rejected,
+
+      inst.validate().should.be.rejected.then(function(err){
+        err.errors.length.should.equal(1)
+        err.errors[0].should.contain('required')
+      })
+    ])
+    
   })
 
   it('should compact arrays', function(){

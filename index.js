@@ -11,3 +11,15 @@ module.exports = {
   object:  require('./lib/object'),
   array:   require('./lib/array')
 }
+
+
+
+/*
+
+schema.validate(val, opts)
+	.then(function(result){
+		result.isValid
+		result.errors
+	})
+
+*/

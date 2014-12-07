@@ -1,12 +1,11 @@
 'use strict';
 /* global describe, it */
 var chai  = require('chai')
-  , sinon = require("sinon")
-  , sinonChai = require("sinon-chai")
-  , _      = require('lodash')
-  , number = require('../lib/number');
+  , chaiAsPromised = require('chai-as-promised')
+  , Promise = require('es6-promise').Promise
+  , number = require('../dist/number');
 
-chai.use(sinonChai);
+chai.use(chaiAsPromised);
 chai.should();
 
 describe('Number types', function(){
@@ -53,52 +52,69 @@ describe('Number types', function(){
 
     var inst = number().required().min(4)
 
-    number().isValid(null).should.equal(false)
-    number().nullable().isValid(null).should.equal(true)
+    return Promise.all([
+      number().isValid(null).should.eventually.equal(false),
+      number().nullable().isValid(null).should.eventually.equal(true),
 
-    inst.isValid(5).should.equal(true)
-    inst.isValid(2).should.equal(false)
+      inst.isValid(5).should.eventually.equal(true),
+      inst.isValid(2).should.eventually.equal(false),
 
-    inst.isValid()
-    inst.errors.length.should.equal(1)
-    inst.errors[0].should.contain('required')
+      inst.validate().should.be.rejected.then(function(err){
+        err.errors.length.should.equal(1)
+        err.errors[0].should.contain('required')
+      })
+    ]) 
   })
 
   it('should check MIN correctly', function(){
     var v = number().min(5);
 
-    v.isValid(7).should.equal(true)
-    v.isValid(2).should.equal(false)
-    v.isValid(35738787838).should.equal(true)
-    v.isValid(new Date).should.equal(true)
+    return Promise.all([
+      v.isValid(7).should.eventually.equal(true),
+      v.isValid(2).should.eventually.equal(false),
+      v.isValid(35738787838).should.eventually.equal(true),
+      v.isValid(new Date).should.eventually.equal(true)
+    ])
   })
 
   it('should check MAX correctly', function(){
     var v = number().max(5);
 
-    v.isValid(4).should.equal(true)
-    v.isValid(10).should.equal(false)
-    v.isValid(-5222).should.equal(true)
+    return Promise.all([
+      v.isValid(4).should.eventually.equal(true),
+      v.isValid(10).should.eventually.equal(false),
+      v.isValid(-5222).should.eventually.equal(true),
 
-    v.isValid(false).should.equal(true)
-    v.isValid(new Date).should.equal(false)
+      v.isValid(false).should.eventually.equal(true),
+      v.isValid(new Date).should.eventually.equal(false),
+    ])
   })
 
   it('should check POSITIVE correctly', function(){
     var v = number().positive();
 
-    v.isValid(7).should.equal(true)
-    v.isValid(-4).should.equal(false)
-    v.errors[0].should.equal('this must be a positive number')
-    v.isValid(0).should.equal(true)
+    return Promise.all([
+      v.isValid(7).should.eventually.equal(true),
+
+      v.isValid(0).should.eventually.equal(true),
+
+      v.validate(-4).should.be.rejected.then(null, function(err){
+        err.errors[0].should.contain('this must be a positive number')
+      })
+    ])
   })
 
   it('should check NEGATIVE correctly', function(){
     var v = number().negative();
 
-    v.isValid(-4).should.equal(true)
-    v.isValid(10).should.equal(false)
-    v.errors[0].should.equal('this must be a negative number')
-    v.isValid(0).should.equal(true)
+    return Promise.all([
+      v.isValid(-4).should.eventually.equal(true),
+
+      v.isValid(0).should.eventually.equal(true),
+
+      v.validate(10).should.be.rejected.then(null, function(err){
+        err.errors[0].should.contain('this must be a negative number')
+      })
+    ])
   })
 })

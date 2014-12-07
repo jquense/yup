@@ -1,18 +1,17 @@
 'use strict';
 /*global describe, it */
 var chai  = require('chai')
-  , sinon = require("sinon")
-  , sinonChai = require("sinon-chai")
-  , _      = require('lodash')
-  , mixed = require('../lib/mixed')
-  , string = require('../lib/string')
-  , date = require('../lib/date')
-  , number = require('../lib/number')
-  , bool = require('../lib/boolean')
-  , array = require('../lib/array')
-  , object = require('../lib/object');
+  , chaiAsPromised = require('chai-as-promised')
+  , Promise = require('es6-promise').Promise
+  , mixed = require('../dist/mixed')
+  , string = require('../dist/string')
+  , date = require('../dist/date')
+  , number = require('../dist/number')
+  , bool = require('../dist/boolean')
+  , array = require('../dist/array')
+  , object = require('../dist/object');
 
-chai.use(sinonChai);
+chai.use(chaiAsPromised);
 chai.should();
 
 
@@ -63,7 +62,6 @@ describe('Object types', function(){
   })
 
 
-
   it('should VALIDATE correctly', function(){
     var inst
       , obj = {
@@ -90,16 +88,22 @@ describe('Object types', function(){
         )
       })
 
-    //console.log(inst._deps)
-    inst.isValid(obj).should.equal(false)
-    inst.errors[0].should.contain('this.nested.str')
+    return inst.validate(obj).should.be.rejected
+      .then(function(err){
+        err.errors.length.should.equal(1)
+        err.errors[0].should.contain('this.nested.str')
+      })
+      .then(function(){
 
-    obj.arr[1] = 8
-    inst.isValid(obj).should.equal(false)
-    inst.errors[0].should.contain('this.arr[1]')
+        obj.arr[1] = 8
 
-    inst.isValid().should.equal(true)
-    //console.log(inst.errors)
+        return Promise.all([
+          inst.isValid().should.eventually.equal(true),
+          inst.validate(obj).should.be.rejected.then(function(err){
+            err.errors[0].should.contain('this.arr[1]')
+          })
+        ])
+      })
   })
 
   it('should call shape with constructed with an arg', function(){
@@ -140,11 +144,12 @@ describe('Object types', function(){
           prop: mixed(),
         })
 
-    inst.isValid({}).should.equal(true)
+    return Promise.all([
+      inst.isValid({}).should.eventually.equal(true),
 
-    inst.shape({ prop: mixed().required() })
-      .isValid({}).should.equal(false)
-
+      inst.shape({ prop: mixed().required() })
+        .isValid({}).should.eventually.equal(false)
+    ])
   })
 
   it('should handle custom validation', function(){
@@ -157,9 +162,10 @@ describe('Object types', function(){
       return false
     })
 
-    inst.isValid({}).should.equal(false)
-
-    inst.errors[0].should.equal('this oops')
+    return inst.validate({}).should.be.rejected
+      .then(function(err){
+        err.errors[0].should.equal('this oops')
+      })
   })
 
   it('should alias or move keys', function(){
@@ -185,16 +191,18 @@ describe('Object types', function(){
           other: number().min(1)
         })
 
-    inst.isValid({ stats: { isBig: true }, rand: 5, noteDate: 7, other: 4 }).should.equal(false)
-    inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.equal(false)
+    return Promise.all([
+      inst.isValid({ stats: { isBig: true }, rand: 5, noteDate: 7, other: 4 }).should.eventually.equal(false),
+      inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.eventually.equal(false),
 
-    inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 6 }).should.equal(true)
-    inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 4 }).should.equal(false)
+      inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 6 }).should.eventually.equal(true),
+      inst.isValid({ stats: { isBig: true }, noteDate: 7, other: 4 }).should.eventually.equal(false),
 
-    inst.isValid({ stats: { isBig: false }, noteDate: 4, other: 4 }).should.equal(true)
+      inst.isValid({ stats: { isBig: false }, noteDate: 4, other: 4 }).should.eventually.equal(true),
 
-    inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.equal(false)
-    inst.isValid({ stats: { isBig: true }, noteDate: 6, other: 4 }).should.equal(true)
+      inst.isValid({ stats: { isBig: true }, noteDate: 1, other: 4 }).should.eventually.equal(false),
+      inst.isValid({ stats: { isBig: true }, noteDate: 6, other: 4 }).should.eventually.equal(true)
+    ])
   })
 
   it('should camelCase keys', function(){

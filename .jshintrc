@@ -1,0 +1,21 @@
+{
+  "evil": true,
+  "strict": true,
+  "regexdash": true,
+  "wsh": true,
+  "trailing": false,
+  "laxcomma": true,
+  "laxbreak": true,
+  "sub": true,
+  "asi": true,
+  "eqnull":true,
+  "validthis": true,
+  "undef": true,
+  "node": true,
+  "browser": true,
+  "esnext": true,
+  "unused": "vars",
+  "-W058": true,
+  "-W030": true,
+  "-W079": true
+}

@@ -18,15 +18,19 @@
   "homepage": "https://github.com/theporchrat/yup",
   "devDependencies": {
     "chai": "^1.9.1",
+    "chai-as-promised": "^4.1.1",
+    "event-stream": "^3.1.7",
     "gulp": "~3.8.8",
     "gulp-mocha": "^1.0.0",
     "gulp-plumber": "^0.6.5",
+    "jstransform": "^8.2.0",
     "mocha": "^1.21.4",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
     "case": "^1.0.3",
+    "es6-promise": "^2.0.0",
     "fn-name": "~1.0.1",
     "lodash": "^2.4.1",
     "property-expr": "~1.0.1"
