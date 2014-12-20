@@ -1,11 +1,11 @@
 Yup
 =======================
 
-Yup is a js object schema validator. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for a general browser use. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+Yup is a js object schema validator. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for general browser use. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
 Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
 
-## Changes
+## Changes 5.0
 
 - __breaking__ `isValid` is now async, provide a node style callback, or use the promise the method returns to read the validity. This change allows 
 for more robust validations, specifically remote ones for client code (or db queries for server code). The `cast` method is still, and will remain, synchronuous.
