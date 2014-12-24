@@ -45,6 +45,31 @@ You define and create schema objects. Schema objects are immutable, so each call
     })
     // => { name: 'jimmy', age: 24, createdOn: Date }
 
+### `yup`
+
+The module export.
+
+```js
+var yup = require('yup')
+
+yup.mixed
+yup.string
+yup.number
+
+yup.bool
+yup.boolean
+yup.date
+yup.object
+yup.array
+
+yup.reach
+```
+
+### `.reach(Schema schema, String path, Object options)`
+
+For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
+
+
 ### `mixed`
 
 Creates a schema that matches all types. All types inherit from this base type

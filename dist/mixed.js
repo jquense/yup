@@ -84,7 +84,6 @@ SchemaType.prototype = {
     }, value)
   },
 
-
   _resolve: function(context){
     var schema  = this;
 

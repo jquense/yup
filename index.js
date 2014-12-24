@@ -1,25 +1,16 @@
 'use strict';
 var mixed = require('./dist/mixed')
-  //, dynamic = require('./dist/dynamic');
+  , bool = require('./dist/boolean');
 
 module.exports = {
   mixed:   mixed,
   string:  require('./dist/string'),
   number:  require('./dist/number'),
-  boolean: require('./dist/boolean'),
+  boolean: bool,
+  bool:    bool,
   date:    require('./dist/date'),
   object:  require('./dist/object'),
-  array:   require('./dist/array')
+  array:   require('./dist/array'),
+
+  reach: require('./dist/util/reach')
 }
-
-
-
-/*
-
-schema.validate(val, opts)
-	.then(function(result){
-		result.isValid
-		result.errors
-	})
-
-*/
