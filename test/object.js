@@ -205,6 +205,41 @@ describe('Object types', function(){
     ])
   })
 
+  it.only('should handle nested conditionals', function(){
+    var countSchema = number().when('isBig', { is: true, then: number().min(5) })
+      , inst = object().shape({
+          other: bool(),
+          stats: object({ 
+              isBig: bool(),
+              count: countSchema
+            })
+            .when('other', { is: true, then: object().required() })
+        })
+
+    return Promise.all([
+      // inst.validate({ stats: undefined, other: true }).should.be.rejected
+      //   .then(function(err){
+      //     err.errors[0].should.contain('required')
+      //   }),
+
+      // inst.validate({ stats: { isBig: true, count: 3 }, other: true }).should.be.rejected
+      //   .then(function(err){
+      //     err.errors[0].should.contain('must be at least 5')
+      //   }),
+
+      // inst.validate({ stats: { isBig: true, count: 10 }, other: true }).should.be.fulfilled
+      //   .then(function(value){
+      //     value.should.deep.equal({ stats: { isBig: true, count: 10 }, other: true })
+      //   }),
+
+      countSchema.validate({ isBig: true, count: 10 }, { context: { other: true } }).should.be.rejected
+        .then(function(value){
+          console.log(value)
+          value.should.deep.equal({ isBig: true, count: 10 })
+        }),
+    ])
+  })
+
   it('should camelCase keys', function(){
     var inst = object().shape({
           conStat: number(),

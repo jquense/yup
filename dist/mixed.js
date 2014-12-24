@@ -87,7 +87,7 @@ SchemaType.prototype = {
 
   _resolve: function(context){
     var schema  = this;
-
+    
     return this._conditions.reduce(function(schema, match){
       if(!context) throw new Error('missing the context necessary to cast this value')
       return match.resolve(schema, getter(match.key)(context))
