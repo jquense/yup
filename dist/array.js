@@ -39,10 +39,10 @@ var _Array = module.exports = SchemaObject.extend({
   },
 
   _validate: function(_value, _opts, _state){
-    var context = (_opts || {}).context || _state.parent
-      , subType, schema;
+    var context, subType, schema;
 
     _state  = _state || {}
+    context = _state.parent || (_opts || {}).context
     schema  = this._resolve(context)
     subType = schema._subType
 
