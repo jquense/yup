@@ -66,6 +66,7 @@ function transform(opt) {
    
     var converted = jstransform.transform(visitors, str);
     file.contents = new Buffer(converted.code);
+    
     this.emit('data', file);
   }
 

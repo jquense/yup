@@ -4,7 +4,6 @@ var chai  = require('chai')
   , reach = require('../dist/util/reach')
   , number = require('../dist/number')
   , array = require('../dist/array')
-  , bool = require('../dist/boolean')
   , object = require('../dist/object');
 
 
@@ -35,33 +34,29 @@ describe('Yup', function(){
     })
   })
 
-  it.only('should REACH with conditions', function(){
+  it('should REACH with conditions', function(done){
     var num = number()
     var altShape = { 
-          next: object().shape({
-            greet: bool(), 
-            prop: number().when('greet', { is: true, then: number().max(5) })
-          })
+          next: object().shape({ prop: number() })
         }
 
     var inst = object().shape({
         num: number().max(4),
         nested: object()
-          .when('num', { is: number().min(3), then: object(altShape) })
+          .when('num', function(val)  {return (val == 2) ? this.shape(altShape) : this;}.bind(this) )
           .shape({ 
-            next: object().shape({ prop: bool() })
+            next: array().of(object().shape({ num: num })) 
           })
       })
 
-    reach(inst, 'nested.arr[].num', { num: 1 }).should.equal(num)
+    reach(inst, 'nested.arr[].num').should.equal(num)
+    reach(inst, 'nested.arr[1].num').should.equal(num)
+    reach(inst, 'nested.arr[1].num').should.not.equal(number())
 
-    // reach(inst, 'nested.arr[1].num').should.equal(num)
-    // reach(inst, 'nested.arr[1].num').should.not.equal(number())
-
-    // reach(inst, 'nested.arr[].num').isValid(5, function(err, valid){
-    //   valid.should.equal(true)
-    //   done()
-    // })
+    reach(inst, 'nested.arr[].num').isValid(5, function(err, valid){
+      valid.should.equal(true)
+      done()
+    })
   })
   
 })
