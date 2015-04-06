@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = function expr(obj, path, context){
-  var parts = (path || "").split('.')
+module.exports = function expr(obj, path){
+  var parts = (path || '').split('.')
     , part, idx;
-
-  obj = obj._resolve(context || {})
 
   while(parts.length) {
     part = parts.shift()

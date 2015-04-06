@@ -5,9 +5,18 @@ var interpolate = require('./util/interpolate')
   , ValidationError = require('./util/validation-error')
   , getter = require('property-expr').getter
   , locale = require('./locale.js').mixed
-  , _ = require('lodash')
+  , transform = require('./util/transform')
+  , assign = require('./util/assign')
+  , clone = require('./util/clone')
+  , BadSet = require('./util/set')
+  , has = require('./util/has');
+
+var toString = Object.prototype.toString
+var isObject = obj => obj && toString.call(obj) === '[object Object]';
+var isPlainObject = obj => isObject(obj) && Object.getPrototypeOf(obj) === Object.prototype;
 
 var initProps;
+
 module.exports = SchemaType
 
 function SchemaType(){
@@ -23,14 +32,14 @@ function SchemaType(){
   this._conditions  = []
   this._options     = {}
   this._activeTests = {}
-  this._whitelist   = []
-  this._blacklist   = []
+  this._whitelist   = new BadSet()
+  this._blacklist   = new BadSet()
   this.validations  = []
   this.transforms   = []
 
-  _.extend(this, props)
+  assign(this, props)
 
-  this._type        = 'mixed'
+  this._type = 'mixed'
 }
 
 SchemaType.prototype = {
@@ -41,50 +50,45 @@ SchemaType.prototype = {
 
   clone: function(){
     return this.constructor.create(
-      _.transform(this, function(obj, val, key){
+      transform(this, (obj, val, key) => {
         obj[key] = val.clone
           ? val.clone()
           : Array.isArray(val)
             ? val.slice()
-            : _.isPlainObject(val)
-              ? _.clone(val)
+            : isPlainObject(val)
+              ? {...val}
               : val
       }, {})
     )
   },
 
-  concat: function(schema){
-    var next = this.clone()
-    return _.merge(next, schema.clone(), function(a, b){
-      if(Array.isArray(a)) return a.concat(b)
-    })
+  concat(schema){
+    return merge(this.clone(), schema.clone())
   },
 
-  isType: function(value){
+  isType(value){
     if ( this._nullable && value === null ) return true
     return value !== undefined
   },
 
-  cast: function(_value, _opts){
+  cast(_value, _opts){
     var schema = this._resolve((_opts|| {}).context)
     return schema._cast(_value, _opts)
   },
 
-  _cast: function(_value, _opts){
-    var self = this
-      , value  = this._coerce ? this._coerce(_value) : _value
+  _cast(_value){
+    var value  = this._coerce ? this._coerce(_value) : _value
 
-    if( value == null && _.has(self, '_default') )
-      value = self._nullable && value === null
+    if( value == null && has(this, '_default') )
+      value = this._nullable && value === null
         ? value
-        : self.default()
+        : this.default()
 
-    return self.transforms.reduce(function(value, transform){
-      return transform.call(self, value)
-    }, value)
+    return this.transforms.reduce(
+      (value, transform) => transform.call(this, value), value)
   },
 
-  _resolve: function(context){
+  _resolve(context){
     var schema  = this;
     
     return this._conditions.reduce(function(schema, match){
@@ -94,15 +98,17 @@ SchemaType.prototype = {
   },
 
   //-- validations
-  _validate: function(value, _opts, _state) {
+  _validate(value, _opts, _state) {
     var valids   = this._whitelist
       , invalids = this._blacklist
       , context  = (_opts || {}).context || _state.parent
       , schema, valid, state, isStrict;
 
-    state    = _.defaults(_state || {}, { path: 'this' })
+    state    = _state
     schema   = this._resolve(context)
     isStrict = schema._option('strict', _opts)
+
+    !state.path && (state.path = 'this')
 
     var errors = [];
 
@@ -110,28 +116,28 @@ SchemaType.prototype = {
       value = schema._cast(value, _opts)
 
     if ( value !== undefined && !schema.isType(value) ){
-      errors.push('value: ' + value + " is must be a " + schema._type + " type")
+      errors.push(`value: ${value} is must be a ${schema._type} type`)
       return Promise.reject(new ValidationError(errors))
     }
 
     if( valids.length ) {
-      valid = has(valids, value)
+      valid = valids.has(value)
 
       if( !valid ) 
         return Promise.reject(new ValidationError(errors.concat(
-            schema._whitelistError(_.extend({ values: valids.join(', ') }, state)))
+            schema._whitelistError({ values: valids.values().join(', '), ...state }))
           ))
     }
 
-    if( has(invalids, value) ){
+    if( invalids.has(value) ) {
       return Promise.reject(new ValidationError(errors.concat(
-          schema._blacklistError(_.extend({ values: invalids.join(', ') }, state ))
-        )))
+          schema._blacklistError({ values: invalids.values().join(', '), ...state }))
+        ))
     }
 
     return Promise
-      .all(schema.validations.map(function(fn)  {return fn.call(schema, value, state);}))
-      .then(function()  {
+      .all(schema.validations.map(fn => fn.call(schema, value, state)))
+      .then(() => {
         if ( errors.length ) 
           throw new ValidationError(errors)
 
@@ -139,62 +145,61 @@ SchemaType.prototype = {
       });
   },
 
-  validate:function(value, options, cb){
+  validate(value, options, cb){
     if (typeof options === 'function')
       cb = options, options = {}
 
     return nodeify(this._validate(value, options, {}), cb)
   },
 
-  isValid:function(value, options, cb){
+  isValid(value, options, cb){
     if (typeof options === 'function')
       cb = options, options = {}
 
     return nodeify(this
       .validate(value, options)
-      .then(function()  {return true;})
-      .catch(function(err)  {
+      .then(() => true)
+      .catch(err => {
         if ( err instanceof ValidationError) return false
         throw err
       }), cb)
     },
 
-  default: function(def){
+  default(def) {
     if( arguments.length === 0)
-      return _.result(this, '_default')
+      return typeof this._default === 'function' 
+        ? this._default() : clone(this._default)
 
     var next = this.clone()
     next._default = def
     return next
   },
 
-  strict:function(){
+  strict() {
     var next = this.clone()
     next._options.strict = true
     return next
   },
 
-  required:function(msg){
+  required(msg) {
     return this.validation(
       { hashKey: 'required',  message:  msg || locale.required },
-      function(value, params){
-        return value !== undefined && this.isType(value)
-      })
+      value => value !== undefined && this.isType(value))
   },
 
-  nullable:function(value){
+  nullable(value) {
     var next = this.clone()
     next._nullable = value === false ? false : true
     return next
   },
 
-  transform:function(fn){
+  transform(fn) {
     var next = this.clone();
     next.transforms.push(fn)
     return next
   },
 
-  validation:function(msg, fn, passInDoneCallback){
+  validation(msg, validator, passInDoneCallback){
     var opts = msg
       , next = this.clone()
       , hashKey, errorMsg;
@@ -202,13 +207,13 @@ SchemaType.prototype = {
     if(typeof msg === 'string')
       opts = { message: msg }
 
-    if( !!next._whitelist.length )
+    if( next._whitelist.length )
       throw new TypeError('Cannot add validations when specific valid values are specified')
 
     errorMsg = interpolate(opts.message)
     hashKey = opts.hashKey
 
-    if( !hashKey || !_.has(next._activeTests, hashKey) ){
+    if( !hashKey || !has(next._activeTests, hashKey) ){
       if( hashKey ) next._activeTests[hashKey] = true
       next.validations.push(validate)
     }
@@ -216,21 +221,21 @@ SchemaType.prototype = {
     return next
 
     function validate(value, state) {
-      var self = this, result;
-
-      result = passInDoneCallback
-        ? new Promise(function(resolve, reject)  {return fn.call(self, value, createCallback(resolve, reject));})
-        : Promise.resolve(fn.call(this, value))
+      var result = new Promise((resolve, reject) => {
+        !passInDoneCallback
+          ? resolve(validator.call(this, value))
+          : validator.call(this, value, (err, valid) => err ? reject(err) : resolve(valid))
+      })
 
       return result
         .then(function(valid){
           if (!valid) 
-            throw new ValidationError(errorMsg(_.extend({}, state, opts.params)))
+            throw new ValidationError(errorMsg({ ...state, ...opts.params }))
         })
     }
   },
 
-  when:function(key, options){
+  when(key, options){
     var next = this.clone();
 
     next._deps.push(key)
@@ -238,93 +243,90 @@ SchemaType.prototype = {
     return next
   },
 
-  oneOf:function(enums, msg) {
+  oneOf(enums, msg) {
     var next = this.clone()
 
-    if( !!next.validations.length )
+    if( next.validations.length )
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
     next._whitelistError = interpolate(msg || next._whitelistError || locale.oneOf)
 
-    _.each(enums, function(val){
-      remove(next._blacklist, val)
-      add(next._whitelist, val)
+    enums.forEach( val => {
+      next._blacklist.delete(val)
+      next._whitelist.add(val)
     })
+
     return next
   },
 
-  notOneOf: function(enums, msg) {
+  notOneOf(enums, msg) {
     var next = this.clone()
 
     next._blacklistError = interpolate(msg || next._blacklistError || locale.notOneOf)
 
-    _.each(enums, function(val){
-      remove(next._whitelist, val)
-      add(next._blacklist, val)
+    enums.forEach( val => {
+      next._whitelist.delete(val)
+      next._blacklist.add(val)
     })
+
     return next
   },
 
-  _option: function (key, overrides){
-  	return _.has(overrides, key)
-  		? overrides[key] : this._options[key]
-	}
+  _option(key, overrides){
+    return has(overrides, key)
+      ? overrides[key] : this._options[key]
+  }
+}
+
+var aliases = {
+  oneOf: ['equals']
 }
 
 SchemaType.create = function(spec){
   var Klass = this
   initProps = spec
-  return new Klass;
+  return new Klass();
 }
 
 SchemaType.extend = function(spec){
   var proto = Object.create(this.prototype)
     , child = spec.constructor;
 
-  _.extend(child, this)
-  _.extend(proto, spec)
+  assign(child, this)
+  assign(proto, spec)
 
   child.prototype = proto
   child.prototype.constructor = child
   return child
 }
 
+function merge(target, source){
 
-function add(arr, item){
-  if(typeof item === 'function' || (!Array.isArray(item) && _.isObject(item) ))
-    throw new TypeError
+  for (var key in source) if ( has(source, key)) {
+    var targetVal = target[key]
+    var sourceVal = source[key]
 
-  if(!has(arr, item)) arr.push(item)
-}
+    if ( isObject(targetVal) || isObject(sourceVal) )
+      target[key] = merge(targetVal, sourceVal)
 
-function remove(arr, item){
-  var idx = _.indexOf(arr, item)
-  if( idx !== -1) arr.splice(idx, 1)
-}
-
-function has(arr, item){
-  return _.any(arr, function(val){
-    if (item === val) return true
-    if( _.isDate(item) ) return +val === +item
-    return false
-  })
+    else if ( Array.isArray(targetVal) || Array.isArray(sourceVal))
+      target[key] = sourceVal.concat 
+        ? sourceVal.concat(targetVal) 
+        : targetVal.concat(sourceVal);
+    else
+      target[key] = source[key];
+  }
+  
+  return target;
 }
 
 function nodeify(promise, cb){
+  if(typeof cb !== 'function') return promise
 
-  if(typeof cb !== 'function') 
-    return promise
-
-  promise
-    .then(function(val)  {return cb(null, val);})
-    .catch(function(err)  {return cb(err);})
-    
+  promise.then(val => cb(null, val), err => cb(err))
 }
 
 
 function createCallback(resolve, reject){
-  return function(err, valid){
-    if (err) return reject(err)
-    resolve(valid)
-  }
+  return (err, valid) => err ? reject(err) : resolve(valid)
 }

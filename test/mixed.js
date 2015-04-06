@@ -2,10 +2,11 @@
 /*global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , ValidationError = require('../dist/util/validation-error')
+  , ValidationError = require('../lib/util/validation-error')
   , Promise = require('es6-promise').Promise
-  , mixed = require('../dist/mixed')
-  , string = require('../dist/string');
+  , mixed = require('../lib/mixed')
+  , number = require('../lib/number')
+  , string = require('../lib/string');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -108,12 +109,12 @@ describe( 'Mixed Types ', function(){
     return Promise.all([
       inst._validate(undefined, {}, { parent: { prop: 5 }}).should.be.rejected,
       inst._validate(undefined, {}, { parent: { prop: 1 }}).should.be.fulfilled,
-      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled,
+      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled
     ])
     .then(function(){
 
       inst = string().when('prop', {
-        is:        5,
+        is:        number().oneOf([5]),
         then:      string().required(),
         otherwise: string().min(4)
       })
@@ -121,7 +122,7 @@ describe( 'Mixed Types ', function(){
       return Promise.all([
         inst._validate(undefined, {}, { parent: { prop: 5 }}).should.be.rejected,
         inst._validate('hello', {}, { parent: { prop: 1 }}).should.be.fulfilled,
-        inst._validate('hel', {}, { parent: { prop: 1 }}).should.be.rejected,
+        inst._validate('hel', {}, { parent: { prop: 1 }}).should.be.rejected
       ])
     })
   })

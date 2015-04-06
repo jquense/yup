@@ -146,7 +146,18 @@ Sets the `strict` option to `true`, telling the schema to not try and cast the p
 
 #### `mixed.default(value)`
 
-Sets a default value to use when the value is missing. The `value` argument can also be a function that returns a default value (useful for setting defaults of by reference types like arrays or objects).
+Sets a default value to use when the value is missing. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+
+```js
+  yup.string.default('nothing');
+
+  yup.object.default({ number: 5}); // object will be cloned every time a default is needed
+
+  yup.object.default(() => ({ number: 5})); // this is cheaper
+
+  yup.date.default(() => new Date()); //also helpful for defaults that change over time
+
+```
 
 #### `mixed.nullable(isNullable)` (default: `false`)
 
@@ -155,9 +166,9 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 
 #### `mixed.required(msg)`
 
-Mark the schema as required. All field values asside from `undefined` meet this requirement.
+Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
-#### `mixed.oneOf(arrayOfValues)`
+#### `mixed.oneOf(arrayOfValues)` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 

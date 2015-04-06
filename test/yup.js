@@ -1,11 +1,11 @@
 'use strict';
 /*global describe, it */
 var chai  = require('chai')
-  , reach = require('../dist/util/reach')
-  , number = require('../dist/number')
-  , array = require('../dist/array')
-  , bool = require('../dist/boolean')
-  , object = require('../dist/object');
+  , reach = require('../lib/util/reach')
+  , number = require('../lib/number')
+  , array = require('../lib/array')
+  , bool = require('../lib/boolean')
+  , object = require('../lib/object');
 
 
 chai.should();

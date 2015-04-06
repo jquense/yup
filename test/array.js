@@ -3,9 +3,9 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('es6-promise').Promise
-  , string = require('../dist/string')
-  , number = require('../dist/number')
-  , array = require('../dist/array');
+  , string = require('../lib/string')
+  , number = require('../lib/number')
+  , array = require('../lib/array');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -19,8 +19,8 @@ describe('Array types', function(){
 
     inst.cast(['4', 5, false]).should.eql(['4', 5, false])
 
-    inst.of(number()).cast(['4', 5, false]).should.eql([4,5,0])
-    inst.of(string()).cast(['4', 5, false]).should.eql(['4','5','false'])
+    inst.of(number()).cast(['4', 5, false]).should.eql([4, 5, 0])
+    inst.of(string()).cast(['4', 5, false]).should.eql(['4', '5', 'false'])
 
     chai.expect(
       inst.cast(null)).to.equal(null)

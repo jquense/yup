@@ -3,7 +3,7 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('es6-promise').Promise
-  , bool = require('../dist/boolean');
+  , bool = require('../lib/boolean');
 
 chai.use(chaiAsPromised);
 chai.should();

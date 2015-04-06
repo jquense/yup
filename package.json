@@ -4,35 +4,35 @@
   "description": "Dead simple Object schema validation",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R spec ./test/*.js"
+    "test": "gulp compile && mocha -R spec ./test/*.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/theporchrat/yup.git"
+    "url": "https://github.com/jquense/yup.git"
   },
-  "author": "@theporchrat Jason Quense",
+  "author": "@monasticpanic Jason Quense",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/theporchrat/yup/issues"
+    "url": "https://github.com/jquense/yup/issues"
   },
-  "homepage": "https://github.com/theporchrat/yup",
+  "homepage": "https://github.com/jquense/yup",
   "devDependencies": {
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
-    "event-stream": "^3.1.7",
+    "del": "^1.1.1",
     "gulp": "~3.8.8",
+    "gulp-babel-helpers": "^1.1.2",
     "gulp-mocha": "^1.0.0",
     "gulp-plumber": "^0.6.5",
-    "jstransform": "^8.2.0",
+    "gulp-rename": "^1.2.2",
     "mocha": "^1.21.4",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "case": "^1.0.3",
+    "case": "^1.2.1",
     "es6-promise": "^2.0.0",
     "fn-name": "~1.0.1",
-    "lodash": "^2.4.1",
     "property-expr": "~1.0.1"
   }
 }

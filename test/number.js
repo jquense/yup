@@ -3,7 +3,7 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('es6-promise').Promise
-  , number = require('../dist/number');
+  , number = require('../lib/number');
 
 chai.use(chaiAsPromised);
 chai.should();

@@ -2,7 +2,7 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('es6-promise').Promise
-  , date = require('../dist/date');
+  , date = require('../lib/date');
 
 chai.use(chaiAsPromised);
 chai.should();

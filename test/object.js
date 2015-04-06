@@ -3,13 +3,13 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('es6-promise').Promise
-  , mixed = require('../dist/mixed')
-  , string = require('../dist/string')
-  , date = require('../dist/date')
-  , number = require('../dist/number')
-  , bool = require('../dist/boolean')
-  , array = require('../dist/array')
-  , object = require('../dist/object');
+  , mixed = require('../lib/mixed')
+  , string = require('../lib/string')
+  , date = require('../lib/date')
+  , number = require('../lib/number')
+  , bool = require('../lib/boolean')
+  , array = require('../lib/array')
+  , object = require('../lib/object');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -31,7 +31,7 @@ describe('Object types', function(){
 
     object()
       .shape({ hello: number() })
-      .cast("{ \"hello\": \"5\" }").should.eql({ hello: 5 })
+      .cast('{ \"hello\": \"5\" }').should.eql({ hello: 5 })
 
     chai.expect(
       object().cast('dfhdfh')).to.equal(null)
@@ -235,7 +235,7 @@ describe('Object types', function(){
       countSchema.validate(10, { context: { isBig: true } }).should.be.fulfilled
         .then(function(value){
           value.should.deep.equal(10)
-        }),
+        })
     ])
   })
 

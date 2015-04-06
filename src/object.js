@@ -2,18 +2,26 @@
 var SchemaObject = require('./mixed')
   , Promise = require('es6-promise').Promise
   , locale = require('./locale.js').object
-  , _ = require('lodash')
-  , Case = require('case')
+  , transform = require('./util/transform')
+  , assign = require('./util/assign')
+  , cloneDeep = require('./util/clone')
+  , has = require('./util/has')
   , Topo = require('./util/topo')
+  , c = require('case');
+  
+
+var toString = Object.prototype.toString
+var isObject = obj => obj && toString.call(obj) === '[object Object]';
+var isPlainObject = obj => isObject(obj) && Object.getPrototypeOf(obj) === Object.prototype;
 
 var _Object = module.exports = SchemaObject.extend({
 
-  constructor: function(spec){
+  constructor(spec) {
     if ( !(this instanceof _Object))
       return new _Object(spec)
 
     if ( spec )
-      return this.clone().shape(spec);
+      return this.shape(spec);
 
     this.fields = {};
     SchemaObject.call(this)
@@ -21,12 +29,12 @@ var _Object = module.exports = SchemaObject.extend({
     this._type = 'object'
   },
 
-  isType: function(value){
+  isType(value) {
     if( this._nullable && value === null) return true
     return value && typeof value === 'object' && !Array.isArray(value)
   },
 
-  _coerce: function(value) {
+  _coerce(value) {
     if (typeof value === 'string') {
       try {
         value = JSON.parse(value)
@@ -39,26 +47,24 @@ var _Object = module.exports = SchemaObject.extend({
     return null
   },
 
-  _cast: function(_value, _opts){
+  _cast(_value, _opts) {
     var schema = this
       , value  = SchemaObject.prototype._cast.call(schema, _value)
 
     if( schema.isType(value) ) {
       var fields = schema.fields
         , strip  = schema._option('stripUnknown', _opts) === true
-        , extra  = _.without.apply(_, [_.keys(value)].concat(schema._nodes))
-        , props  = schema._nodes.concat(extra )
+        , extra  = Object.keys(value).filter( v => schema._nodes.indexOf(v) === -1)
+        , props  = schema._nodes.concat(extra)
 
-      //console.log(props)
-
-      return _.transform(props, function(obj, prop) {
-        var exists = _.has(value, prop);
+      return transform(props, function(obj, prop) {
+        var exists = has(value, prop);
 
         if( exists && fields[prop] )
           obj[prop] = fields[prop].cast(value[prop], { context: obj })
 
         else if( exists && !strip)
-          obj[prop] = _.cloneDeep(value[prop])
+          obj[prop] = cloneDeep(value[prop])
 
         else if(fields[prop])
           obj[prop] = fields[prop].default()
@@ -69,7 +75,7 @@ var _Object = module.exports = SchemaObject.extend({
     return value
   },
 
-  _validate: function(_value, _opts, _state){
+  _validate(_value, _opts, _state) {
     var context, schema;
 
     _state  = _state || {}
@@ -78,8 +84,8 @@ var _Object = module.exports = SchemaObject.extend({
 
     return SchemaObject.prototype._validate
       .call(this, _value, _opts, _state)
-      .then(function(value)  {
-        if(!_.isObject(value)) // only iterate though actual objects
+      .then((value) => {
+        if(!isObject(value)) // only iterate though actual objects
           return value
 
         return Promise
@@ -87,29 +93,32 @@ var _Object = module.exports = SchemaObject.extend({
             var field = schema.fields[key]
               , path  = (_state.path ?  (_state.path + '.') : '') + key;
              
-             return field._validate(value[key], _opts
-                    , _.defaults({ key:key, path:path, parent: value }, _state))
+            return field._validate(value[key], _opts, { 
+              ..._state, 
+              key, 
+              path, 
+              parent: value 
+            })
           }))
-          .then(function()  {return value;})
+          .then(() => value)
       })
   },
 
-  shape: function(schema){
+  shape(schema) {
     var next = this.clone()
       , toposort = new Topo()
-      , fields = _.extend(next.fields, schema);
+      , fields = assign(next.fields, schema);
 
-    _.each(fields, function(val, key){
-      toposort.add(key, { after: val._deps, group: key })
-    });
+    for( var key in schema ) if ( has(schema, key))
+      toposort.add(key, { after: schema[key]._deps, group: key })
 
     next.fields = fields
     next._nodes = toposort.nodes
     return next
   },
 
-  default: function(def){
-    var hasDefault = _.has(this, '_default');
+  default(def) {
+    var hasDefault = has(this, '_default');
 
     if(def === undefined)
       return hasDefault
@@ -119,17 +128,15 @@ var _Object = module.exports = SchemaObject.extend({
     return SchemaObject.prototype.default.call(this, def)
   },
 
-  required: function(msg){
+  required(msg) {
     return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
-      function(value, params){
-        return  !!value && _.isPlainObject(value)
-      })
+      { hashKey: 'required',  message:  msg || locale.required },
+      value => !!value && isPlainObject(value))
   },
 
-  from: function(from, to, alias){
+  from(from, to, alias) {
     return this.transform(function(obj){
-      var newObj = _.omit(obj, from)
+      var newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
 
       newObj[to] = obj[from]
       if(alias) newObj[from] = obj[from]
@@ -138,31 +145,23 @@ var _Object = module.exports = SchemaObject.extend({
     })
   },
 
-  camelcase: function(key){
-    return this.transform(function(obj){
-
-      return _.transform(obj, function(newobj, val, key ){
-        newobj[Case.camel(key)] = val
-      }, {})
-    })
+  camelcase(){
+    return this.transform(obj =>
+      transform(obj, (newobj, val, key ) => newobj[c.camel(key)] = val))
   },
 
-  constantcase: function(key){
-    return this.transform(function(obj){
-      return _.transform(obj, function(newobj, val, key ){
-        newobj[Case.constant(key)] = val
-      }, {})
-    })
+  constantcase(){
+    return this.transform( obj =>
+      transform(obj, (newobj, val, key ) => newobj[c.constant(key)] = val))
   }
 })
 
 function createDefault(fields, nodes){
 
-  var dft = _.transform(nodes, function(obj, key){
+  var dft = transform(nodes, function(obj, key){
     var dft = fields[key].default()
     if(dft !== undefined ) obj[key] = dft
   }, {})
 
   return Object.keys(dft).length === 0 ? undefined : dft
 }
-

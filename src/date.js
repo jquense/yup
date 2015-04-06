@@ -1,9 +1,9 @@
 'use strict';
 var SchemaObject = require('./mixed')
   , isoParse = require('./util/isodate')
-  , locale = require('./locale.js').date
-  , _ = require('lodash')
+  , locale = require('./locale.js').date;
 
+var isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
 var _Date = module.exports = SchemaObject.extend({
 
@@ -16,12 +16,12 @@ var _Date = module.exports = SchemaObject.extend({
 
   isType: function(v) {
     if( this._nullable && v === null) return true
-    return _.isDate(v)
+    return isDate(v)
   },
 
   _coerce: function(value) {
     if(value == null ) return value
-    if(_.isDate(value) ) return new Date(value)
+    if(isDate(value) ) return new Date(value)
 
     value = isoParse(value)
     return value ? new Date(value) : null
@@ -30,7 +30,7 @@ var _Date = module.exports = SchemaObject.extend({
   required: function(msg){
     return this.validation(
       {  hashKey: 'required',  message:  msg || locale.required },
-      _.isDate)
+      isDate)
   },
 
   min: function(min, msg){

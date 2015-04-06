@@ -1,8 +1,7 @@
 'use strict';
 var SchemaObject = require('./mixed')
   , Promise = require('es6-promise').Promise
-  , locale = require('./locale.js').array
-  , _ = require('lodash')
+  , locale = require('./locale.js').array;
 
 // hi
 
@@ -52,13 +51,13 @@ var _Array = module.exports = SchemaObject.extend({
         if ( !subType ) return value
 
         return Promise
-          .all(value.map(function(item, key)  {
+          .all(value.map((item, key) => {
             var path  = (_state.path || '') + '['+ key + ']'
-              , state = _.defaults({ path:path, key:key, parent: value }, _state);
+              , state = { ..._state, path, key, parent: value};
 
             return subType._validate(item, _opts, state)
           }))
-          .then(function()  {return value;})
+          .then(() => value)
       })
   },
 

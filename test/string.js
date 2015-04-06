@@ -2,10 +2,10 @@
 /* global describe, it */
 var chai  = require('chai')
   , Promise = require('es6-promise').Promise
-  , ValidationError = require('../dist/util/validation-error')
+  , ValidationError = require('../lib/util/validation-error')
   , sinonChai = require("sinon-chai")
   , chaiAsPromised = require('chai-as-promised')
-  , string = require('../dist/string');
+  , string = require('../lib/string');
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);

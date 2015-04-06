@@ -1,5 +1,3 @@
-var _ = require('lodash')
-
 // Copyright (c) 2012-2014, Walmart and other contributors.
 // All rights reserved.
 
@@ -50,7 +48,7 @@ Topo.prototype.add = function (nodes, options) {
     assert(after.indexOf(group)  === -1, 'Item cannot come after itself: ' + group);
     assert(after.indexOf('?')    === -1, 'Item cannot come after unassociated items');
 
-    _.each([].concat(nodes), function (node, i) {
+    [].concat(nodes).forEach(function (node, i) {
 
         var item = {
             seq: self._items.length,
@@ -103,19 +101,17 @@ Topo.prototype._sort = function () {
 
     // Expand intermediary graph
 
-    var graphNodes = _.keys(graph);
+    var graphNodes = Object.keys(graph);
     for (i = 0, il = graphNodes.length; i < il; ++i) {
         var node = graphNodes[i];
         var expandedGroups = [];
 
-        var graphNodeItems = _.keys(graph[node]);
+        var graphNodeItems = Object.keys(graph[node]);
         for (j = 0, jl = graphNodeItems.length; j < jl; ++j) {
             var group = graph[node][graphNodeItems[j]];
             groups[group] = groups[group] || [];
 
-            _.each(groups[group], function (d) {
-              expandedGroups.push(d);
-            });
+            groups[group].forEach(d => expandedGroups.push(d))
         }
 
         graph[node] = expandedGroups;
@@ -123,7 +119,7 @@ Topo.prototype._sort = function () {
 
     // Merge intermediary graph using graphAfters into final graph
 
-    var afterNodes = _.keys(graphAfters);
+    var afterNodes = Object.keys(graphAfters);
     for (i = 0, il = afterNodes.length; i < il; ++i) {
         var group = afterNodes[i];
 
@@ -138,7 +134,7 @@ Topo.prototype._sort = function () {
     // Compile ancestors
 
     var ancestors = {};
-    graphNodes = _.keys(graph);
+    graphNodes = Object.keys(graph);
     for (i = 0, il = graphNodes.length; i < il; ++i) {
         var node = graphNodes[i];
         var children = graph[node];
@@ -194,13 +190,10 @@ Topo.prototype._sort = function () {
     }
 
     var seqIndex = {};
-    _.each(this._items, function (item) {
-
-        seqIndex[item.seq] = item;
-    });
+    this._items.forEach(item => seqIndex[item.seq] = item);
 
     var sortedNodes = [];
-    this._items = _.map(sorted, function (value) {
+    this._items = sorted.map(function (value) {
       var item = seqIndex[value];
       sortedNodes.push(item.node);
       return item;

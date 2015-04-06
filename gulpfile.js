@@ -1,74 +1,58 @@
 'use strict';
 var gulp = require('gulp')
+  , del = require('del')
   , plumber = require('gulp-plumber')
-  , mocha = require('gulp-mocha');
-var es = require('event-stream');
-var Buffer = require('buffer').Buffer;
-var jstransform = require('jstransform')
+  , mocha = require('gulp-mocha')
+  , rename = require('gulp-rename')
+  , babelTransform = require('gulp-babel-helpers')
 
 gulp.task('test-runner', function(){
 
-	gulp.watch(['./lib/**/*.js'], ['jstransform'])
+	gulp.watch(['./src/**/*.js'], ['compile'])
 
   gulp.watch('./test/**/*.js', function(e){
-
     gulp.src(e.path)
       .pipe(plumber())
-      .pipe(transform())
       .pipe(mocha({ reporter: 'spec' }))
   })
 })
 
+gulp.task('clean', function(cb){
+  del('./lib', cb);
+})
+
+gulp.task('compile', [ 'clean' ], function(){
+
+  return gulp.src('./src/**/*.js')
+      .pipe(plumber())
+      .pipe(babelTransform({
+          experimental: true, loose: ['all'],
+          whitelist: [
+            'es6.classes',
+            'es6.modules',
+            'es6.spread',
+            'es6.blockScoping',
+            'es6.arrowFunctions',
+            'es6.properties.computed',
+            'es6.properties.shorthand',
+            'es6.parameters.default',
+            'es6.parameters.rest',
+            'es6.templateLiterals',
+            'es6.destructuring',
+            'es7.objectRestSpread'
+          ]
+        }
+        , './util/babelHelpers.js'
+        , './lib/util/babelHelpers.js'))
+      .pipe(rename({ extname: '.js' }))
+      .pipe(gulp.dest('./lib'));
+})
+
 gulp.task('watch', function(){
-  gulp.watch(['./lib/**/*.js', './test/**/*.js'], ['jstransform'])
+  gulp.watch(['./src/**/*.js', './test/**/*.js'], ['build'])
 })
 
 gulp.task('mocha', function () {
     return gulp.src('test.js', { read: false })
         .pipe(mocha({ reporter: 'spec' }));
-});
-
-
-gulp.task('jstransform', function() {
-  gulp.src('./lib/**/*.js')
-    .pipe(plumber())
-    .pipe(transform())
-    .pipe(gulp.dest('./dist/'))
 })
-
-
-var defaultVisitors = [
-    'jstransform/visitors/es6-arrow-function-visitors',
-    'jstransform/visitors/es6-class-visitors',
-    'jstransform/visitors/es6-destructuring-visitors',
-    'jstransform/visitors/es6-object-concise-method-visitors',
-    'jstransform/visitors/es6-object-short-notation-visitors',
-    'jstransform/visitors/es6-rest-param-visitors',
-    'jstransform/visitors/es6-template-visitors',
-    'jstransform/visitors/es7-spread-property-visitors'  
-];
-
-function transform(opt) {
-  function modifyFile(file){
-    if (file.isNull())
-      return this.emit('data', file); // pass along
-    
-    if (file.isStream())
-      return this.emit('error', new Error("gulp-jstransfrom: Streaming not supported"));
-    
-    // Influenced by https://github.com/stoyan/etc/master/es6r/es6r.js
-    var str = file.contents.toString('utf8');
-    var visitors = [];
-
-    defaultVisitors.forEach(function(visitor) {
-      visitors = visitors.concat(require(visitor).visitorList);
-    });
-   
-    var converted = jstransform.transform(visitors, str);
-    file.contents = new Buffer(converted.code);
-    
-    this.emit('data', file);
-  }
-
-  return es.through(modifyFile);
-}
