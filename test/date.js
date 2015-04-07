@@ -37,8 +37,8 @@ describe('Date types', function(){
       date().isValid(null).should.eventually.equal(false),
       date().nullable().isValid(null).should.eventually.equal(true),
 
-      inst.isValid(new Date(2014,0,15)).should.eventually.equal(true),
-      inst.isValid(new Date(2014,7,15)).should.eventually.equal(false),
+      inst.isValid(new Date(2014, 0, 15)).should.eventually.equal(true),
+      inst.isValid(new Date(2014, 7, 15)).should.eventually.equal(false),
       inst.isValid('5').should.eventually.equal(true),
 
       inst.validate().should.be.rejected.then(function(err){

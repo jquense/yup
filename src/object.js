@@ -1,32 +1,25 @@
 'use strict';
-var SchemaObject = require('./mixed')
+var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
   , locale = require('./locale.js').object
-  , transform = require('./util/transform')
-  , assign = require('./util/assign')
   , cloneDeep = require('./util/clone')
-  , has = require('./util/has')
   , Topo = require('./util/topo')
-  , c = require('case');
+  , c = require('case')
+  , { 
+    isObject
+  , isPlainObject
+  , transform
+  , assign
+  , inherits
+  , has } = require('./util/_');
   
+module.exports = ObjectSchema
 
-var toString = Object.prototype.toString
-var isObject = obj => obj && toString.call(obj) === '[object Object]';
-var isPlainObject = obj => isObject(obj) && Object.getPrototypeOf(obj) === Object.prototype;
+function ObjectSchema(spec) {
+  if ( !(this instanceof ObjectSchema))
+      return new ObjectSchema(spec)
 
-var _Object = module.exports = SchemaObject.extend({
-
-  constructor(spec) {
-    if ( !(this instanceof _Object))
-      return new _Object(spec)
-
-    this.fields = {};
-
-    SchemaObject.call(this)
-
-    this._type = 'object'
-
-    this._initialDefault = () => {
+  MixedSchema.call(this, { type: 'object', default() {
       var dft = transform(this._nodes, (obj, key) => {
         var fieldDft = this.fields[key].default()
         if(fieldDft !== undefined ) obj[key] = fieldDft
@@ -34,10 +27,16 @@ var _Object = module.exports = SchemaObject.extend({
 
       return Object.keys(dft).length === 0 ? undefined : dft
     }
+  })
 
-    if ( spec )
-      return this.shape(spec);
-  },
+  this.fields = Object.create(null)
+  this._nodes = []
+
+  if ( spec )
+    return this.shape(spec);
+}
+
+inherits(ObjectSchema, MixedSchema, {
 
   isType(value) {
     if( this._nullable && value === null) return true
@@ -59,7 +58,7 @@ var _Object = module.exports = SchemaObject.extend({
 
   _cast(_value, _opts) {
     var schema = this
-      , value  = SchemaObject.prototype._cast.call(schema, _value)
+      , value  = MixedSchema.prototype._cast.call(schema, _value)
 
     if( schema.isType(value) ) {
       var fields = schema.fields
@@ -76,8 +75,12 @@ var _Object = module.exports = SchemaObject.extend({
         else if( exists && !strip)
           obj[prop] = cloneDeep(value[prop])
 
-        else if(fields[prop])
-          obj[prop] = fields[prop].default()
+        else if(fields[prop]){
+          var fieldDefault = fields[prop].default()
+
+          if ( fieldDefault !== undefined)
+            obj[prop] = fieldDefault
+        }
 
       }, {})
     }
@@ -92,9 +95,10 @@ var _Object = module.exports = SchemaObject.extend({
     context = _state.parent || (_opts || {}).context
     schema  = this._resolve(context)
 
-    return SchemaObject.prototype._validate
+    return MixedSchema.prototype._validate
       .call(this, _value, _opts, _state)
       .then((value) => {
+        //console.log('validate ', value)
         if(!isObject(value)) // only iterate though actual objects
           return value
 
@@ -104,11 +108,11 @@ var _Object = module.exports = SchemaObject.extend({
               , path  = (_state.path ?  (_state.path + '.') : '') + key;
              
             return field._validate(value[key], _opts, { 
-              ..._state, 
-              key, 
-              path, 
-              parent: value 
-            })
+                ..._state, 
+                key, 
+                path, 
+                parent: value 
+              })
           }))
           .then(() => value)
       })
@@ -124,6 +128,7 @@ var _Object = module.exports = SchemaObject.extend({
 
     next.fields = fields
     next._nodes = toposort.nodes
+
     return next
   },
 

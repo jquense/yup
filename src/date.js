@@ -1,25 +1,25 @@
 'use strict';
-var SchemaObject = require('./mixed')
+var MixedSchema = require('./mixed')
   , isoParse = require('./util/isodate')
-  , locale = require('./locale.js').date;
+  , locale = require('./locale.js').date
+  , { isDate, inherits } = require('./util/_');
 
-var isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
+module.exports = DateSchema
 
-var _Date = module.exports = SchemaObject.extend({
+function DateSchema(){
+  if ( !(this instanceof DateSchema)) return new DateSchema()
 
-  constructor: function(){
-    if ( !(this instanceof _Date)) return new _Date()
-    SchemaObject.call(this)
+  MixedSchema.call(this, { type: 'date'})
+}
 
-    this._type = 'date'
-  },
+inherits(DateSchema, MixedSchema, {
 
-  isType: function(v) {
+  isType(v) {
     if( this._nullable && v === null) return true
     return isDate(v)
   },
 
-  _coerce: function(value) {
+  _coerce(value) {
     if(value == null ) return value
     if(isDate(value) ) return new Date(value)
 
@@ -27,13 +27,13 @@ var _Date = module.exports = SchemaObject.extend({
     return value ? new Date(value) : null
   },
 
-  required: function(msg){
+  required(msg){
     return this.validation(
       {  hashKey: 'required',  message:  msg || locale.required },
       isDate)
   },
 
-  min: function(min, msg){
+  min(min, msg){
     var limit = this.cast(min);
     msg = msg || locale.min
 
@@ -48,7 +48,7 @@ var _Date = module.exports = SchemaObject.extend({
         })
   },
 
-  max: function(max, msg){
+  max(max, msg){
     var limit = this.cast(max);
 
     msg = msg || locale.max

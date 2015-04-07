@@ -2,15 +2,13 @@
 /* global describe, it */
 var chai  = require('chai')
   , Promise = require('es6-promise').Promise
-  , ValidationError = require('../lib/util/validation-error')
-  , sinonChai = require("sinon-chai")
+  , sinonChai = require('sinon-chai')
   , chaiAsPromised = require('chai-as-promised')
   , string = require('../lib/string');
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 chai.should();
-
 
 describe('String types', function(){
 

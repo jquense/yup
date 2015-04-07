@@ -5,28 +5,15 @@ var interpolate = require('./util/interpolate')
   , ValidationError = require('./util/validation-error')
   , getter = require('property-expr').getter
   , locale = require('./locale.js').mixed
-  , transform = require('./util/transform')
-  , assign = require('./util/assign')
-  , clone = require('./util/clone')
-  , BadSet = require('./util/set')
-  , has = require('./util/has');
-
-var toString = Object.prototype.toString
-var isObject = obj => obj && toString.call(obj) === '[object Object]';
-var isPlainObject = obj => isObject(obj) && Object.getPrototypeOf(obj) === Object.prototype;
-
-var initProps;
+  , _ = require('./util/_')
+  , cloneDeep = require('./util/clone')
+  , BadSet = require('./util/set');
 
 module.exports = SchemaType
 
-function SchemaType(){
-  var props;
-
+function SchemaType(options = {}){
   if ( !(this instanceof SchemaType))
     return new SchemaType()
-
-  props = initProps;
-  initProps = null;
 
   this._deps        = []
   this._conditions  = []
@@ -37,9 +24,10 @@ function SchemaType(){
   this.validations  = []
   this.transforms   = []
 
-  assign(this, props)
+  if (_.has(options, 'default'))
+    this._default = options.default
 
-  this._type = 'mixed'
+  this._type = options.type || 'mixed'
 }
 
 SchemaType.prototype = {
@@ -48,22 +36,12 @@ SchemaType.prototype = {
 
   constructor: SchemaType,
 
-  clone: function(){
-    return this.constructor.create(
-      transform(this, (obj, val, key) => {
-        obj[key] = val.clone
-          ? val.clone()
-          : Array.isArray(val)
-            ? val.slice()
-            : isPlainObject(val)
-              ? {...val}
-              : val
-      }, {})
-    )
+  clone(){
+    return cloneDeep(this);
   },
 
   concat(schema){
-    return merge(this.clone(), schema.clone())
+    return _.merge(this.clone(), schema.clone())
   },
 
   isType(value){
@@ -77,12 +55,10 @@ SchemaType.prototype = {
   },
 
   _cast(_value){
-    var value  = this._coerce ? this._coerce(_value) : _value
+    var value = this._coerce ? this._coerce(_value) : _value
 
-    if( value == null && has(this, '_default') )
-      value = this._nullable && value === null
-        ? value
-        : this.default()
+    if( value === undefined && _.has(this, '_default') )
+      value = this.default()
 
     return this.transforms.reduce(
       (value, transform) => transform.call(this, value), value)
@@ -167,12 +143,9 @@ SchemaType.prototype = {
 
   default(def) {
     if( arguments.length === 0){
-      var dflt = has(this, '_default') 
-        ? this._default
-        : this._initialDefault
-
+      var dflt = this._default
       return typeof dflt === 'function' 
-        ? dflt() : clone(dflt)
+        ? dflt.call(this) : cloneDeep(dflt)
     }
 
     var next = this.clone()
@@ -218,7 +191,7 @@ SchemaType.prototype = {
     errorMsg = interpolate(opts.message)
     hashKey = opts.hashKey
 
-    if( !hashKey || !has(next._activeTests, hashKey) ){
+    if( !hashKey || !_.has(next._activeTests, hashKey) ){
       if( hashKey ) next._activeTests[hashKey] = true
       next.validations.push(validate)
     }
@@ -278,7 +251,7 @@ SchemaType.prototype = {
   },
 
   _option(key, overrides){
-    return has(overrides, key)
+    return _.has(overrides, key)
       ? overrides[key] : this._options[key]
   }
 }
@@ -287,56 +260,13 @@ var aliases = {
   oneOf: ['equals']
 }
 
-for( var method in aliases ) if ( has(aliases, method) )
+for( var method in aliases ) if ( _.has(aliases, method) )
   aliases[method].forEach(
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method])
   
-
-SchemaType.create = function(spec){
-  var Klass = this
-  initProps = spec
-  return new Klass();
-}
-
-SchemaType.extend = function(spec){
-  var proto = Object.create(this.prototype)
-    , child = spec.constructor;
-
-  assign(child, this)
-  assign(proto, spec)
-
-  child.prototype = proto
-  child.prototype.constructor = child
-  return child
-}
-
-function merge(target, source){
-
-  for (var key in source) if ( has(source, key)) {
-    var targetVal = target[key]
-    var sourceVal = source[key]
-
-    if ( isObject(targetVal) || isObject(sourceVal) )
-      target[key] = merge(targetVal, sourceVal)
-
-    else if ( Array.isArray(targetVal) || Array.isArray(sourceVal))
-      target[key] = sourceVal.concat 
-        ? sourceVal.concat(targetVal) 
-        : targetVal.concat(sourceVal);
-    else
-      target[key] = source[key];
-  }
-  
-  return target;
-}
 
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise
 
   promise.then(val => cb(null, val), err => cb(err))
-}
-
-
-function createCallback(resolve, reject){
-  return (err, valid) => err ? reject(err) : resolve(valid)
 }

@@ -1,26 +1,22 @@
 'use strict';
 var SchemaObject = require('./mixed')
-  , locale = require('./locale.js').number;
+  , locale = require('./locale.js').number
+  , { isDate, inherits } = require('./util/_');
 
-var isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
+module.exports = NumberSchema
 
-var _Number = module.exports = SchemaObject.extend({
+function NumberSchema(){
+  if ( !(this instanceof NumberSchema)) 
+    return new NumberSchema()
 
-  constructor(){
-    if ( !(this instanceof _Number)) 
-      return new _Number()
+  SchemaObject.call(this, { type: 'number' })
+}
 
-    SchemaObject.call(this)
-
-    this._type = 'number'
-
-    // if ( !_.has(this, '_default') )
-    //   this._default = 0
-  },
+inherits(NumberSchema, SchemaObject, {
 
   isType(v) {
     if( this._nullable && v === null) return true
-    return typeof v === 'number' && !isNaN(v)
+    return typeof v === 'number' && !(v != +v)
   },
 
   _coerce(value) {
@@ -76,5 +72,4 @@ var _Number = module.exports = SchemaObject.extend({
       return Math[method](v);
     })
   }
-
 })

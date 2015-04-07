@@ -16,7 +16,7 @@ module.exports = {
     url:       '${path} must be a valid URL',
     trim:      '${path} must be a trimmed string',
     lowercase: '${path} must be a lowercase string',
-    uppercase: '${path} must be a uppercase string',
+    uppercase: '${path} must be a uppercase string'
   },
 
   boolean: {
@@ -26,7 +26,7 @@ module.exports = {
   number: {
     required:  '${path} is a required field',
     min:       '${path} must be at least ${min}',
-    max:       '${path} must be less or equal to than ${max}',
+    max:       '${path} must be less than or equal to ${max}',
     positive:  '${path} must be a positive number',
     negative:  '${path} must be a negative number',
     integer:   '${path} must be an integer'
@@ -35,11 +35,11 @@ module.exports = {
   date: {
     required:  '${path} is a required field',
     min:       '${path} field must be later than ${min}',
-    max:       '${path} field must be at earlier than ${max}',
+    max:       '${path} field must be at earlier than ${max}'
   },
 
   object: {
-    required:  '${path} is a required field',
+    required:  '${path} is a required field'
   },
 
   array: {

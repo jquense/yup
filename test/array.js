@@ -30,7 +30,7 @@ describe('Array types', function(){
     var inst = array()
 
     chai.expect(inst.default()).to.equal(undefined)
-    inst.default(function(){ return [1,2,3] }).default().should.eql([1,2,3])
+    inst.default(function(){ return [1, 2, 3] }).default().should.eql([1, 2, 3])
   })
 
   it('should type check', function(){
@@ -53,6 +53,9 @@ describe('Array types', function(){
     var inst = array().required().of(number().max(5))
 
     return Promise.all([
+
+      array().of(number().max(5)).isValid().should.eventually.equal(true),
+
       array().isValid(null).should.eventually.equal(false),
       array().nullable().isValid(null).should.eventually.equal(true),
 

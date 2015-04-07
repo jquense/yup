@@ -146,7 +146,7 @@ Sets the `strict` option to `true`, telling the schema to not try and cast the p
 
 #### `mixed.default(value)`
 
-Sets a default value to use when the value is missing. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+Sets a default value to use when the value is `undefined`. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
 
 ```js
   yup.string.default('nothing');
@@ -162,7 +162,7 @@ Sets a default value to use when the value is missing. The default value will be
 #### `mixed.nullable(isNullable)` (default: `false`)
 
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
-`null` is treated as an empty value and will fail `isType()` checks.
+`null` is treated as a different type and will fail `isType()` checks.
 
 #### `mixed.required(msg)`
 
@@ -217,7 +217,7 @@ __note: because `when` conditions must be resolved during `cast()`, a synchronou
 
 #### `mixed.validation(message, fn, [callbackStyleAsync])`
 
-Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. The validation function should either return `true` or `false` directly, or return a promsie that resolves `true` or `false. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
+Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. The validation function should either return `true` or `false` directly, or return a promsie that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
 
 for the `message` argument you can provide a string which is will interpolate certain keys if specified, all validations are given a `path` value which indicates location.
 

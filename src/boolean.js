@@ -1,27 +1,32 @@
 'use strict';
-var SchemaObject = require('./mixed')
+var MixedSchema = require('./mixed')
   , locale = require('./locale.js').boolean
+  , inherits = require('./util/_').inherits;
 
-var _Boolean = module.exports = SchemaObject.extend({
+let isBool = v => typeof v === 'boolean'
 
-  constructor: function(){
-    if ( !(this instanceof _Boolean)) return new _Boolean()
-    SchemaObject.call(this)
+module.exports = BooleanSchema
 
-    this._type = 'boolean'
-  },
+function BooleanSchema(){
+  if (!(this instanceof BooleanSchema)) 
+    return new BooleanSchema()
+ 
+  MixedSchema.call(this, { type: 'boolean'})
+}
 
-  isType: function(v) {
+inherits(BooleanSchema, MixedSchema, {
+
+  isType(v) {
     if( this._nullable && v === null) return true
     return isBool(v)
   },
 
-  _coerce: function(value) {
+  _coerce(value) {
     if(value == null || this.isType(value)) return value
     return (/true|1/i).test(value)
   },
 
-  required: function(msg){
+  required(msg){
     return this.validation(
       {  hashKey: 'required',  message:  msg || locale.required },
       isBool)
@@ -29,6 +34,3 @@ var _Boolean = module.exports = SchemaObject.extend({
 
 })
 
-function isBool(v){
-	return typeof v === 'boolean'
-}

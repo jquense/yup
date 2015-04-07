@@ -12,8 +12,8 @@ describe('Number types', function(){
 
   it('should CAST correctly', function(){
 
-    var inst = number(), date = new Date
-
+    var inst = number(), date = new Date()
+    
     chai.expect(
       inst.cast(null)).to.equal(null)
 
@@ -28,6 +28,7 @@ describe('Number types', function(){
     inst.round('Floor').cast(45.99999).should.equal(45)
     inst.round('ceIl').cast(45.1111).should.equal(46)
     inst.round().cast(45.444444).should.equal(45)
+
     ;(function(){ inst.round('fasf') }).should.throw(TypeError)
   })
 

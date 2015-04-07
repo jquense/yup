@@ -34,7 +34,7 @@ describe('Object types', function(){
       .cast('{ \"hello\": \"5\" }').should.eql({ hello: 5 })
 
     chai.expect(
-      object().cast('dfhdfh')).to.equal(null)
+      object().cast('dfhdfh')).to.eql(null)
 
     inst = inst.shape({
         num: number(),
@@ -88,6 +88,10 @@ describe('Object types', function(){
         )
       })
 
+    // return inst.validate().should.be.rejected.then(function(err){
+    //   console.log(err)
+    // })
+
     return inst.validate(obj).should.be.rejected
       .then(function(err){
         err.errors.length.should.equal(1)
@@ -99,6 +103,7 @@ describe('Object types', function(){
 
         return Promise.all([
           inst.isValid().should.eventually.equal(true),
+
           inst.validate(obj).should.be.rejected.then(function(err){
             err.errors[0].should.contain('this.arr[1]')
           })
@@ -108,17 +113,18 @@ describe('Object types', function(){
 
   it('should call shape with constructed with an arg', function(){
     var inst = object({
-          prop: mixed(),
+          prop: mixed()
         })
 
     inst.should.have.deep.property('fields.prop')
   })
 
   it('should create a reasonable default', function(){
+
     object({
         str: string(),
         nest: object({
-          str: string().default('hi'),
+          str: string().default('hi')
         })
     })
     .default().should.eql({ nest: { str: 'hi' } })
@@ -136,15 +142,22 @@ describe('Object types', function(){
         str: string(),
         nest: object({ str: string() })
     })
-    .default()).to.equal(undefined)
+    .default()).to.eql(undefined)
   })
 
   it('should handle empty keys', function(){
     var inst = object().shape({
-          prop: mixed(),
+          prop: mixed()
         })
 
+    // return inst.isValid({}).should.be.fulfilled.then(function(err){
+    //   console.log(err)
+    // })
+
     return Promise.all([
+      // inst.validate({}).should.be.rejected.then(function(err){
+      //   console.log(err)
+      // }),
       inst.isValid({}).should.eventually.equal(true),
 
       inst.shape({ prop: mixed().required() })
@@ -155,7 +168,7 @@ describe('Object types', function(){
   it('should handle custom validation', function(){
     var inst = object().shape({
           prop: mixed(),
-          other: mixed(),
+          other: mixed()
         })
 
     inst = inst.validation('${path} oops', function(value){

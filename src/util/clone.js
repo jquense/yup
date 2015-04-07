@@ -2,11 +2,9 @@
 // Copyright (c) 2011, Yahoo Inc.
 // All rights reserved. https://github.com/hapijs/hoek/blob/master/LICENSE
 
-module.exports = function(obj){
-  return clone(obj)
-}
 
-function clone(obj, seen) {
+module.exports = function clone(obj, seen) {
+  var isFirst = !seen
 
   if (typeof obj !== 'object' || obj === null)
     return obj;
@@ -31,7 +29,8 @@ function clone(obj, seen) {
     else {
       var proto = Object.getPrototypeOf(obj);
 
-      if (!proto || proto.isImmutable) {
+
+      if (proto !== null && (!proto || (proto.__isYupSchema__ && !isFirst)) ) {
         newObj = obj;
       }
       else {
