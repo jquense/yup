@@ -29,15 +29,15 @@ class Conditional {
     var schema, matches, then, otherwise;
 
     if( this.fn ) {
-      schema = this.fn.call(ctx, value)
+      schema = this.fn.call(ctx, value, ctx)
       if (schema !== undefined && !schema.__isYupSchema__)
         throw new TypeError('conditions must return a schema object')
 
       return schema || ctx
     }
 
-    matches = this.is.__isYupSchema__
-      ? this.is.isValid(value)
+    matches = typeof this.is === 'function'
+      ? this.is(value)
       : this.is === value
 
     then      = this.then      ? ctx.concat(this.then)      : ctx

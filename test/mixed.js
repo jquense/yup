@@ -59,7 +59,7 @@ describe( 'Mixed Types ', function(){
   })
 
   it('should respect strict', function(){
-    var inst = string().oneOf(['hello', '5'])
+    var inst = string().equals(['hello', '5'])
 
     return Promise.all([
       inst.isValid(5).should.eventually.equal(true),
@@ -114,7 +114,7 @@ describe( 'Mixed Types ', function(){
     .then(function(){
 
       inst = string().when('prop', {
-        is:        number().oneOf([5]),
+        is:        function(val) { return val == 5 },
         then:      string().required(),
         otherwise: string().min(4)
       })

@@ -5,7 +5,7 @@ Yup is a js object schema validator. The api and style is heavily inspired by [J
 
 Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
 
-## Changes 5.0
+## Changes 0.5.0
 
 - __breaking__ `isValid` is now async, provide a node style callback, or use the promise the method returns to read the validity. This change allows 
 for more robust validations, specifically remote ones for client code (or db queries for server code). The `cast` method is still, and will remain, synchronuous.
@@ -191,7 +191,11 @@ schema.isValid(new Date) //=> true
 
 #### `mixed.when(key, options | function)`
 
-Adjust the schema based on a sibling or sibling children fields. You can provide an object literal where the key `is` is a yup schema type, `then` provides the true schema and/or `otherwise` for the failure condition. Alternatively you can provide a function the returns a schema ( the `this` value is the current schema). `when` conditions are additive. 
+Adjust the schema based on a sibling or sibling children fields. You can provide an object literal where the key `is` is value or a matcher function, `then` provides the true schema and/or `otherwise` for the failure condition.
+
+`is` conditions are strictly compared (`===`) if you want to use a different form of equality you can provide a function like: `is: (value) => value == true`.
+
+Alternatively you can provide a function the returns a schema ( the `this` value is the current schema). `when` conditions are additive. 
 
 ```javascript
 var inst = yup.object({
@@ -199,7 +203,7 @@ var inst = yup.object({
       other: yup.number(),
       count: yup.number()
         .when('isBig', { 
-          is: true, 
+          is: true,  // alternatively: (val) => val == true
           then:      yup.number().min(5), 
           otherwise: yup.number().min(0) 
         })
@@ -208,6 +212,8 @@ var inst = yup.object({
         })
     })
 ```
+
+__note: because `when` conditions must be resolved during `cast()`, a synchronous api, `is` cannot be a schema object as checking schema validity it is asynchronous__
 
 #### `mixed.validation(message, fn, [callbackStyleAsync])`
 

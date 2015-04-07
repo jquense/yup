@@ -6,8 +6,10 @@ var isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
 var _Number = module.exports = SchemaObject.extend({
 
-  constructor: function(){
-    if ( !(this instanceof _Number)) return new _Number()
+  constructor(){
+    if ( !(this instanceof _Number)) 
+      return new _Number()
+
     SchemaObject.call(this)
 
     this._type = 'number'
@@ -16,12 +18,12 @@ var _Number = module.exports = SchemaObject.extend({
     //   this._default = 0
   },
 
-  isType: function(v) {
+  isType(v) {
     if( this._nullable && v === null) return true
     return typeof v === 'number' && !isNaN(v)
   },
 
-  _coerce: function(value) {
+  _coerce(value) {
     if ( value == null )       return value
     if ( this.isType(value) )  return value
     if ( typeof value === 'boolean' )  return value ? 1 : 0
@@ -29,35 +31,30 @@ var _Number = module.exports = SchemaObject.extend({
     return isDate(value) ? +value : parseFloat(value)
   },
 
-  required: function(msg){
+  required(msg){
     return this.validation(
-        { hashKey: 'required',  message:  msg || locale.required }
+        { hashKey: 'required', message:  msg || locale.required }
       , v => v != null && this.isType(v))
   },
 
   min(min, msg) {
-    msg = msg || locale.min
-
     return this.validation(
-        { message: msg, hashKey: 'min', params: { min: min } }
+        { hashKey: 'min', params: { min: min }, message: msg || locale.min }
       , value => value >= min)
   },
 
   max(max, msg) {
-    msg = msg || locale.max
     return this.validation(
-        { message: msg, hashKey: 'max', params: { max: max } }
+        { hashKey: 'max', params: { max: max }, message: msg || locale.max }
       , value => value <= max)
   },
 
   positive(max, msg) {
-    msg = msg || locale.positive
-    return this.min(0, msg)
+    return this.min(0, msg || locale.positive)
   },
 
   negative(max, msg) {
-    msg = msg || locale.negative
-    return this.max(0, msg)
+    return this.max(0, msg || locale.negative)
   },
 
   integer(msg) {
@@ -68,7 +65,7 @@ var _Number = module.exports = SchemaObject.extend({
       .validation(msg, val => val === (val | 0))
   },
 
-  round: function(method){
+  round(method){
     var avail = ['ceil', 'floor', 'round']
     method = (method && method.toLowerCase()) || 'round'
 

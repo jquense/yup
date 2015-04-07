@@ -20,13 +20,23 @@ var _Object = module.exports = SchemaObject.extend({
     if ( !(this instanceof _Object))
       return new _Object(spec)
 
-    if ( spec )
-      return this.shape(spec);
-
     this.fields = {};
+
     SchemaObject.call(this)
 
     this._type = 'object'
+
+    this._initialDefault = () => {
+      var dft = transform(this._nodes, (obj, key) => {
+        var fieldDft = this.fields[key].default()
+        if(fieldDft !== undefined ) obj[key] = fieldDft
+      }, {})
+
+      return Object.keys(dft).length === 0 ? undefined : dft
+    }
+
+    if ( spec )
+      return this.shape(spec);
   },
 
   isType(value) {
@@ -117,17 +127,6 @@ var _Object = module.exports = SchemaObject.extend({
     return next
   },
 
-  default(def) {
-    var hasDefault = has(this, '_default');
-
-    if(def === undefined)
-      return hasDefault
-        ? SchemaObject.prototype.default.call(this)
-        : createDefault(this.fields, this._nodes)
-
-    return SchemaObject.prototype.default.call(this, def)
-  },
-
   required(msg) {
     return this.validation(
       { hashKey: 'required',  message:  msg || locale.required },
@@ -156,12 +155,3 @@ var _Object = module.exports = SchemaObject.extend({
   }
 })
 
-function createDefault(fields, nodes){
-
-  var dft = transform(nodes, function(obj, key){
-    var dft = fields[key].default()
-    if(dft !== undefined ) obj[key] = dft
-  }, {})
-
-  return Object.keys(dft).length === 0 ? undefined : dft
-}

@@ -166,9 +166,14 @@ SchemaType.prototype = {
     },
 
   default(def) {
-    if( arguments.length === 0)
-      return typeof this._default === 'function' 
-        ? this._default() : clone(this._default)
+    if( arguments.length === 0){
+      var dflt = has(this, '_default') 
+        ? this._default
+        : this._initialDefault
+
+      return typeof dflt === 'function' 
+        ? dflt() : clone(dflt)
+    }
 
     var next = this.clone()
     next._default = def
@@ -281,6 +286,11 @@ SchemaType.prototype = {
 var aliases = {
   oneOf: ['equals']
 }
+
+for( var method in aliases ) if ( has(aliases, method) )
+  aliases[method].forEach(
+    alias => SchemaType.prototype[alias] = SchemaType.prototype[method])
+  
 
 SchemaType.create = function(spec){
   var Klass = this
