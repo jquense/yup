@@ -494,7 +494,7 @@ Alternatively, each schema is a normal javascript constructor function that you 
   var inherits = require('inherits')
   var invalidDate = new Date(''); // our failed to coerce value
 
-  function MomentDateSchemaType(){
+  var date = function MomentDateSchemaType(){
     // so we don't need to use the `new` keyword
     if ( !(this instanceof MomentDateSchemaType))
       return new MomentDateSchemaType()
@@ -509,7 +509,7 @@ Alternatively, each schema is a normal javascript constructor function that you 
 
       //the previous transform failed so lets try it with Moment instead
       value = Moment(originalValue, this._formats)
-      return date.isValid() ? date.toDate() : invalidDate
+      return value.isValid() ? value.toDate() : invalidDate
     })
   }
 
@@ -519,8 +519,11 @@ Alternatively, each schema is a normal javascript constructor function that you 
     if (!format) throw new Error('must enter a valid format')
 
     var next = this.clone(); //never mutate a schema
-    next = [next._formats].concat(format)
+    next._formats = next._formats.concat(format)
     return next
   }
 
+  var schema = MomentDateSchemaType().format('YYYY-MM-DD')
+
+  schema.cast('It is 2012-05-25') // Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
 ```
