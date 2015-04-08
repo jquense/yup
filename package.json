@@ -2,7 +2,7 @@
   "name": "yup",
   "version": "0.6.0",
   "description": "Dead simple Object schema validation",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "gulp compile && mocha -R spec ./test/*.js"
   },

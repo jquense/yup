@@ -12,6 +12,12 @@ chai.should();
 
 describe('Yup', function(){
 
+  it('should export', function(){
+
+    var yup = require('../lib')
+
+  })
+
   it('should REACH correctly', function(done){
     var num = number()
       , inst = object().shape({
