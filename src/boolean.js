@@ -12,17 +12,19 @@ function BooleanSchema(){
     return new BooleanSchema()
  
   MixedSchema.call(this, { type: 'boolean'})
+
+  this.transforms.push(function(value) {
+    if ( this.isType(value) ) return value
+    return (/true|1/i).test(value)
+  })
 }
 
 inherits(BooleanSchema, MixedSchema, {
 
-  isType(v) {
-    if( this._nullable && v === null) return true
-    return isBool(v)
-  },
+  _typeCheck: isBool,
 
   _coerce(value) {
-    if(value == null || this.isType(value)) return value
+    if ( this.isType(value) ) return value
     return (/true|1/i).test(value)
   },
 

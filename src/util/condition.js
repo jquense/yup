@@ -1,5 +1,5 @@
 'use strict';
-var has = require('./has')
+var { has } = require('./_')
 
 module.exports = Conditional
 

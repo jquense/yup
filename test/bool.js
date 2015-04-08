@@ -19,7 +19,10 @@ describe('Boolean types', function(){
     inst.cast(0).should.equal(false)
 
     chai.expect(
-      inst.cast(null)).to.equal(null)
+      inst.cast(null)).to.equal(false)
+
+    chai.expect(
+      inst.nullable().cast(null)).to.equal(null)
   })
 
   it('should handle DEFAULT', function(){
@@ -47,10 +50,13 @@ describe('Boolean types', function(){
     var inst = bool().required()
 
     return Promise.all([
-      bool().isValid(null).should.eventually.equal(false),
+      bool().isValid(null).should.eventually.equal(true), //coerced to false
+
+      bool().strict().isValid(null).should.eventually.equal(false),
+
       bool().nullable().isValid(null).should.eventually.equal(true),
 
-      inst.validate().should.be.rejected.then(null, function(err){
+      inst.validate().should.be.rejected.then(function(err){
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })

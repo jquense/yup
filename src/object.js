@@ -29,6 +29,19 @@ function ObjectSchema(spec) {
     }
   })
 
+  this.transforms.push(function (value) {
+    if (typeof value === 'string') {
+      try {
+        value = JSON.parse(value)
+      } catch (err){ value = null }
+    }
+
+    if( this.isType(value) )
+      return value
+
+    return null
+  })
+
   this.fields = Object.create(null)
   this._nodes = []
 
@@ -38,22 +51,8 @@ function ObjectSchema(spec) {
 
 inherits(ObjectSchema, MixedSchema, {
 
-  isType(value) {
-    if( this._nullable && value === null) return true
-    return value && typeof value === 'object' && !Array.isArray(value)
-  },
-
-  _coerce(value) {
-    if (typeof value === 'string') {
-      try {
-        value = JSON.parse(value)
-      } catch (err){ value = null }
-    }
-
-    if( value === undefined || this.isType(value) )
-      return value
-
-    return null
+  _typeCheck(value) {
+    return value && typeof value === 'object' && !Array.isArray(value);
   },
 
   _cast(_value, _opts) {

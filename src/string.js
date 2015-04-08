@@ -17,14 +17,14 @@ function StringSchema(){
 
 inherits(StringSchema, MixedSchema, {
 
-  isType(v){
-    if( this._nullable && v === null) return true
-    return typeof v === 'string'
+  _typeCheck(value) {
+     return typeof value === 'string'
   },
 
   _coerce(value) {
-    if(value == null || this.isType(value)) return value
-    return value.toString ? value.toString() : '' + value
+    if( this.isType(value) ) return value
+    return value == null ? '' 
+      : value.toString ? value.toString() : '' + value
   },
 
   required(msg){

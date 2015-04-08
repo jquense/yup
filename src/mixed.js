@@ -44,24 +44,27 @@ SchemaType.prototype = {
     return _.merge(this.clone(), schema.clone())
   },
 
-  isType(value){
-    if ( this._nullable && value === null ) return true
-    return value !== undefined
+  isType(v) {
+    if( this._nullable && v === null) return true
+    return !this._typeCheck || this._typeCheck(v)
   },
 
-  cast(_value, _opts){
+  cast(_value, _opts) {
     var schema = this._resolve((_opts|| {}).context)
     return schema._cast(_value, _opts)
   },
 
-  _cast(_value){
-    var value = this._coerce ? this._coerce(_value) : _value
+  _cast(_value) {
+    var value = this._coerce && _value !== undefined 
+          ? this._coerce(_value) 
+          : _value
 
     if( value === undefined && _.has(this, '_default') )
       value = this.default()
 
-    return this.transforms.reduce(
-      (value, transform) => transform.call(this, value), value)
+    return value === undefined ? value
+      : this.transforms.reduce(
+          (value, transform) => transform.call(this, value, _value), value)
   },
 
   _resolve(context){

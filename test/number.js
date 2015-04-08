@@ -15,7 +15,7 @@ describe('Number types', function(){
     var inst = number(), date = new Date()
     
     chai.expect(
-      inst.cast(null)).to.equal(null)
+      inst.cast(null)).to.eql(NaN)
 
     inst.cast('5').should.equal(5)
     inst.cast('').should.eql(NaN)

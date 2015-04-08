@@ -12,32 +12,26 @@ function ArraySchema(){
   
   MixedSchema.call(this, { type: 'array'})
 
-  this._type = 'array'
-}
-
-inherits(ArraySchema, MixedSchema, {
-
-  isType(v) {
-    if( this._nullable && v === null) return true
-    return Array.isArray(v)
-  },
-
-  _coerce(values) {
-    if (typeof values === 'string') {
+  this.transforms.push(function(values) {
+    if (typeof values === 'string')
       try {
         values = JSON.parse(values)
       } catch (err){ values = null }
-    }
-
-    if(values === undefined )
-      return
-
-    if( this.isType(values) )
+    
+    if( Array.isArray(values))
         return this._subType
           ? values.map(this._subType.cast, this._subType)
           : values
 
-    return null
+    return this.isType(values) ? values : null
+  })
+  
+}
+
+inherits(ArraySchema, MixedSchema, {
+
+  _typeCheck(v){
+    return Array.isArray(v)
   },
 
   _validate(_value, _opts, _state){
@@ -73,9 +67,7 @@ inherits(ArraySchema, MixedSchema, {
   required(msg){
     return this.validation(
       {  hashKey: 'required',  message:  msg || locale.required },
-      function(value){
-        return value && this.isType(value) && !!value.length
-      })
+      value => this.isType(value) && !!value.length)
   },
 
   min(min, msg){
@@ -83,18 +75,14 @@ inherits(ArraySchema, MixedSchema, {
 
     return this.validation(
         { message: msg, hashKey: 'min', params: { min: min } }
-      , function(value){
-          return value && value.length >= min
-        })
+      , value => value && value.length >= min)
   },
 
   max(max, msg){
     msg = msg || locale.max
     return this.validation(
         { message: msg, hashKey: 'max', params: { max: max } }
-      , function(value){
-          return value && value.length <= max
-        })
+      , value => value && value.length <= max)
   },
 
   compact(rejector){

@@ -19,7 +19,10 @@ describe('String types', function(){
     inst.cast(5).should.equal('5')
 
     chai.expect(
-      inst.cast(null)).to.equal(null)
+      inst.cast(null)).to.equal('')
+
+    chai.expect(
+      inst.nullable().cast(null)).to.equal(null)
 
     inst.cast('3').should.equal('3')
     inst.cast(false).should.equal('false')

@@ -5,7 +5,6 @@ var chai  = require('chai')
   , ValidationError = require('../lib/util/validation-error')
   , Promise = require('es6-promise').Promise
   , mixed = require('../lib/mixed')
-  , number = require('../lib/number')
   , string = require('../lib/string');
 
 chai.use(chaiAsPromised);
@@ -114,7 +113,7 @@ describe( 'Mixed Types ', function(){
     .then(function(){
 
       inst = string().when('prop', {
-        is:        function(val) { return val == 5 },
+        is:        function(val) { return val === 5 },
         then:      string().required(),
         otherwise: string().min(4)
       })

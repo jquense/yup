@@ -12,5 +12,7 @@ module.exports = {
   object:  require('./object'),
   array:   require('./array'),
 
-  reach: require('./util/reach')
+  reach: require('./util/reach'),
+  
+  ValidationError: require('./util/validation-error')
 }

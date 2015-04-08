@@ -4,32 +4,37 @@ var MixedSchema = require('./mixed')
   , locale = require('./locale.js').date
   , { isDate, inherits } = require('./util/_');
 
+
+let invalidDate = new Date('')
+
 module.exports = DateSchema
 
 function DateSchema(){
   if ( !(this instanceof DateSchema)) return new DateSchema()
 
   MixedSchema.call(this, { type: 'date'})
+
+  this.transforms.push(function(value) {
+
+    if (this.isType(value))
+      return isDate(value) 
+        ? new Date(value)
+        : value
+
+    value = isoParse(value)
+    return value ? new Date(value) : invalidDate
+  })
 }
 
 inherits(DateSchema, MixedSchema, {
 
-  isType(v) {
-    if( this._nullable && v === null) return true
-    return isDate(v)
-  },
-
-  _coerce(value) {
-    if(value == null ) return value
-    if(isDate(value) ) return new Date(value)
-
-    value = isoParse(value)
-    return value ? new Date(value) : null
+  _typeCheck(v) {
+    return isDate(v) && !isNaN(v.getTime())
   },
 
   required(msg){
     return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
+      { hashKey: 'required', message:  msg || locale.required },
       isDate)
   },
 
@@ -42,25 +47,18 @@ inherits(DateSchema, MixedSchema, {
 
     return this.validation(
         { message: msg, hashKey: 'min', params: { min: min } }
-      , function(value){
-          var val = this.cast(value)
-          return val && (val >= limit)
-        })
+      , value => value && (value >= limit))
   },
 
   max(max, msg){
     var limit = this.cast(max);
 
-    msg = msg || locale.max
     if(!this.isType(limit))
       throw new TypeError('max must be a Date or a value that can be parsed to a Date')
 
     return this.validation(
-        { message: msg, hashKey: 'max', params: { max: max } }
-      , function(value){
-          var val = this.cast(value)
-          return val <= limit
-        })
+        { hashKey: 'max', message: msg || locale.max, params: { max: max } }
+      , value => !value || (value <= limit))
   }
 
 })

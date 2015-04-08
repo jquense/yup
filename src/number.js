@@ -10,21 +10,19 @@ function NumberSchema(){
     return new NumberSchema()
 
   SchemaObject.call(this, { type: 'number' })
-}
 
-inherits(NumberSchema, SchemaObject, {
-
-  isType(v) {
-    if( this._nullable && v === null) return true
-    return typeof v === 'number' && !(v != +v)
-  },
-
-  _coerce(value) {
-    if ( value == null )       return value
+  this.transforms.push(function(value) {
     if ( this.isType(value) )  return value
     if ( typeof value === 'boolean' )  return value ? 1 : 0
 
     return isDate(value) ? +value : parseFloat(value)
+  })
+}
+
+inherits(NumberSchema, SchemaObject, {
+
+  _typeCheck(v) {
+    return typeof v === 'number' && !(v !== +v)
   },
 
   required(msg){
