@@ -95,7 +95,7 @@ SchemaType.prototype = {
       value = schema._cast(value, _opts)
 
     if ( value !== undefined && !schema.isType(value) ){
-      errors.push(`value: ${value} is must be a ${schema._type} type`)
+      errors.push(`value: ${value} must be a ${schema._type} type`)
       return Promise.reject(new ValidationError(errors))
     }
 
