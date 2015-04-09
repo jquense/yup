@@ -191,7 +191,7 @@ Sets a default value to use when the value is `undefined`. The default value wil
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
 `null` is treated as a different type and will fail `isType()` checks.
 
-#### `mixed.required(msg)`
+#### `mixed.required([msg])`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
@@ -286,15 +286,15 @@ var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
 
-#### `string.min(limit, message)`
+#### `string.min(limit, [message])`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `string.max(limit, message)`
+#### `string.max(limit, [message])`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
-#### `string.matches(regex, message)`
+#### `string.matches(regex, [message])`
 
 Provide an arbitrary `regex` to match the value against.
 
@@ -304,7 +304,7 @@ v.isValid('hi').should.eventually.equal(true)
 v.isValid('nope').should.eventually.equal(false)
 ```
 
-#### `string.email(message)`
+#### `string.email([message])`
 
 Validates the value as an email address via a regex.
 
@@ -313,16 +313,16 @@ Validates the value as an email address via a regex.
 Validates the value as a valid URL via a regex.
 
 
-#### `string.trim(msg)`
+#### `string.trim([message])`
 
 Transforms string values by removing leading and trailing whitespace. If 
 `strict()` is set it will only validate that the value is trimmed.
 
-#### `string.lowercase(msg)`
+#### `string.lowercase([message])`
 
 Transforms the string value to lowercase. If `strict()` is set it will only validate that the value is lowercase.
 
-#### `string.uppercase(msg)`
+#### `string.uppercase([message])`
 
 Transforms the string value to uppercase. If `strict()` is set it will only validate that the value is uppercase.
 
@@ -335,25 +335,25 @@ var schema = yup.number();
 schema.isValid(10) //=> true
 ```
 
-#### `number.min(limit, message)`
+#### `number.min(limit, [message])`
 
 Set the minimum value allowed. The `${min}` interpolation can be used in the 
 `message` argument.
 
-#### `number.max(limit, message)`
+#### `number.max(limit, [message])`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the 
 `message` argument.
 
-#### `number.positive(message)`
+#### `number.positive([message])`
 
 Value must be a positive number.
 
-#### `number.negative(message)`
+#### `number.negative([message])`
 
 Value mut be a negative number.
 
-#### `number.integer(message)`
+#### `number.integer([message])`
 
 Transformation that coerces the value into an integer via truncation 
 ` value | 0`. If `strict()` is set it will only validate that the value is an integer.
@@ -381,11 +381,11 @@ var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
 
-#### `date.min(limit, message)`
+#### `date.min(limit, [message])`
 
 Set the minimum date allowed.
 
-#### `date.max(limit, message)`
+#### `date.max(limit, [message])`
 
 Set the maximum date allowed.
 
@@ -405,11 +405,11 @@ schema.cast(['2', '3'])  //=> [2, 3]
 
 Specify the schema of array elements. It can be any schemaType, and is not required.
 
-#### `array.min(limit, message)`
+#### `array.min(limit, [message])`
 
 Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(limit, message)`
+#### `array.max(limit, [message])`
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
