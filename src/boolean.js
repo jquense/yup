@@ -26,12 +26,6 @@ inherits(BooleanSchema, MixedSchema, {
   _coerce(value) {
     if ( this.isType(value) ) return value
     return (/true|1/i).test(value)
-  },
-
-  required(msg){
-    return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
-      isBool)
   }
 
 })

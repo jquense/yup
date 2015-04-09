@@ -5,7 +5,9 @@ var chai  = require('chai')
   , ValidationError = require('../lib/util/validation-error')
   , Promise = require('es6-promise').Promise
   , mixed = require('../lib/mixed')
-  , string = require('../lib/string');
+  , object = require('../lib/object')
+  , string = require('../lib/string')
+  , reach = require('../lib/util/reach');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -34,7 +36,7 @@ describe( 'Mixed Types ', function(){
       inst.isValid(5).should.eventually.equal(true),
       inst.isValid('hello').should.eventually.equal(true),
 
-      inst.validate(6).should.be.rejected.then(function(err){
+      inst.validate(6).should.be.rejected.then(function(err) {
         err.errors[0].should.equal('this must be one the following values: hello, 5')
       })
     ])
@@ -65,6 +67,43 @@ describe( 'Mixed Types ', function(){
       inst.strict().isValid(5).should.eventually.equal(false)
     ])
   })
+
+  it('should respect exclusive validation', function(){
+    var inst = mixed()
+      .validation({ msg: 'invalid', exclusive: true, name: 'test'}, function(){})
+      .validation({ msg: 'also invalid', name: 'test'}, function(){})
+
+    inst.validations.length.should.equal(1)
+
+    inst = mixed()
+      .validation({ msg: 'invalid', name: 'test'}, function(){})
+      .validation({ msg: 'also invalid', name: 'test'}, function(){})
+
+    inst.validations.length.should.equal(2) 
+  })
+
+  it('exclusive validations should throw without a name', function(){
+    ;(function(){ 
+      mixed().validation({ msg: 'invalid', exclusive: true }, function(){})
+    }).should.throw() 
+  })
+
+  it('exclusive validations should replace previous ones', function(){
+    var inst = mixed().validation({ message: 'invalid', exclusive: true, name: 'max'}, function(v){ 
+      return v < 5 
+    })
+
+    return Promise.all([
+
+      inst.isValid(8).should.eventually.become(false),
+
+      inst.validation({ message: 'invalid', exclusive: true, name: 'max'}, function(v){ 
+          return v < 10 
+        })
+        .isValid(8).should.eventually.become(true)
+    ]) 
+  })
+
 
   it('should allow custom validation of either style', function(){
     var inst = string()
@@ -100,6 +139,44 @@ describe( 'Mixed Types ', function(){
         done()
       })
     })
+  })
+
+  it('should concat schemas', function(){
+    var inst = object({
+      str: string().required(),
+      obj: object({
+        str: string()
+      })
+    })
+
+    var next = inst.concat(object({
+      str: string().required().trim(),
+      str2: string().required(),
+      obj: object({
+        str: string().required()
+      })
+    }))
+
+    reach(next, 'str').validations.length.should.equal(2) // presence and length
+    reach(next, 'str').validations[0].VALIDATION_KEY.should.equal('required') // make sure they are in the right order
+
+    return Promise.all([
+
+      inst.isValid({ str: 'hi', str2: 'hi', obj: {} }).should.become(true),
+
+      next.validate({ str: ' hi  ', str2: 'hi', obj: { str: 'hi' } }).should.be.fulfilled.then(function(value){
+        value.should.deep.eql({ str: 'hi', str2: 'hi', obj: {str: 'hi'} })
+      }),
+
+      next.validate({ str: 'hi', str2: 'hi', obj: {} }).should.be.rejected.then(function(err){
+        err.message.should.contain('this.obj.str is a required field')
+      }),
+
+      next.validate({ str2: 'hi', obj: { str: 'hi'} }).should.be.rejected.then(function(err){
+        err.message.should.contain('this.str is a required field')
+      })
+    ])
+
   })
 
   it('should handle conditionals', function(){

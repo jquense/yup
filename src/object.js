@@ -33,7 +33,8 @@ function ObjectSchema(spec) {
     if (typeof value === 'string') {
       try {
         value = JSON.parse(value)
-      } catch (err){ value = null }
+      } 
+      catch (err){ value = null }
     }
 
     if( this.isType(value) )
@@ -118,24 +119,22 @@ inherits(ObjectSchema, MixedSchema, {
       })
   },
 
-  shape(schema) {
-    var next = this.clone()
-      , toposort = new Topo()
-      , fields = assign(next.fields, schema);
-
-    for( var key in schema ) if ( has(schema, key))
-      toposort.add(key, { after: schema[key]._deps, group: key })
-
-    next.fields = fields
-    next._nodes = toposort.nodes
+  concat(schema){
+    var next = MixedSchema.prototype.concat.call(this, schema)
+    
+    next._nodes = sortFields(next.fields)
 
     return next
   },
 
-  required(msg) {
-    return this.validation(
-      { hashKey: 'required',  message:  msg || locale.required },
-      value => value != null)
+  shape(schema) {
+    var next = this.clone()
+      , fields = assign(next.fields, schema);
+
+    next.fields = fields
+    next._nodes = sortFields(fields)
+
+    return next
   },
 
   from(from, to, alias) {
@@ -163,3 +162,11 @@ inherits(ObjectSchema, MixedSchema, {
   }
 })
 
+function sortFields(fields){
+  var toposort = new Topo()
+
+  for( var key in fields ) if ( has(fields, key))
+    toposort.add(key, { after: fields[key]._deps, group: key })
+
+  return toposort.nodes
+}

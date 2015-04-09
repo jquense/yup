@@ -18,7 +18,7 @@ function SchemaType(options = {}){
   this._deps        = []
   this._conditions  = []
   this._options     = {}
-  this._activeTests = {}
+  this._exclusive   = Object.create(null)
   this._whitelist   = new BadSet()
   this._blacklist   = new BadSet()
   this.validations  = []
@@ -41,7 +41,13 @@ SchemaType.prototype = {
   },
 
   concat(schema){
-    return _.merge(this.clone(), schema.clone())
+    var next = _.merge(this.clone(), schema.clone())
+
+    // trim exclusive validations, take the most recent ones
+    next.validations = _.uniq(next.validations.reverse(), 
+      (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
+
+    return next
   },
 
   isType(v) {
@@ -164,7 +170,7 @@ SchemaType.prototype = {
 
   required(msg) {
     return this.validation(
-      { hashKey: 'required',  message:  msg || locale.required },
+      { name: 'required', exclusive: true, message:  msg || locale.required },
       value => value !== undefined && this.isType(value))
   },
 
@@ -180,39 +186,45 @@ SchemaType.prototype = {
     return next
   },
 
-  validation(msg, validator, passInDoneCallback){
-    var opts = msg
+  validation(message, validator, passInDoneCallback) {
+    var opts = message
       , next = this.clone()
-      , hashKey, errorMsg;
+      , errorMsg, isExclusive;
 
-    if(typeof msg === 'string')
-      opts = { message: msg }
+    if(typeof message === 'string')
+      opts = { message, exclusive: false, name: validator.name || undefined }
 
     if( next._whitelist.length )
       throw new TypeError('Cannot add validations when specific valid values are specified')
 
     errorMsg = interpolate(opts.message)
-    hashKey = opts.hashKey
+    isExclusive = opts.name && next._exclusive[opts.name] === true
 
-    if( !hashKey || !_.has(next._activeTests, hashKey) ){
-      if( hashKey ) next._activeTests[hashKey] = true
-      next.validations.push(validate)
+    if( opts.exclusive ){
+      if (!opts.name)
+        throw new TypeError('You cannot have an exclusive validation without a name to identify it')
+      
+      next._exclusive[opts.name] = true
+      validate.VALIDATION_KEY = opts.name
     }
+
+    if( isExclusive )
+      next.validations = next.validations.filter( fn => fn.VALIDATION_KEY !== opts.name)
+
+    next.validations.push(validate)
 
     return next
 
     function validate(value, state) {
-      var result = new Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         !passInDoneCallback
           ? resolve(validator.call(this, value))
           : validator.call(this, value, (err, valid) => err ? reject(err) : resolve(valid))
       })
-
-      return result
-        .then(function(valid){
-          if (!valid) 
-            throw new ValidationError(errorMsg({ ...state, ...opts.params }))
-        })
+      .then(valid => {
+        if (!valid) 
+          throw new ValidationError(errorMsg({ path: state.path, ...opts.params }))
+      })
     }
   },
 

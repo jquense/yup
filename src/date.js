@@ -32,12 +32,6 @@ inherits(DateSchema, MixedSchema, {
     return isDate(v) && !isNaN(v.getTime())
   },
 
-  required(msg){
-    return this.validation(
-      { hashKey: 'required', message:  msg || locale.required },
-      isDate)
-  },
-
   min(min, msg){
     var limit = this.cast(min);
     msg = msg || locale.min
@@ -46,7 +40,7 @@ inherits(DateSchema, MixedSchema, {
       throw new TypeError('min must be a Date or a value that can be parsed to a Date')
 
     return this.validation(
-        { message: msg, hashKey: 'min', params: { min: min } }
+        { name: 'min', exclusive: true, message: msg, params: { min: min } }
       , value => value && (value >= limit))
   },
 
@@ -57,7 +51,7 @@ inherits(DateSchema, MixedSchema, {
       throw new TypeError('max must be a Date or a value that can be parsed to a Date')
 
     return this.validation(
-        { hashKey: 'max', message: msg || locale.max, params: { max: max } }
+        { name: 'max', exclusive: true, message: msg || locale.max, params: { max: max } }
       , value => !value || (value <= limit))
   }
 

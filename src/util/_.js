@@ -7,6 +7,9 @@ let isPlainObject = obj => isObject(obj) && Object.getPrototypeOf(obj) === Objec
 
 let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
+let isSchema = obj => obj && obj.__isYupSchema__
+
+
 function assign(target) {
   for (var i = 1; i < arguments.length; i++) {
     var source = arguments[i];
@@ -16,6 +19,17 @@ function assign(target) {
   }
 
   return target;
+}
+
+function uniq(arr, iter){
+  var seen = {}
+  
+  return arr.filter( (item, idx) => {
+    var key = iter(item,idx)
+
+    if ( has(seen, key) ) return false
+    return seen[key] = true
+  })
 }
 
 function transform(obj, cb, seed){
@@ -33,15 +47,27 @@ function transform(obj, cb, seed){
 function merge(target, source){
   for (var key in source) if ( has(source, key)) {
     var targetVal = target[key]
-    var sourceVal = source[key]
+      , sourceVal = source[key]
+      , sameType;
 
-    if ( isObject(targetVal) || isObject(sourceVal) )
-      target[key] = merge(targetVal, sourceVal)
+    if ( sourceVal === undefined )
+      continue
 
-    else if ( Array.isArray(targetVal) || Array.isArray(sourceVal))
-      target[key] = sourceVal.concat 
-        ? sourceVal.concat(targetVal) 
-        : targetVal.concat(sourceVal);
+    if ( isSchema(sourceVal) ) {
+       target[key] = isSchema(targetVal)
+        ? targetVal.concat(sourceVal)
+        : sourceVal
+    }
+    else if ( isObject(sourceVal) ) {
+      target[key] = isObject(targetVal)
+        ? merge(targetVal, sourceVal)
+        : sourceVal
+    }
+    else if ( Array.isArray(sourceVal) ) {
+      target[key] = Array.isArray(targetVal)
+        ? targetVal.concat(sourceVal)
+        : sourceVal
+    }
     else
       target[key] = source[key];
   }
@@ -68,5 +94,5 @@ function inherits(ctor, superCtor, spec) {
 }
 
 module.exports = {
-  inherits, has, assign, merge, transform, isObject, isPlainObject, isDate
+  inherits, uniq, has, assign, merge, transform, isSchema, isObject, isPlainObject, isDate
 }

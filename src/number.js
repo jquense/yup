@@ -25,21 +25,15 @@ inherits(NumberSchema, SchemaObject, {
     return typeof v === 'number' && !(v !== +v)
   },
 
-  required(msg){
-    return this.validation(
-        { hashKey: 'required', message:  msg || locale.required }
-      , v => v != null && this.isType(v))
-  },
-
   min(min, msg) {
     return this.validation(
-        { hashKey: 'min', params: { min: min }, message: msg || locale.min }
+        { name: 'min', exclusive: true, params: { min: min }, message: msg || locale.min }
       , value => value == null || value >= min)
   },
 
   max(max, msg) {
     return this.validation(
-        { hashKey: 'max', params: { max: max }, message: msg || locale.max }
+        { name: 'max', exclusive: true, params: { max: max }, message: msg || locale.max }
       , value => value == null || value <= max)
   },
 

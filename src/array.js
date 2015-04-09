@@ -1,7 +1,7 @@
 'use strict';
 var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
-  , locale = require('./locale.js').array
+  , { mixed, array: locale } = require('./locale.js')
   , inherits = require('./util/_').inherits;
 
 module.exports = ArraySchema
@@ -66,8 +66,8 @@ inherits(ArraySchema, MixedSchema, {
 
   required(msg){
     return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
-      value => this.isType(value) && !!value.length)
+        { name: 'required', exclusive: true, message: msg || mixed.required }
+      , value => value && value.length > 0)
   },
 
   min(min, msg){
