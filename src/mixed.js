@@ -43,6 +43,10 @@ SchemaType.prototype = {
   concat(schema){
     var next = _.merge(this.clone(), schema.clone())
 
+    // undefined isn't merged over, but is a valid value for default
+    if ( _.has(schema, '_default') && schema._default === undefined )
+      next._default = schema._default
+
     // trim exclusive validations, take the most recent ones
     next.validations = _.uniq(next.validations.reverse(), 
       (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
