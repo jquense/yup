@@ -55,7 +55,7 @@ inherits(NumberSchema, SchemaObject, {
     msg = msg || locale.integer
 
     return this
-      .transform( v => v | 0)
+      .transform( v => v != null ? (v | 0) : v)
       .validation(msg, val => val === (val | 0))
   },
 
@@ -66,8 +66,6 @@ inherits(NumberSchema, SchemaObject, {
     if( avail.indexOf(method.toLowerCase()) === -1 )
       throw new TypeError('Only valid options for round() are: ' + avail.join(', '))
 
-    return this.transform(function(v){
-      return Math[method](v);
-    })
+    return this.transform(v => v != null ? Math[method](v) : v)
   }
 })

@@ -52,14 +52,15 @@ function ObjectSchema(spec) {
 inherits(ObjectSchema, MixedSchema, {
 
   _typeCheck(value) {
-    return value && typeof value === 'object' && !Array.isArray(value);
+    return isObject(value) || typeof value === 'function';
   },
 
   _cast(_value, _opts) {
     var schema = this
       , value  = MixedSchema.prototype._cast.call(schema, _value)
 
-    if( schema.isType(value) ) {
+    //should ignore nulls here
+    if( schema._typeCheck(value) ) {
       var fields = schema.fields
         , strip  = schema._option('stripUnknown', _opts) === true
         , extra  = Object.keys(value).filter( v => schema._nodes.indexOf(v) === -1)
@@ -134,11 +135,14 @@ inherits(ObjectSchema, MixedSchema, {
   required(msg) {
     return this.validation(
       { hashKey: 'required',  message:  msg || locale.required },
-      value => !!value && isPlainObject(value))
+      value => value != null)
   },
 
   from(from, to, alias) {
-    return this.transform(function(obj){
+    return this.transform( obj => {
+      if ( obj == null) 
+        return obj
+      
       var newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
 
       newObj[to] = obj[from]
@@ -149,13 +153,13 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   camelcase(){
-    return this.transform(obj =>
-      transform(obj, (newobj, val, key ) => newobj[c.camel(key)] = val))
+    return this.transform(obj => obj == null ? obj
+      : transform(obj, (newobj, val, key ) => newobj[c.camel(key)] = val))
   },
 
   constantcase(){
-    return this.transform( obj =>
-      transform(obj, (newobj, val, key ) => newobj[c.constant(key)] = val))
+    return this.transform( obj => obj == null ? obj
+      : transform(obj, (newobj, val, key ) => newobj[c.constant(key)] = val))
   }
 })
 

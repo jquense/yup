@@ -30,6 +30,11 @@ describe('Number types', function(){
     inst.round().cast(45.444444).should.equal(45)
 
     ;(function(){ inst.round('fasf') }).should.throw(TypeError)
+
+    chai.expect(inst.nullable()
+      .integer()
+      .round()
+      .cast(null)).to.equal(null)
   })
 
   it('should handle DEFAULT', function(){
@@ -77,7 +82,7 @@ describe('Number types', function(){
       v.isValid(new Date).should.eventually.equal(true),
 
       v.isValid(null).should.eventually.equal(false), // -> NaN fails type check
-      
+
       v.nullable().isValid(null).should.eventually.equal(true),
     ])
   })

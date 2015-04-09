@@ -31,8 +31,15 @@ describe('String types', function(){
     chai.expect(inst.cast()).to.equal(undefined)
 
     inst.trim().cast(' 3  ').should.equal('3')
+
     inst.lowercase().cast('HellO JohN').should.equal('hello john')
     inst.uppercase().cast('HellO JohN').should.equal('HELLO JOHN')
+
+    chai.expect(inst.nullable()
+      .trim()
+      .lowercase()
+      .uppercase()
+      .cast(null)).to.equal(null)
   })
 
   it('should handle DEFAULT', function(){

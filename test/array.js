@@ -24,6 +24,10 @@ describe('Array types', function(){
 
     chai.expect(
       inst.cast(null)).to.equal(null)
+
+    chai.expect(inst.nullable()
+      .compact()
+      .cast(null)).to.equal(null)
   })
 
   it('should handle DEFAULT', function(){

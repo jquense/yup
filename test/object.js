@@ -262,6 +262,10 @@ describe('Object types', function(){
 
     inst.cast({ CON_STAT: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ conStat: 5, caseStatus: 6, hiJohn: 4 })
+
+    chai.expect(inst
+      .nullable()
+      .cast(null)).to.equal(null)
   })
 
   it('should CONSTANT_CASE keys', function(){
@@ -274,6 +278,10 @@ describe('Object types', function(){
 
     inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })
+
+    chai.expect(inst
+      .nullable()
+      .cast(null)).to.equal(null)
   })
 
 

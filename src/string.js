@@ -53,7 +53,7 @@ inherits(StringSchema, MixedSchema, {
 
     return this.validation(
         { message: msg, params: { regex: regex } }
-      , value => regex.test(value))
+      , value => value == null || regex.test(value))
   },
 
   email(msg){
@@ -73,23 +73,23 @@ inherits(StringSchema, MixedSchema, {
     msg = msg || locale.trim
 
     return this
-      .transform( v => v.trim())
-      .validation(msg, val => val === val.trim())
+      .transform( val => val != null ? val.trim() : val)
+      .validation(msg, val => val == null || val === val.trim())
   },
 
   lowercase(msg){
     msg = msg || locale.lowercase
 
     return this
-      .validation(msg, val => val === val.toLowerCase())
-      .transform(v => v.toLowerCase())
+      .transform(val => val != null ? val.toLowerCase() : val)
+      .validation(msg, val => val == null || val === val.toLowerCase())
   },
 
   uppercase(msg){
     msg = msg || locale.uppercase
 
     return this
-      .validation(msg, val => val === val.toUpperCase())
-      .transform(v => v.toUpperCase())
+      .transform(val => val != null ? val.toUpperCase(): val)
+      .validation(msg, val => val == null || val === val.toUpperCase())
   }
 })

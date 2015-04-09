@@ -44,8 +44,8 @@ inherits(ArraySchema, MixedSchema, {
 
     return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
       .then(function(value){
-
-        if ( !subType || !Array.isArray(value) ) return value
+        
+        if ( !subType || !schema._typeCheck(value) ) return value
 
         return Promise
           .all(value.map((item, key) => {
@@ -90,6 +90,6 @@ inherits(ArraySchema, MixedSchema, {
       ? v => !!v 
       : (v, i, a) => !rejector(v, i, a);
 
-    return this.transform(values => values.filter(reject))
+    return this.transform(values => values != null ? values.filter(reject) : values)
   }
 })
