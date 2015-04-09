@@ -86,7 +86,10 @@ describe('String types', function(){
     return Promise.all([
       v.isValid('hiiofff').should.eventually.equal(true),
       v.isValid('big').should.eventually.equal(false),
-      v.isValid('noffasfasfasf saf').should.eventually.equal(true)
+      v.isValid('noffasfasfasf saf').should.eventually.equal(true),
+
+      v.isValid(null).should.eventually.equal(false), // null -> ''
+      v.nullable().isValid(null).should.eventually.equal(true) // null -> null
     ])
 
   })
@@ -101,6 +104,9 @@ describe('String types', function(){
 
       v.isValid(5).should.eventually.equal(true),
       v.isValid(new Date).should.eventually.equal(false),
+
+      v.isValid(null).should.eventually.equal(true),
+      v.nullable().isValid(null).should.eventually.equal(true),
     ])
   })
 

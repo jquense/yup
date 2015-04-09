@@ -74,7 +74,11 @@ describe('Number types', function(){
       v.isValid(7).should.eventually.equal(true),
       v.isValid(2).should.eventually.equal(false),
       v.isValid(35738787838).should.eventually.equal(true),
-      v.isValid(new Date).should.eventually.equal(true)
+      v.isValid(new Date).should.eventually.equal(true),
+
+      v.isValid(null).should.eventually.equal(false), // -> NaN fails type check
+      
+      v.nullable().isValid(null).should.eventually.equal(true),
     ])
   })
 
@@ -88,6 +92,10 @@ describe('Number types', function(){
 
       v.isValid(false).should.eventually.equal(true),
       v.isValid(new Date).should.eventually.equal(false),
+
+      v.isValid(null).should.eventually.equal(false), // null -> NaN fails type check
+
+      v.nullable().isValid(null).should.eventually.equal(true),
     ])
   })
 

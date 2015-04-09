@@ -34,13 +34,13 @@ inherits(NumberSchema, SchemaObject, {
   min(min, msg) {
     return this.validation(
         { hashKey: 'min', params: { min: min }, message: msg || locale.min }
-      , value => value >= min)
+      , value => value == null || value >= min)
   },
 
   max(max, msg) {
     return this.validation(
         { hashKey: 'max', params: { max: max }, message: msg || locale.max }
-      , value => value <= max)
+      , value => value == null || value <= max)
   },
 
   positive(max, msg) {

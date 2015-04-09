@@ -29,7 +29,7 @@ inherits(StringSchema, MixedSchema, {
 
   required(msg){
     return this.validation(
-      {  hashKey: 'required',  message:  msg || locale.required },
+      { hashKey: 'required', message:  msg || locale.required },
       value => value && !!value.length)
   },
 
@@ -37,15 +37,15 @@ inherits(StringSchema, MixedSchema, {
     msg = msg || locale.min
 
     return this.validation(
-        { message: msg, hashKey: 'min', params: { min: min } }
-      , value => value && value.length >= min)
+        { hashKey: 'min', message: msg, params: { min: min } }
+      , value => value == null || value.length >= min)
   },
 
   max(max, msg){
     msg = msg || locale.max
     return this.validation(
-        { message: msg, hashKey: 'max', params: { max: max } }
-      , value => value && value.length <= max)
+        { hashKey: 'max', message: msg, params: { max: max } }
+      , value => value == null || value.length <= max)
   },
 
   matches(regex, msg){
