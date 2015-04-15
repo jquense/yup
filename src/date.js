@@ -39,9 +39,13 @@ inherits(DateSchema, MixedSchema, {
     if(!this.isType(limit))
       throw new TypeError('min must be a Date or a value that can be parsed to a Date')
 
-    return this.validation(
-        { name: 'min', exclusive: true, message: msg, params: { min: min } }
-      , value => value && (value >= limit))
+    return this.test({ 
+      name: 'min', 
+      exclusive: true, 
+      message: msg, 
+      params: { min: min },
+      test: value => value && (value >= limit)
+    })
   },
 
   max(max, msg){
@@ -50,9 +54,13 @@ inherits(DateSchema, MixedSchema, {
     if(!this.isType(limit))
       throw new TypeError('max must be a Date or a value that can be parsed to a Date')
 
-    return this.validation(
-        { name: 'max', exclusive: true, message: msg || locale.max, params: { max: max } }
-      , value => !value || (value <= limit))
+    return this.test({ 
+      name: 'max',
+      exclusive: true, 
+      message: msg || locale.max, 
+      params: { max: max },
+      test: value => !value || (value <= limit)
+    })
   }
 
 })

@@ -7,7 +7,6 @@ var MixedSchema = require('./mixed')
   , c = require('case')
   , { 
     isObject
-  , isPlainObject
   , transform
   , assign
   , inherits
@@ -99,7 +98,6 @@ inherits(ObjectSchema, MixedSchema, {
     return MixedSchema.prototype._validate
       .call(this, _value, _opts, _state)
       .then((value) => {
-        //console.log('validate ', value)
         if(!isObject(value)) // only iterate though actual objects
           return value
 

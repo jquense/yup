@@ -64,25 +64,33 @@ inherits(ArraySchema, MixedSchema, {
     return next
   },
 
-  required(msg){
-    return this.validation(
-        { name: 'required', exclusive: true, message: msg || mixed.required }
-      , value => value && value.length > 0)
+  required(msg) {
+    var next = MixedSchema.prototype.required.call(this, msg || mixed.required);
+
+    return next.min(1, msg || mixed.required);
   },
 
-  min(min, msg){
-    msg = msg || locale.min
+  min(min, message){
+    message = message || locale.min
 
-    return this.validation(
-        { message: msg, hashKey: 'min', params: { min: min } }
-      , value => value && value.length >= min)
+    return this.test({ 
+      message, 
+      name: 'min', 
+      exclusive: true,
+      params: { min }, 
+      test: value => value && value.length >= min
+    })
   },
 
-  max(max, msg){
-    msg = msg || locale.max
-    return this.validation(
-        { message: msg, hashKey: 'max', params: { max: max } }
-      , value => value && value.length <= max)
+  max(max, message){
+    message = message || locale.max
+    return this.test({ 
+      message,
+      name: 'max',  
+      exclusive: true,
+      params: { max },
+      test: value => value && value.length <= max 
+    })
   },
 
   compact(rejector){

@@ -9,6 +9,8 @@ var interpolate = require('./util/interpolate')
   , cloneDeep = require('./util/clone')
   , BadSet = require('./util/set');
 
+
+
 module.exports = SchemaType
 
 function SchemaType(options = {}){
@@ -17,11 +19,11 @@ function SchemaType(options = {}){
 
   this._deps        = []
   this._conditions  = []
-  this._options     = {}
+  this._options     = { abortEarly: true }
   this._exclusive   = Object.create(null)
   this._whitelist   = new BadSet()
   this._blacklist   = new BadSet()
-  this.validations  = []
+  this.tests        = []
   this.transforms   = []
 
   if (_.has(options, 'default'))
@@ -41,14 +43,17 @@ SchemaType.prototype = {
   },
 
   concat(schema){
+    if( schema._type !== this._type )
+      throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
+
     var next = _.merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
-    if ( _.has(schema, '_default') && schema._default === undefined )
+    if ( schema._default === undefined && _.has(schema, '_default') )
       next._default = schema._default
 
-    // trim exclusive validations, take the most recent ones
-    next.validations = _.uniq(next.validations.reverse(), 
+    // trim exclusive tests, take the most recent ones
+    next.tests = _.uniq(next.tests.reverse(), 
       (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
 
     return next
@@ -65,16 +70,14 @@ SchemaType.prototype = {
   },
 
   _cast(_value) {
-    var value = this._coerce && _value !== undefined 
-          ? this._coerce(_value) 
-          : _value
+    let value = _value === undefined ? _value
+      : this.transforms.reduce(
+          (value, transform) => transform.call(this, value, _value), _value)
 
     if( value === undefined && _.has(this, '_default') )
       value = this.default()
 
-    return value === undefined ? value
-      : this.transforms.reduce(
-          (value, transform) => transform.call(this, value, _value), value)
+    return value
   },
 
   _resolve(context){
@@ -86,16 +89,17 @@ SchemaType.prototype = {
     }, schema)
   },
 
-  //-- validations
+  //-- tests
   _validate(value, _opts, _state) {
     var valids   = this._whitelist
       , invalids = this._blacklist
       , context  = (_opts || {}).context || _state.parent
-      , schema, valid, state, isStrict;
+      , schema, valid, state, endEarly, isStrict;
 
     state    = _state
     schema   = this._resolve(context)
     isStrict = schema._option('strict', _opts)
+    endEarly = schema._option('abortEarly', _opts)
 
     !state.path && (state.path = 'this')
 
@@ -104,7 +108,7 @@ SchemaType.prototype = {
     if( !state.isCast && !isStrict )
       value = schema._cast(value, _opts)
 
-    if ( value !== undefined && !schema.isType(value) ){
+    if( value !== undefined && !schema.isType(value) ){
       errors.push(`value: ${value} must be a ${schema._type} type`)
       return Promise.reject(new ValidationError(errors))
     }
@@ -114,19 +118,26 @@ SchemaType.prototype = {
 
       if( !valid ) 
         return Promise.reject(new ValidationError(errors.concat(
-            schema._whitelistError({ values: valids.values().join(', '), ...state }))
+            schema._whitelistError({ values: valids.values().join(', '), path: state.path }))
           ))
     }
 
     if( invalids.has(value) ) {
       return Promise.reject(new ValidationError(errors.concat(
-          schema._blacklistError({ values: invalids.values().join(', '), ...state }))
+          schema._blacklistError({ values: invalids.values().join(', '), path: state.path }))
         ))
     }
 
-    return Promise
-      .all(schema.validations.map(fn => fn.call(schema, value, state)))
-      .then(() => {
+    let result = schema.tests.map(fn => fn.call(schema, value, state))
+
+    result = endEarly
+      ? Promise.all(result)
+      : _.settled(result).then( results => {
+        errors = results.reduce( 
+          (arr, r) => !r.fulfilled ? arr.concat([ r.value.errors ]) : arr, errors)
+      })
+
+    return result.then(() => {
         if ( errors.length ) 
           throw new ValidationError(errors)
 
@@ -173,9 +184,12 @@ SchemaType.prototype = {
   },
 
   required(msg) {
-    return this.validation(
-      { name: 'required', exclusive: true, message:  msg || locale.required },
-      value => value !== undefined && this.isType(value))
+    return this.test({ 
+      name: 'required', 
+      exclusive: true, 
+      message:  msg || locale.required,
+      test: value => value != null 
+    })
   },
 
   nullable(value) {
@@ -190,16 +204,16 @@ SchemaType.prototype = {
     return next
   },
 
-  validation(message, validator, passInDoneCallback) {
-    var opts = message
+  test(name, message, test, useCallback) {
+    var opts = name
       , next = this.clone()
       , errorMsg, isExclusive;
 
-    if(typeof message === 'string')
-      opts = { message, exclusive: false, name: validator.name || undefined }
+    if(typeof name === 'string')
+      opts = { name, test, message, useCallback, exclusive: false }
 
     if( next._whitelist.length )
-      throw new TypeError('Cannot add validations when specific valid values are specified')
+      throw new TypeError('Cannot add tests when specific valid values are specified')
 
     errorMsg = interpolate(opts.message)
     isExclusive = opts.name && next._exclusive[opts.name] === true
@@ -213,17 +227,17 @@ SchemaType.prototype = {
     }
 
     if( isExclusive )
-      next.validations = next.validations.filter( fn => fn.VALIDATION_KEY !== opts.name)
+      next.tests = next.tests.filter( fn => fn.VALIDATION_KEY !== opts.name)
 
-    next.validations.push(validate)
+    next.tests.push(validate)
 
     return next
 
     function validate(value, state) {
       return new Promise((resolve, reject) => {
-        !passInDoneCallback
-          ? resolve(validator.call(this, value))
-          : validator.call(this, value, (err, valid) => err ? reject(err) : resolve(valid))
+        !opts.useCallback
+          ? resolve(opts.test.call(this, value))
+          : opts.test.call(this, value, (err, valid) => err ? reject(err) : resolve(valid))
       })
       .then(valid => {
         if (!valid) 
@@ -243,7 +257,7 @@ SchemaType.prototype = {
   oneOf(enums, msg) {
     var next = this.clone()
 
-    if( next.validations.length )
+    if( next.tests.length )
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
     next._whitelistError = interpolate(msg || next._whitelistError || locale.oneOf)
@@ -283,6 +297,7 @@ for( var method in aliases ) if ( _.has(aliases, method) )
   aliases[method].forEach(
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method])
   
+
 
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise

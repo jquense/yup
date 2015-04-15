@@ -1,3 +1,4 @@
+var Promise = require('es6-promise').Promise;
 
 let toString = Object.prototype.toString
 
@@ -9,6 +10,14 @@ let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
 let isSchema = obj => obj && obj.__isYupSchema__
 
+
+function settled(promises){
+  let settle = promise => promise.then( 
+    value => ({ fulfilled: true, value }), 
+    value => ({ fulfilled: false, value }))
+
+  return Promise.all(promises.map(settle))
+}
 
 function assign(target) {
   for (var i = 1; i < arguments.length; i++) {
@@ -25,7 +34,7 @@ function uniq(arr, iter){
   var seen = {}
   
   return arr.filter( (item, idx) => {
-    var key = iter(item,idx)
+    var key = iter(item, idx)
 
     if ( has(seen, key) ) return false
     return seen[key] = true
@@ -94,5 +103,5 @@ function inherits(ctor, superCtor, spec) {
 }
 
 module.exports = {
-  inherits, uniq, has, assign, merge, transform, isSchema, isObject, isPlainObject, isDate
+  inherits, uniq, has, assign, merge, transform, isSchema, isObject, isPlainObject, isDate, settled
 }

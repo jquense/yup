@@ -171,7 +171,7 @@ describe('Object types', function(){
           other: mixed()
         })
 
-    inst = inst.validation('${path} oops', function(value){
+    inst = inst.test('test', '${path} oops', function(){
       return false
     })
 

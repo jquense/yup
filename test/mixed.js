@@ -28,6 +28,11 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
+  it('cast should return a default is empty', function(){
+    var inst = mixed().default('hello')
+
+    return inst.cast().should.equal('hello')
+  })
 
   it('should limit values', function(){
     var inst = mixed().oneOf(['hello', 5])
@@ -68,38 +73,55 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
-  it('should respect exclusive validation', function(){
-    var inst = mixed()
-      .validation({ msg: 'invalid', exclusive: true, name: 'test'}, function(){})
-      .validation({ msg: 'also invalid', name: 'test'}, function(){})
+  it('should respect abortEarly', function(){
+    var inst = string().trim().min(10)
 
-    inst.validations.length.should.equal(1)
+    return Promise.all([
 
-    inst = mixed()
-      .validation({ msg: 'invalid', name: 'test'}, function(){})
-      .validation({ msg: 'also invalid', name: 'test'}, function(){})
+      inst.strict().validate(' hi ').should.be.rejected
+        .then(function(err){
+          err.errors.length.should.equal(1)
+        }),
 
-    inst.validations.length.should.equal(2) 
+      inst.strict().validate(' hi ', { abortEarly: false }).should.be.rejected
+        .then(function(err){
+          err.errors.length.should.equal(2)
+        })
+    ])
   })
 
-  it('exclusive validations should throw without a name', function(){
+  it('should respect exclusive validation', function(){
+    var inst = mixed()
+      .test({ msg: 'invalid', exclusive: true, name: 'test'}, function(){})
+      .test({ msg: 'also invalid', name: 'test'}, function(){})
+
+    inst.tests.length.should.equal(1)
+
+    inst = mixed()
+      .test({ msg: 'invalid', name: 'test'}, function(){})
+      .test({ msg: 'also invalid', name: 'test'}, function(){})
+
+    inst.tests.length.should.equal(2) 
+  })
+
+  it('exclusive tests should throw without a name', function(){
     ;(function(){ 
-      mixed().validation({ msg: 'invalid', exclusive: true }, function(){})
+      mixed().test({ message: 'invalid', exclusive: true, test: function(){} })
     }).should.throw() 
   })
 
-  it('exclusive validations should replace previous ones', function(){
-    var inst = mixed().validation({ message: 'invalid', exclusive: true, name: 'max'}, function(v){ 
+  it('exclusive tests should replace previous ones', function(){
+    var inst = mixed().test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){ 
       return v < 5 
-    })
+    }})
 
     return Promise.all([
 
       inst.isValid(8).should.eventually.become(false),
 
-      inst.validation({ message: 'invalid', exclusive: true, name: 'max'}, function(v){ 
+      inst.test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){ 
           return v < 10 
-        })
+        }})
         .isValid(8).should.eventually.become(true)
     ]) 
   })
@@ -107,10 +129,10 @@ describe( 'Mixed Types ', function(){
 
   it('should allow custom validation of either style', function(){
     var inst = string()
-      .validation('test a', function(val){
+      .test('name', 'test a', function(val){
         return Promise.resolve(val === 'jim')
       })
-      .validation('test b', function(val, done){
+      .test('name', 'test b', function(val, done){
         process.nextTick(function(){
           done(null, val !== 'jim')
         })   
@@ -157,8 +179,8 @@ describe( 'Mixed Types ', function(){
       })
     }))
 
-    reach(next, 'str').validations.length.should.equal(2) // presence and length
-    reach(next, 'str').validations[0].VALIDATION_KEY.should.equal('required') // make sure they are in the right order
+    reach(next, 'str').tests.length.should.equal(3) // presence, min and trim
+    reach(next, 'str').tests[0].VALIDATION_KEY.should.equal('required') // make sure they are in the right order
 
     return Promise.all([
 
@@ -177,6 +199,30 @@ describe( 'Mixed Types ', function(){
       })
     ])
 
+  })
+
+  it('concat should fail on different types', function(){
+    var inst = string().default('hi')
+
+    ;(function(){
+      inst.concat(object())
+    }).should.throw(TypeError)
+  })
+
+  it('concat should maintain undefined defaults', function(){
+    var inst = string().default('hi')
+
+    chai.expect(
+      inst.concat(string().default(undefined)).default()).to.equal(undefined)
+  })
+
+  it('defaults should be validated but not transformed', function(){
+    var inst = string().trim().default('  hi  ')
+
+    return inst.validate(undefined).should.be.rejected
+      .then(function(err){
+        err.message.should.equal('this must be a trimmed string')
+      })
   })
 
   it('should handle conditionals', function(){

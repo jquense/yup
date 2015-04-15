@@ -72,7 +72,6 @@ describe('String types', function(){
 
       inst.validate('').should.be.rejected.then(function(err){
         err.errors.length.should.equal(1)
-        err.errors[0].should.contain('required')
       })
     ])   
   })
@@ -113,14 +112,17 @@ describe('String types', function(){
       v.isValid(new Date).should.eventually.equal(false),
 
       v.isValid(null).should.eventually.equal(true),
-      v.nullable().isValid(null).should.eventually.equal(true),
+
+      v.nullable().isValid(null).should.eventually.equal(true)
     ])
   })
 
   it('should validate transforms', function(){
     return Promise.all([
       string().trim().isValid(' 3  ').should.eventually.equal(true),
+
       string().lowercase().isValid('HellO JohN').should.eventually.equal(true),
+
       string().uppercase().isValid('HellO JohN').should.eventually.equal(true),
 
       string().trim().isValid(' 3  ', { strict: true })

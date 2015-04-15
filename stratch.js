@@ -11,12 +11,16 @@ var NoteSchema = yup.object()
     rBTypeID:    yup.number(),
 
     noteDate:    yup.date()
-      .when('rBType', { is: then:  })
-      .when('subRBTypeID', function(subRBTypeID){
-        if(subRBTypeID == 1) return this.required()
-        return this
+      .when('rBType', { is: 0, then:  })
+      .when('subRBTypeID', val => val === 1 ? this.required() : this
       })
   })
-  
+  .text('date range', 'Date must be between ${start} and ${end}', function(){
+
+  })
+  .text({ message: 'date', params: { start, end }}, function(){
+
+  })
   .when('subRBTypeID')
-    .is('gte').to(0).then('noteDate')
+    .is(0).then('noteDate')
+    .is( v => v >= 0 ).then('noteDate')

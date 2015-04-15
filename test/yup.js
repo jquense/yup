@@ -1,6 +1,8 @@
 'use strict';
 /*global describe, it */
-var chai  = require('chai')
+var Promise = require('es6-promise').Promise
+  , chai  = require('chai')
+  , chaiAsPromised = require('chai-as-promised')
   , reach = require('../lib/util/reach')
   , number = require('../lib/number')
   , array = require('../lib/array')
@@ -8,13 +10,14 @@ var chai  = require('chai')
   , object = require('../lib/object')
   , _ = require('../lib/util/_');
 
+chai.use(chaiAsPromised);
 
 chai.should();
 
 describe('Yup', function(){
 
   it('should export', function(){
-    var yup = require('../lib')
+    require('../lib')
   })
 
   it('should uniq', function(){
@@ -25,15 +28,29 @@ describe('Yup', function(){
       .should.deep.eql([{ a: 1}, { a: 2}, { a: 3}])
   })
 
-  it('should merge', function(){
-    var a = { a: 1, b: 'hello', c: [1,2,3], d: { a: /hi/ }, e: { b: 5} }
+  it('should do settled', function(){
+    return Promise.all([
 
-    var b = { a: 4, c: [4,5,3], d: { b: 'hello' }, f: { c: 5}, g: null }
+      _.settled([Promise.resolve('hi'), Promise.reject('error')]).should.be.fulfilled
+        .then(function (results) {
+          results.length.should.equal(2)
+          results[0].fulfilled.should.equal(true)
+          results[0].value.should.equal('hi')
+          results[1].fulfilled.should.equal(false)
+          results[1].value.should.equal('error')
+        })
+    ])
+  })
+
+  it('should merge', function(){
+    var a = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5} }
+
+    var b = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5}, g: null }
 
     _.merge(a, b).should.deep.eql({ 
       a: 4, 
       b: 'hello', 
-      c: [1,2,3, 4,5,3], 
+      c: [1, 2, 3, 4, 5, 3], 
       d: { 
         a: /hi/,
         b: 'hello'

@@ -21,12 +21,7 @@ function BooleanSchema(){
 
 inherits(BooleanSchema, MixedSchema, {
 
-  _typeCheck: isBool,
-
-  _coerce(value) {
-    if ( this.isType(value) ) return value
-    return (/true|1/i).test(value)
-  }
+  _typeCheck: isBool
 
 })
 

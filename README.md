@@ -1,9 +1,9 @@
 Yup
 =======================
 
-Yup is a js object schema validator. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but generally too big and feature rich for general browser use. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+Yup is a js object schema validator and object parser. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but is often too large and diffucult to package for use in a browser. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
-Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property.
+Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property. Yup also also seperates the parsing and validating functions into seperate steps so it can be used to parse json seperate from validating it, via the `cast` method.
 
 ## Changes in 0.6.0
 
@@ -110,11 +110,11 @@ schema.isValid(undefined, function(valid){
 
 #### `mixed.clone()`
 
-Creates a new instance of the schema. Clone is used internally to return a new schema with every schema state change. 
+Creates a deep copy of the schema. Clone is used internally to return a new schema with every schema state change. 
 
 #### `mixed.concat(schema)`
 
-Creates a new instance of the schema by combining two schemas.
+Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
 #### `mixed.validate(value, [options, callback])`
 
@@ -156,7 +156,8 @@ Node style callbacks, then you can provide one to be called when the validation 
 
 The `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
 
-- `strict` -> boolean: default `false`
+- `strict` -> boolean: default `false`, only validate the input, and skip and coercion or transformation
+- `abortEarly` -> boolean: default `true`, return from validation methods on the first error rather than after all validations run.
 - `context` -> an object hash containing any context for validating schema conditions (see: `when()`)
 
 #### `mixed.cast(value)`
@@ -169,11 +170,11 @@ Runs a type check against the passed in `value`. It returns true if it matches, 
 
 #### `mixed.strict()` (default: `false`)
 
-Sets the `strict` option to `true`, telling the schema to not try and cast the passed in value before validating it.
+Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts, validating the value "as is".
 
 #### `mixed.default(value)`
 
-Sets a default value to use when the value is `undefined`. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable). Defaults are created after transformations are executed, but before validations, to help ensure that safe defaults are specified. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
 
 ```js
   yup.string.default('nothing');
@@ -242,19 +243,19 @@ var inst = yup.object({
 
 __note: because `when` conditions must be resolved during `cast()`, a synchronous api, `is` cannot be a schema object as checking schema validity it is asynchronous__
 
-#### `mixed.validation(message, fn, [callbackStyleAsync])`
+#### `mixed.test(name, message, fn, [callbackStyleAsync])` 
 
-Adds a validation function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. The validation function should either return `true` or `false` directly, or return a promsie that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
+Adds a test function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. All validations must provide a `name`, an error `message` and a validation function that must return `true` or `false`, or return a promise that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
 
 for the `message` argument you can provide a string which is will interpolate certain keys if specified, all validations are given a `path` value which indicates location.
 
 ```javascript
-var schema = yup.mixed().validation('${path} is invalid!', function(value){
+var schema = yup.mixed().test('${path} is invalid!', function(value){
   return value !== 'jimmy' //or return a Promise here
 });
 
 //or callback style
-var schema = yup.mixed().validation('${path} is invalid!', function(value, done){
+var schema = yup.mixed().test('${path} is invalid!', function(value, done){
   done(null, value !== 'jimmy') //error is for exceptions, not an invalid value
 }, true);
 
@@ -262,6 +263,29 @@ schema.isValid('jimmy') //=> true
 
 schema.isValid('john') //=> false
 schema.errors // => [ 'this is invalid!']
+```
+
+For more advanced validations you can use the alternate signature to provide more options:
+
+#### `mixed.test(options)`
+
+Alternative `test(..)` signature. `options` is an object containing some of the following options:
+
+- `name`: string, all validations must have a name.
+- `test`: function(value), the validator run against the value, should return `true` or `false` or a promise that resolves to `true` or `false`
+- `message`: string, validation error message
+- `params`: object, passed to message for interpolation
+- `exclusive`: boolean (default false), when true, there can only be one active `test` of the same name on a schema, validations of the same name will replace previous ones. when `false` the validations will stack. e.g. `max` is an exclusive validation, whereas the string `matches` is not
+- `useCallback`: boolean (default `false`), use the callback interface for asynchrony instead of promises
+
+```javascript
+var schema = yup.mixed().test({ 
+      name: 'max', 
+      exclusive: true,
+      params: { max },
+      message: '${path} must be less than ${max} characters',
+      test: value => value == null || value.length <= max
+    });
 ```
 
 #### `mixed.transform(fn)`
@@ -285,6 +309,10 @@ Define a string schema. Supports all the same methods as [`mixed`](#mixed).
 var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
+
+#### `string.required([message])`
+
+The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values. To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
 #### `string.min(limit, [message])`
 
@@ -403,7 +431,11 @@ schema.cast(['2', '3'])  //=> [2, 3]
 
 ### `array.of(type)`
 
-Specify the schema of array elements. It can be any schemaType, and is not required.
+Specify the schema of array elements. `of()` is optional and when ommited the array schema will not validate its contents.
+
+#### `array.required([message])`
+
+The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values. To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
 #### `array.min(limit, [message])`
 
@@ -472,17 +504,17 @@ Transforms all object keys to CONSTANT_CASE.
 
 ## Extending Schema Types
 
-The simplest way to extend an existing type is just to cache a configured schema and use that through yuor application.
+The simplest way to extend an existing type is just to cache a configured schema and use that through your application.
 
 ```js
   var yup = require('yup');
-  var parseFormats = [ 'MMM dd, yyy']
+  var parseFormats = ['MMM dd, yyy']
   var invalidDate = new Date('');
   
   module.exports = yup.date()
     .transform(function(vale, originalValue){
         if ( this.isType(value) ) return value 
-        //the default transform failed so lets try it with Moment instead
+        //the default coercion transform failed so lets try it with Moment instead
         value = Moment(originalValue, parseFormats)
         return date.isValid() ? date.toDate() : invalidDate
     })

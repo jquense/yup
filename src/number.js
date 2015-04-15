@@ -26,15 +26,23 @@ inherits(NumberSchema, SchemaObject, {
   },
 
   min(min, msg) {
-    return this.validation(
-        { name: 'min', exclusive: true, params: { min: min }, message: msg || locale.min }
-      , value => value == null || value >= min)
+    return this.test({ 
+      name: 'min', 
+      exclusive: true, 
+      params: { min }, 
+      message: msg || locale.min,
+      test: value => value == null || value >= min 
+    })
   },
 
   max(max, msg) {
-    return this.validation(
-        { name: 'max', exclusive: true, params: { max: max }, message: msg || locale.max }
-      , value => value == null || value <= max)
+    return this.test({ 
+      name: 'max', 
+      exclusive: true, 
+      params: { max }, 
+      message: msg || locale.max,
+      test: value => value == null || value <= max
+    })
   },
 
   positive(max, msg) {
@@ -50,7 +58,7 @@ inherits(NumberSchema, SchemaObject, {
 
     return this
       .transform( v => v != null ? (v | 0) : v)
-      .validation(msg, val => val === (val | 0))
+      .test('integer', msg, val => val === (val | 0))
   },
 
   round(method){
