@@ -172,18 +172,22 @@ Sets a default value to use when the value is `undefined` (or `null` when the sc
 
 ```
 
+#### `mixed.typeError(message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')
+
+Define an error message for failed type checks. The `${value}` and `${type}` interpolation can be used in the `message` argument.
+
 #### `mixed.nullable(isNullable)` (default: `false`)
 
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
 `null` is treated as a different type and will fail `isType()` checks.
 
-#### `mixed.required([msg])`
+#### `mixed.required([message])`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
-#### `mixed.oneOf(arrayOfValues)` Alias: `equals`
+#### `mixed.oneOf(arrayOfValues, [message])` Alias: `equals`
 
-Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
+Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it. The `${values}` interpolation can be used in the `message` argument.
 
 ```javascript
 var schema = yup.mixed().oneOf(['jimmy', 42]);
@@ -192,9 +196,9 @@ schema.isValid('jimmy')  //=> true
 schema.isValid(new Date) //=> false
 ```
 
-#### `mixed.notOneOf(arrayOfValues)`
+#### `mixed.notOneOf(arrayOfValues, [message])`
 
-Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
+Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it. The `${values}` interpolation can be used in the `message` argument.
 
 ```javascript
 var schema = yup.mixed().notOneOf(['jimmy', 42]);
@@ -526,7 +530,12 @@ The simplest way to extend an existing type is just to cache a configured schema
     })
 ```
 
-Alternatively, each schema is a normal javascript constructor function that you can mutate or delegate to using the normal methods. Generally you should not inherit from `mixed` unless you know what you are doing, better to think of it as an abastract class. The other types are fair game though.
+Alternatively, each schema is a normal javascript constructor function that you can mutate or delegate to using the normal patterns. Generally you should not inherit from `mixed` unless you know what you are doing, better to think of it as an abstract class. The other types are fair game though.
+
+You should keep in mind some basic guidelines when extending schemas
+  - never mutate an existing schema, always `clone()` and then mutate the new one before returning it. Built-in methods like `test` and `transform` take care of this for you, so you can safely use them (see below) without worrying
+  - transforms should never mutate the `value` passed in, and should return an invalid object when one exists (`NaN`, `InvalidDate`, etc) instead of `null` for bad values.
+  - by the time validations run the `value` is gaurunteed to be the correct type, however if `nullable` is set then `null` is a valid value for that type, so don't assume that a property or method exists on the value.
 
 __Adjust core Types__
 ```js
@@ -535,6 +544,7 @@ __Adjust core Types__
   yup.date.protoype.format = function(formats, strict){
     if (!formats) throw new Error('must enter a valid format')
 
+    // `transform` will clone the schema for us so no worry of mutation
     return this.transform(function(value, originalValue){
       if ( this.isType(value) ) return value 
       value = Moment(originalValue, formats, strict)

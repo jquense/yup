@@ -25,6 +25,7 @@ function SchemaType(options = {}){
   this._blacklist   = new BadSet()
   this.tests        = []
   this.transforms   = []
+  this._typeError   = interpolate(locale.notType)
 
   if (_.has(options, 'default'))
     this._default = options.default
@@ -94,10 +95,10 @@ SchemaType.prototype = {
 
   //-- tests
   _validate(value, _opts, _state) {
-    var valids   = this._whitelist
+    let valids   = this._whitelist
       , invalids = this._blacklist
       , context  = (_opts || {}).context || _state.parent
-      , schema, valid, state, endEarly, isStrict;
+      , schema, state, endEarly, isStrict;
 
     state    = _state
     schema   = this._resolve(context)
@@ -106,46 +107,44 @@ SchemaType.prototype = {
 
     !state.path && (state.path = 'this')
 
-    var errors = [];
+    let errors = [];
+    let reject = () => Promise.reject(new ValidationError(errors));
 
-    if( !state.isCast && !isStrict )
+    if ( !state.isCast && !isStrict )
       value = schema._cast(value, _opts)
 
-    if( value !== undefined && !schema.isType(value) ){
-      errors.push(interpolate(locale.notType, { value, type: schema._type }))
-      return Promise.reject(new ValidationError(errors))
+    if ( value !== undefined && !schema.isType(value) ){
+      errors.push(schema._typeError({ value, type: schema._type, path: state.path }))
+      if ( endEarly ) return reject()
     }
 
-    if( valids.length ) {
-      valid = valids.has(value)
-
-      if( !valid ) 
-        return Promise.reject(new ValidationError(errors.concat(
-            schema._whitelistError({ values: valids.values().join(', '), path: state.path }))
-          ))
+    if ( valids.length && !valids.has(value) ) {
+      errors.push(schema._whitelistError(valids.values(), state.path))
+      if ( endEarly ) return reject()
     }
 
-    if( invalids.has(value) ) {
-      return Promise.reject(new ValidationError(errors.concat(
-          schema._blacklistError({ values: invalids.values().join(', '), path: state.path }))
-        ))
+    if ( invalids.has(value) ){
+      errors.push(schema._blacklistError(invalids.values(), state.path))
+      if ( endEarly ) return reject()
     }
+    
+    // It makes no sense to validate further at this point
+    if ( errors.length )
+      return reject()
 
     let result = schema.tests.map(fn => fn.call(schema, value, state))
 
     result = endEarly
       ? Promise.all(result)
       : _.settled(result).then( results => {
-        errors = results.reduce( 
-          (arr, r) => !r.fulfilled ? arr.concat([ r.value.errors ]) : arr, errors)
-      })
+          let errors = results.reduce(
+            (arr, r) => !r.fulfilled ? arr.concat([ r.value.errors ]) : arr, [])
 
-    return result.then(() => {
-        if ( errors.length ) 
-          throw new ValidationError(errors)
+          if ( errors.length ) 
+            throw new ValidationError(errors)
+        })
 
-        return value
-      });
+    return result.then(() => value);
   },
 
   validate(value, options, cb){
@@ -195,14 +194,11 @@ SchemaType.prototype = {
     })
   },
 
-  // optional() {
-  //   return this.test({ 
-  //     name: 'required', 
-  //     exclusive: true, 
-  //     message:  '',
-  //     test: () => true
-  //   })
-  // },
+  typeError(msg){
+    var next = this.clone()
+    next._typeError = interpolate(msg)
+    return next
+  },
 
   nullable(value) {
     var next = this.clone()
@@ -272,7 +268,8 @@ SchemaType.prototype = {
     if( next.tests.length )
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
-    next._whitelistError = interpolate(msg || locale.oneOf)
+    next._whitelistError = (valids, path) => 
+      interpolate(msg || locale.oneOf, { values: valids.join(', '), path })
 
     enums.forEach( val => {
       next._blacklist.delete(val)
@@ -285,7 +282,8 @@ SchemaType.prototype = {
   notOneOf(enums, msg) {
     var next = this.clone()
 
-    next._blacklistError = interpolate(msg || locale.notOneOf)
+    next._blacklistError = (invalids, path) => 
+      interpolate(msg || locale.notOneOf, { values: invalids.join(', '), path })
 
     enums.forEach( val => {
       next._whitelist.delete(val)
@@ -305,9 +303,10 @@ var aliases = {
   oneOf: ['equals']
 }
 
-for( var method in aliases ) if ( _.has(aliases, method) )
-  aliases[method].forEach(
-    alias => SchemaType.prototype[alias] = SchemaType.prototype[method])
+
+for( var method in aliases ) if ( _.has(aliases, method) ) 
+  aliases[method].forEach( 
+    alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
   
 
 
