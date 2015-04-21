@@ -56,3 +56,6 @@ gulp.task('mocha', function () {
     return gulp.src('test.js', { read: false })
         .pipe(mocha({ reporter: 'spec' }));
 })
+
+
+gulp.task('publish', ['compile'], require('rf-release'))

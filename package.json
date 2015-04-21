@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "gulp-plumber": "^0.6.5",
     "gulp-rename": "^1.2.2",
     "mocha": "^1.21.4",
+    "rf-release": "git://github.com/jquense/rf-release",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
