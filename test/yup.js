@@ -6,7 +6,6 @@ var Promise = require('es6-promise').Promise
   , reach = require('../lib/util/reach')
   , number = require('../lib/number')
   , array = require('../lib/array')
-  , bool = require('../lib/boolean')
   , object = require('../lib/object')
   , _ = require('../lib/util/_');
 
@@ -74,13 +73,14 @@ describe('Yup', function(){
         })
       })
 
+    reach(inst, 'nested.arr.num').should.equal(num)
     reach(inst, 'nested.arr[].num').should.equal(num)
     reach(inst, 'nested.arr[1].num').should.equal(num)
-    reach(inst, 'nested.arr[1].num').should.not.equal(number())
+    reach(inst, 'nested["arr"][1].num').should.not.equal(number())
 
-    reach(inst, 'nested.arr[].num').isValid(5, function(err, valid) {
+    reach(inst, 'nested.arr[].num').isValid(5, function (err, valid) {
       valid.should.equal(true)
-      done()
+      done(err)
     })
   })
 

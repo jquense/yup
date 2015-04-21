@@ -43,6 +43,9 @@ SchemaType.prototype = {
   },
 
   concat(schema){
+    if (!schema) 
+      return this
+
     if( schema._type !== this._type )
       throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
 
@@ -109,7 +112,7 @@ SchemaType.prototype = {
       value = schema._cast(value, _opts)
 
     if( value !== undefined && !schema.isType(value) ){
-      errors.push(`value: ${value} must be a ${schema._type} type`)
+      errors.push(interpolate(locale.notType, { value, type: schema._type }))
       return Promise.reject(new ValidationError(errors))
     }
 
@@ -192,6 +195,15 @@ SchemaType.prototype = {
     })
   },
 
+  // optional() {
+  //   return this.test({ 
+  //     name: 'required', 
+  //     exclusive: true, 
+  //     message:  '',
+  //     test: () => true
+  //   })
+  // },
+
   nullable(value) {
     var next = this.clone()
     next._nullable = value === false ? false : true
@@ -250,7 +262,7 @@ SchemaType.prototype = {
     var next = this.clone();
 
     next._deps.push(key)
-    next._conditions.push(new Condition(key, next, options))
+    next._conditions.push(new Condition(key, next._type, options))
     return next
   },
 
@@ -260,7 +272,7 @@ SchemaType.prototype = {
     if( next.tests.length )
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
-    next._whitelistError = interpolate(msg || next._whitelistError || locale.oneOf)
+    next._whitelistError = interpolate(msg || locale.oneOf)
 
     enums.forEach( val => {
       next._blacklist.delete(val)
@@ -273,7 +285,7 @@ SchemaType.prototype = {
   notOneOf(enums, msg) {
     var next = this.clone()
 
-    next._blacklistError = interpolate(msg || next._blacklistError || locale.notOneOf)
+    next._blacklistError = interpolate(msg || locale.notOneOf)
 
     enums.forEach( val => {
       next._whitelist.delete(val)

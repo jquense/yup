@@ -1,22 +1,19 @@
 'use strict';
+let { forEach } = require('property-expr');
 
-module.exports = function expr(obj, path){
-  var parts = (path || '').split('.')
-    , part, idx;
+let trim = part => part.substr(0, part.length - 1).substr(1)
 
-  while(parts.length) {
-    part = parts.shift()
-
-    if( (idx = part.indexOf('[')) !== -1 )
-      part = part.substr(0, idx)
-
-    if (obj.fields) {
-      obj = obj.fields[part] || {}
-      if(idx !== -1) obj = obj._subType ||{}
-    }
-    else if (obj._subType)
-      obj = obj._subType || {}
-  }
+module.exports = function (obj, path) {
+  forEach(path, (part, isBracket, isArray) => {
+    if( isArray) 
+      obj = obj._subType  
+    else {
+      if (obj._subType) // we skipped an array
+        obj = obj._subType
+  
+      obj = obj.fields[isBracket ? trim(part) : part] 
+    } 
+  })
 
   return obj
 }

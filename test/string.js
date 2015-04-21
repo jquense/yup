@@ -109,7 +109,7 @@ describe('String types', function(){
       v.isValid('no').should.eventually.equal(true),
 
       v.isValid(5).should.eventually.equal(true),
-      v.isValid(new Date).should.eventually.equal(false),
+      v.isValid(new Date()).should.eventually.equal(false),
 
       v.isValid(null).should.eventually.equal(true),
 

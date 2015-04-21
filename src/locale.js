@@ -2,6 +2,7 @@
 
 module.exports = {
   mixed: {
+    notType:   '${path} (value: `${value}`) must be a `${type}` type',
     required:  '${path} is a required field',
     oneOf:     '${path} must be one the following values: ${values}',
     notOneOf:  '${path} must not be one the following values: ${values}'
@@ -39,6 +40,6 @@ module.exports = {
   array: {
     required:  '${path} is a required field',
     min:       '${path} field must have at least ${min} items',
-    max:       '${path} field must have less than ${max} items',
+    max:       '${path} field must have less than ${max} items'
   }
 }

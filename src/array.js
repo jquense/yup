@@ -2,7 +2,7 @@
 var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
   , { mixed, array: locale } = require('./locale.js')
-  , inherits = require('./util/_').inherits;
+  , { inherits } = require('./util/_');
 
 module.exports = ArraySchema
 

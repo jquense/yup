@@ -1,12 +1,12 @@
 'use strict';
-var { has } = require('./_')
+var { has, isSchema } = require('./_')
 
 module.exports = Conditional
 
 class Conditional {
 
-  constructor(key, current, options){
-    var type = current._type;
+  constructor(key, type, options){
+    let { is, then, otherwise } = options;
 
     this.key = key
 
@@ -19,31 +19,20 @@ class Conditional {
       if(  options.then && options.then._type !== type || options.otherwise && options.otherwise._type !== type)
         throw new TypeError('cannot return polymorphic conditionals')
 
-      this.is        = options.is
-      this.then      = options.then
-      this.otherwise = options.otherwise
+      is = typeof is === 'function'
+        ? is : function(is, value) {return is === value}.bind(null, is)
+
+      this.fn = (value, ctx) => is(value) ? ctx.concat(then) : ctx.concat(otherwise)
     }
   }
 
   resolve(ctx, value) {
-    var schema, matches, then, otherwise;
+    let schema = this.fn.call(ctx, value, ctx)
 
-    if( this.fn ) {
-      schema = this.fn.call(ctx, value, ctx)
-      if (schema !== undefined && !schema.__isYupSchema__)
-        throw new TypeError('conditions must return a schema object')
+    if (schema !== undefined && !isSchema(schema))
+      throw new TypeError('conditions must return a schema object')
 
-      return schema || ctx
-    }
-
-    matches = typeof this.is === 'function'
-      ? this.is(value)
-      : this.is === value
-
-    then      = this.then      ? ctx.concat(this.then)      : ctx
-    otherwise = this.otherwise ? ctx.concat(this.otherwise) : ctx
-
-    return matches ? then : otherwise
+    return schema || ctx
   }
 }
 

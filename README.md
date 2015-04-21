@@ -5,21 +5,6 @@ Yup is a js object schema validator and object parser. The api and style is heav
 
 Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property. Yup also also seperates the parsing and validating functions into seperate steps so it can be used to parse json seperate from validating it, via the `cast` method.
 
-## Changes in 0.6.0
-
-__breaking__
-- Removed the `extend` and `create` methods. Use whatever javascript inheritance patterns you want instead.
-- the resolution order of defaults and coercions has changed. as well as the general handling of `null` values.
-  + Number: `null` will coerce to `false` when `nullable()` is not specified. `NaN` values will now fail `isType()` checks
-  + String: `null` will coerce to `''` when `nullable()` is not specified
-  + Date: Invalid dates will not be coerced to `null`, but left as invalid date, This is probably not a problem for anyone as invalid dates will also fail `isType()` checks
-- default values are cloned everytime they are returned, so it is impossible to share references to defaults across schemas. No one should be doing that anyway
-- stopped pretending that using schemas as conditions in `when()` actually worked (it didn't)
-
-__other changes__
-- `transform()` now passes the original value to each transformer. Allowing you to recover from a bad transform.
-- added the `equals()` alias for `oneOf`
-
 ## Usage
 
   - [Yup](#yup-1)
@@ -245,16 +230,19 @@ __note: because `when` conditions must be resolved during `cast()`, a synchronou
 
 #### `mixed.test(name, message, fn, [callbackStyleAsync])` 
 
-Adds a test function to the validation chain. Validations are run after any object is cast. Many types have some validations built in, but you can create custom ones easily. All validations are run asynchronously, as such their order cannot be guaranteed. All validations must provide a `name`, an error `message` and a validation function that must return `true` or `false`, or return a promise that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
+Adds a test function to the validation chain. Tests are run after any object is cast. Many types have some tests built in, but you can create custom ones easily. All tests are run asynchronously so their order cannot be guaranteed. All tests must provide a `name`, an error `message` and a validation function that must return `true` or `false`, or return a promise that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
 
-for the `message` argument you can provide a string which is will interpolate certain keys if specified, all validations are given a `path` value which indicates location.
+for the `message` argument you can provide a string which is will interpolate certain values if specified using the `${param}` syntax. By default all test messages are passed a `path` value which is valuable in nested schemas.
 
 ```javascript
-var schema = yup.mixed().test('${path} is invalid!', function(value){
-  return value !== 'jimmy' //or return a Promise here
-});
+var schema = yup.mixed()
+  .test('${path} is invalid!', value => value !== 'jimmy');
 
-//or callback style
+// or return a promise
+var schema = yup.mixed()
+  .test('${path} is invalid!', value => serverValidate(value));
+
+// or callback style
 var schema = yup.mixed().test('${path} is invalid!', function(value, done){
   done(null, value !== 'jimmy') //error is for exceptions, not an invalid value
 }, true);
@@ -290,15 +278,33 @@ var schema = yup.mixed().test({
 
 #### `mixed.transform(fn)`
 
-Adds a transformation to the transform chain. Transformations are part of the casting process and run after the value is coerced to the type, but before validations. Transformations will not be applied unless `strict` is `true`. Some types have built in transformations. 
+Adds a transformation to the transform chain. Transformations are central to the casting process, default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)). transforms are run before validations and only applied when `strict` is `true`. Some types have built in transformations. 
 
-Transformations are useful for arbitrarily altering how the object is cast. You should take care not to mutate the passed in value if possible.
+Transformations are useful for arbitrarily altering how the object is cast, __however, you should take care not to mutate the passed in value.__ Transforms are run sequentially so each `value` represents the current state of the cast, you can use the `orignalValue` param if you need to work on the raw initial value.
 
 ```javascript
-var schema = yup.string().transform(function(value, originalvalue){
-  return value.toUpperCase()
+var schema = yup.string().transform(function(currentValue, originalvalue){
+  return this.isType(value) && value !== null
+    ? value.toUpperCase() 
+    : value 
 });
+
 schema.cast('jimmy') //=> 'JIMMY'
+```
+
+Each types will handle basic coercion of values to the proper type for you, but occasionally you may want to adjust or refine the default behavior. For example, if you wanted to use a different date parsing strategy than the default one you could do that with a transform.
+
+```js
+yup.date().transform(function(formats = 'MMM dd, yyyy'){
+  //check to see if the previous transform already parsed the date
+  if ( this.isType(value) ) return value 
+
+  //the default coercion failed so lets try it with Moment.js instead
+  value = Moment(originalValue, formats)
+
+  //if its valid return the date object, otherwise return an `InvalidDate`
+  return date.isValid() ? date.toDate() : new Date('')
+})
 ```
 
 ### string
@@ -512,7 +518,7 @@ The simplest way to extend an existing type is just to cache a configured schema
   var invalidDate = new Date('');
   
   module.exports = yup.date()
-    .transform(function(vale, originalValue){
+    .transform(function(value, originalValue){
         if ( this.isType(value) ) return value 
         //the default coercion transform failed so lets try it with Moment instead
         value = Moment(originalValue, parseFormats)
@@ -520,39 +526,47 @@ The simplest way to extend an existing type is just to cache a configured schema
     })
 ```
 
-Alternatively, each schema is a normal javascript constructor function that you can inherit from. Generally you should not inherit from `mixed` unless you know what you are doing, better to think of it as an abastract class. The other types are fair game though.
+Alternatively, each schema is a normal javascript constructor function that you can mutate or delegate to using the normal methods. Generally you should not inherit from `mixed` unless you know what you are doing, better to think of it as an abastract class. The other types are fair game though.
 
+__Adjust core Types__
+```js
+  var invalidDate = new Date('');
+
+  yup.date.protoype.format = function(formats, strict){
+    if (!formats) throw new Error('must enter a valid format')
+
+    return this.transform(function(value, originalValue){
+      if ( this.isType(value) ) return value 
+      value = Moment(originalValue, formats, strict)
+      return date.isValid() ? date.toDate() : invalidDate
+    })
+  }
+```
+
+__Creating new Types__
 ```js
   var inherits = require('inherits')
   var invalidDate = new Date(''); // our failed to coerce value
 
-  var date = function MomentDateSchemaType(){
+  function MomentDateSchemaType(){
     // so we don't need to use the `new` keyword
     if ( !(this instanceof MomentDateSchemaType))
       return new MomentDateSchemaType()
 
     yup.date.call(this)
-
-    this._formats = [];
-    // add to the default transforms
-    this.transforms.push(function(value, originalValue) {
-      if ( this.isType(value) ) // we have a valid value
-        return value 
-
-      //the previous transform failed so lets try it with Moment instead
-      value = Moment(originalValue, this._formats)
-      return value.isValid() ? value.toDate() : invalidDate
-    })
   }
 
   inherits(MomentDateSchemaType, yup.date)
 
-  MomentDateSchemaType.prototype.format(format){
-    if (!format) throw new Error('must enter a valid format')
+  MomentDateSchemaType.prototype.format = function(formats, strict){
+    if (!formats) throw new Error('must enter a valid format')
 
-    var next = this.clone(); //never mutate a schema
-    next._formats = next._formats.concat(format)
-    return next
+    this.transforms.push(function(value, originalValue) {
+      if ( this.isType(value) ) // we have a valid value
+        return value 
+      value = Moment(originalValue, formats, strict)
+      return value.isValid() ? value.toDate() : invalidDate
+    })
   }
 
   var schema = MomentDateSchemaType().format('YYYY-MM-DD')

@@ -56,8 +56,7 @@ function transform(obj, cb, seed){
 function merge(target, source){
   for (var key in source) if ( has(source, key)) {
     var targetVal = target[key]
-      , sourceVal = source[key]
-      , sameType;
+      , sourceVal = source[key];
 
     if ( sourceVal === undefined )
       continue
@@ -89,7 +88,6 @@ function has(o, k){
 }
 
 function inherits(ctor, superCtor, spec) {
-  ctor.super_ = superCtor
   ctor.prototype = Object.create(superCtor.prototype, {
     constructor: {
       value: ctor,

@@ -1,7 +1,6 @@
 'use strict';
 var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
-  , locale = require('./locale.js').object
   , cloneDeep = require('./util/clone')
   , Topo = require('./util/topo')
   , c = require('case')
