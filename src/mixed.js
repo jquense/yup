@@ -1,6 +1,6 @@
 'use strict';
-var interpolate = require('./util/interpolate')
-  , Promise = require('es6-promise').Promise
+
+var Promise = require('es6-promise').Promise
   , Condition   = require('./util/condition')
   , ValidationError = require('./util/validation-error')
   , getter = require('property-expr').getter
@@ -9,7 +9,7 @@ var interpolate = require('./util/interpolate')
   , cloneDeep = require('./util/clone')
   , BadSet = require('./util/set');
 
-
+let formatError = ValidationError.formatError
 
 module.exports = SchemaType
 
@@ -25,7 +25,7 @@ function SchemaType(options = {}){
   this._blacklist   = new BadSet()
   this.tests        = []
   this.transforms   = []
-  this._typeError   = interpolate(locale.notType)
+  this._typeError   = formatError(locale.notType)
 
   if (_.has(options, 'default'))
     this._default = options.default
@@ -105,56 +105,53 @@ SchemaType.prototype = {
     isStrict = schema._option('strict', _opts)
     endEarly = schema._option('abortEarly', _opts)
 
-    !state.path && (state.path = 'this')
+    let path = state.path
 
     let errors = [];
-    let reject = () => Promise.reject(new ValidationError(errors));
+    let reject = () => Promise.reject(new ValidationError(errors, value));
 
     if ( !state.isCast && !isStrict )
       value = schema._cast(value, _opts)
 
+    // value is cast, we can check if it meets type requirements
     if ( value !== undefined && !schema.isType(value) ){
-      errors.push(schema._typeError({ value, type: schema._type, path: state.path }))
+      errors.push(schema._typeError({ value, path, type: schema._type }))
       if ( endEarly ) return reject()
     }
 
+    // next check Whitelist for matching values
     if ( valids.length && !valids.has(value) ) {
-      errors.push(schema._whitelistError(valids.values(), state.path))
+      errors.push(schema._whitelistError(valids.values(), path))
       if ( endEarly ) return reject()
     }
 
+    // next check Blacklist for matching values
     if ( invalids.has(value) ){
-      errors.push(schema._blacklistError(invalids.values(), state.path))
+      errors.push(schema._blacklistError(invalids.values(), path))
       if ( endEarly ) return reject()
     }
     
-    // It makes no sense to validate further at this point
+    // It makes no sense to validate further at this point if their are errors
     if ( errors.length )
       return reject()
 
-    let result = schema.tests.map(fn => fn.call(schema, value, state))
+    let result = schema.tests.map(fn => fn.call(schema, value, path))
 
     result = endEarly
       ? Promise.all(result)
-      : _.settled(result).then( results => {
-          let errors = results.reduce(
-            (arr, r) => !r.fulfilled ? arr.concat([ r.value.errors ]) : arr, [])
-
-          if ( errors.length ) 
-            throw new ValidationError(errors)
-        })
+      : _.collectErrors(result, value, path)
 
     return result.then(() => value);
   },
 
-  validate(value, options, cb){
+  validate(value, options, cb) {
     if (typeof options === 'function')
       cb = options, options = {}
 
     return nodeify(this._validate(value, options, {}), cb)
   },
 
-  isValid(value, options, cb){
+  isValid(value, options, cb) {
     if (typeof options === 'function')
       cb = options, options = {}
 
@@ -162,7 +159,9 @@ SchemaType.prototype = {
       .validate(value, options)
       .then(() => true)
       .catch(err => {
-        if ( err instanceof ValidationError) return false
+        if ( err.name === 'ValidationError') 
+          return false
+
         throw err
       }), cb)
     },
@@ -196,7 +195,7 @@ SchemaType.prototype = {
 
   typeError(msg){
     var next = this.clone()
-    next._typeError = interpolate(msg)
+    next._typeError = formatError(msg)
     return next
   },
 
@@ -223,10 +222,11 @@ SchemaType.prototype = {
     if( next._whitelist.length )
       throw new TypeError('Cannot add tests when specific valid values are specified')
 
-    errorMsg = interpolate(opts.message)
+    errorMsg = formatError(opts.message)
+
     isExclusive = opts.name && next._exclusive[opts.name] === true
 
-    if( opts.exclusive ){
+    if( opts.exclusive || isExclusive ){
       if (!opts.name)
         throw new TypeError('You cannot have an exclusive validation without a name to identify it')
       
@@ -241,7 +241,7 @@ SchemaType.prototype = {
 
     return next
 
-    function validate(value, state) {
+    function validate(value, path) {
       return new Promise((resolve, reject) => {
         !opts.useCallback
           ? resolve(opts.test.call(this, value))
@@ -249,7 +249,7 @@ SchemaType.prototype = {
       })
       .then(valid => {
         if (!valid) 
-          throw new ValidationError(errorMsg({ path: state.path, ...opts.params }))
+          throw new ValidationError(errorMsg({ path, ...opts.params }), value, path)
       })
     }
   },
@@ -269,7 +269,7 @@ SchemaType.prototype = {
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
     next._whitelistError = (valids, path) => 
-      interpolate(msg || locale.oneOf, { values: valids.join(', '), path })
+      formatError(msg || locale.oneOf, { values: valids.join(', '), path })
 
     enums.forEach( val => {
       next._blacklist.delete(val)
@@ -283,7 +283,7 @@ SchemaType.prototype = {
     var next = this.clone()
 
     next._blacklistError = (invalids, path) => 
-      interpolate(msg || locale.notOneOf, { values: invalids.join(', '), path })
+      formatError(msg || locale.notOneOf, { values: invalids.join(', '), path })
 
     enums.forEach( val => {
       next._whitelist.delete(val)
@@ -308,8 +308,6 @@ for( var method in aliases ) if ( _.has(aliases, method) )
   aliases[method].forEach( 
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
   
-
-
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise
 

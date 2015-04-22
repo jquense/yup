@@ -2,7 +2,12 @@
 var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
   , { mixed, array: locale } = require('./locale.js')
-  , { inherits } = require('./util/_');
+  , { inherits, collectErrors } = require('./util/_');
+
+let scopeError = value => err => {
+      err.value = value
+      throw err
+    }
 
 module.exports = ArraySchema
 
@@ -35,26 +40,38 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _validate(_value, _opts, _state){
-    var context, subType, schema;
+    var errors = []
+      , context, subType, schema, endEarly;
 
-    _state  = _state || {}
-    context = _state.parent || (_opts || {}).context
-    schema  = this._resolve(context)
-    subType = schema._subType
+    _state   = _state || {}
+    context  = _state.parent || (_opts || {}).context
+    schema   = this._resolve(context)
+    subType  = schema._subType
+    endEarly = schema._option('abortEarly', _opts)
 
     return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
+      .catch(endEarly ? null : err => {
+        errors = err
+        return err.value 
+      })
       .then(function(value){
+        if ( !subType || !schema._typeCheck(value) ) {
+          if ( errors.length ) throw errors[0]
+          return value
+        }
+
+        let result = value.map((item, key) => {
+          var path  = (_state.path || '') + '['+ key + ']'
+            , state = { ..._state, path, key, parent: value};
+
+          return subType._validate(item, _opts, state)
+        })
+
+        result = endEarly 
+          ? Promise.all(result).catch(scopeError(value))
+          : collectErrors(result, value, _state.path, errors)
         
-        if ( !subType || !schema._typeCheck(value) ) return value
-
-        return Promise
-          .all(value.map((item, key) => {
-            var path  = (_state.path || '') + '['+ key + ']'
-              , state = { ..._state, path, key, parent: value};
-
-            return subType._validate(item, _opts, state)
-          }))
-          .then(() => value)
+        return result.then(() => value)
       })
   },
 

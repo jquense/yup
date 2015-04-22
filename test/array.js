@@ -5,6 +5,7 @@ var chai  = require('chai')
   , Promise = require('es6-promise').Promise
   , string = require('../lib/string')
   , number = require('../lib/number')
+  , object = require('../lib/object')
   , array = require('../lib/array');
 
 chai.use(chaiAsPromised);
@@ -81,14 +82,37 @@ describe('Array types', function(){
     
   })
 
+  it('should respect abortEarly', function(){
+    var inst = array()
+        .of(object({ str: string().required() }))
+        .test('name', 'oops', function(){ return false })
+
+    return Promise.all([
+      inst.validate([{ str: null }]).should.be.rejected
+        .then(function(err){
+          err.value.should.eql([{ str: '' }])
+          err.errors.length.should.equal(1)
+          err.errors.should.eql(['oops'])
+        }),
+
+      inst.validate([{ str: null }], { abortEarly: false }).should.be.rejected
+        .then(function(err) {
+          err.value.should.eql([{ str: '' }])
+
+          err.errors.length.should.equal(2)
+          err.errors.should.eql(['oops', 'this[0].str is a required field'])
+        })
+    ])
+  })
+
   it('should compact arrays', function(){
     var arr  = ['', 1, 0, 4, false, null]
       , inst = array()
 
     inst.compact().cast(arr)
-      .should.eql([1,4])
+      .should.eql([1, 4])
 
     inst.compact(function(v){ return v == null })
-      .cast(arr).should.eql(['',1, 0, 4, false])
+      .cast(arr).should.eql(['', 1, 0, 4, false])
   })
 })

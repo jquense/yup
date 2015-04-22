@@ -1,4 +1,5 @@
-var Promise = require('es6-promise').Promise;
+var Promise = require('es6-promise').Promise
+  , ValidationError = require('./validation-error');
 
 let toString = Object.prototype.toString
 
@@ -17,6 +18,20 @@ function settled(promises){
     value => ({ fulfilled: false, value }))
 
   return Promise.all(promises.map(settle))
+}
+
+function collectErrors(promises, value, path, errors = []){
+  // unwrap aggregate errors
+  errors = errors.inner && errors.inner.length 
+    ? errors.inner : [].concat(errors)
+
+  return settled(promises).then( results => {
+    errors = results.reduce(
+      (arr, r) => !r.fulfilled ? arr.concat(r.value) : arr, errors)
+
+    if ( errors.length ) 
+      throw new ValidationError(errors, value, path)
+  })
 }
 
 function assign(target) {
@@ -101,5 +116,8 @@ function inherits(ctor, superCtor, spec) {
 }
 
 module.exports = {
-  inherits, uniq, has, assign, merge, transform, isSchema, isObject, isPlainObject, isDate, settled
+  inherits, uniq, has, 
+  assign, merge, transform,
+  isSchema, isObject, isPlainObject, isDate,
+  settled, collectErrors
 }

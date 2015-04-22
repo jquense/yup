@@ -181,10 +181,41 @@ describe('Object types', function(){
       })
   })
 
+  it('should respect abortEarly', function(){
+    var inst = object({
+        nest: object({ 
+          str: string().required()
+        })
+        .test('name', 'oops', function(){ return false })
+    })
+    // var inst = object({ 
+    //       str: string().required()
+    //     })
+    //     .test('name', 'oops', function(v){ return false })
+
+    return Promise.all([
+      inst.validate({ nest: { str: null } }).should.be.rejected
+        .then(function(err){
+          //console.log(err)
+          err.value.should.eql({ nest: { str: '' }  })
+          err.errors.length.should.equal(1)
+          err.errors.should.eql(['oops'])
+        }),
+
+      inst.validate({ nest: { str: null } }, { abortEarly: false }).should.be.rejected
+        .then(function(err){
+          //console.log(err)
+          err.value.should.eql({ nest: { str: '' } })
+          err.errors.length.should.equal(2)
+          err.errors.should.eql(['oops', 'this.nest.str is a required field'])
+        })
+    ])
+  })
+
   it('should alias or move keys', function(){
     var inst = object().shape({
           myProp: mixed(),
-          Other: mixed(),
+          Other: mixed()
         })
         .from('prop', 'myProp')
         .from('other', 'Other', true)

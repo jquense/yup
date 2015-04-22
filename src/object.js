@@ -9,8 +9,14 @@ var MixedSchema = require('./mixed')
   , transform
   , assign
   , inherits
+  , collectErrors
   , has } = require('./util/_');
-  
+
+let scopeError = value => err => {
+      err.value = value
+      throw err
+    }
+
 module.exports = ObjectSchema
 
 function ObjectSchema(spec) {
@@ -88,32 +94,44 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   _validate(_value, _opts, _state) {
-    var context, schema;
+    var errors = []
+      , context, schema, endEarly;
 
-    _state  = _state || {}
-    context = _state.parent || (_opts || {}).context
-    schema  = this._resolve(context)
+    _state   = _state || {}
+    context  = _state.parent || (_opts || {}).context
+    schema   = this._resolve(context)
+    endEarly = schema._option('abortEarly', _opts)
 
     return MixedSchema.prototype._validate
       .call(this, _value, _opts, _state)
-      .then((value) => {
-        if(!isObject(value)) // only iterate though actual objects
-          return value
-
-        return Promise
-          .all(schema._nodes.map(function(key){
-            var field = schema.fields[key]
-              , path  = (_state.path ?  (_state.path + '.') : '') + key;
-             
-            return field._validate(value[key], _opts, { 
-                ..._state, 
-                key, 
-                path, 
-                parent: value 
-              })
-          }))
-          .then(() => value)
+      .catch(endEarly ? null : err => {
+        errors = err
+        return err.value 
       })
+      .then(value => {
+        if(!isObject(value)) {// only iterate though actual objects
+          if ( errors.length ) throw errors[0]
+          return value
+        }
+
+        let result = schema._nodes.map(function(key){
+          var field = schema.fields[key]
+            , path  = (_state.path ?  (_state.path + '.') : '') + key;
+           
+          return field._validate(value[key]
+            , _opts
+            , { ..._state, key, path, parent: value  })
+        })
+
+
+        result = endEarly 
+          ? Promise.all(result).catch(scopeError(value))
+          : collectErrors(result, value, _state.path, errors)
+        
+        return result.then(() => value)
+      })
+
+    
   },
 
   concat(schema){
