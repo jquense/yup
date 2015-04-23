@@ -60,7 +60,6 @@ var yup = require('yup')
 yup.mixed
 yup.string
 yup.number
-
 yup.bool
 yup.boolean
 yup.date
@@ -75,11 +74,28 @@ yup.ValidationError
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
 
+```js
+var schema = object().shape({
+      nested: object()
+        .shape({ 
+          arr: array().of(
+            object().shape({ num: number().max(4) })) 
+      })
+    })
+
+reach(schema, 'nested.arr.num')
+reach(schema, 'nested.arr[].num')  
+reach(schema, 'nested.arr[1].num')  
+reach(schema, 'nested["arr"][1].num') 
+```
+
 ### `ValidationError`
 
 Thrown on failed validations, with the following properties
  - `name`: ValidationError
+ - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
  - `errors`: array of error messages
+ - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown, alternatively `errors` will have all the of the messages from each inner error.
 
 
 ### `mixed`
