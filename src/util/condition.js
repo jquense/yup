@@ -20,7 +20,7 @@ class Conditional {
         throw new TypeError('cannot return polymorphic conditionals')
 
       is = typeof is === 'function'
-        ? is : function(is, value) {return is === value}.bind(null, is)
+        ? is : ((is, value) => is === value).bind(null, is)
 
       this.fn = (value, ctx) => is(value) ? ctx.concat(then) : ctx.concat(otherwise)
     }

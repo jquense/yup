@@ -3,7 +3,6 @@ var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
   , cloneDeep = require('./util/clone')
   , toposort = require('toposort')
-  , Topo = require('./util/topo')
   , split = require('property-expr').split
   , c = require('case')
   , { 
@@ -126,7 +125,6 @@ inherits(ObjectSchema, MixedSchema, {
             , { ..._state, key, path, parent: value  })
         })
 
-
         result = endEarly 
           ? Promise.all(result).catch(scopeError(value))
           : collectErrors(result, value, _state.path, errors)
@@ -153,8 +151,9 @@ inherits(ObjectSchema, MixedSchema, {
       excludes = [excludes]
 
     next.fields = fields
-    
-    next._excludedEdges = next._excludedEdges.concat(excludes.map(v => `${v[0]}-${v[1]}`))
+
+    next._excludedEdges = next._excludedEdges.concat(
+      excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
 
     next._nodes = sortFields(fields, next._excludedEdges)
 
