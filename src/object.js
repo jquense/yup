@@ -2,7 +2,9 @@
 var MixedSchema = require('./mixed')
   , Promise = require('es6-promise').Promise
   , cloneDeep = require('./util/clone')
+  , toposort = require('toposort')
   , Topo = require('./util/topo')
+  , split = require('property-expr').split
   , c = require('case')
   , { 
     isObject
@@ -49,6 +51,7 @@ function ObjectSchema(spec) {
 
   this.fields = Object.create(null)
   this._nodes = []
+  this._excludedEdges = []
 
   if ( spec )
     return this.shape(spec);
@@ -137,17 +140,23 @@ inherits(ObjectSchema, MixedSchema, {
   concat(schema){
     var next = MixedSchema.prototype.concat.call(this, schema)
     
-    next._nodes = sortFields(next.fields)
+    next._nodes = sortFields(next.fields, next._excludedEdges)
 
     return next
   },
 
-  shape(schema) {
+  shape(schema, excludes = []) {
     var next = this.clone()
       , fields = assign(next.fields, schema);
 
+    if ( !Array.isArray(excludes[0]))
+      excludes = [excludes]
+
     next.fields = fields
-    next._nodes = sortFields(fields)
+    
+    next._excludedEdges = next._excludedEdges.concat(excludes.map(v => `${v[0]}-${v[1]}`))
+
+    next._nodes = sortFields(fields, next._excludedEdges)
 
     return next
   },
@@ -177,11 +186,22 @@ inherits(ObjectSchema, MixedSchema, {
   }
 })
 
-function sortFields(fields){
-  var toposort = new Topo()
+function sortFields(fields, excludes = []){
+  var edges = [], nodes = []
 
-  for( var key in fields ) if ( has(fields, key))
-    toposort.add(key, { after: fields[key]._deps, group: key })
+  for( var key in fields ) if ( has(fields, key)) {
+    if ( !~nodes.indexOf(key) ) nodes.push(key)
 
-  return toposort.nodes
+    fields[key]._deps.forEach(node => {   //eslint-disable-line no-loop-func
+      node = split(node)[0]
+      
+      if ( !~nodes.indexOf(node) ) 
+        nodes.push(node)
+
+      if ( !~excludes.indexOf(`${key}-${node}`) ) 
+        edges.push([key, node])
+    }) 
+  }
+    
+  return toposort.array(nodes, edges).reverse()
 }

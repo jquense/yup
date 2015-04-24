@@ -500,7 +500,7 @@ yup.object().shape({
 }) 
 ```
 
-#### `object.shape(schemaHash)`
+#### `object.shape(schemaHash, [noSortEdges])`
 
 Define the keys of the object and the schemas for said keys.
 

@@ -232,7 +232,7 @@ describe('Object types', function(){
               if (v === 4) return this.max(6)
             }),
           stats: object({ isBig: bool() }),
-          other: number().min(1)
+          other: number().min(1).when('stats', { is: 5, then: number() })
         })
 
     return Promise.all([
@@ -248,6 +248,27 @@ describe('Object types', function(){
       inst.isValid({ stats: { isBig: true }, noteDate: 6, other: 4 }).should.eventually.equal(true)
     ])
   })
+
+  it('should allow opt out of topo sort on specific edges', function(){
+    !(function() {
+      object().shape({
+          orgID: number()
+            .when('location', function(v){ if (v == null) return this.required() }),
+          location: string()
+            .when('orgID', function(v){ if (v == null) return this.required() })
+        })
+    }).should.throw('Cyclic dependency: "location"')
+
+    !(function() {
+      object().shape({
+          orgID: number()
+            .when('location', function(v){ if (v == null) return this.required() }),
+          location: string()
+            .when('orgID', function(v){ if (v == null) return this.required() })
+        }, [ ['location', 'orgID'] ])
+    }).should.not.throw()
+  })
+
 
   it('should handle nested conditionals', function(){
     var countSchema = number().when('isBig', { is: true, then: number().min(5) })
