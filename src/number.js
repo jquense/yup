@@ -22,7 +22,7 @@ function NumberSchema(){
 inherits(NumberSchema, SchemaObject, {
 
   _typeCheck(v) {
-    return typeof v === 'number' && !(v !== +v)
+    return typeof v === 'number' && !(v !== +v) //isNaN check
   },
 
   min(min, msg) {
@@ -61,7 +61,7 @@ inherits(NumberSchema, SchemaObject, {
       .test('integer', msg, val => val === (val | 0))
   },
 
-  round(method){
+  round(method) {
     var avail = ['ceil', 'floor', 'round']
     method = (method && method.toLowerCase()) || 'round'
 

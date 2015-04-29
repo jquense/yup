@@ -1,9 +1,6 @@
 'use strict';
 var MixedSchema = require('./mixed')
-  , locale = require('./locale.js').boolean
   , inherits = require('./util/_').inherits;
-
-let isBool = v => typeof v === 'boolean'
 
 module.exports = BooleanSchema
 
@@ -21,7 +18,8 @@ function BooleanSchema(){
 
 inherits(BooleanSchema, MixedSchema, {
 
-  _typeCheck: isBool
-
+  _typeCheck(v){ 
+    return typeof v === 'boolean' 
+  }
 })
 

@@ -14,7 +14,6 @@ function DateSchema(){
   MixedSchema.call(this, { type: 'date'})
 
   this.transforms.push(function(value) {
-
     if (this.isType(value))
       return isDate(value) ? new Date(value) : value
 
@@ -31,15 +30,14 @@ inherits(DateSchema, MixedSchema, {
 
   min(min, msg){
     var limit = this.cast(min);
-    msg = msg || locale.min
 
     if(!this._typeCheck(limit))
-      throw new TypeError('`min` must be a Date or a value that can be parsed to a Date')
+      throw new TypeError('`min` must be a Date or a value that can be `cast()` to a Date')
 
     return this.test({ 
       name: 'min', 
       exclusive: true, 
-      message: msg, 
+      message: msg || locale.min, 
       params: { min: min },
       test: value => value && (value >= limit)
     })
@@ -49,7 +47,7 @@ inherits(DateSchema, MixedSchema, {
     var limit = this.cast(max);
 
     if(!this._typeCheck(limit))
-      throw new TypeError('`max` must be a Date or a value that can be parsed to a Date')
+      throw new TypeError('`max` must be a Date or a value that can be `cast()` to a Date')
 
     return this.test({ 
       name: 'max',

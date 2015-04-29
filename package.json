@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "chai-as-promised": "^4.1.1",
     "del": "^1.1.1",
     "gulp": "~3.8.8",
-    "gulp-babel-helpers": "^1.1.2",
+    "gulp-babel-helpers": "^2.0.3",
     "gulp-mocha": "^1.0.0",
     "gulp-plumber": "^0.6.5",
     "gulp-rename": "^1.2.2",
