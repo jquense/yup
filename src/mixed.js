@@ -222,7 +222,7 @@ SchemaType.prototype = {
     if( next._whitelist.length )
       throw new TypeError('Cannot add tests when specific valid values are specified')
 
-    errorMsg = formatError(opts.message)
+    errorMsg = formatError(opts.message || locale.default)
 
     isExclusive = opts.name && next._exclusive[opts.name] === true
 
@@ -300,7 +300,8 @@ SchemaType.prototype = {
 }
 
 var aliases = {
-  oneOf: ['equals']
+  oneOf: ['equals', 'is'],
+  notOneOf: ['not', 'nope']
 }
 
 
@@ -313,3 +314,10 @@ function nodeify(promise, cb){
 
   promise.then(val => cb(null, val), err => cb(err))
 }
+
+// [{ value, exclude }]
+
+// values.every(({ value, exclude }) => {
+//   var isEql = eql(value, otherval)
+//   return (exclude && !isEql) || isEql
+// })

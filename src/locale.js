@@ -2,6 +2,7 @@
 
 module.exports = {
   mixed: {
+    default:   '${path} is invalid',
     notType:   '${path} (value: `${value}`) must be a `${type}` type',
     required:  '${path} is a required field',
     oneOf:     '${path} must be one the following values: ${values}',
