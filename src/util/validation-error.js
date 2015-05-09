@@ -36,6 +36,7 @@ ValidationError.formatError = function(message, params) {
     message = replace(message)
 
   let fn = ({ path, ...params }) => {
+    params.rawpath = path
     params.path =  'this' + (path 
       ? (path.charAt(0) === '[' ? path : '.' + path) 
       : '')
