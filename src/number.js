@@ -45,11 +45,11 @@ inherits(NumberSchema, SchemaObject, {
     })
   },
 
-  positive(max, msg) {
+  positive(msg) {
     return this.min(0, msg || locale.positive)
   },
 
-  negative(max, msg) {
+  negative(msg) {
     return this.max(0, msg || locale.negative)
   },
 
