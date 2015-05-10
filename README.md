@@ -256,21 +256,24 @@ for the `message` argument you can provide a string which is will interpolate ce
 
 ```javascript
 var schema = yup.mixed()
-  .test('${path} is invalid!', value => value !== 'jimmy');
+  .test('is-jimmy', '${path} is not Jimmy', value => value=jimmy');
 
-// or return a promise
+// or make it async by returning a promise
 var schema = yup.mixed()
-  .test('${path} is invalid!', value => serverValidate(value));
+  .test('is-jimmy', '${path} is not Jimmy', function (value){
+    return fetch(`/is-jimmy/${value}')
+      .then(response => response.responseText === 'true')
+  });
 
-// or callback style
-var schema = yup.mixed().test('${path} is invalid!', function(value, done){
-  done(null, value !== 'jimmy') //error is for exceptions, not an invalid value
+// or callback style for asynchrony
+var schema = yup.mixed().test('is-jimmy', '${path} is not Jimmy', function(value, done){
+  done(null, value === 'jimmy') //error is for exceptions, not an invalid value
 }, true);
 
 schema.isValid('jimmy') //=> true
 
 schema.isValid('john') //=> false
-schema.errors // => [ 'this is invalid!']
+schema.errors // => [ 'this is not Jimmy!']
 ```
 
 For more advanced validations you can use the alternate signature to provide more options:
