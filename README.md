@@ -15,6 +15,9 @@ Yup is also a a good bit less opinionated than joi, allowing for custom validati
     + [`date`](#date)
     + [`array`](#array)
     + [`object`](#array)
+  - [`reach`](#reach)
+  - [`addMethod`](#addMethod)
+  - [`ValidationError`](#ValidationError) 
   - [Extending Schema Types](#extending-schema-types)
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
@@ -60,13 +63,13 @@ var yup = require('yup')
 yup.mixed
 yup.string
 yup.number
-yup.bool
-yup.boolean
+yup.boolean // also aliased as yup.bool
 yup.date
 yup.object
 yup.array
 
 yup.reach
+yup.addMethod
 yup.ValidationError
 ```
 
@@ -87,6 +90,24 @@ reach(schema, 'nested.arr.num')
 reach(schema, 'nested.arr[].num')  
 reach(schema, 'nested.arr[1].num')  
 reach(schema, 'nested["arr"][1].num') 
+```
+
+### `.addMethod(schemaType, name, method)`
+
+Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
+
+```js
+  yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
+    
+    return this.transform(function(value, originalValue){
+      
+      if ( this.isType(value) ) return value 
+      
+      value = Moment(originalValue, formats, parseStrict)
+
+      return date.isValid() ? date.toDate() : invalidDate
+    })
+  })
 ```
 
 ### `ValidationError`
@@ -250,33 +271,41 @@ __note: because `when` conditions must be resolved during `cast()`, a synchronou
 
 #### `mixed.test(name, message, fn, [callbackStyleAsync])` 
 
-Adds a test function to the validation chain. Tests are run after any object is cast. Many types have some tests built in, but you can create custom ones easily. All tests are run asynchronously so their order cannot be guaranteed. All tests must provide a `name`, an error `message` and a validation function that must return `true` or `false`, or return a promise that resolves `true` or `false`. If you perfer the Node callback style, pass `true` for `callbackStyleAsync`  and the validation function will pass in an additional `done` function as the last parameter, which should be called with the validity.
+Adds a test function to the validation chain. Tests are run after any object is cast. Many types have some tests built in, but you can create custom ones easily. In order to allow asynchronous custom validations _all_ tests are run asynchronously. A consequence of this is that test execution order cannot be guaranteed. 
+
+All tests must provide a `name`, an error `message` and a validation function that must return `true` or `false`. To make a test async return a promise that resolves `true` or `false`. If you perfer the Node callback style, you can pass `true` for `callbackStyleAsync` and the validation function will pass in an additional `done` function as the last parameter to be called with the validity.
 
 for the `message` argument you can provide a string which is will interpolate certain values if specified using the `${param}` syntax. By default all test messages are passed a `path` value which is valuable in nested schemas.
 
-```javascript
-var schema = yup.mixed()
-  .test('is-jimmy', '${path} is not Jimmy', value => value=jimmy');
+For more advanced validations you can use the alternate signature to provide more options (see below):
+
+```js
+var jimmySchema = yup.string()
+  .test('is-jimmy', '${path} is not Jimmy', value => value=jimmy);
 
 // or make it async by returning a promise
-var schema = yup.mixed()
+var asyncJimmySchema = yup.string()
   .test('is-jimmy', '${path} is not Jimmy', function (value){
-    return fetch(`/is-jimmy/${value}')
+    return fetch('/is-jimmy/' + value)
       .then(response => response.responseText === 'true')
   });
 
 // or callback style for asynchrony
-var schema = yup.mixed().test('is-jimmy', '${path} is not Jimmy', function(value, done){
-  done(null, value === 'jimmy') //error is for exceptions, not an invalid value
-}, true);
+var asynCallbackJimmySchema = yup.string()
+  .test('is-jimmy', '${path} is not Jimmy', test, true);
 
-schema.isValid('jimmy') //=> true
+function test(value, done){
+  // error argument is for exceptions, not an failed tests
+  done(null, value === 'jimmy') 
+}
 
-schema.isValid('john') //=> false
+schema.isValid('jimmy').then(...) //=> true
+
+schema.isValid('john').then(...) //=> false
 schema.errors // => [ 'this is not Jimmy!']
+
 ```
 
-For more advanced validations you can use the alternate signature to provide more options:
 
 #### `mixed.test(options)`
 
@@ -286,7 +315,7 @@ Alternative `test(..)` signature. `options` is an object containing some of the 
 - `test`: function(value), the validator run against the value, should return `true` or `false` or a promise that resolves to `true` or `false`
 - `message`: string, validation error message
 - `params`: object, passed to message for interpolation
-- `exclusive`: boolean (default false), when true, there can only be one active `test` of the same name on a schema, validations of the same name will replace previous ones. when `false` the validations will stack. e.g. `max` is an exclusive validation, whereas the string `matches` is not
+- `exclusive`: boolean (default `false`), when true, there can only be one active `test` of the same name on a schema, validations of the same name will replace previous ones. when `false` the validations will stack. e.g. `max` is an exclusive validation, whereas the string `matches` is not. This is helpful for "toggling" validations on and off.
 - `useCallback`: boolean (default `false`), use the callback interface for asynchrony instead of promises
 
 ```javascript
@@ -557,19 +586,25 @@ You should keep in mind some basic guidelines when extending schemas
   - by the time validations run the `value` is gaurunteed to be the correct type, however if `nullable` is set then `null` is a valid value for that type, so don't assume that a property or method exists on the value.
 
 __Adjust core Types__
+
 ```js
-  var invalidDate = new Date('');
+var invalidDate = new Date('');
 
-  yup.date.protoype.format = function(formats, strict){
-    if (!formats) throw new Error('must enter a valid format')
+function parseDateFromFormats(formats, parseStrict) {
+  
+  return this.transform(function(value, originalValue){
+    
+    if ( this.isType(value) ) return value 
+    
+    value = Moment(originalValue, formats, parseStrict)
 
-    // `transform` will clone the schema for us so no worry of mutation
-    return this.transform(function(value, originalValue){
-      if ( this.isType(value) ) return value 
-      value = Moment(originalValue, formats, strict)
-      return date.isValid() ? date.toDate() : invalidDate
-    })
-  }
+    return date.isValid() ? date.toDate() : invalidDate
+  })
+}
+
+// `addMethod` doesn't do anything special it's
+// equivalent to: yup.date.protoype.format = parseDateFromFormats
+yup.addMethod(yup.date, 'format', parseDateFromFormats)
 ```
 
 __Creating new Types__

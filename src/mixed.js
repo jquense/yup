@@ -216,11 +216,18 @@ SchemaType.prototype = {
       , next = this.clone()
       , errorMsg, isExclusive;
 
-    if(typeof name === 'string')
+    if( typeof name === 'string' ) {
+      if( typeof message === 'function') 
+        test = message, message = name, name = null
+
       opts = { name, test, message, useCallback, exclusive: false }
+    }
+
+    if( typeof opts.message !== 'string' || typeof opts.test !== 'function' )
+      throw new TypeError('`message` and `test` are required parameters')
 
     if( next._whitelist.length )
-      throw new TypeError('Cannot add tests when specific valid values are specified')
+      throw new Error('Cannot add tests when specific valid values are specified')
 
     errorMsg = formatError(opts.message || locale.default)
 
@@ -228,7 +235,7 @@ SchemaType.prototype = {
 
     if( opts.exclusive || isExclusive ){
       if (!opts.name)
-        throw new TypeError('You cannot have an exclusive validation without a name to identify it')
+        throw new TypeError('You cannot have an exclusive validation without a `name`')
       
       next._exclusive[opts.name] = true
       validate.VALIDATION_KEY = opts.name
