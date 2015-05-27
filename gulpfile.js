@@ -40,4 +40,4 @@ gulp.task('mocha', function () {
 })
 
 
-gulp.task('publish', ['compile'], require('rf-release'))
+gulp.task('publish', ['compile'], require('jq-release'))

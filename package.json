@@ -26,13 +26,13 @@
     "gulp-plumber": "^0.6.5",
     "gulp-rename": "^1.2.2",
     "mocha": "^1.21.4",
-    "rf-release": "git://github.com/jquense/rf-release",
+    "jq-release": "*",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
     "case": "^1.2.1",
-    "es6-promise": "^2.0.0",
+    "promise": "~7.0.0",
     "fn-name": "~1.0.1",
     "property-expr": "^1.2.0",
     "toposort": "^0.2.10"
