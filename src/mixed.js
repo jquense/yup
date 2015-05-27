@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('es6-promise').Promise
+var Promise = require('promise/lib/es6-extensions')
   , Condition   = require('./util/condition')
   , ValidationError = require('./util/validation-error')
   , getter = require('property-expr').getter
