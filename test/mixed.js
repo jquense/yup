@@ -92,14 +92,14 @@ describe( 'Mixed Types ', function(){
 
   it('should respect exclusive validation', function(){
     var inst = mixed()
-      .test({ msg: 'invalid', exclusive: true, name: 'test'}, function(){})
-      .test({ msg: 'also invalid', name: 'test'}, function(){})
+      .test({ message: 'invalid', exclusive: true, name: 'test', test:  function(){} })
+      .test({ message: 'also invalid', name: 'test', test:  function(){} })
 
     inst.tests.length.should.equal(1)
 
     inst = mixed()
-      .test({ msg: 'invalid', name: 'test'}, function(){})
-      .test({ msg: 'also invalid', name: 'test'}, function(){})
+      .test({ message: 'invalid', name: 'test', test:  function(){} })
+      .test({ message: 'also invalid', name: 'test', test:  function(){} })
 
     inst.tests.length.should.equal(2) 
   })
