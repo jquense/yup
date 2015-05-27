@@ -1,6 +1,6 @@
 'use strict';
 /*global describe, it */
-var Promise = require('es6-promise').Promise
+var Promise = require('promise/lib/es6-extensions')
   , chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , reach = require('../lib/util/reach')

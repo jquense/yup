@@ -3,7 +3,7 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , ValidationError = require('../lib/util/validation-error')
-  , Promise = require('es6-promise').Promise
+  , Promise = require('promise/lib/es6-extensions')
   , mixed = require('../lib/mixed')
   , object = require('../lib/object')
   , string = require('../lib/string')

@@ -2,7 +2,7 @@
 /* global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('es6-promise').Promise
+  , Promise = require('promise/lib/es6-extensions')
   , string = require('../lib/string')
   , number = require('../lib/number')
   , object = require('../lib/object')

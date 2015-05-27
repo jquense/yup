@@ -1,7 +1,7 @@
 'use strict';
 /* global describe, it */
 var chai  = require('chai')
-  , Promise = require('es6-promise').Promise
+  , Promise = require('promise/lib/es6-extensions')
   , sinonChai = require('sinon-chai')
   , chaiAsPromised = require('chai-as-promised')
   , string = require('../lib/string');
