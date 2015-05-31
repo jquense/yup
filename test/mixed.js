@@ -126,14 +126,15 @@ describe( 'Mixed Types ', function(){
     ]) 
   })
 
-  it.only('tests should receive context', function(done){
+  it.only('tests should receive path and context', function(done){
     var inst = object({
       other: mixed(),
       test: mixed().test({
         message: 'invalid', 
         exclusive: true, 
         name: 'max', 
-        test: function(v, context){ 
+        test: function(v, path, context){ 
+          path.should.equal('test')
           context.should.eql({ other: 5, test : 'hi' })
           done()
         }

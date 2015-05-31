@@ -251,8 +251,8 @@ SchemaType.prototype = {
     function validate(value, path, context) {
       return new Promise((resolve, reject) => {
         !opts.useCallback
-          ? resolve(opts.test.call(this, value, context))
-          : opts.test.call(this, value, context, (err, valid) => err ? reject(err) : resolve(valid))
+          ? resolve(opts.test.call(this, value, path, context))
+          : opts.test.call(this, value, path, context, (err, valid) => err ? reject(err) : resolve(valid))
       })
       .then(valid => {
         if (!valid) 
