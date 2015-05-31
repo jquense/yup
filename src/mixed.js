@@ -135,7 +135,7 @@ SchemaType.prototype = {
     if ( errors.length )
       return reject()
 
-    let result = schema.tests.map(fn => fn.call(schema, value, path))
+    let result = schema.tests.map(fn => fn.call(schema, value, path, context))
 
     result = endEarly
       ? Promise.all(result)
@@ -248,11 +248,11 @@ SchemaType.prototype = {
 
     return next
 
-    function validate(value, path) {
+    function validate(value, path, context) {
       return new Promise((resolve, reject) => {
         !opts.useCallback
-          ? resolve(opts.test.call(this, value))
-          : opts.test.call(this, value, (err, valid) => err ? reject(err) : resolve(valid))
+          ? resolve(opts.test.call(this, value, context))
+          : opts.test.call(this, value, context, (err, valid) => err ? reject(err) : resolve(valid))
       })
       .then(valid => {
         if (!valid) 

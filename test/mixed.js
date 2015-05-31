@@ -126,13 +126,30 @@ describe( 'Mixed Types ', function(){
     ]) 
   })
 
+  it.only('tests should receive context', function(done){
+    var inst = object({
+      other: mixed(),
+      test: mixed().test({
+        message: 'invalid', 
+        exclusive: true, 
+        name: 'max', 
+        test: function(v, context){ 
+          context.should.eql({ other: 5, test : 'hi' })
+          done()
+        }
+      })
+    })
+
+    inst.validate({ other: 5, test : 'hi' })
+
+  })
 
   it('should allow custom validation of either style', function(){
     var inst = string()
       .test('name', 'test a', function(val){
         return Promise.resolve(val === 'jim')
       })
-      .test('name', 'test b', function(val, done){
+      .test('name', 'test b', function(val, context, done){
         process.nextTick(function(){
           done(null, val !== 'jim')
         })   
