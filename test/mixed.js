@@ -126,7 +126,7 @@ describe( 'Mixed Types ', function(){
     ]) 
   })
 
-  it.only('tests should receive path and context', function(done){
+  it('tests should receive path and context', function(done){
     var inst = object({
       other: mixed(),
       test: mixed().test({
@@ -150,7 +150,7 @@ describe( 'Mixed Types ', function(){
       .test('name', 'test a', function(val){
         return Promise.resolve(val === 'jim')
       })
-      .test('name', 'test b', function(val, context, done){
+      .test('name', 'test b', function(val, path, context, done){
         process.nextTick(function(){
           done(null, val !== 'jim')
         })   

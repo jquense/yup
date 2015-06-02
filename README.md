@@ -277,15 +277,15 @@ All tests must provide a `name`, an error `message` and a validation function th
 
 for the `message` argument you can provide a string which is will interpolate certain values if specified using the `${param}` syntax. By default all test messages are passed a `path` value which is valuable in nested schemas.
 
-For more advanced validations you can use the alternate signature to provide more options (see below):
+the `test` function is called with the current `value`, along with `path` and `context` if they exist. For more advanced validations you can use the alternate signature to provide more options (see below):
 
 ```js
 var jimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', value => value=jimmy);
+  .test('is-jimmy', '${path} is not Jimmy', value => value === 'jimmy');
 
 // or make it async by returning a promise
 var asyncJimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', function (value){
+  .test('is-jimmy', '${path} is not Jimmy', function (value, path, context){
     return fetch('/is-jimmy/' + value)
       .then(response => response.responseText === 'true')
   });
@@ -294,7 +294,7 @@ var asyncJimmySchema = yup.string()
 var asynCallbackJimmySchema = yup.string()
   .test('is-jimmy', '${path} is not Jimmy', test, true);
 
-function test(value, done){
+function test(value, path, context, done){
   // error argument is for exceptions, not an failed tests
   done(null, value === 'jimmy') 
 }

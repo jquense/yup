@@ -28,7 +28,7 @@ function SchemaType(options = {}){
   this._typeError   = formatError(locale.notType)
 
   if (_.has(options, 'default'))
-    this._default = options.default
+    this._defaultDefault = options.default
 
   this._type = options.type || 'mixed'
 }
@@ -53,7 +53,7 @@ SchemaType.prototype = {
     var next = _.merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
-    if ( schema._default === undefined && _.has(schema, '_default') )
+    if( schema._default === undefined && _.has(this, '_default') )
       next._default = schema._default
 
     // trim exclusive tests, take the most recent ones
@@ -77,6 +77,7 @@ SchemaType.prototype = {
     let value = _value === undefined ? _value
       : this.transforms.reduce(
           (value, transform) => transform.call(this, value, _value), _value)
+
 
     if( value === undefined && _.has(this, '_default') )
       value = this.default()
@@ -168,7 +169,7 @@ SchemaType.prototype = {
 
   default(def) {
     if( arguments.length === 0){
-      var dflt = this._default
+      var dflt = _.has(this, '_default') ? this._default : this._defaultDefault
       return typeof dflt === 'function' 
         ? dflt.call(this) : cloneDeep(dflt)
     }

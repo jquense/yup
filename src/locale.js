@@ -36,7 +36,9 @@ module.exports = {
 
   boolean: {},
 
-  object: {},
+  object: {
+    noUnknown: '${path} field cannot have keys not specified in the objcet shape',
+  },
 
   array: {
     required:  '${path} is a required field',

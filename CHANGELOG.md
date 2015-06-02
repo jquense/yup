@@ -1,3 +1,12 @@
+## 0.8.2
+- the default, default for objects now adds keys for all fields, not just fields with non empty defaults
+
+## 0.8.1
+- bug fix
+
+## 0.8.0
+__breaking__
+- `test` functions are now passed `path` and `context` values along with the field value. Only breaks if using the callback style of defining custom validations
 
 ## 0.7.0
 __breaking__

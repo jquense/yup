@@ -1,8 +1,10 @@
 'use strict';
 var MixedSchema = require('./mixed')
   , Promise = require('promise/lib/es6-extensions')
+  //, Reference = require('./util/Reference')
   , cloneDeep = require('./util/clone')
   , toposort = require('toposort')
+  , locale = require('./locale.js').object
   , split = require('property-expr').split
   , c = require('case')
   , { 
@@ -26,15 +28,14 @@ function ObjectSchema(spec) {
 
   MixedSchema.call(this, { type: 'object', default() {
       var dft = transform(this._nodes, (obj, key) => {
-        var fieldDft = this.fields[key].default()
-        if(fieldDft !== undefined ) obj[key] = fieldDft
+        obj[key] = this.fields[key].default ? this.fields[key].default() : undefined
       }, {})
 
       return Object.keys(dft).length === 0 ? undefined : dft
     }
   })
 
-  this.transforms.push(function (value) {
+  this.transforms.push(function coerce(value) {
     if (typeof value === 'string') {
       try {
         value = JSON.parse(value)
@@ -76,14 +77,17 @@ inherits(ObjectSchema, MixedSchema, {
       return transform(props, function(obj, prop) {
         var exists = has(value, prop);
 
-        if( exists && fields[prop] )
-          obj[prop] = fields[prop].cast(value[prop], { context: obj })
+        if( exists && fields[prop] ){
+          var fieldSchema = fields[prop] === '$this' ? schema.default(undefined) : fields[prop]
+             
+          obj[prop] = fieldSchema.cast(value[prop], { context: obj })
+        }
 
         else if( exists && !strip)
           obj[prop] = cloneDeep(value[prop])
 
         else if(fields[prop]){
-          var fieldDefault = fields[prop].default()
+          var fieldDefault = fields[prop].default ? fields[prop].default() : undefined
 
           if ( fieldDefault !== undefined)
             obj[prop] = fieldDefault
@@ -95,6 +99,7 @@ inherits(ObjectSchema, MixedSchema, {
     return value
   },
 
+// The issue with this is that there are two phases of validating a schema, transformation, and validation. They both work by processing a stack of transforms and validations, it is a very generic strategy which helps make yup a good bit smaller then joi and a lot more flexible in terms of doing custom stuff. The down side is that it doesn't leave a lot of room for tiny tweaks like this. `stripUnknown` is a transform
   _validate(_value, _opts, _state) {
     var errors = []
       , context, schema, endEarly;
@@ -117,9 +122,9 @@ inherits(ObjectSchema, MixedSchema, {
         }
 
         let result = schema._nodes.map(function(key){
-          var field = schema.fields[key]
+          var field = schema.fields[key] === '$this' ? schema : schema.fields[key]
             , path  = (_state.path ?  (_state.path + '.') : '') + key;
-           
+         
           return field._validate(value[key]
             , _opts
             , { ..._state, key, path, parent: value  })
@@ -174,6 +179,25 @@ inherits(ObjectSchema, MixedSchema, {
     })
   },
 
+  noUnknown(noAllow, message) {
+    if ( typeof noAllow === 'string')
+      message = noAllow, noAllow = true;
+
+    var next = this.test({ 
+      name: 'noUnknown', 
+      exclusive: true, 
+      message:  message || locale.noUnknown,
+      test(value) { 
+        return value == null || !noAllow || unknown(this, value).length === 0
+      }
+    })
+
+    if ( !!noAllow ) 
+      this._options.stripUnknown = true
+
+    return  next
+  },
+
   camelcase(){
     return this.transform(obj => obj == null ? obj
       : transform(obj, (newobj, val, key ) => newobj[c.camel(key)] = val))
@@ -185,21 +209,28 @@ inherits(ObjectSchema, MixedSchema, {
   }
 })
 
+function unknown(ctx, value) {
+  var known = Object.keys(ctx.fields)
+  return Object.keys(value)
+    .filter(key => known.indexOf(key) === -1)
+}
+
 function sortFields(fields, excludes = []){
   var edges = [], nodes = []
 
   for( var key in fields ) if ( has(fields, key)) {
     if ( !~nodes.indexOf(key) ) nodes.push(key)
 
-    fields[key]._deps.forEach(node => {   //eslint-disable-line no-loop-func
-      node = split(node)[0]
-      
-      if ( !~nodes.indexOf(node) ) 
-        nodes.push(node)
+    fields[key]._deps &&
+      fields[key]._deps.forEach(node => {   //eslint-disable-line no-loop-func
+        node = split(node)[0]
+        
+        if ( !~nodes.indexOf(node) ) 
+          nodes.push(node)
 
-      if ( !~excludes.indexOf(`${key}-${node}`) ) 
-        edges.push([key, node])
-    }) 
+        if ( !~excludes.indexOf(`${key}-${node}`) ) 
+          edges.push([key, node])
+      }) 
   }
     
   return toposort.array(nodes, edges).reverse()

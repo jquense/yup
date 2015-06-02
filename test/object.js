@@ -88,10 +88,6 @@ describe('Object types', function(){
         )
       })
 
-    // return inst.validate().should.be.rejected.then(function(err){
-    //   console.log(err)
-    // })
-
     return inst.validate(obj).should.be.rejected
       .then(function(err){
         err.errors.length.should.equal(1)
@@ -127,7 +123,7 @@ describe('Object types', function(){
           str: string().default('hi')
         })
     })
-    .default().should.eql({ nest: { str: 'hi' } })
+    .default().should.eql({ nest: { str: 'hi' }, str: undefined })
 
     object({
         str: string(),
@@ -142,7 +138,7 @@ describe('Object types', function(){
         str: string(),
         nest: object({ str: string() })
     })
-    .default()).to.eql(undefined)
+    .default()).to.eql({ nest: { str: undefined }, str: undefined })
   })
 
   it('should handle empty keys', function(){
@@ -150,19 +146,28 @@ describe('Object types', function(){
           prop: mixed()
         })
 
-    // return inst.isValid({}).should.be.fulfilled.then(function(err){
-    //   console.log(err)
-    // })
 
     return Promise.all([
-      // inst.validate({}).should.be.rejected.then(function(err){
-      //   console.log(err)
-      // }),
+
       inst.isValid({}).should.eventually.equal(true),
 
       inst.shape({ prop: mixed().required() })
         .isValid({}).should.eventually.equal(false)
     ])
+  })
+
+  it('should work with noUnknown', function(){
+    var inst = object().shape({
+          prop: mixed(),
+          other: mixed()
+        })
+        .noUnknown('hi')
+
+
+    return inst.validate({ extra: 'field' }).should.be.rejected
+      .then(function(err){
+        err.errors[0].should.equal('hi')
+      })
   })
 
   it('should handle custom validation', function(){
@@ -179,6 +184,24 @@ describe('Object types', function(){
       .then(function(err){
         err.errors[0].should.equal('this oops')
       })
+  })
+
+  it('should allow nesting with "$this"', function(){
+    var inst = object().shape({
+          child: "$this",
+          other: string().required('required!')
+        })
+
+    inst.default().should.eql({ child: undefined, other: undefined })
+
+    return Promise.all([
+
+      inst.validate({ child: { other: undefined }, other: 'ff' }).should.be.rejected
+        .then(function(err){
+          err.errors[0].should.equal('required!')
+        }),
+
+    ])
   })
 
   it('should respect abortEarly', function(){
@@ -269,6 +292,16 @@ describe('Object types', function(){
     }).should.not.throw()
   })
 
+  it('should use correct default when concating', function(){
+    var inst = object().shape({
+          other: bool(),
+        })
+        .default(undefined)
+
+    chai.expect(inst.concat(object()).default()).to.equal(undefined)
+
+    chai.expect(inst.concat(object().default({})).default()).to.eql({})
+  })
 
   it('should handle nested conditionals', function(){
     var countSchema = number().when('isBig', { is: true, then: number().min(5) })
@@ -278,6 +311,7 @@ describe('Object types', function(){
               isBig: bool(),
               count: countSchema
             })
+            .default(undefined)
             .when('other', { is: true, then: object().required() })
         })
 
