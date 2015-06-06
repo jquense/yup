@@ -102,21 +102,22 @@ inherits(ObjectSchema, MixedSchema, {
 // The issue with this is that there are two phases of validating a schema, transformation, and validation. They both work by processing a stack of transforms and validations, it is a very generic strategy which helps make yup a good bit smaller then joi and a lot more flexible in terms of doing custom stuff. The down side is that it doesn't leave a lot of room for tiny tweaks like this. `stripUnknown` is a transform
   _validate(_value, _opts, _state) {
     var errors = []
-      , context, schema, endEarly;
+      , context, schema, endEarly, recursive;
 
-    _state   = _state || {}
-    context  = _state.parent || (_opts || {}).context
-    schema   = this._resolve(context)
-    endEarly = schema._option('abortEarly', _opts)
+    _state    = _state || {}
+    context   = _state.parent || (_opts || {}).context
+    schema    = this._resolve(context)
+    endEarly  = schema._option('abortEarly', _opts)
+    recursive = schema._option('recursive', _opts)
 
     return MixedSchema.prototype._validate
       .call(this, _value, _opts, _state)
       .catch(endEarly ? null : err => {
-        errors = err
+        errors.push(err)
         return err.value 
       })
       .then(value => {
-        if(!isObject(value)) {// only iterate though actual objects
+        if( !recursive || !isObject(value)) { // only iterate though actual objects
           if ( errors.length ) throw errors[0]
           return value
         }
@@ -157,8 +158,9 @@ inherits(ObjectSchema, MixedSchema, {
 
     next.fields = fields
 
-    next._excludedEdges = next._excludedEdges.concat(
-      excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
+    if ( excludes.length )
+      next._excludedEdges = next._excludedEdges.concat(
+        excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
 
     next._nodes = sortFields(fields, next._excludedEdges)
 
@@ -192,7 +194,7 @@ inherits(ObjectSchema, MixedSchema, {
       }
     })
 
-    if ( !!noAllow ) 
+    if ( noAllow ) 
       this._options.stripUnknown = true
 
     return  next

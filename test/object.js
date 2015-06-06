@@ -188,7 +188,7 @@ describe('Object types', function(){
 
   it('should allow nesting with "$this"', function(){
     var inst = object().shape({
-          child: "$this",
+          child: '$this',
           other: string().required('required!')
         })
 
@@ -199,7 +199,7 @@ describe('Object types', function(){
       inst.validate({ child: { other: undefined }, other: 'ff' }).should.be.rejected
         .then(function(err){
           err.errors[0].should.equal('required!')
-        }),
+        })
 
     ])
   })
@@ -211,28 +211,54 @@ describe('Object types', function(){
         })
         .test('name', 'oops', function(){ return false })
     })
-    // var inst = object({ 
-    //       str: string().required()
-    //     })
-    //     .test('name', 'oops', function(v){ return false })
 
     return Promise.all([
-      inst.validate({ nest: { str: null } }).should.be.rejected
-        .then(function(err){
-          //console.log(err)
+      inst
+        .validate({ nest: { str: null } }).should.be.rejected
+        .then(function(err) {
           err.value.should.eql({ nest: { str: '' }  })
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
+
+          err.path.should.equal('nest')
         }),
 
-      inst.validate({ nest: { str: null } }, { abortEarly: false }).should.be.rejected
-        .then(function(err){
-          //console.log(err)
+      inst
+        .validate({ nest: { str: null } }, { abortEarly: false }).should.be.rejected
+        .then(function(err) {
           err.value.should.eql({ nest: { str: '' } })
           err.errors.length.should.equal(2)
           err.errors.should.eql(['oops', 'this.nest.str is a required field'])
         })
     ])
+  })
+
+
+  it('should respect recursive', function(){
+    var inst = object({
+        nest: object({ 
+          str: string().required()
+        })
+      })
+      .test('name', 'oops', function(){ return false })
+
+    var val = { nest: { str: null } };
+
+    return Promise.all([
+      inst
+      .validate(val, { abortEarly: false }).should.be.rejected
+      .then(function(err){
+        err.errors.length.should.equal(2)
+      }),
+
+      inst
+        .validate(val, { abortEarly: false, recursive: false }).should.be.rejected
+        .then(function(err){
+          err.errors.length.should.equal(1)
+          err.errors.should.eql(['oops'])
+        })
+    ])
+
   })
 
   it('should alias or move keys', function(){

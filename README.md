@@ -140,9 +140,7 @@ Creates a new instance of the schema by combining two schemas. Only schemas of t
 
 #### `mixed.validate(value, [options, callback])`
 
-Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise. This method is __asynchronous__ 
-and returns a Promise object, that is fulfilled with the value, or rejected with a `ValidationError`. If you are more comfortable with 
-Node style callbacks, then you can provide one to be called when the validation is complete (called with the Error as the first argument, and value 
+Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise. This method is __asynchronous__ and returns a Promise object, that is fulfilled with the value, or rejected with a `ValidationError`. If you are more comfortable with Node style callbacks, then you can provide one to be called when the validation is complete (called with the Error as the first argument, and value 
 as the second).
 
 ```javascript
@@ -180,7 +178,9 @@ The `options` argument is an object hash containing any schema options you may w
 
 - `strict` -> boolean: default `false`, only validate the input, and skip and coercion or transformation
 - `abortEarly` -> boolean: default `true`, return from validation methods on the first error rather than after all validations run.
-- `context` -> an object hash containing any context for validating schema conditions (see: `when()`)
+- `stripUnknown` -> boolean: default `false` remove unspecified keys from objects.
+- `recursive` -> boolean: default `true` when `false` validations will not descend into sub schemas (relavant for objects or arrays).
+- `context` -> an `object` containing any context for validating schema conditions (see: `when()`)
 
 #### `mixed.cast(value)`
 

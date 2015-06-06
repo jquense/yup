@@ -30,7 +30,6 @@ function ArraySchema(){
 
     return this.isType(values) ? values : null
   })
-  
 }
 
 inherits(ArraySchema, MixedSchema, {
@@ -41,13 +40,15 @@ inherits(ArraySchema, MixedSchema, {
 
   _validate(_value, _opts, _state){
     var errors = []
-      , context, subType, schema, endEarly;
+      , context, subType, schema, endEarly, recursive;
 
-    _state   = _state || {}
-    context  = _state.parent || (_opts || {}).context
-    schema   = this._resolve(context)
-    subType  = schema._subType
-    endEarly = schema._option('abortEarly', _opts)
+    _state    = _state || {}
+    context   = _state.parent || (_opts || {}).context
+    schema    = this._resolve(context)
+    subType   = schema._subType
+    endEarly  = schema._option('abortEarly', _opts)
+    recursive = schema._option('recursive', _opts)
+
 
     return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
       .catch(endEarly ? null : err => {
@@ -55,7 +56,7 @@ inherits(ArraySchema, MixedSchema, {
         return err.value 
       })
       .then(function(value){
-        if ( !subType || !schema._typeCheck(value) ) {
+        if ( !recursive || !subType || !schema._typeCheck(value) ) {
           if ( errors.length ) throw errors[0]
           return value
         }
