@@ -1,5 +1,11 @@
+
+## 0.8.3
+- document `stripUnknown`
+- add `recursive` option
+- add `noUnknown()` test to objects
+
 ## 0.8.2
-- the default, default for objects now adds keys for all fields, not just fields with non empty defaults
+- default for objects now adds keys for all fields, not just fields with non empty defaults
 
 ## 0.8.1
 - bug fix

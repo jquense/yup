@@ -552,6 +552,11 @@ var schema = object()
 inst.cast({ prop: 5, other: 6}) // => { myProp: 5, other: 6, Other: 6 }
 ```
 
+
+#### `object.noUnknown([onlyKnownKeys, msg])`
+
+Validate that teh object value only contains keys specified in `shape`, pass `false` as the first argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
+
 #### `object.camelcase()`
 
 Transforms all object keys to camelCase
