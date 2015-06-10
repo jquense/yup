@@ -58,7 +58,7 @@ inherits(NumberSchema, SchemaObject, {
 
     return this
       .transform( v => v != null ? (v | 0) : v)
-      .test('integer', msg, val => value == null || val === (val | 0))
+      .test('integer', msg, val => val == null || val === (val | 0))
   },
 
   round(method) {
