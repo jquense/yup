@@ -13,7 +13,7 @@ describe('Number types', function(){
   it('should CAST correctly', function(){
 
     var inst = number(), date = new Date()
-    
+
     chai.expect(
       inst.cast(null)).to.eql(NaN)
 
@@ -69,7 +69,7 @@ describe('Number types', function(){
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })
-    ]) 
+    ])
   })
 
   it('should check MIN correctly', function(){

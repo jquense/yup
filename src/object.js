@@ -7,7 +7,7 @@ var MixedSchema = require('./mixed')
   , locale = require('./locale.js').object
   , split = require('property-expr').split
   , c = require('case')
-  , { 
+  , {
     isObject
   , transform
   , assign
@@ -39,7 +39,7 @@ function ObjectSchema(spec) {
     if (typeof value === 'string') {
       try {
         value = JSON.parse(value)
-      } 
+      }
       catch (err){ value = null }
     }
 
@@ -79,7 +79,7 @@ inherits(ObjectSchema, MixedSchema, {
 
         if( exists && fields[prop] ){
           var fieldSchema = fields[prop] === '$this' ? schema.default(undefined) : fields[prop]
-             
+
           obj[prop] = fieldSchema.cast(value[prop], { context: obj })
         }
 
@@ -114,7 +114,7 @@ inherits(ObjectSchema, MixedSchema, {
       .call(this, _value, _opts, _state)
       .catch(endEarly ? null : err => {
         errors.push(err)
-        return err.value 
+        return err.value
       })
       .then(value => {
         if( !recursive || !isObject(value)) { // only iterate though actual objects
@@ -125,25 +125,25 @@ inherits(ObjectSchema, MixedSchema, {
         let result = schema._nodes.map(function(key){
           var field = schema.fields[key] === '$this' ? schema : schema.fields[key]
             , path  = (_state.path ?  (_state.path + '.') : '') + key;
-         
+
           return field._validate(value[key]
             , _opts
             , { ..._state, key, path, parent: value  })
         })
 
-        result = endEarly 
+        result = endEarly
           ? Promise.all(result).catch(scopeError(value))
           : collectErrors(result, value, _state.path, errors)
-        
+
         return result.then(() => value)
       })
 
-    
+
   },
 
   concat(schema){
     var next = MixedSchema.prototype.concat.call(this, schema)
-    
+
     next._nodes = sortFields(next.fields, next._excludedEdges)
 
     return next
@@ -169,9 +169,9 @@ inherits(ObjectSchema, MixedSchema, {
 
   from(from, to, alias) {
     return this.transform( obj => {
-      if ( obj == null) 
+      if ( obj == null)
         return obj
-      
+
       var newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
 
       newObj[to] = obj[from]
@@ -185,16 +185,16 @@ inherits(ObjectSchema, MixedSchema, {
     if ( typeof noAllow === 'string')
       message = noAllow, noAllow = true;
 
-    var next = this.test({ 
-      name: 'noUnknown', 
-      exclusive: true, 
+    var next = this.test({
+      name: 'noUnknown',
+      exclusive: true,
       message:  message || locale.noUnknown,
-      test(value) { 
+      test(value) {
         return value == null || !noAllow || unknown(this, value).length === 0
       }
     })
 
-    if ( noAllow ) 
+    if ( noAllow )
       this._options.stripUnknown = true
 
     return  next
@@ -226,14 +226,14 @@ function sortFields(fields, excludes = []){
     fields[key]._deps &&
       fields[key]._deps.forEach(node => {   //eslint-disable-line no-loop-func
         node = split(node)[0]
-        
-        if ( !~nodes.indexOf(node) ) 
+
+        if ( !~nodes.indexOf(node) )
           nodes.push(node)
 
-        if ( !~excludes.indexOf(`${key}-${node}`) ) 
+        if ( !~excludes.indexOf(`${key}-${node}`) )
           edges.push([key, node])
-      }) 
+      })
   }
-    
+
   return toposort.array(nodes, edges).reverse()
 }

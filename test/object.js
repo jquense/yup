@@ -91,7 +91,7 @@ describe('Object types', function(){
     return inst.validate(obj).should.be.rejected
       .then(function(err){
         err.errors.length.should.equal(1)
-        err.errors[0].should.contain('this.nested.str')
+        err.errors[0].should.contain('nested.str')
       })
       .then(function(){
 
@@ -101,7 +101,7 @@ describe('Object types', function(){
           inst.isValid().should.eventually.equal(true),
 
           inst.validate(obj).should.be.rejected.then(function(err){
-            err.errors[0].should.contain('this.arr[1]')
+            err.errors[0].should.contain('arr[1]')
           })
         ])
       })
@@ -206,7 +206,7 @@ describe('Object types', function(){
 
   it('should respect abortEarly', function(){
     var inst = object({
-        nest: object({ 
+        nest: object({
           str: string().required()
         })
         .test('name', 'oops', function(){ return false })
@@ -228,7 +228,7 @@ describe('Object types', function(){
         .then(function(err) {
           err.value.should.eql({ nest: { str: '' } })
           err.errors.length.should.equal(2)
-          err.errors.should.eql(['oops', 'this.nest.str is a required field'])
+          err.errors.should.eql(['oops', 'nest.str is a required field'])
         })
     ])
   })
@@ -236,7 +236,7 @@ describe('Object types', function(){
 
   it('should respect recursive', function(){
     var inst = object({
-        nest: object({ 
+        nest: object({
           str: string().required()
         })
       })
@@ -333,7 +333,7 @@ describe('Object types', function(){
     var countSchema = number().when('isBig', { is: true, then: number().min(5) })
       , inst = object().shape({
           other: bool(),
-          stats: object({ 
+          stats: object({
               isBig: bool(),
               count: countSchema
             })

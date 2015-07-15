@@ -1,4 +1,11 @@
 
+## 0.9.0
+__breaking__
+- changed ValidationError signature from `ValidationError(message, value, path)` -> `ValidationError(message, path, value)`
+
+__other changes__
+- Can return a ValidationError from schema tests to customize the error.
+
 ## 0.8.3
 - document `stripUnknown`
 - add `recursive` option

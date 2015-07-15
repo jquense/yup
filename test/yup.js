@@ -46,11 +46,11 @@ describe('Yup', function(){
 
     var b = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5}, g: null }
 
-    _.merge(a, b).should.deep.eql({ 
-      a: 4, 
-      b: 'hello', 
-      c: [1, 2, 3, 4, 5, 3], 
-      d: { 
+    _.merge(a, b).should.deep.eql({
+      a: 4,
+      b: 'hello',
+      c: [1, 2, 3, 4, 5, 3],
+      d: {
         a: /hi/,
         b: 'hello'
       },
@@ -66,10 +66,10 @@ describe('Yup', function(){
         num: number().max(4),
 
         nested: object()
-          .shape({ 
+          .shape({
             arr: array().of(
               object().shape({ num: num })
-            ) 
+            )
         })
       })
 
@@ -88,9 +88,9 @@ describe('Yup', function(){
 
   // it.only('should REACH with conditions', function(){
   //   var num = number()
-  //   var altShape = { 
+  //   var altShape = {
   //         next: object().shape({
-  //           greet: bool(), 
+  //           greet: bool(),
   //           prop: number().when('greet', { is: true, then: number().max(5) })
   //         })
   //       }
@@ -99,7 +99,7 @@ describe('Yup', function(){
   //       num: number().max(4),
   //       nested: object()
   //         .when('num', { is: number().min(3), then: object(altShape) })
-  //         .shape({ 
+  //         .shape({
   //           next: object().shape({ prop: bool() })
   //         })
   //     })
@@ -114,5 +114,5 @@ describe('Yup', function(){
   //   //   done()
   //   // })
   // })
-  
+
 })

@@ -13,8 +13,8 @@ let isSchema = obj => obj && obj.__isYupSchema__
 
 
 function settled(promises){
-  let settle = promise => promise.then( 
-    value => ({ fulfilled: true, value }), 
+  let settle = promise => promise.then(
+    value => ({ fulfilled: true, value }),
     value => ({ fulfilled: false, value }))
 
   return Promise.all(promises.map(settle))
@@ -22,15 +22,15 @@ function settled(promises){
 
 function collectErrors(promises, value, path, errors = []){
   // unwrap aggregate errors
-  errors = errors.inner && errors.inner.length 
+  errors = errors.inner && errors.inner.length
     ? errors.inner : [].concat(errors)
 
   return settled(promises).then( results => {
     errors = results.reduce(
       (arr, r) => !r.fulfilled ? arr.concat(r.value) : arr, errors)
 
-    if ( errors.length ) 
-      throw new ValidationError(errors, value, path)
+    if ( errors.length )
+      throw new ValidationError(errors, path, value)
   })
 }
 
@@ -38,7 +38,7 @@ function assign(target) {
   for (var i = 1; i < arguments.length; i++) {
     var source = arguments[i];
 
-    for (var key in source) if ( has(source, key)) 
+    for (var key in source) if ( has(source, key))
       target[key] = source[key];
   }
 
@@ -47,7 +47,7 @@ function assign(target) {
 
 function uniq(arr, iter){
   var seen = {}
-  
+
   return arr.filter( (item, idx) => {
     var key = iter(item, idx)
 
@@ -59,10 +59,10 @@ function uniq(arr, iter){
 function transform(obj, cb, seed){
   cb = cb.bind(null, seed = seed || (Array.isArray(obj) ? [] : {}))
 
-  if( Array.isArray(obj)) 
+  if( Array.isArray(obj))
     obj.forEach(cb)
   else
-    for(var key in obj) if( has(obj, key) ) 
+    for(var key in obj) if( has(obj, key) )
       cb(obj[key], key, obj)
 
   return seed
@@ -94,7 +94,7 @@ function merge(target, source){
     else
       target[key] = source[key];
   }
-  
+
   return target;
 }
 
@@ -116,7 +116,7 @@ function inherits(ctor, superCtor, spec) {
 }
 
 module.exports = {
-  inherits, uniq, has, 
+  inherits, uniq, has,
   assign, merge, transform,
   isSchema, isObject, isPlainObject, isDate,
   settled, collectErrors

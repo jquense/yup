@@ -44,7 +44,7 @@ SchemaType.prototype = {
   },
 
   concat(schema){
-    if (!schema) 
+    if (!schema)
       return this
 
     if( schema._type !== this._type )
@@ -57,7 +57,7 @@ SchemaType.prototype = {
       next._default = schema._default
 
     // trim exclusive tests, take the most recent ones
-    next.tests = _.uniq(next.tests.reverse(), 
+    next.tests = _.uniq(next.tests.reverse(),
       (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
 
     return next
@@ -87,7 +87,7 @@ SchemaType.prototype = {
 
   _resolve(context){
     var schema  = this;
-    
+
     return this._conditions.reduce(function(schema, match){
       if(!context) throw new Error('missing the context necessary to cast this value')
       return match.resolve(schema, getter(match.key)(context))
@@ -131,7 +131,7 @@ SchemaType.prototype = {
       errors.push(schema._blacklistError(invalids.values(), path))
       if ( endEarly ) return reject()
     }
-    
+
     // It makes no sense to validate further at this point if their are errors
     if ( errors.length )
       return reject()
@@ -160,7 +160,7 @@ SchemaType.prototype = {
       .validate(value, options)
       .then(() => true)
       .catch(err => {
-        if ( err.name === 'ValidationError') 
+        if ( err.name === 'ValidationError')
           return false
 
         throw err
@@ -170,7 +170,7 @@ SchemaType.prototype = {
   default(def) {
     if( arguments.length === 0){
       var dflt = _.has(this, '_default') ? this._default : this._defaultDefault
-      return typeof dflt === 'function' 
+      return typeof dflt === 'function'
         ? dflt.call(this) : cloneDeep(dflt)
     }
 
@@ -186,11 +186,11 @@ SchemaType.prototype = {
   },
 
   required(msg) {
-    return this.test({ 
-      name: 'required', 
-      exclusive: true, 
+    return this.test({
+      name: 'required',
+      exclusive: true,
       message:  msg || locale.required,
-      test: value => value != null 
+      test: value => value != null
     })
   },
 
@@ -218,7 +218,7 @@ SchemaType.prototype = {
       , errorMsg, isExclusive;
 
     if( typeof name === 'string' ) {
-      if( typeof message === 'function') 
+      if( typeof message === 'function')
         test = message, message = name, name = null
 
       opts = { name, test, message, useCallback, exclusive: false }
@@ -237,7 +237,7 @@ SchemaType.prototype = {
     if( opts.exclusive || isExclusive ){
       if (!opts.name)
         throw new TypeError('You cannot have an exclusive validation without a `name`')
-      
+
       next._exclusive[opts.name] = true
       validate.VALIDATION_KEY = opts.name
     }
@@ -250,14 +250,18 @@ SchemaType.prototype = {
     return next
 
     function validate(value, path, context) {
+
       return new Promise((resolve, reject) => {
         !opts.useCallback
           ? resolve(opts.test.call(this, value, path, context))
           : opts.test.call(this, value, path, context, (err, valid) => err ? reject(err) : resolve(valid))
       })
-      .then(valid => {
-        if (!valid) 
-          throw new ValidationError(errorMsg({ path, ...opts.params }), value, path)
+      .then(validOrError => {
+        if ( ValidationError.isError(validOrError) )
+          throw normalizeError(validOrError, errorMsg, opts.params, path, value)
+
+        else if (!validOrError)
+          throw new ValidationError(errorMsg({ path, ...opts.params }), path, value)
       })
     }
   },
@@ -276,7 +280,7 @@ SchemaType.prototype = {
     if( next.tests.length )
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
-    next._whitelistError = (valids, path) => 
+    next._whitelistError = (valids, path) =>
       formatError(msg || locale.oneOf, { values: valids.join(', '), path })
 
     enums.forEach( val => {
@@ -290,7 +294,7 @@ SchemaType.prototype = {
   notOneOf(enums, msg) {
     var next = this.clone()
 
-    next._blacklistError = (invalids, path) => 
+    next._blacklistError = (invalids, path) =>
       formatError(msg || locale.notOneOf, { values: invalids.join(', '), path })
 
     enums.forEach( val => {
@@ -313,10 +317,26 @@ var aliases = {
 }
 
 
-for( var method in aliases ) if ( _.has(aliases, method) ) 
-  aliases[method].forEach( 
+for( var method in aliases ) if ( _.has(aliases, method) )
+  aliases[method].forEach(
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
-  
+
+
+function normalizeError(error, msg, params, path, value){
+
+  if (error.path === undefined)
+    error.path = path
+
+  if (error.value === undefined)
+    error.value = value
+
+  error.errors = error.errors.length
+    ? error.errors.map( msg => formatError(msg, { path: error.path, ...error.path }))
+    : [ msg({ path: error.path, ...error.path }) ]
+
+  return new ValidationError(error.errors, error.path, error.value)
+}
+
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise
 

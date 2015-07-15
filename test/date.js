@@ -14,7 +14,7 @@ function isValidDate(date){
 describe('Date types', function(){
 
   it('should CAST correctly', function(){
-    
+
     var inst = date()
 
     inst.cast(null).should.not.satisfy(isValidDate)

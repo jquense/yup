@@ -59,7 +59,7 @@ describe( 'Mixed Types ', function(){
       inst.validate(5).should.be.rejected.then(function(err){
         err.errors[0].should.equal('this must not be one the following values: hello, 5')
       }),
-      
+
       inst.oneOf([5]).isValid(5).should.eventually.equal(true)
     ])
   })
@@ -101,39 +101,39 @@ describe( 'Mixed Types ', function(){
       .test({ message: 'invalid', name: 'test', test:  function(){} })
       .test({ message: 'also invalid', name: 'test', test:  function(){} })
 
-    inst.tests.length.should.equal(2) 
+    inst.tests.length.should.equal(2)
   })
 
   it('exclusive tests should throw without a name', function(){
-    ;(function(){ 
+    ;(function(){
       mixed().test({ message: 'invalid', exclusive: true, test: function(){} })
-    }).should.throw() 
+    }).should.throw()
   })
 
   it('exclusive tests should replace previous ones', function(){
-    var inst = mixed().test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){ 
-      return v < 5 
+    var inst = mixed().test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){
+      return v < 5
     }})
 
     return Promise.all([
 
       inst.isValid(8).should.eventually.become(false),
 
-      inst.test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){ 
-          return v < 10 
+      inst.test({ message: 'invalid', exclusive: true, name: 'max', test: function(v){
+          return v < 10
         }})
         .isValid(8).should.eventually.become(true)
-    ]) 
+    ])
   })
 
   it('tests should receive path and context', function(done){
     var inst = object({
       other: mixed(),
       test: mixed().test({
-        message: 'invalid', 
-        exclusive: true, 
-        name: 'max', 
-        test: function(v, path, context){ 
+        message: 'invalid',
+        exclusive: true,
+        name: 'max',
+        test: function(v, path, context){
           path.should.equal('test')
           context.should.eql({ other: 5, test : 'hi' })
           done()
@@ -142,7 +142,41 @@ describe( 'Mixed Types ', function(){
     })
 
     inst.validate({ other: 5, test : 'hi' })
+  })
 
+  it('tests can return an error', function(){
+    var inst = mixed().test({
+        message: 'invalid ${path}',
+        name: 'max',
+        test: function(v, path, context){
+          return new ValidationError(null, 'my.path')
+        }
+      })
+
+    return inst.validate('')
+      .should.be.rejected
+      .then(function(e){
+        e.path.should.equal('my.path')
+        e.errors[0].should.equal('invalid my.path')
+      })
+  })
+
+  it('should use returned error path and message', function(){
+    var inst = mixed().test({
+        message: 'invalid ${path}',
+        name: 'max',
+        test: function(v, path, context){
+          return new ValidationError(['${path} nope!', '${path} no again!'], 'my.path')
+        }
+      })
+
+    return inst.validate({ other: 5, test : 'hi' })
+      .should.be.rejected
+      .then(function(e){
+        e.path.should.equal('my.path')
+        e.errors[0].should.equal('my.path nope!')
+        e.errors[1].should.equal('my.path no again!')
+      })
   })
 
   it('should allow custom validation of either style', function(){
@@ -153,7 +187,7 @@ describe( 'Mixed Types ', function(){
       .test('name', 'test b', function(val, path, context, done){
         process.nextTick(function(){
           done(null, val !== 'jim')
-        })   
+        })
       }, true)
 
     return Promise.all([
@@ -209,11 +243,11 @@ describe( 'Mixed Types ', function(){
       }),
 
       next.validate({ str: 'hi', str2: 'hi', obj: {} }).should.be.rejected.then(function(err){
-        err.message.should.contain('this.obj.str is a required field')
+        err.message.should.contain('obj.str is a required field')
       }),
 
       next.validate({ str2: 'hi', obj: { str: 'hi'} }).should.be.rejected.then(function(err){
-        err.message.should.contain('this.str is a required field')
+        err.message.should.contain('str is a required field')
       })
     ])
 

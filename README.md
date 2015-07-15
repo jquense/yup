@@ -110,7 +110,7 @@ Adds a new method to the core schema types. A friendlier convenience method for 
   })
 ```
 
-### `ValidationError`
+### `ValidationError(String|Array<String> errors, String path, Any value)`
 
 Thrown on failed validations, with the following properties
  - `name`: ValidationError
@@ -134,11 +134,11 @@ schema.isValid(undefined, function(valid){
 
 Creates a deep copy of the schema. Clone is used internally to return a new schema with every schema state change. 
 
-#### `mixed.concat(schema)`
+#### `mixed.concat(Schema schema)`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
-#### `mixed.validate(value, [options, callback])`
+#### `mixed.validate(Any value, [Object options, Function callback])`
 
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise. This method is __asynchronous__ and returns a Promise object, that is fulfilled with the value, or rejected with a `ValidationError`. If you are more comfortable with Node style callbacks, then you can provide one to be called when the validation is complete (called with the Error as the first argument, and value 
 as the second).
@@ -169,7 +169,7 @@ schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
 })
 ```
 
-#### `mixed.isValid(value, [options, callback])`
+#### `mixed.isValid(Any value, [Object options, Function callback])`
 
 Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema. `isValid` is __asynchronous__ and returns a Promise object. If you are more comfortable with 
 Node style callbacks, then you can provide one to be called when the validation is complete.
@@ -186,7 +186,7 @@ The `options` argument is an object hash containing any schema options you may w
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also return results like `NaN` and unexpected strings.
 
-#### `mixed.isType(value)`
+#### `mixed.isType(Any value)`
 
 Runs a type check against the passed in `value`. It returns true if it matches, it does not cast the value. When `nullable()` is set `null` is considered a valid value of the type. You should use `isType` for all Schema type checks.
 
@@ -194,7 +194,7 @@ Runs a type check against the passed in `value`. It returns true if it matches, 
 
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts, validating the value "as is".
 
-#### `mixed.default(value)`
+#### `mixed.default([Any value])`
 
 Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable). Defaults are created after transformations are executed, but before validations, to help ensure that safe defaults are specified. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
 
@@ -209,20 +209,20 @@ Sets a default value to use when the value is `undefined` (or `null` when the sc
 
 ```
 
-#### `mixed.typeError(message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')
+#### `mixed.typeError(String message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')
 
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can be used in the `message` argument.
 
-#### `mixed.nullable(isNullable)` (default: `false`)
+#### `mixed.nullable(Bool isNullable)` (default: `false`)
 
 Indicates that `null` is a valid value for the schema. Without `nullable()` 
 `null` is treated as a different type and will fail `isType()` checks.
 
-#### `mixed.required([message])`
+#### `mixed.required([String message])`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
-#### `mixed.oneOf(arrayOfValues, [message])` Alias: `equals`
+#### `mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it. The `${values}` interpolation can be used in the `message` argument.
 
@@ -233,7 +233,7 @@ schema.isValid('jimmy')  //=> true
 schema.isValid(new Date) //=> false
 ```
 
-#### `mixed.notOneOf(arrayOfValues, [message])`
+#### `mixed.notOneOf(Array<Any> arrayOfValues, [String message])`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it. The `${values}` interpolation can be used in the `message` argument.
 
@@ -243,7 +243,7 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
-#### `mixed.when(key, options | function)`
+#### `mixed.when(String key, Object options | Function func)`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object literal where the key `is` is value or a matcher function, `then` provides the true schema and/or `otherwise` for the failure condition.
 
@@ -269,11 +269,11 @@ var inst = yup.object({
 
 __note: because `when` conditions must be resolved during `cast()`, a synchronous api, `is` cannot be a schema object as checking schema validity it is asynchronous__
 
-#### `mixed.test(name, message, fn, [callbackStyleAsync])` 
+#### `mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])` 
 
 Adds a test function to the validation chain. Tests are run after any object is cast. Many types have some tests built in, but you can create custom ones easily. In order to allow asynchronous custom validations _all_ tests are run asynchronously. A consequence of this is that test execution order cannot be guaranteed. 
 
-All tests must provide a `name`, an error `message` and a validation function that must return `true` or `false`. To make a test async return a promise that resolves `true` or `false`. If you perfer the Node callback style, you can pass `true` for `callbackStyleAsync` and the validation function will pass in an additional `done` function as the last parameter to be called with the validity.
+All tests must provide a `name`, an error `message` and a validation function that must return `true` or `false` or a `ValidationError`. To make a test async return a promise that resolves `true` or `false` or a `ValidationError`. If you perfer the Node callback style, you can pass `true` for `callbackStyleAsync` and the validation function will pass in an additional `done` function as the last parameter to be called with the validity.
 
 for the `message` argument you can provide a string which is will interpolate certain values if specified using the `${param}` syntax. By default all test messages are passed a `path` value which is valuable in nested schemas.
 
@@ -307,7 +307,7 @@ schema.errors // => [ 'this is not Jimmy!']
 ```
 
 
-#### `mixed.test(options)`
+#### `mixed.test(Object options)`
 
 Alternative `test(..)` signature. `options` is an object containing some of the following options:
 
@@ -328,7 +328,7 @@ var schema = yup.mixed().test({
     });
 ```
 
-#### `mixed.transform(fn)`
+#### `mixed.transform(Function fn)`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process, default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)). transforms are run before validations and only applied when `strict` is `true`. Some types have built in transformations. 
 
@@ -368,19 +368,19 @@ var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
 
-#### `string.required([message])`
+#### `string.required([String message])`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values. To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
-#### `string.min(limit, [message])`
+#### `string.min(Number limit, [String message])`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `string.max(limit, [message])`
+#### `string.max(Number limit, [String message])`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
-#### `string.matches(regex, [message])`
+#### `string.matches(Regex regex, [String message])`
 
 Provide an arbitrary `regex` to match the value against.
 
@@ -390,25 +390,25 @@ v.isValid('hi').should.eventually.equal(true)
 v.isValid('nope').should.eventually.equal(false)
 ```
 
-#### `string.email([message])`
+#### `string.email([String message])`
 
 Validates the value as an email address via a regex.
 
-#### `string.url(message)`
+#### `string.url([String message])`
 
 Validates the value as a valid URL via a regex.
 
 
-#### `string.trim([message])`
+#### `string.trim([String message])`
 
 Transforms string values by removing leading and trailing whitespace. If 
 `strict()` is set it will only validate that the value is trimmed.
 
-#### `string.lowercase([message])`
+#### `string.lowercase([String message])`
 
 Transforms the string value to lowercase. If `strict()` is set it will only validate that the value is lowercase.
 
-#### `string.uppercase([message])`
+#### `string.uppercase([String message])`
 
 Transforms the string value to uppercase. If `strict()` is set it will only validate that the value is uppercase.
 
@@ -421,30 +421,30 @@ var schema = yup.number();
 schema.isValid(10) //=> true
 ```
 
-#### `number.min(limit, [message])`
+#### `number.min(Number limit, [String message])`
 
 Set the minimum value allowed. The `${min}` interpolation can be used in the 
 `message` argument.
 
-#### `number.max(limit, [message])`
+#### `number.max(Number limit, [String message])`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the 
 `message` argument.
 
-#### `number.positive([message])`
+#### `number.positive([String message])`
 
 Value must be a positive number.
 
-#### `number.negative([message])`
+#### `number.negative([String message])`
 
 Value mut be a negative number.
 
-#### `number.integer([message])`
+#### `number.integer([String message])`
 
 Transformation that coerces the value into an integer via truncation 
 ` value | 0`. If `strict()` is set it will only validate that the value is an integer.
 
-#### `round(type)` - 'floor', 'ceil', 'round'
+#### `round(String type)` - 'floor', 'ceil', 'round'
 
 Rounds the value by the specified method (defaults to 'round').
 
@@ -467,11 +467,11 @@ var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
 
-#### `date.min(limit, [message])`
+#### `date.min(Date|String limit, [String message])`
 
 Set the minimum date allowed.
 
-#### `date.max(limit, [message])`
+#### `date.max(Date|String limit, [String message])`
 
 Set the maximum date allowed.
 
@@ -487,23 +487,23 @@ schema.isValid([1, -24]) //=> false
 schema.cast(['2', '3'])  //=> [2, 3] 
 ```
 
-### `array.of(type)`
+### `array.of(Schema type)`
 
 Specify the schema of array elements. `of()` is optional and when ommited the array schema will not validate its contents.
 
-#### `array.required([message])`
+#### `array.required([String message])`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values. To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
-#### `array.min(limit, [message])`
+#### `array.min(Number limit, [String message])`
 
 Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(limit, [message])`
+#### `array.max(Number limit, [String message])`
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
-### `array.compact(rejector)`
+### `array.compact(Function rejector)`
 
 Removes falsey values from the array. Providing a rejector function lets you specify the rejection criteria yourself.
 
@@ -532,11 +532,11 @@ yup.object().shape({
 }) 
 ```
 
-#### `object.shape(schemaHash, [noSortEdges])`
+#### `object.shape(Object schemaHash, [noSortEdges])`
 
 Define the keys of the object and the schemas for said keys.
 
-#### `object.from(fromKey, toKey, alias)`
+#### `object.from(String fromKey, String toKey, Bool alias)`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
@@ -553,7 +553,7 @@ inst.cast({ prop: 5, other: 6}) // => { myProp: 5, other: 6, Other: 6 }
 ```
 
 
-#### `object.noUnknown([onlyKnownKeys, msg])`
+#### `object.noUnknown([Bool onlyKnownKeys, String msg])`
 
 Validate that teh object value only contains keys specified in `shape`, pass `false` as the first argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
 

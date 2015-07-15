@@ -73,7 +73,7 @@ describe('String types', function(){
       inst.validate('').should.be.rejected.then(function(err){
         err.errors.length.should.equal(1)
       })
-    ])   
+    ])
   })
 
   it('should check MATCHES correctly', function(){
