@@ -110,7 +110,7 @@ Adds a new method to the core schema types. A friendlier convenience method for 
   })
 ```
 
-#### `ValidationError(String|Array<String> errors, String path, Any value)`
+#### `ValidationError(String|Array<String> errors, Any value, String path)`
 
 Thrown on failed validations, with the following properties
  - `name`: ValidationError
