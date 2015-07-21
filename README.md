@@ -1,9 +1,9 @@
 Yup
 =======================
 
-Yup is a js object schema validator and object parser. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but is often too large and diffucult to package for use in a browser. Yup is a leaner in the same spirit without the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
+Yup is a js object schema validator and object parser. The api and style is heavily inspired by [Joi](https://github.com/hapijs/joi), which is an amazing library but is generally too large and difficult to package for use in a browser. Yup is a leaner in the same spirit without some of the fancy features. You can use it on the server as well, but in that case you might as well just use Joi.
 
-Yup is also a a good bit less opinionated than joi, allowing for custom validation and transformations. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property. Yup also also seperates the parsing and validating functions into seperate steps so it can be used to parse json seperate from validating it, via the `cast` method.
+Yup is also a a good bit less opinionated than joi, allowing for custom transformations and async validation. It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or child property. Yup seperates the parsing and validating functions into seperate steps so it can be used to parse json seperate from validating it, via the `cast` method.
 
 ## Usage
 
@@ -15,9 +15,9 @@ Yup is also a a good bit less opinionated than joi, allowing for custom validati
     + [`date`](#date)
     + [`array`](#array)
     + [`object`](#array)
-  - [`reach`](#reach)
-  - [`addMethod`](#addMethod)
-  - [`ValidationError`](#ValidationError) 
+  - [`reach`](#reachschema-schema-string-path-object-options)
+  - [`addMethod`](#addmethodschematype-name-method)
+  - [`ValidationError`](#validationerrorstringarraystring-errors-string-path-any-value) 
   - [Extending Schema Types](#extending-schema-types)
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
@@ -73,7 +73,7 @@ yup.addMethod
 yup.ValidationError
 ```
 
-### `.reach(Schema schema, String path, Object options)`
+#### `.reach(Schema schema, String path, Object options)`
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
 
@@ -92,7 +92,7 @@ reach(schema, 'nested.arr[1].num')
 reach(schema, 'nested["arr"][1].num') 
 ```
 
-### `.addMethod(schemaType, name, method)`
+#### `.addMethod(schemaType, name, method)`
 
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
@@ -110,7 +110,7 @@ Adds a new method to the core schema types. A friendlier convenience method for 
   })
 ```
 
-### `ValidationError(String|Array<String> errors, String path, Any value)`
+#### `ValidationError(String|Array<String> errors, String path, Any value)`
 
 Thrown on failed validations, with the following properties
  - `name`: ValidationError
