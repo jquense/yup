@@ -1,23 +1,27 @@
 'use strict';
 var { has, isSchema } = require('./_')
+  , getter = require('property-expr').getter
 
 module.exports = Conditional
 
 class Conditional {
 
   constructor(key, type, options){
-    let { is, then, otherwise } = options;
+    let { is, then, otherwise } = options
+      , prefix = options.contextPrefix || '$';
 
+    this.prefix = prefix;
     this.key = key
+    this.isContext = key.indexOf(prefix) === 0
 
     if ( typeof options === 'function')
       this.fn = options
     else
     {
-      if( !has(options, 'is') ) 
+      if( !has(options, 'is') )
         throw new TypeError('`is:` is required for `when()` conditions')
 
-      if( !options.then && !options.otherwise ) 
+      if( !options.then && !options.otherwise )
         throw new TypeError('either `then:` or `otherwise:` is required for `when()` conditions')
 
       if(  options.then && options.then._type !== type || options.otherwise && options.otherwise._type !== type)
@@ -28,6 +32,15 @@ class Conditional {
 
       this.fn = (value, ctx) => is(value) ? ctx.concat(then) : ctx.concat(otherwise)
     }
+  }
+
+  getValue(parent, context){
+    var path = this.isContext ? this.key.slice(this.prefix.length) : this.key
+
+    if ( (this.isContext && !context) || (!this.isContext && !context && !parent))
+      throw new Error('missing the context necessary to cast this value')
+
+    return getter(path)(this.isContext ? context : (parent || context) )
   }
 
   resolve(ctx, value) {

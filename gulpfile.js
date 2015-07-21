@@ -6,16 +6,6 @@ var gulp = require('gulp')
   , rename = require('gulp-rename')
   , babelTransform = require('gulp-babel-helpers')
 
-gulp.task('test-runner', function(){
-
-	gulp.watch(['./src/**/*.js'], ['compile'])
-
-  gulp.watch('./test/**/*.js', function(e){
-    gulp.src(e.path)
-      .pipe(plumber())
-      .pipe(mocha({ reporter: 'spec' }))
-  })
-})
 
 gulp.task('clean', function(cb){
   del('./lib', cb);
@@ -28,15 +18,6 @@ gulp.task('compile', [ 'clean' ], function(){
       .pipe(babelTransform('./util/babelHelpers.js'))
       .pipe(rename({ extname: '.js' }))
       .pipe(gulp.dest('./lib'));
-})
-
-gulp.task('watch', function(){
-  gulp.watch(['./src/**/*.js', './test/**/*.js'], ['build'])
-})
-
-gulp.task('mocha', function () {
-    return gulp.src('test.js', { read: false })
-        .pipe(mocha({ reporter: 'spec' }));
 })
 
 

@@ -1,10 +1,10 @@
 'use strict';
 /* global describe, it */
 var chai  = require('chai')
-  , Promise = require('promise/lib/es6-extensions')
+  , Promise = require('promise/src/es6-extensions')
   , sinonChai = require('sinon-chai')
   , chaiAsPromised = require('chai-as-promised')
-  , string = require('../lib/string');
+  , string = require('../src/string');
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);

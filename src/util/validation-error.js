@@ -6,7 +6,7 @@ let replace = str =>
 
 module.exports = ValidationError;
 
-function ValidationError(errors, field, value) {
+function ValidationError(errors, value, field) {
   this.name     = 'ValidationError'
   this.value    = value
   this.path     = field

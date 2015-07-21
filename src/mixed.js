@@ -3,10 +3,10 @@
 var Promise = require('promise/lib/es6-extensions')
   , Condition   = require('./util/condition')
   , ValidationError = require('./util/validation-error')
-  , getter = require('property-expr').getter
   , locale = require('./locale.js').mixed
   , _ = require('./util/_')
   , cloneDeep = require('./util/clone')
+  , createValidation = require('./util/createValidation')
   , BadSet = require('./util/set');
 
 let formatError = ValidationError.formatError
@@ -85,26 +85,25 @@ SchemaType.prototype = {
     return value
   },
 
-  _resolve(context){
+  _resolve(context, parent){
     var schema  = this;
 
     return this._conditions.reduce(function(schema, match){
-      if(!context) throw new Error('missing the context necessary to cast this value')
-      return match.resolve(schema, getter(match.key)(context))
+      return match.resolve(schema, match.getValue(parent, context))
     }, schema)
   },
 
   //-- tests
-  _validate(value, _opts, _state) {
+  _validate(value, options = {}, state = {}) {
     let valids   = this._whitelist
       , invalids = this._blacklist
-      , context  = (_opts || {}).context || _state.parent
-      , schema, state, endEarly, isStrict;
+      , context  = options.context
+      , parent   = state.parent
+      , schema, endEarly, isStrict;
 
-    state    = _state
-    schema   = this._resolve(context)
-    isStrict = schema._option('strict', _opts)
-    endEarly = schema._option('abortEarly', _opts)
+    schema   = this._resolve(context, parent)
+    isStrict = schema._option('strict', options)
+    endEarly = schema._option('abortEarly', options)
 
     let path = state.path
 
@@ -112,7 +111,7 @@ SchemaType.prototype = {
     let reject = () => Promise.reject(new ValidationError(errors, value));
 
     if ( !state.isCast && !isStrict )
-      value = schema._cast(value, _opts)
+      value = schema._cast(value, options)
 
     // value is cast, we can check if it meets type requirements
     if ( value !== undefined && !schema.isType(value) ){
@@ -136,7 +135,7 @@ SchemaType.prototype = {
     if ( errors.length )
       return reject()
 
-    let result = schema.tests.map(fn => fn.call(schema, value, path, context))
+    let result = schema.tests.map(fn => fn({ value, path, state, schema, options }))
 
     result = endEarly
       ? Promise.all(result)
@@ -230,7 +229,7 @@ SchemaType.prototype = {
     if( next._whitelist.length )
       throw new Error('Cannot add tests when specific valid values are specified')
 
-    errorMsg = formatError(opts.message || locale.default)
+    var validate = createValidation(opts)
 
     isExclusive = opts.name && next._exclusive[opts.name] === true
 
@@ -249,21 +248,21 @@ SchemaType.prototype = {
 
     return next
 
-    function validate(value, path, context) {
+    // function validate(value, path, context) {
 
-      return new Promise((resolve, reject) => {
-        !opts.useCallback
-          ? resolve(opts.test.call(this, value, path, context))
-          : opts.test.call(this, value, path, context, (err, valid) => err ? reject(err) : resolve(valid))
-      })
-      .then(validOrError => {
-        if ( ValidationError.isError(validOrError) )
-          throw normalizeError(validOrError, errorMsg, opts.params, path, value)
+    //   return new Promise((resolve, reject) => {
+    //     !opts.useCallback
+    //       ? resolve(opts.test.call(this, value, path, context))
+    //       : opts.test.call(this, value, path, context, (err, valid) => err ? reject(err) : resolve(valid))
+    //   })
+    //   .then(validOrError => {
+    //     if ( ValidationError.isError(validOrError) )
+    //       throw normalizeError(validOrError, errorMsg, opts.params, path, value)
 
-        else if (!validOrError)
-          throw new ValidationError(errorMsg({ path, ...opts.params }), path, value)
-      })
-    }
+    //     else if (!validOrError)
+    //       throw new ValidationError(errorMsg({ path, ...opts.params }), path, value)
+    //   })
+    // }
   },
 
   when(key, options){

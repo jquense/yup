@@ -1,13 +1,13 @@
 'use strict';
 /*global describe, it */
-var Promise = require('promise/lib/es6-extensions')
+var Promise = require('promise/src/es6-extensions')
   , chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , reach = require('../lib/util/reach')
-  , number = require('../lib/number')
-  , array = require('../lib/array')
-  , object = require('../lib/object')
-  , _ = require('../lib/util/_');
+  , reach = require('../src/util/reach')
+  , number = require('../src/number')
+  , array = require('../src/array')
+  , object = require('../src/object')
+  , _ = require('../src/util/_');
 
 chai.use(chaiAsPromised);
 

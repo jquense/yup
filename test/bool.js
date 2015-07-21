@@ -2,8 +2,8 @@
 /* global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/lib/es6-extensions')
-  , bool = require('../lib/boolean');
+  , Promise = require('promise/src/es6-extensions')
+  , bool = require('../src/boolean');
 
 chai.use(chaiAsPromised);
 chai.should();

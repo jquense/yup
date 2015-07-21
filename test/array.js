@@ -2,11 +2,11 @@
 /* global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/lib/es6-extensions')
-  , string = require('../lib/string')
-  , number = require('../lib/number')
-  , object = require('../lib/object')
-  , array = require('../lib/array');
+  , Promise = require('promise/src/es6-extensions')
+  , string = require('../src/string')
+  , number = require('../src/number')
+  , object = require('../src/object')
+  , array = require('../src/array');
 
 chai.use(chaiAsPromised);
 chai.should();

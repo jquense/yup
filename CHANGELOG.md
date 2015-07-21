@@ -1,10 +1,11 @@
 
 ## 0.9.0
 __breaking__
-- changed ValidationError signature from `ValidationError(message, value, path)` -> `ValidationError(message, path, value)`
+- `test` functions are no longer passed `path` and `context` as arguments, Instead they are now values on `this` inside the test function.
+- test functions are longer called with the schema as their `this` value, use `this.schema` instead.
 
 __other changes__
-- Can return a ValidationError from schema tests to customize the error.
+- test functions are call with with a new context object, including, options, parent and `createError` for dynamically altering validation errors.
 
 ## 0.8.3
 - document `stripUnknown`

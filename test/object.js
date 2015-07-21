@@ -2,14 +2,14 @@
 /*global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/lib/es6-extensions')
-  , mixed = require('../lib/mixed')
-  , string = require('../lib/string')
-  , date = require('../lib/date')
-  , number = require('../lib/number')
-  , bool = require('../lib/boolean')
-  , array = require('../lib/array')
-  , object = require('../lib/object');
+  , Promise = require('promise/src/es6-extensions')
+  , mixed = require('../src/mixed')
+  , string = require('../src/string')
+  , date = require('../src/date')
+  , number = require('../src/number')
+  , bool = require('../src/boolean')
+  , array = require('../src/array')
+  , object = require('../src/object');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -163,8 +163,8 @@ describe('Object types', function(){
         })
         .noUnknown('hi')
 
-
-    return inst.validate({ extra: 'field' }).should.be.rejected
+    return inst.validate({ extra: 'field' })
+      .should.be.rejected
       .then(function(err){
         err.errors[0].should.equal('hi')
       })

@@ -1,8 +1,8 @@
 'use strict';
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/lib/es6-extensions')
-  , date = require('../lib/date');
+  , Promise = require('promise/src/es6-extensions')
+  , date = require('../src/date');
 
 chai.use(chaiAsPromised);
 chai.should();

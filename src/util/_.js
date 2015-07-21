@@ -30,7 +30,7 @@ function collectErrors(promises, value, path, errors = []){
       (arr, r) => !r.fulfilled ? arr.concat(r.value) : arr, errors)
 
     if ( errors.length )
-      throw new ValidationError(errors, path, value)
+      throw new ValidationError(errors, value, path)
   })
 }
 

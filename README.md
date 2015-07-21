@@ -143,6 +143,15 @@ Creates a new instance of the schema by combining two schemas. Only schemas of t
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise. This method is __asynchronous__ and returns a Promise object, that is fulfilled with the value, or rejected with a `ValidationError`. If you are more comfortable with Node style callbacks, then you can provide one to be called when the validation is complete (called with the Error as the first argument, and value 
 as the second).
 
+
+The `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
+
+- `strict` -> boolean: default `false`, only validate the input, and skip and coercion or transformation
+- `abortEarly` -> boolean: default `true`, return from validation methods on the first error rather than after all validations run.
+- `stripUnknown` -> boolean: default `false` remove unspecified keys from objects.
+- `recursive` -> boolean: default `true` when `false` validations will not descend into sub schemas (relavant for objects or arrays).
+- `context` -> an `object` containing any context for validating schema conditions (see: `when()`)
+
 ```javascript
 schema.validate({ name: 'jimmy',age: 24 })
   .then(function(value){
@@ -169,24 +178,17 @@ schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
 })
 ```
 
-#### `mixed.isValid(Any value, [Object options, Function callback])`
+#### `mixed.isValid(Any value, [Object options, Function callback]) -> Promise`
 
-Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema. `isValid` is __asynchronous__ and returns a Promise object. If you are more comfortable with 
-Node style callbacks, then you can provide one to be called when the validation is complete.
+Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors` field which is an array of validation error messages (strings), thrown by the schema. `isValid` is __asynchronous__ and returns a Promise object. If you are more comfortable with Node style callbacks, providing a function as teh last argument will opt into that interface.
 
-The `options` argument is an object hash containing any schema options you may want to override (or specify for the first time).
+Takes the same options as `validate()`.
 
-- `strict` -> boolean: default `false`, only validate the input, and skip and coercion or transformation
-- `abortEarly` -> boolean: default `true`, return from validation methods on the first error rather than after all validations run.
-- `stripUnknown` -> boolean: default `false` remove unspecified keys from objects.
-- `recursive` -> boolean: default `true` when `false` validations will not descend into sub schemas (relavant for objects or arrays).
-- `context` -> an `object` containing any context for validating schema conditions (see: `when()`)
-
-#### `mixed.cast(value)`
+#### `mixed.cast(value) -> Any`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also return results like `NaN` and unexpected strings.
 
-#### `mixed.isType(Any value)`
+#### `mixed.isType(Any value) -> Boolean`
 
 Runs a type check against the passed in `value`. It returns true if it matches, it does not cast the value. When `nullable()` is set `null` is considered a valid value of the type. You should use `isType` for all Schema type checks.
 
@@ -194,7 +196,7 @@ Runs a type check against the passed in `value`. It returns true if it matches, 
 
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts, validating the value "as is".
 
-#### `mixed.default([Any value])`
+#### `mixed.default(Any value)`
 
 Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable). Defaults are created after transformations are executed, but before validations, to help ensure that safe defaults are specified. The default value will be cloned on each use wich can incur performance penalty for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
 
@@ -208,6 +210,11 @@ Sets a default value to use when the value is `undefined` (or `null` when the sc
   yup.date.default(() => new Date()); //also helpful for defaults that change over time
 
 ```
+
+#### `mixed.default() -> Any`
+
+Calling `default` with no arguments will return the current default value
+
 
 #### `mixed.typeError(String message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')
 
@@ -251,23 +258,25 @@ Adjust the schema based on a sibling or sibling children fields. You can provide
 
 Alternatively you can provide a function the returns a schema (called with teh value of the key and teh current schema). `when` conditions are additive. 
 
+Like Joi you can also prefix properties with `$` to specify a property that is dependent on `context` passed in by `validate()` or `isValid`.
+
 ```javascript
 var inst = yup.object({
       isBig: yup.boolean(), 
-      other: yup.number(),
       count: yup.number()
         .when('isBig', { 
           is: true,  // alternatively: (val) => val == true
           then:      yup.number().min(5), 
           otherwise: yup.number().min(0) 
         })
-        .when('other', (other, schema) => other === 4 
+        .when('$other', (other, schema) => other === 4 
           ? schema.max(6) 
           : schema)
     })
+
+inst.validate(value, { context: { other: 4 }})
 ```
 
-__note: because `when` conditions must be resolved during `cast()`, a synchronous api, `is` cannot be a schema object as checking schema validity it is asynchronous__
 
 #### `mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])` 
 
@@ -285,7 +294,7 @@ var jimmySchema = yup.string()
 
 // or make it async by returning a promise
 var asyncJimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', function (value, path, context){
+  .test('is-jimmy', '${path} is not Jimmy', function (value){
     return fetch('/is-jimmy/' + value)
       .then(response => response.responseText === 'true')
   });
@@ -294,7 +303,7 @@ var asyncJimmySchema = yup.string()
 var asynCallbackJimmySchema = yup.string()
   .test('is-jimmy', '${path} is not Jimmy', test, true);
 
-function test(value, path, context, done){
+function test(value, done){
   // error argument is for exceptions, not an failed tests
   done(null, value === 'jimmy') 
 }
@@ -305,6 +314,14 @@ schema.isValid('john').then(...) //=> false
 schema.errors // => [ 'this is not Jimmy!']
 
 ```
+
+test functions are called with a special context, or `this` value, that exposes some useful metadata and functions.
+
+- `this.path`: the string path of the current validation
+- `this.schema`: the resolved schema object that the test is running against.
+- `this.options`: the `options` object that validate() or isValid() was called with
+- `this.parent`:  in the case of nested schema, this is the value of the parent object
+- `this.createError(Object: { path: String, message: String })`: create and return a validation error. Useful for dynamically setting the `path`, or more likely, the error `message`. If either option is omitted it will use the current path, or default message.
 
 
 #### `mixed.test(Object options)`

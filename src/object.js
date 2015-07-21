@@ -190,7 +190,7 @@ inherits(ObjectSchema, MixedSchema, {
       exclusive: true,
       message:  message || locale.noUnknown,
       test(value) {
-        return value == null || !noAllow || unknown(this, value).length === 0
+        return value == null || !noAllow || unknown(this.schema, value).length === 0
       }
     })
 

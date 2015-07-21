@@ -2,8 +2,8 @@
 /* global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/lib/es6-extensions')
-  , number = require('../lib/number');
+  , Promise = require('promise/src/es6-extensions')
+  , number = require('../src/number');
 
 chai.use(chaiAsPromised);
 chai.should();

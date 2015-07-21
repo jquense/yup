@@ -2,12 +2,12 @@
 /*global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
-  , ValidationError = require('../lib/util/validation-error')
-  , Promise = require('promise/lib/es6-extensions')
-  , mixed = require('../lib/mixed')
-  , object = require('../lib/object')
-  , string = require('../lib/string')
-  , reach = require('../lib/util/reach');
+  , ValidationError = require('../src/util/validation-error')
+  , Promise = require('promise/src/es6-extensions')
+  , mixed = require('../src/mixed')
+  , object = require('../src/object')
+  , string = require('../src/string')
+  , reach = require('../src/util/reach');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -126,7 +126,7 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
-  it('tests should receive path and context', function(done){
+  it('tests should be called with the correct `this`', function(done){
     var inst = object({
       other: mixed(),
       test: mixed().test({
@@ -134,22 +134,23 @@ describe( 'Mixed Types ', function(){
         exclusive: true,
         name: 'max',
         test: function(v, path, context){
-          path.should.equal('test')
-          context.should.eql({ other: 5, test : 'hi' })
+          this.path.should.equal('test')
+          this.parent.should.eql({ other: 5, test : 'hi' })
+          this.options.context.should.eql({ user: 'jason' })
           done()
         }
       })
     })
 
-    inst.validate({ other: 5, test : 'hi' })
+    inst.validate({ other: 5, test : 'hi' }, { context: { user: 'jason' } })
   })
 
   it('tests can return an error', function(){
     var inst = mixed().test({
         message: 'invalid ${path}',
         name: 'max',
-        test: function(v, path, context){
-          return new ValidationError(null, 'my.path')
+        test: function(v){
+          return this.createError({ path: 'my.path' })
         }
       })
 
@@ -165,8 +166,8 @@ describe( 'Mixed Types ', function(){
     var inst = mixed().test({
         message: 'invalid ${path}',
         name: 'max',
-        test: function(v, path, context){
-          return new ValidationError(['${path} nope!', '${path} no again!'], 'my.path')
+        test: function(v){
+          return this.createError({ message: '${path} nope!', path: 'my.path' })
         }
       })
 
@@ -175,7 +176,6 @@ describe( 'Mixed Types ', function(){
       .then(function(e){
         e.path.should.equal('my.path')
         e.errors[0].should.equal('my.path nope!')
-        e.errors[1].should.equal('my.path no again!')
       })
   })
 
@@ -184,7 +184,7 @@ describe( 'Mixed Types ', function(){
       .test('name', 'test a', function(val){
         return Promise.resolve(val === 'jim')
       })
-      .test('name', 'test b', function(val, path, context, done){
+      .test('name', 'test b', function(val, done){
         process.nextTick(function(){
           done(null, val !== 'jim')
         })
@@ -278,12 +278,14 @@ describe( 'Mixed Types ', function(){
   })
 
   it('should handle conditionals', function(){
-    var inst = mixed().when('prop', { is: 5, then: mixed().required() })
+    var inst = mixed()
+      .when('prop', { is: 5, then: mixed().required('from parent') })
 
     return Promise.all([
+      //parent
       inst._validate(undefined, {}, { parent: { prop: 5 }}).should.be.rejected,
       inst._validate(undefined, {}, { parent: { prop: 1 }}).should.be.fulfilled,
-      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled
+      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled,
     ])
     .then(function(){
 
@@ -299,6 +301,31 @@ describe( 'Mixed Types ', function(){
         inst._validate('hel', {}, { parent: { prop: 1 }}).should.be.rejected
       ])
     })
+  })
+
+  it('should require context when needed', function(){
+    var inst = mixed()
+      .when('$prop', { is: 5, then: mixed().required('from context') })
+
+    return Promise.all([
+      inst._validate(undefined, { context: { prop: 5 }}, {}).should.be.rejected,
+      inst._validate(undefined, { context: { prop: 1 }}, {}).should.be.fulfilled,
+      inst._validate('hello',   { context: { prop: 5 }}, {}).should.be.fulfilled
+    ])
+    .then(function(){
+      inst = string().when('prop', {
+        is:        function(val) { return val === 5 },
+        then:      string().required(),
+        otherwise: string().min(4)
+      })
+
+      return Promise.all([
+        inst._validate(undefined, { context: { prop: 5 }}, {}).should.be.rejected,
+        inst._validate('hello', { context: { prop: 1 }}, {}).should.be.fulfilled,
+        inst._validate('hel', { context: { prop: 1 }}, {}).should.be.rejected
+      ])
+    })
+
   })
 
 })

@@ -4,7 +4,8 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "gulp compile && mocha -R spec ./test/*.js"
+    "test": "karma start --single-run",
+    "build": "gulp compile"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,8 @@
   },
   "homepage": "https://github.com/jquense/yup",
   "devDependencies": {
+    "babel-core": "^5.7.4",
+    "babel-loader": "^5.3.2",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
     "del": "^1.1.1",
@@ -25,10 +28,19 @@
     "gulp-mocha": "^1.0.0",
     "gulp-plumber": "^0.6.5",
     "gulp-rename": "^1.2.2",
-    "mocha": "^1.21.4",
     "jq-release": "*",
+    "karma": "^0.12.2",
+    "karma-mocha": "^0.2.0",
+    "karma-mocha-reporter": "^1.0.2",
+    "karma-phantomjs-launcher": "^0.2.0",
+    "karma-sourcemap-loader": "^0.3.5",
+    "karma-webpack": "^1.6.0",
+    "mocha": "^1.21.4",
+    "node-libs-browser": "^0.5.2",
+    "phantomjs": "^1.9.17",
     "sinon": "^1.10.3",
-    "sinon-chai": "^2.5.0"
+    "sinon-chai": "^2.5.0",
+    "webpack": "^1.10.1"
   },
   "dependencies": {
     "case": "^1.2.1",
