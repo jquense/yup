@@ -313,7 +313,7 @@ describe( 'Mixed Types ', function(){
       inst._validate('hello',   { context: { prop: 5 }}, {}).should.be.fulfilled
     ])
     .then(function(){
-      inst = string().when('prop', {
+      inst = string().when('$prop', {
         is:        function(val) { return val === 5 },
         then:      string().required(),
         otherwise: string().min(4)
@@ -325,7 +325,14 @@ describe( 'Mixed Types ', function(){
         inst._validate('hel', { context: { prop: 1 }}, {}).should.be.rejected
       ])
     })
+  })
 
+  it('should not use context refs in object calculations', function(){
+    var inst = object({
+      prop: string().when('$prop', { is: 5, then: string().required('from context') })
+    })
+
+    inst.default().should.eql({ prop: undefined })
   })
 
 })

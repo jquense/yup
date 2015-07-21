@@ -224,8 +224,11 @@ function sortFields(fields, excludes = []){
     if ( !~nodes.indexOf(key) ) nodes.push(key)
 
     fields[key]._deps &&
-      fields[key]._deps.forEach(node => {   //eslint-disable-line no-loop-func
-        node = split(node)[0]
+      fields[key]._deps.forEach(dep => {   //eslint-disable-line no-loop-func
+        if (dep.isContext)
+          return
+
+        var node = split(dep.key)[0]
 
         if ( !~nodes.indexOf(node) )
           nodes.push(node)

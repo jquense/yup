@@ -18,7 +18,6 @@ function SchemaType(options = {}){
     return new SchemaType()
 
   this._deps        = []
-  this._conditions  = []
   this._options     = { abortEarly: true, recursive: true }
   this._exclusive   = Object.create(null)
   this._whitelist   = new BadSet()
@@ -88,9 +87,8 @@ SchemaType.prototype = {
   _resolve(context, parent){
     var schema  = this;
 
-    return this._conditions.reduce(function(schema, match){
-      return match.resolve(schema, match.getValue(parent, context))
-    }, schema)
+    return this._deps.reduce((schema, match) =>
+      match.resolve(schema, match.getValue(parent, context)), schema)
   },
 
   //-- tests
@@ -247,29 +245,14 @@ SchemaType.prototype = {
     next.tests.push(validate)
 
     return next
-
-    // function validate(value, path, context) {
-
-    //   return new Promise((resolve, reject) => {
-    //     !opts.useCallback
-    //       ? resolve(opts.test.call(this, value, path, context))
-    //       : opts.test.call(this, value, path, context, (err, valid) => err ? reject(err) : resolve(valid))
-    //   })
-    //   .then(validOrError => {
-    //     if ( ValidationError.isError(validOrError) )
-    //       throw normalizeError(validOrError, errorMsg, opts.params, path, value)
-
-    //     else if (!validOrError)
-    //       throw new ValidationError(errorMsg({ path, ...opts.params }), path, value)
-    //   })
-    // }
   },
 
   when(key, options){
-    var next = this.clone();
+    var next = this.clone()
+      , dep = new Condition(key, next._type, options);
 
-    next._deps.push(key)
-    next._conditions.push(new Condition(key, next._type, options))
+    next._deps.push(dep)
+
     return next
   },
 
@@ -309,6 +292,7 @@ SchemaType.prototype = {
       ? overrides[key] : this._options[key]
   }
 }
+
 
 var aliases = {
   oneOf: ['equals', 'is'],
