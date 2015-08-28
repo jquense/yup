@@ -12,9 +12,9 @@ let scopeError = value => err => {
 module.exports = ArraySchema
 
 function ArraySchema(){
-  if ( !(this instanceof ArraySchema)) 
+  if ( !(this instanceof ArraySchema))
     return new ArraySchema()
-  
+
   MixedSchema.call(this, { type: 'array'})
 
   this.transforms.push(function(values) {
@@ -22,8 +22,8 @@ function ArraySchema(){
       try {
         values = JSON.parse(values)
       } catch (err){ values = null }
-    
-    if( Array.isArray(values))
+
+    if (Array.isArray(values))
         return this._subType
           ? values.map(this._subType.cast, this._subType)
           : values
@@ -53,7 +53,7 @@ inherits(ArraySchema, MixedSchema, {
     return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
       .catch(endEarly ? null : err => {
         errors = err
-        return err.value 
+        return err.value
       })
       .then(function(value){
         if ( !recursive || !subType || !schema._typeCheck(value) ) {
@@ -68,10 +68,10 @@ inherits(ArraySchema, MixedSchema, {
           return subType._validate(item, _opts, state)
         })
 
-        result = endEarly 
+        result = endEarly
           ? Promise.all(result).catch(scopeError(value))
           : collectErrors(result, value, _state.path, errors)
-        
+
         return result.then(() => value)
       })
   },
@@ -91,29 +91,29 @@ inherits(ArraySchema, MixedSchema, {
   min(min, message){
     message = message || locale.min
 
-    return this.test({ 
-      message, 
-      name: 'min', 
+    return this.test({
+      message,
+      name: 'min',
       exclusive: true,
-      params: { min }, 
+      params: { min },
       test: value => value && value.length >= min
     })
   },
 
   max(max, message){
     message = message || locale.max
-    return this.test({ 
+    return this.test({
       message,
-      name: 'max',  
+      name: 'max',
       exclusive: true,
       params: { max },
-      test: value => value && value.length <= max 
+      test: value => value && value.length <= max
     })
   },
 
   compact(rejector){
-    let reject = !rejector 
-      ? v => !!v 
+    let reject = !rejector
+      ? v => !!v
       : (v, i, a) => !rejector(v, i, a);
 
     return this.transform(values => values != null ? values.filter(reject) : values)

@@ -189,18 +189,36 @@ describe('Object types', function(){
   it('should allow nesting with "$this"', function(){
     var inst = object().shape({
           child: '$this',
-          other: string().required('required!')
+          str: string().trim().default('yo!'),
+          other: string().required('required!'),
+          arr: array().of('$this')
         })
 
-    inst.default().should.eql({ child: undefined, other: undefined })
+    inst.default().should.eql({
+      child: undefined,
+      other: undefined,
+      arr: undefined,
+      str: 'yo!'
+    })
 
     return Promise.all([
 
-      inst.validate({ child: { other: undefined }, other: 'ff' }).should.be.rejected
+      inst.validate({
+        child: { other: undefined },
+        other: 'ff'
+      }).should.be.rejected
         .then(function(err){
           err.errors[0].should.equal('required!')
-        })
+        }),
 
+      inst.validate({
+        arr: [{ other: undefined, str: '   john ' }],
+        other: 'ff'
+      }).should.be.rejected
+        .then(function(err){
+          err.value.arr[0].str.should.equal('john')
+          err.errors[0].should.equal('required!')
+        })
     ])
   })
 

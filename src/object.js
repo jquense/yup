@@ -15,6 +15,16 @@ var MixedSchema = require('./mixed')
   , collectErrors
   , has } = require('./util/_');
 
+let isRecursive = schema =>  (schema._subType || schema) === '$this'
+
+let childSchema = (field, parent) => {
+  return isRecursive(field)
+    ? field.of
+        ? field.of(parent)
+        : parent
+    : field
+}
+
 let scopeError = value => err => {
       err.value = value
       throw err
@@ -78,7 +88,7 @@ inherits(ObjectSchema, MixedSchema, {
         var exists = has(value, prop);
 
         if( exists && fields[prop] ){
-          var fieldSchema = fields[prop] === '$this' ? schema.default(undefined) : fields[prop]
+          var fieldSchema = childSchema(fields[prop], schema.default(undefined))
 
           obj[prop] = fieldSchema.cast(value[prop], { context: obj })
         }
@@ -99,7 +109,6 @@ inherits(ObjectSchema, MixedSchema, {
     return value
   },
 
-// The issue with this is that there are two phases of validating a schema, transformation, and validation. They both work by processing a stack of transforms and validations, it is a very generic strategy which helps make yup a good bit smaller then joi and a lot more flexible in terms of doing custom stuff. The down side is that it doesn't leave a lot of room for tiny tweaks like this. `stripUnknown` is a transform
   _validate(_value, _opts, _state) {
     var errors = []
       , context, schema, endEarly, recursive;
@@ -123,8 +132,8 @@ inherits(ObjectSchema, MixedSchema, {
         }
 
         let result = schema._nodes.map(function(key){
-          var field = schema.fields[key] === '$this' ? schema : schema.fields[key]
-            , path  = (_state.path ?  (_state.path + '.') : '') + key;
+          var path  = (_state.path ?  (_state.path + '.') : '') + key
+            , field = childSchema(schema.fields[key], schema)
 
           return field._validate(value[key]
             , _opts
@@ -230,10 +239,10 @@ function sortFields(fields, excludes = []){
 
         var node = split(dep.key)[0]
 
-        if ( !~nodes.indexOf(node) )
+        if (!~nodes.indexOf(node))
           nodes.push(node)
 
-        if ( !~excludes.indexOf(`${key}-${node}`) )
+        if (!~excludes.indexOf(`${key}-${node}`))
           edges.push([key, node])
       })
   }

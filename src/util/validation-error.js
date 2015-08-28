@@ -48,3 +48,17 @@ ValidationError.formatError = function(message, params) {
 
   return arguments.length === 1 ? fn : fn(params)
 }
+
+ValidationError.prototype.toJSON = function(){
+  if (this.inner.length)
+    return this.inner.reduce((list, e) => {
+      list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
+      return list
+    }, {})
+
+  if (this.path)
+    return { [this.path]: err.errors }
+
+  return err.errors
+}
+
