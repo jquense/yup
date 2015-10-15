@@ -15,7 +15,7 @@
   ],
 
   "extra": {
-    "externalHeleprsPlugin": {
+    "externalHelperPlugin": {
       "path": "utils/babelHelpers",
       "base": "./src"
     }

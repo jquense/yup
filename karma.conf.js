@@ -21,7 +21,7 @@ module.exports = function (config) {
 
     logLevel: config.LOG_INFO,
 
-    browsers: ['Chrome'], //['PhantomJS'],
+    browsers: ['jsdom'], //['PhantomJS'],
 
     preprocessors: {
       'tests-webpack.js': ['webpack', 'sourcemap']

@@ -4,7 +4,7 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "karma start --single-run",
+    "test": "npm run build && karma start --single-run",
     "clean": "rimaf ./lib/*",
     "build": "babel src --out-dir lib",
     "release": "release"
@@ -27,6 +27,7 @@
     "chai-as-promised": "^4.1.1",
     "karma": "^0.12.2",
     "karma-chrome-launcher": "^0.2.0",
+    "karma-jsdom-launcher": "^1.0.0",
     "karma-mocha": "^0.2.0",
     "karma-mocha-reporter": "^1.0.2",
     "karma-phantomjs-launcher": "^0.2.0",
@@ -48,6 +49,7 @@
     "toposort": "^0.2.10"
   },
   "release-script": {
-    "defaultDryRun": "false"
+    "defaultDryRun": "false",
+    "skipBuildStep": "true"
   }
 }
