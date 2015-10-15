@@ -214,24 +214,24 @@ SchemaType.prototype = {
       , next = this.clone()
       , errorMsg, isExclusive;
 
-    if( typeof name === 'string' ) {
-      if( typeof message === 'function')
+    if (typeof name === 'string') {
+      if (typeof message === 'function')
         test = message, message = name, name = null
 
       opts = { name, test, message, useCallback, exclusive: false }
     }
 
-    if( typeof opts.message !== 'string' || typeof opts.test !== 'function' )
+    if (typeof opts.message !== 'string' || typeof opts.test !== 'function')
       throw new TypeError('`message` and `test` are required parameters')
 
-    if( next._whitelist.length )
+    if (next._whitelist.length)
       throw new Error('Cannot add tests when specific valid values are specified')
 
     var validate = createValidation(opts)
 
     isExclusive = opts.name && next._exclusive[opts.name] === true
 
-    if( opts.exclusive || isExclusive ){
+    if (opts.exclusive || isExclusive) {
       if (!opts.name)
         throw new TypeError('You cannot have an exclusive validation without a `name`')
 
@@ -239,8 +239,8 @@ SchemaType.prototype = {
       validate.VALIDATION_KEY = opts.name
     }
 
-    if( isExclusive )
-      next.tests = next.tests.filter( fn => fn.VALIDATION_KEY !== opts.name)
+    if (isExclusive)
+      next.tests = next.tests.filter(fn => fn.VALIDATION_KEY !== opts.name)
 
     next.tests.push(validate)
 
@@ -304,21 +304,6 @@ for( var method in aliases ) if ( _.has(aliases, method) )
   aliases[method].forEach(
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
 
-
-function normalizeError(error, msg, params, path, value){
-
-  if (error.path === undefined)
-    error.path = path
-
-  if (error.value === undefined)
-    error.value = value
-
-  error.errors = error.errors.length
-    ? error.errors.map( msg => formatError(msg, { path: error.path, ...error.path }))
-    : [ msg({ path: error.path, ...error.path }) ]
-
-  return new ValidationError(error.errors, error.path, error.value)
-}
 
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise

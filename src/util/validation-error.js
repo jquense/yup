@@ -6,12 +6,13 @@ let replace = str =>
 
 module.exports = ValidationError;
 
-function ValidationError(errors, value, field) {
-  this.name     = 'ValidationError'
-  this.value    = value
-  this.path     = field
-  this.errors   = []
-  this.inner    = [];
+function ValidationError(errors, value, field, type) {
+  this.name   = 'ValidationError'
+  this.value  = value
+  this.path   = field
+  this.type   = type
+  this.errors = []
+  this.inner  = []
 
   if ( errors )
     [].concat(errors).forEach(err => {
@@ -52,7 +53,7 @@ ValidationError.formatError = function(message, params) {
 ValidationError.prototype.toJSON = function(){
   if (this.inner.length)
     return this.inner.reduce((list, e) => {
-      list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
+      list[e.path] = (list[e.path] || (list[e.path] = [])).concat({ errors: e.errors, path: e.path, type: e.type })
       return list
     }, {})
 
@@ -61,4 +62,3 @@ ValidationError.prototype.toJSON = function(){
 
   return err.errors
 }
-

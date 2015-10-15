@@ -3,11 +3,21 @@
   "loose": [
     "all"
   ],
+  "plugins": [
+    "external-helpers"
+  ],
   "blacklist": [
     "es6.tailCall",
     "es6.forOf",
     "es7.trailingFunctionCommas",
     "es7.comprehensions",
     "es7.exportExtensions"
-  ]
+  ],
+
+  "extra": {
+    "externalHeleprsPlugin": {
+      "path": "utils/babelHelpers",
+      "base": "./src"
+    }
+  }
 }
