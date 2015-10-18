@@ -53,12 +53,12 @@ ValidationError.formatError = function(message, params) {
 ValidationError.prototype.toJSON = function(){
   if (this.inner.length)
     return this.inner.reduce((list, e) => {
-      list[e.path] = (list[e.path] || (list[e.path] = [])).concat({ errors: e.errors, path: e.path, type: e.type })
+      list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.toJSON())
       return list
     }, {})
 
   if (this.path)
-    return { [this.path]: err.errors }
+    return { [this.path]: { errors: this.errors, path: this.path, type: this.type } }
 
   return err.errors
 }
