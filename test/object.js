@@ -291,6 +291,19 @@ describe('Object types', function(){
       .should.eql({ myProp: 5, other: 6, Other: 6 })
   })
 
+  it('should not move keys when it does not exist', function(){
+    var inst = object().shape({
+          myProp: mixed(),
+        })
+        .from('prop', 'myProp')
+
+    inst.cast({ myProp: 5 })
+      .should.eql({ myProp: 5 })
+
+    inst.cast({ myProp: 5, prop: 7 })
+      .should.eql({ myProp: 7 })
+  })
+
   it('should handle conditionals', function(){
     var inst = object().shape({
           noteDate: number()
