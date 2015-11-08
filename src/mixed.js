@@ -46,18 +46,20 @@ SchemaType.prototype = {
     if (!schema)
       return this
 
-    if( schema._type !== this._type )
+    if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
 
     var next = _.merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
-    if( schema._default === undefined && _.has(this, '_default') )
+    if (schema._default === undefined && _.has(this, '_default'))
       next._default = schema._default
 
     // trim exclusive tests, take the most recent ones
     next.tests = _.uniq(next.tests.reverse(),
       (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
+
+    next._type = schema._type;
 
     return next
   },
@@ -68,7 +70,7 @@ SchemaType.prototype = {
   },
 
   cast(_value, _opts) {
-    var schema = this._resolve((_opts|| {}).context)
+    var schema = this._resolve((_opts || {}).context)
     return schema._cast(_value, _opts)
   },
 
@@ -212,7 +214,7 @@ SchemaType.prototype = {
   test(name, message, test, useCallback) {
     var opts = name
       , next = this.clone()
-      , errorMsg, isExclusive;
+      , isExclusive;
 
     if (typeof name === 'string') {
       if (typeof message === 'function')

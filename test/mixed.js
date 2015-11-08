@@ -105,7 +105,7 @@ describe( 'Mixed Types ', function(){
   })
 
   it('exclusive tests should throw without a name', function(){
-    ;(function(){
+    (function(){
       mixed().test({ message: 'invalid', exclusive: true, test: function(){} })
     }).should.throw()
   })
@@ -133,7 +133,7 @@ describe( 'Mixed Types ', function(){
         message: 'invalid',
         exclusive: true,
         name: 'max',
-        test: function(v, path, context){
+        test: function(){
           this.path.should.equal('test')
           this.parent.should.eql({ other: 5, test : 'hi' })
           this.options.context.should.eql({ user: 'jason' })
@@ -149,7 +149,7 @@ describe( 'Mixed Types ', function(){
     var inst = mixed().test({
         message: 'invalid ${path}',
         name: 'max',
-        test: function(v){
+        test: function(){
           return this.createError({ path: 'my.path' })
         }
       })
@@ -166,7 +166,7 @@ describe( 'Mixed Types ', function(){
     var inst = mixed().test({
         message: 'invalid ${path}',
         name: 'max',
-        test: function(v){
+        test: function(){
           return this.createError({ message: '${path} nope!', path: 'my.path' })
         }
       })
@@ -254,11 +254,20 @@ describe( 'Mixed Types ', function(){
   })
 
   it('concat should fail on different types', function(){
-    var inst = string().default('hi')
+    var inst = string().default('hi');
 
-    ;(function(){
+    (function(){
       inst.concat(object())
     }).should.throw(TypeError)
+  })
+
+  it('concat should allow mixed and other type', function(){
+    var inst = mixed().default('hi');
+
+    (function(){
+      inst.concat(string())._type.should.equal('string')
+
+    }).should.not.throw(TypeError)
   })
 
   it('concat should maintain undefined defaults', function(){
@@ -285,7 +294,7 @@ describe( 'Mixed Types ', function(){
       //parent
       inst._validate(undefined, {}, { parent: { prop: 5 }}).should.be.rejected,
       inst._validate(undefined, {}, { parent: { prop: 1 }}).should.be.fulfilled,
-      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled,
+      inst._validate('hello', {},   { parent: { prop: 5 }}).should.be.fulfilled
     ])
     .then(function(){
 
@@ -336,6 +345,3 @@ describe( 'Mixed Types ', function(){
   })
 
 })
-
-
-
