@@ -178,13 +178,17 @@ inherits(ObjectSchema, MixedSchema, {
 
   from(from, to, alias) {
     return this.transform( obj => {
-      if ( obj == null)
+      var newObj = obj;
+
+      if (obj == null)
         return obj
 
-      var newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
+      if (has(obj, from)) {
+        newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
+        newObj[to] = obj[from]
 
-      newObj[to] = obj[from]
-      if(alias) newObj[from] = obj[from]
+        if(alias) newObj[from] = obj[from]
+      }
 
       return newObj
     })
