@@ -1,3 +1,10 @@
+v0.11.0 - Sun, 08 Nov 2015 17:17:09 GMT
+---------------------------------------
+
+- [686f6b1](../../commit/686f6b1) [changed] concat() allows mixing "mixed" and other type
+
+
+
 
 ## 0.9.0
 __breaking__
