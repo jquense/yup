@@ -52,6 +52,7 @@ describe('String types', function(){
     var inst = string()
 
     inst.isType('5').should.equal(true)
+    inst.isType(new String('5')).should.equal(true)
     inst.isType(false).should.equal(false)
     inst.isType(null).should.equal(false)
     inst.nullable(false).isType(null).should.equal(false)

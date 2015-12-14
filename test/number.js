@@ -48,6 +48,7 @@ describe('Number types', function(){
     var inst = number()
 
     inst.isType(5).should.equal(true)
+    inst.isType(new Number(5)).should.equal(true)
     inst.isType(false).should.equal(false)
     inst.isType(null).should.equal(false)
     inst.isType(NaN).should.equal(false)

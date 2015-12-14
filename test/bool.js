@@ -40,6 +40,7 @@ describe('Boolean types', function(){
     inst.isType('true').should.equal(false)
     inst.isType(NaN).should.equal(false)
     inst.isType(34545).should.equal(false)
+    inst.isType(new Boolean(false)).should.equal(true)
     chai.expect(
       inst.isType(null)).to.equal(false)
     inst.nullable().isType(null).should.equal(true)
