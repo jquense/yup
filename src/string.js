@@ -16,7 +16,7 @@ function StringSchema(){
 
   this.transforms.push(function(value) {
     if( this.isType(value) ) return value
-    return value == null ? '' 
+    return value == null ? ''
       : value.toString ? value.toString() : '' + value
   })
 }
@@ -27,6 +27,10 @@ inherits(StringSchema, MixedSchema, {
      return typeof value === 'string'
   },
 
+  _isEmpty(value) {
+    return value == null || value == '';
+  },
+
   required(msg){
     var next = MixedSchema.prototype.required.call(this, msg || mixed.required )
 
@@ -34,30 +38,30 @@ inherits(StringSchema, MixedSchema, {
   },
 
   min(min, msg){
-    return this.test({ 
-      name: 'min', 
-      exclusive: true, 
+    return this.test({
+      name: 'min',
+      exclusive: true,
       message:  msg || locale.min,
       params: { min },
-      test: value => value == null || value.length >= min 
+      test: value => this._isEmpty(value) || value.length >= min
     })
   },
 
   max(max, msg){
-    return this.test({ 
-      name: 'max', 
-      exclusive: true, 
+    return this.test({
+      name: 'max',
+      exclusive: true,
       message: msg || locale.max,
       params: { max },
-      test: value => value == null || value.length <= max
+      test: value => this._isEmpty(value) || value.length <= max
     })
   },
 
   matches(regex, msg){
-    return this.test({ 
-      message: msg || locale.matches, 
+    return this.test({
+      message: msg || locale.matches,
       params: { regex },
-      test: value => value == null || regex.test(value)
+      test: value => this._isEmpty(value) || regex.test(value)
     })
   },
 
@@ -74,29 +78,29 @@ inherits(StringSchema, MixedSchema, {
     msg = msg || locale.trim
 
     return this
-      .transform( val => val != null ? val.trim() : val)
-      .test('trim', msg, val => val == null || val === val.trim())
+      .transform( val => !this._isEmpty(value) ? val.trim() : val)
+      .test('trim', msg, val => this._isEmpty(value) || val === val.trim())
   },
 
   lowercase(msg){
     return this
-      .transform(val => val != null ? val.toLowerCase() : val)
+      .transform(val => !this._isEmpty(value) ? val.toLowerCase() : val)
       .test({
         name: 'string_case',
         exclusive: true,
         message: msg || locale.lowercase,
-        test: val => val == null || val === val.toLowerCase()
+        test: val => this._isEmpty(value) || val === val.toLowerCase()
       })
   },
 
   uppercase(msg){
     return this
-      .transform(val => val != null ? val.toUpperCase(): val)
+      .transform(val => !this._isEmpty(value) ? val.toUpperCase(): val)
       .test({
         name: 'string_case',
         exclusive: true,
         message: msg || locale.uppercase,
-        test: val => val == null || val === val.toUpperCase()
+        test: val => this._isEmpty(value) || val === val.toUpperCase()
       })
   }
 })
