@@ -19,7 +19,7 @@ function BooleanSchema(){
 inherits(BooleanSchema, MixedSchema, {
 
   _typeCheck(v){ 
-    return typeof v === 'boolean' 
+    return (typeof v === 'boolean') || (typeof v === 'object' && v instanceof Boolean)
   }
 })
 
