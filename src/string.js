@@ -24,7 +24,7 @@ function StringSchema(){
 inherits(StringSchema, MixedSchema, {
 
   _typeCheck(value) {
-     return typeof value === 'string'
+     return (typeof value === 'string') || (typeof value === 'object' && value instanceof String)
   },
 
   required(msg){
