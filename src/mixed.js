@@ -108,7 +108,7 @@ SchemaType.prototype = {
     let path = state.path
 
     let errors = [];
-    let reject = () => Promise.reject(new ValidationError(errors, value));
+    let reject = () => Promise.reject(new ValidationError(errors, value, path));
 
     if ( !state.isCast && !isStrict )
       value = schema._cast(value, options)
