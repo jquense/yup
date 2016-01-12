@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run build && karma start --single-run",
+    "tdd": "npm run build && karma start",
     "clean": "rimaf ./lib/*",
     "build": "babel src --out-dir lib",
     "release": "release"
@@ -24,6 +25,7 @@
     "babel-eslint": "^4.1.4",
     "babel-loader": "^5.3.2",
     "babel-plugin-external-helpers": "^1.1.1",
+    "benchmark": "^2.0.0",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
     "eslint": "^0.24.1",

@@ -71,7 +71,7 @@ describe('String types', function(){
 
       inst.isValid('hel').should.eventually.equal(false),
 
-      inst.validate('').should.be.rejected.then(function(err){
+      inst.validate('').should.be.rejected.then(function(err) {
         err.errors.length.should.equal(1)
       })
     ])

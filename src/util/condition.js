@@ -24,9 +24,6 @@ class Conditional {
       if( !options.then && !options.otherwise )
         throw new TypeError('either `then:` or `otherwise:` is required for `when()` conditions')
 
-      // if(  options.then && options.then._type !== type || options.otherwise && options.otherwise._type !== type)
-      //   throw new TypeError(`cannot create polymorphic conditionals, \`then\` and \`otherwise\` must be the same type: ${type}`)
-
       is = typeof is === 'function'
         ? is : ((is, value) => is === value).bind(null, is)
 

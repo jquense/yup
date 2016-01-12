@@ -78,79 +78,81 @@ inherits(ObjectSchema, MixedSchema, {
       , value  = MixedSchema.prototype._cast.call(schema, _value)
 
     //should ignore nulls here
-    if( schema._typeCheck(value) ) {
-      var fields = schema.fields
-        , strip  = schema._option('stripUnknown', _opts) === true
-        , extra  = Object.keys(value).filter( v => schema._nodes.indexOf(v) === -1)
-        , props  = schema._nodes.concat(extra)
+    if (!schema._typeCheck(value))
+      return value;
 
-      return transform(props, function(obj, prop) {
+    var fields = schema.fields
+      , strip  = schema._option('stripUnknown', _opts) === true
+      , extra  = Object.keys(value).filter( v => schema._nodes.indexOf(v) === -1)
+      , props  = schema._nodes.concat(extra);
+
+    schema.withMutation(() => {
+      value = transform(props, function(obj, prop) {
         var exists = has(value, prop);
 
-        if( exists && fields[prop] ){
+        if (exists && fields[prop]) {
           var fieldSchema = childSchema(fields[prop], schema.default(undefined))
 
           obj[prop] = fieldSchema.cast(value[prop], { context: obj })
         }
+        else if (exists && !strip)
+          obj[prop] = value[prop]
 
-        else if( exists && !strip)
-          obj[prop] = cloneDeep(value[prop])
-
-        else if(fields[prop]){
+        else if(fields[prop]) {
           var fieldDefault = fields[prop].default ? fields[prop].default() : undefined
 
-          if ( fieldDefault !== undefined)
+          if (fieldDefault !== undefined)
             obj[prop] = fieldDefault
         }
-
       }, {})
-    }
+
+      delete schema._default
+    })
 
     return value
   },
 
   _validate(_value, _opts, _state) {
     var errors = []
-      , context, schema, endEarly, recursive;
+      , state = _state || {}
+      , context, schema
+      , endEarly, recursive;
 
-    _state    = _state || {}
-    context   = _state.parent || (_opts || {}).context
+    context   = state.parent || (_opts || {}).context
     schema    = this._resolve(context)
     endEarly  = schema._option('abortEarly', _opts)
     recursive = schema._option('recursive', _opts)
 
     return MixedSchema.prototype._validate
-      .call(this, _value, _opts, _state)
+      .call(this, _value, _opts, state)
       .catch(endEarly ? null : err => {
         errors.push(err)
         return err.value
       })
       .then(value => {
-        if( !recursive || !isObject(value)) { // only iterate though actual objects
+        if (!recursive || !isObject(value)) { // only iterate though actual objects
           if ( errors.length ) throw errors[0]
           return value
         }
 
-        let result = schema._nodes.map(function(key){
-          var path  = (_state.path ?  (_state.path + '.') : '') + key
+        let result = schema._nodes.map(function(key) {
+          var path  = (state.path ?  (state.path + '.') : '') + key
             , field = childSchema(schema.fields[key], schema)
 
           return field._validate(value[key]
             , _opts
-            , { ..._state, key, path, parent: value  })
+            , { ...state, key, path, parent: value  })
         })
 
         result = endEarly
           ? Promise.all(result).catch(scopeError(value))
-          : collectErrors(result, value, _state.path, errors)
+          : collectErrors(result, value, state.path, errors)
 
         return result.then(() => value)
       })
-
-
   },
 
-  concat(schema){
+  concat(schema) {
     var next = MixedSchema.prototype.concat.call(this, schema)
 
     next._nodes = sortFields(next.fields, next._excludedEdges)
@@ -233,8 +235,8 @@ function unknown(ctx, value) {
 function sortFields(fields, excludes = []){
   var edges = [], nodes = []
 
-  for( var key in fields ) if ( has(fields, key)) {
-    if ( !~nodes.indexOf(key) ) nodes.push(key)
+  for (var key in fields) if (has(fields, key)) {
+    if (!~nodes.indexOf(key)) nodes.push(key)
 
     fields[key]._deps &&
       fields[key]._deps.forEach(dep => {   //eslint-disable-line no-loop-func

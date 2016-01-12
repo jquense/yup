@@ -2,20 +2,25 @@
 // Copyright (c) 2011, Yahoo Inc.
 // All rights reserved. https://github.com/hapijs/hoek/blob/master/LICENSE
 
+var isSchema = schema => schema && !!schema.__isYupSchema__;
 
 module.exports = function clone(obj, seen) {
   var isFirst = !seen
+    , isImmutable = isSchema(obj) && !isFirst
 
-  if (typeof obj !== 'object' || obj === null)
+  if (typeof obj !== 'object' || obj === null || isImmutable)
     return obj;
-  
+
+  // if (global.REPORT_CLONE && isFirst)
+  //   throw new Error() //console.log('clone')
+
   seen = seen || { orig: [], copy: [] };
 
   var lookup = seen.orig.indexOf(obj);
 
   if (lookup !== -1)
     return seen.copy[lookup];
-  
+
   var newObj;
   var cloneDeep = false;
 
@@ -29,8 +34,7 @@ module.exports = function clone(obj, seen) {
     else {
       var proto = Object.getPrototypeOf(obj);
 
-
-      if (proto !== null && (!proto || (proto.__isYupSchema__ && !isFirst)) ) {
+      if (proto !== null && !proto) {
         newObj = obj;
       }
       else {
@@ -52,7 +56,7 @@ module.exports = function clone(obj, seen) {
 
     for (var i = 0, il = keys.length; i < il; ++i) {
       var key = keys[i];
-      
+
       var descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
       if (descriptor.get || descriptor.set) {
