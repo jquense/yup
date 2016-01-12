@@ -1,3 +1,12 @@
+v0.12.0 - Tue, 12 Jan 2016 19:12:18 GMT
+---------------------------------------
+
+- [5bc250f](../../commit/5bc250f) [changed] don't clone unspecified object keys
+- [069c6fd](../../commit/069c6fd) [added] withMutation() method
+- [e1d4891](../../commit/e1d4891) [fixed] don't alias non existent fields
+
+
+
 v0.11.0 - Sun, 08 Nov 2015 17:17:09 GMT
 ---------------------------------------
 
