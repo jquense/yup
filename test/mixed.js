@@ -16,8 +16,12 @@ describe( 'Mixed Types ', function(){
 
   it('should be immutable', function(){
     var inst = mixed(), next;
+    var sub = inst.sub = mixed()
 
     inst.should.not.equal(next = inst.required())
+
+    next.sub.should.equal(sub)
+    inst.sub.should.equal(next.sub)
 
     inst.should.be.an.instanceOf(mixed)
     next.should.be.an.instanceOf(mixed)

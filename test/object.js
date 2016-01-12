@@ -107,6 +107,41 @@ describe('Object types', function(){
       })
   })
 
+  it('should not clone during validating', function(){
+    var inst = object().shape({
+        num: number().max(4),
+        str: string(),
+        arr: array().of(number().max(6)),
+        dte: date(),
+
+        nested: object()
+          .shape({ str: string().min(3) })
+          .required(),
+
+        arrNested: array().of(
+          object().shape({ num: number() })
+        )
+      })
+
+    let base = mixed.prototype.clone;
+    let replace = () => mixed.prototype.clone = base
+    mixed.prototype.clone = function(...args) {
+      if (!this._mutate)
+        throw new Error('should not call clone')
+
+      return base.apply(this, args)
+    }
+
+    return inst
+      .validate({
+        nested: { str: 5 },
+        arrNested: [{ num: 5 }, { num: '2' }]
+      })
+      .then(replace)
+      .catch(replace)
+  })
+
+
   it('should call shape with constructed with an arg', function(){
     var inst = object({
           prop: mixed()

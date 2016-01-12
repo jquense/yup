@@ -38,8 +38,18 @@ SchemaType.prototype = {
 
   constructor: SchemaType,
 
-  clone(){
+  clone() {
+    if (this._mutate)
+      return this;
+
     return cloneDeep(this);
+  },
+
+  withMutation(fn) {
+    this._mutate = true
+    let result = fn(this)
+    this._mutate = false
+    return result
   },
 
   concat(schema){
@@ -79,26 +89,28 @@ SchemaType.prototype = {
       : this.transforms.reduce(
           (value, transform) => transform.call(this, value, _value), _value)
 
-
-    if( value === undefined && _.has(this, '_default') )
+    if (value === undefined && _.has(this, '_default'))
       value = this.default()
 
     return value
   },
 
   _resolve(context, parent){
-    var schema  = this;
+    if (this._deps.length) {
+      return this._deps.reduce((schema, match) =>
+        match.resolve(schema, match.getValue(parent, context)), this)
+    }
 
-    return this._deps.reduce((schema, match) =>
-      match.resolve(schema, match.getValue(parent, context)), schema)
+    return this
   },
 
   //-- tests
-  _validate(value, options = {}, state = {}) {
+  _validate(_value, options = {}, state = {}) {
     let valids   = this._whitelist
       , invalids = this._blacklist
       , context  = options.context
       , parent   = state.parent
+      , value    = _value
       , schema, endEarly, isStrict;
 
     schema   = this._resolve(context, parent)
@@ -110,29 +122,29 @@ SchemaType.prototype = {
     let errors = [];
     let reject = () => Promise.reject(new ValidationError(errors, value));
 
-    if ( !state.isCast && !isStrict )
+    if (!state.isCast && !isStrict)
       value = schema._cast(value, options)
 
     // value is cast, we can check if it meets type requirements
-    if ( value !== undefined && !schema.isType(value) ){
+    if (value !== undefined && !schema.isType(value)) {
       errors.push(schema._typeError({ value, path, type: schema._type }))
       if ( endEarly ) return reject()
     }
 
     // next check Whitelist for matching values
-    if ( valids.length && !valids.has(value) ) {
+    if (valids.length && !valids.has(value)) {
       errors.push(schema._whitelistError(valids.values(), path))
-      if ( endEarly ) return reject()
+      if (endEarly) return reject()
     }
 
     // next check Blacklist for matching values
-    if ( invalids.has(value) ){
+    if (invalids.has(value)) {
       errors.push(schema._blacklistError(invalids.values(), path))
-      if ( endEarly ) return reject()
+      if (endEarly) return reject()
     }
 
     // It makes no sense to validate further at this point if their are errors
-    if ( errors.length )
+    if (errors.length)
       return reject()
 
     let result = schema.tests.map(fn => fn({ value, path, state, schema, options }))
