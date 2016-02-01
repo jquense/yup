@@ -1,12 +1,15 @@
 'use strict';
 var SchemaObject = require('./mixed')
   , locale = require('./locale.js').number
+  , isAbsent = require('./util/isAbsent')
   , { isDate, inherits } = require('./util/_');
 
 module.exports = NumberSchema
 
+let isInteger = val => isAbsent(val) || val === (val | 0)
+
 function NumberSchema(){
-  if ( !(this instanceof NumberSchema)) 
+  if ( !(this instanceof NumberSchema))
     return new NumberSchema()
 
   SchemaObject.call(this, { type: 'number' })
@@ -29,22 +32,22 @@ inherits(NumberSchema, SchemaObject, {
   },
 
   min(min, msg) {
-    return this.test({ 
-      name: 'min', 
-      exclusive: true, 
-      params: { min }, 
+    return this.test({
+      name: 'min',
+      exclusive: true,
+      params: { min },
       message: msg || locale.min,
-      test: value => value == null || value >= min 
+      test: value => isAbsent(value) || value >= min
     })
   },
 
   max(max, msg) {
-    return this.test({ 
-      name: 'max', 
-      exclusive: true, 
-      params: { max }, 
+    return this.test({
+      name: 'max',
+      exclusive: true,
+      params: { max },
       message: msg || locale.max,
-      test: value => value == null || value <= max
+      test: value => isAbsent(value) || value <= max
     })
   },
 
@@ -60,8 +63,8 @@ inherits(NumberSchema, SchemaObject, {
     msg = msg || locale.integer
 
     return this
-      .transform( v => v != null ? (v | 0) : v)
-      .test('integer', msg, val => val == null || val === (val | 0))
+      .transform(value => !isAbsent(value) ? (value | 0) : value)
+      .test('integer', msg, isInteger)
   },
 
   round(method) {
@@ -71,6 +74,6 @@ inherits(NumberSchema, SchemaObject, {
     if( avail.indexOf(method.toLowerCase()) === -1 )
       throw new TypeError('Only valid options for round() are: ' + avail.join(', '))
 
-    return this.transform(v => v != null ? Math[method](v) : v)
+    return this.transform(value => !isAbsent(value) ? Math[method](value) : value)
   }
 })

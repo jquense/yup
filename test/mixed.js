@@ -12,6 +12,8 @@ var chai  = require('chai')
 chai.use(chaiAsPromised);
 chai.should();
 
+let noop = function(){}
+
 describe( 'Mixed Types ', function(){
 
   it('should be immutable', function(){
@@ -94,6 +96,23 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
+  it('should dedupe tests with the same test function', function(){
+    var inst = mixed()
+      .test('test', ' ', noop)
+      .test('test', 'asdasd', noop)
+
+    inst.tests.length.should.equal(1)
+    inst.tests[0].TEST.message.should.equal('asdasd')
+  })
+
+  it('should not dedupe tests with the same test function and different type', function(){
+    var inst = mixed()
+      .test('test', ' ', noop)
+      .test('test-two', 'asdasd', noop)
+
+    inst.tests.length.should.equal(2)
+  })
+
   it('should respect exclusive validation', function(){
     var inst = mixed()
       .test({ message: 'invalid', exclusive: true, name: 'test', test:  function(){} })
@@ -104,6 +123,31 @@ describe( 'Mixed Types ', function(){
     inst = mixed()
       .test({ message: 'invalid', name: 'test', test:  function(){} })
       .test({ message: 'also invalid', name: 'test', test:  function(){} })
+
+    inst.tests.length.should.equal(2)
+  })
+
+  it('should non-exclusive tests should stack', function(){
+    var inst = mixed()
+      .test({ name: 'test', message: ' ', test:  function(){} })
+      .test({ name: 'test', message: ' ', test:  function(){} })
+
+    inst.tests.length.should.equal(2)
+  })
+
+  it('should replace existing tests, with exclusive test ', function(){
+    var inst = mixed()
+      .test({ name: 'test', message: ' ', test: function(){} })
+      .test({ name: 'test', exclusive: true, message: ' ', test:  function(){} })
+
+    inst.tests.length.should.equal(1)
+  })
+
+  it('should replace existing exclusive tests, with non-exclusive', function(){
+    var inst = mixed()
+      .test({ name: 'test', exclusive: true, message: ' ', test: function(){} })
+      .test({ name: 'test', message: ' ', test:  function(){} })
+      .test({ name: 'test', message: ' ', test:  function(){} })
 
     inst.tests.length.should.equal(2)
   })
@@ -235,8 +279,8 @@ describe( 'Mixed Types ', function(){
       })
     }))
 
-    reach(next, 'str').tests.length.should.equal(3) // presence, min and trim
-    reach(next, 'str').tests[0].VALIDATION_KEY.should.equal('required') // make sure they are in the right order
+    reach(next, 'str').tests.length.should.equal(3) // presence, alt presence, and trim
+    reach(next, 'str').tests[0].TEST_NAME.should.equal('required') // make sure they are in the right order
 
     return Promise.all([
 

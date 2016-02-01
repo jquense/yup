@@ -1,13 +1,16 @@
 'use strict';
 var MixedSchema = require('./mixed')
   , Promise = require('promise/lib/es6-extensions')
+  , isAbsent = require('./util/isAbsent')
   , { mixed, array: locale } = require('./locale.js')
   , { inherits, collectErrors } = require('./util/_');
 
 let scopeError = value => err => {
-      err.value = value
-      throw err
-    }
+  err.value = value
+  throw err
+}
+
+let hasLength = value => !isAbsent(value) && value.length > 0;
 
 module.exports = ArraySchema
 
@@ -49,20 +52,19 @@ inherits(ArraySchema, MixedSchema, {
     endEarly  = schema._option('abortEarly', _opts)
     recursive = schema._option('recursive', _opts)
 
-
     return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
       .catch(endEarly ? null : err => {
         errors = err
         return err.value
       })
       .then(function(value){
-        if ( !recursive || !subType || !schema._typeCheck(value) ) {
-          if ( errors.length ) throw errors[0]
+        if (!recursive || !subType || !schema._typeCheck(value) ) {
+          if (errors.length) throw errors[0]
           return value
         }
 
         let result = value.map((item, key) => {
-          var path  = (_state.path || '') + '['+ key + ']'
+          var path  = (_state.path || '') + '[' + key + ']'
             , state = { ..._state, path, key, parent: value};
 
           return subType._validate(item, _opts, state)
@@ -85,7 +87,11 @@ inherits(ArraySchema, MixedSchema, {
   required(msg) {
     var next = MixedSchema.prototype.required.call(this, msg || mixed.required);
 
-    return next.min(1, msg || mixed.required);
+    return next.test(
+        'required'
+      , msg || mixed.required
+      , hasLength
+    )
   },
 
   min(min, message){
@@ -96,7 +102,7 @@ inherits(ArraySchema, MixedSchema, {
       name: 'min',
       exclusive: true,
       params: { min },
-      test: value => value && value.length >= min
+      test: value => isAbsent(value) || value.length >= min
     })
   },
 
@@ -107,7 +113,7 @@ inherits(ArraySchema, MixedSchema, {
       name: 'max',
       exclusive: true,
       params: { max },
-      test: value => value && value.length <= max
+      test: value => isAbsent(value) || value.length <= max
     })
   },
 

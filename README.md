@@ -385,6 +385,13 @@ when `false` the validations will stack. e.g. `max` is an exclusive validation,
 whereas the string `matches` is not. This is helpful for "toggling" validations on and off.
 - `useCallback`: boolean (default `false`), use the callback interface for asynchrony instead of promises
 
+In the case of mixing exclusive and non-exclusive tests the following logic is used.
+If a non-exclusive test is added to a schema with an exclusive test of the same name
+the exclusive test is removed and further tests of the same name will be stacked.
+
+If an exclusive test is added to a schema with non-exclusive tests of the same name
+the previous tests are removed and further tests of the same name will replace each other.
+
 ```javascript
 var schema = yup.mixed().test({
       name: 'max',

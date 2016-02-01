@@ -5,11 +5,14 @@ var Promise = require('promise/lib/es6-extensions')
   , ValidationError = require('./util/validation-error')
   , locale = require('./locale.js').mixed
   , _ = require('./util/_')
+  , isAbsent = require('./util/isAbsent')
   , cloneDeep = require('./util/clone')
   , createValidation = require('./util/createValidation')
   , BadSet = require('./util/set');
 
 let formatError = ValidationError.formatError
+
+let notEmpty = value => !isAbsent(value);
 
 module.exports = SchemaType
 
@@ -58,16 +61,21 @@ SchemaType.prototype = {
 
     if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
-
+    var cloned = this.clone()
     var next = _.merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
     if (schema._default === undefined && _.has(this, '_default'))
       next._default = schema._default
 
-    // trim exclusive tests, take the most recent ones
-    next.tests = _.uniq(next.tests.reverse(),
-      (fn, idx) => next[fn.VALIDATION_KEY] ? fn.VALIDATION_KEY : idx).reverse()
+    next.tests = cloned.tests;
+    next._exclusive = cloned._exclusive;
+
+    // manually add the new tests to ensure
+    // the deduping logic is consistent
+    schema.tests.forEach((fn) => {
+      next = next.test(fn.TEST)
+    });
 
     next._type = schema._type;
 
@@ -197,12 +205,11 @@ SchemaType.prototype = {
   },
 
   required(msg) {
-    return this.test({
-      name: 'required',
-      exclusive: true,
-      message:  msg || locale.required,
-      test: value => value != null
-    })
+    return this.test(
+      'required',
+      msg || locale.required,
+      notEmpty
+    )
   },
 
   typeError(msg){
@@ -223,10 +230,22 @@ SchemaType.prototype = {
     return next
   },
 
+  /**
+   * Adds a test function to the schema's queue of tests.
+   * tests can be exclusive or non-exclusive.
+   *
+   * - exclusive tests, will replace any existing tests of the same name.
+   * - non-exclusive: can be stacked
+   *
+   * If a non-exclusive test is added to a schema with an exclusive test of the same name
+   * the exclusive test is removed and further tests of the same name will be stacked.
+   *
+   * If an exclusive test is added to a schema with non-exclusive tests of the same name
+   * the previous tests are removed and further tests of the same name will replace each other.
+   */
   test(name, message, test, useCallback) {
     var opts = name
-      , next = this.clone()
-      , isExclusive;
+      , next = this.clone();
 
     if (typeof name === 'string') {
       if (typeof message === 'function')
@@ -241,20 +260,27 @@ SchemaType.prototype = {
     if (next._whitelist.length)
       throw new Error('Cannot add tests when specific valid values are specified')
 
-    var validate = createValidation(opts)
+    var validate = createValidation(opts);
 
-    isExclusive = opts.name && next._exclusive[opts.name] === true
+    var isExclusive = (
+      opts.exclusive ||
+      (opts.name && next._exclusive[opts.name] === true)
+    )
 
-    if (opts.exclusive || isExclusive) {
-      if (!opts.name)
-        throw new TypeError('You cannot have an exclusive validation without a `name`')
-
-      next._exclusive[opts.name] = true
-      validate.VALIDATION_KEY = opts.name
+    if (opts.exclusive && !opts.name) {
+      throw new TypeError('You cannot have an exclusive validation without a `name`')
     }
 
-    if (isExclusive)
-      next.tests = next.tests.filter(fn => fn.VALIDATION_KEY !== opts.name)
+    next._exclusive[opts.name] = !!opts.exclusive
+
+    next.tests = next.tests
+      .filter(fn => {
+        if (fn.TEST_NAME === opts.name) {
+          if (isExclusive) return false
+          if (fn.TEST.test === validate.TEST.test) return false
+        }
+        return true
+      })
 
     next.tests.push(validate)
 
@@ -314,7 +340,7 @@ var aliases = {
 }
 
 
-for( var method in aliases ) if ( _.has(aliases, method) )
+for (var method in aliases) if ( _.has(aliases, method) )
   aliases[method].forEach(
     alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
 

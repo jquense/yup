@@ -16,8 +16,9 @@ function createErrorFactory(orginalMessage, orginalPath, value, params, original
   }
 }
 
-module.exports = function createValidation({ name, message, test, params, useCallback }){
-
+module.exports = function createValidation(options) {
+  let { name, message, test, params, useCallback } = options
+  
   function validate({ value, path, state: { parent }, ...rest }) {
     var createError = createErrorFactory(message, path, value, params, name)
     var ctx = { path, parent, createError, type: name, ...rest }
@@ -36,7 +37,9 @@ module.exports = function createValidation({ name, message, test, params, useCal
     })
   }
 
-  validate.test_name = name
+  validate.TEST_NAME = name
+  validate.TEST_FN = test
+  validate.TEST = options
 
   return validate
 }

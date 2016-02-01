@@ -11,7 +11,6 @@ let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
 let isSchema = obj => obj && obj.__isYupSchema__
 
-
 function settled(promises){
   let settle = promise => promise.then(
     value => ({ fulfilled: true, value }),

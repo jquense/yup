@@ -2,6 +2,7 @@
 var MixedSchema = require('./mixed')
   , isoParse = require('./util/isodate')
   , locale = require('./locale.js').date
+  , isAbsent = require('./util/isAbsent')
   , { isDate, inherits } = require('./util/_');
 
 let invalidDate = new Date('')
@@ -34,12 +35,12 @@ inherits(DateSchema, MixedSchema, {
     if(!this._typeCheck(limit))
       throw new TypeError('`min` must be a Date or a value that can be `cast()` to a Date')
 
-    return this.test({ 
-      name: 'min', 
-      exclusive: true, 
-      message: msg || locale.min, 
+    return this.test({
+      name: 'min',
+      exclusive: true,
+      message: msg || locale.min,
       params: { min: min },
-      test: value => value && (value >= limit)
+      test: value => isAbsent(value) || (value >= limit)
     })
   },
 
@@ -49,12 +50,12 @@ inherits(DateSchema, MixedSchema, {
     if(!this._typeCheck(limit))
       throw new TypeError('`max` must be a Date or a value that can be `cast()` to a Date')
 
-    return this.test({ 
+    return this.test({
       name: 'max',
-      exclusive: true, 
-      message: msg || locale.max, 
+      exclusive: true,
+      message: msg || locale.max,
       params: { max: max },
-      test: value => !value || (value <= limit)
+      test: value => isAbsent(value) || (value <= limit)
     })
   }
 
