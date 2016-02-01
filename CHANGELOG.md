@@ -1,3 +1,13 @@
+v0.13.0 - Mon, 01 Feb 2016 20:49:40 GMT
+---------------------------------------
+
+- [335eb18](../../commit/335eb18) [fixed] pass options to array sub schema
+- [f7f631d](../../commit/f7f631d) [changed] oneOf doesn't include empty values
+- [0a7b2d4](../../commit/0a7b2d4) [fixed] type and whitelist/blacklist checks threw inconsistent errors
+- [1274a45](../../commit/1274a45) [changed] required() to non-exclusive
+
+
+
 v0.12.0 - Tue, 12 Jan 2016 19:12:18 GMT
 ---------------------------------------
 
