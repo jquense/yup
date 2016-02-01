@@ -56,7 +56,6 @@
     "toposort": "^0.2.10"
   },
   "release-script": {
-    "defaultDryRun": "false",
-    "skipBuildStep": "true"
+    "defaultDryRun": "false"
   }
 }
