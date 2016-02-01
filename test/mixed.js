@@ -70,6 +70,20 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
+  it('should ignore absent values', function(){
+    return  Promise.all([
+      mixed()
+        .oneOf(['hello'])
+        .isValid(undefined)
+        .should.eventually.equal(true),
+      string()
+        .nullable()
+        .oneOf(['hello'])
+        .isValid(null)
+        .should.eventually.equal(true)
+    ])
+  })
+
   it('should exclude values', function(){
     var inst = mixed().notOneOf(['hello', 5])
 

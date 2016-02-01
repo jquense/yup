@@ -315,7 +315,7 @@ SchemaType.prototype = {
       name: 'oneOf',
       test(value) {
         let valids = this.schema._whitelist
-        if (valids.length && !valids.has(value))
+        if (valids.length && !(valids.has(value) || isAbsent(value)))
           return this.createError({ params: { values: valids.values().join(', ') }})
         return true
       }
