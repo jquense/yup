@@ -15,7 +15,7 @@ let hasLength = value => !isAbsent(value) && value.length > 0;
 module.exports = ArraySchema
 
 function ArraySchema(){
-  if ( !(this instanceof ArraySchema))
+  if (!(this instanceof ArraySchema))
     return new ArraySchema()
 
   MixedSchema.call(this, { type: 'array'})
@@ -27,11 +27,6 @@ function ArraySchema(){
           values = JSON.parse(values)
         } catch (err){ values = null }
 
-      if (Array.isArray(values))
-          return this._subType
-            ? values.map(this._subType.cast, this._subType)
-            : values
-
       return this.isType(values) ? values : null
     })
   })
@@ -41,6 +36,16 @@ inherits(ArraySchema, MixedSchema, {
 
   _typeCheck(v){
     return Array.isArray(v)
+  },
+
+  _cast(_value, _opts) {
+    var value = MixedSchema.prototype._cast.call(this, _value)
+
+    //should ignore nulls here
+    if (!this._typeCheck(value) || !this._subType)
+      return value;
+
+    return value.map(v => this._subType.cast(v, _opts))
   },
 
   _validate(_value, _opts, _state){

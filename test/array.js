@@ -16,7 +16,7 @@ describe('Array types', function(){
   it('should CAST correctly', function(){
     var inst = array();
 
-    inst.cast('[2,3,5,6]').should.eql([2,3,5,6])
+    inst.cast('[2,3,5,6]').should.eql([2, 3, 5, 6])
 
     inst.cast(['4', 5, false]).should.eql(['4', 5, false])
 
@@ -51,6 +51,19 @@ describe('Array types', function(){
       inst.isType(null)).to.equal(false)
 
     inst.nullable().isType(null).should.equal(true)
+  })
+
+  it('should cast children', function(){
+    array()
+      .of(number())
+      .cast(['1', '3']).should.eql([1, 3])
+  })
+
+  it('should pass options to children', function(){
+    array()
+      .of(object({ name: string() }))
+      .cast([{ id: 1, name: 'john' }], { stripUnknown: true })
+      .should.eql([{name: 'john'}])
   })
 
   it('should VALIDATE correctly', function(){
