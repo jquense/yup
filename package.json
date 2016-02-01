@@ -4,11 +4,11 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run build && karma start --single-run",
-    "tdd": "npm run build && karma start",
+    "test": "karma start --single-run",
+    "tdd": "karma start",
     "clean": "rimaf ./lib/*",
     "toc": "doctoc README.md --github",
-    "build": "babel src --out-dir lib && toc",
+    "build": "babel src --out-dir lib && npm run toc",
     "release": "release"
   },
   "repository": {
