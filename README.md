@@ -1,3 +1,4 @@
+
 Yup
 =======================
 
@@ -11,20 +12,73 @@ It also allows "stacking" conditions via `when` for properties that depend on mo
 child property. Yup separates the parsing and validating functions into separate steps so it can be used to parse
 json separate from validating it, via the `cast` method.
 
-## Usage
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-  - [Yup](#yup-1)
-    + [`mixed`](#mixed)
-    + [`string`](#string)
-    + [`number`](#number)
-    + [`boolean`](#boolean)
-    + [`date`](#date)
-    + [`array`](#array)
-    + [`object`](#array)
-  - [`reach`](#reachschema-schema-string-path-object-options)
-  - [`addMethod`](#addmethodschematype-name-method)
-  - [`ValidationError`](#validationerrorstringarraystring-errors-string-path-any-value)
-  - [Extending Schema Types](#extending-schema-types)
+- [Usage](#usage)
+- [API](#api)
+  - [`yup`](#yup)
+    - [`.reach(Schema schema, String path, Object options)`](#reachschema-schema-string-path-object-options)
+    - [`.addMethod(schemaType, name, method)`](#addmethodschematype-name-method)
+    - [`ValidationError(String|Array<String> errors, Any value, String path)`](#validationerrorstringarraystring-errors-any-value-string-path)
+  - [`mixed`](#mixed)
+    - [`mixed.clone()`](#mixedclone)
+    - [`mixed.concat(Schema schema)`](#mixedconcatschema-schema)
+    - [`mixed.validate(Any value, [Object options, Function callback])`](#mixedvalidateany-value-object-options-function-callback)
+    - [`mixed.isValid(Any value, [Object options, Function callback]) -> Promise`](#mixedisvalidany-value-object-options-function-callback---promise)
+    - [`mixed.cast(value) -> Any`](#mixedcastvalue---any)
+    - [`mixed.isType(Any value) -> Boolean`](#mixedistypeany-value---boolean)
+    - [`mixed.strict()` (default: `false`)](#mixedstrict-default-false)
+    - [`mixed.default(Any value)`](#mixeddefaultany-value)
+    - [`mixed.default() -> Any`](#mixeddefault---any)
+    - [`mixed.typeError(String message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')](#mixedtypeerrorstring-message-default-path-value-%5Cvalue%5C-must-be-a-%5Ctype%5C-type)
+    - [`mixed.nullable(Bool isNullable)` (default: `false`)](#mixednullablebool-isnullable-default-false)
+    - [`mixed.required([String message])`](#mixedrequiredstring-message)
+    - [`mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`](#mixedoneofarrayany-arrayofvalues-string-message-alias-equals)
+    - [`mixed.notOneOf(Array<Any> arrayOfValues, [String message])`](#mixednotoneofarrayany-arrayofvalues-string-message)
+    - [`mixed.when(String key, Object options | Function func)`](#mixedwhenstring-key-object-options--function-func)
+    - [`mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])`](#mixedteststring-name-string-message-function-fn-bool-callbackstyleasync)
+    - [`mixed.test(Object options)`](#mixedtestobject-options)
+    - [`mixed.transform(Function fn)`](#mixedtransformfunction-fn)
+  - [string](#string)
+    - [`string.required([String message])`](#stringrequiredstring-message)
+    - [`string.min(Number limit, [String message])`](#stringminnumber-limit-string-message)
+    - [`string.max(Number limit, [String message])`](#stringmaxnumber-limit-string-message)
+    - [`string.matches(Regex regex, [String message])`](#stringmatchesregex-regex-string-message)
+    - [`string.email([String message])`](#stringemailstring-message)
+    - [`string.url([String message])`](#stringurlstring-message)
+    - [`string.trim([String message])`](#stringtrimstring-message)
+    - [`string.lowercase([String message])`](#stringlowercasestring-message)
+    - [`string.uppercase([String message])`](#stringuppercasestring-message)
+  - [number](#number)
+    - [`number.min(Number limit, [String message])`](#numberminnumber-limit-string-message)
+    - [`number.max(Number limit, [String message])`](#numbermaxnumber-limit-string-message)
+    - [`number.positive([String message])`](#numberpositivestring-message)
+    - [`number.negative([String message])`](#numbernegativestring-message)
+    - [`number.integer([String message])`](#numberintegerstring-message)
+    - [`round(String type)` - 'floor', 'ceil', 'round'](#roundstring-type---floor-ceil-round)
+  - [boolean](#boolean)
+  - [date](#date)
+    - [`date.min(Date|String limit, [String message])`](#datemindatestring-limit-string-message)
+    - [`date.max(Date|String limit, [String message])`](#datemaxdatestring-limit-string-message)
+  - [array](#array)
+  - [`array.of(Schema type)`](#arrayofschema-type)
+    - [`array.required([String message])`](#arrayrequiredstring-message)
+    - [`array.min(Number limit, [String message])`](#arrayminnumber-limit-string-message)
+    - [`array.max(Number limit, [String message])`](#arraymaxnumber-limit-string-message)
+  - [`array.compact(Function rejector)`](#arraycompactfunction-rejector)
+  - [object](#object)
+    - [`object.shape(Object schemaHash, [noSortEdges])`](#objectshapeobject-schemahash-nosortedges)
+    - [`object.from(String fromKey, String toKey, Bool alias)`](#objectfromstring-fromkey-string-tokey-bool-alias)
+    - [`object.noUnknown([Bool onlyKnownKeys, String msg])`](#objectnounknownbool-onlyknownkeys-string-msg)
+    - [`object.camelcase()`](#objectcamelcase)
+    - [`object.constantcase()`](#objectconstantcase)
+- [Extending Schema Types](#extending-schema-types)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Usage
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
 
@@ -59,6 +113,8 @@ schema.cast({
 })
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
+
+## API
 
 ### `yup`
 
@@ -128,7 +184,7 @@ Thrown on failed validations, with the following properties
  alternatively `errors` will have all the of the messages from each inner error.
 
 
-### `mixed`
+### mixed
 
 Creates a schema that matches all types. All types inherit from this base type
 
@@ -219,6 +275,30 @@ You should use `isType` for all Schema type checks.
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts,
 validating the value "as is".
 
+#### `mixed.withMutation(Function fn)`
+
+First the legally required Rich Hickey quote:
+
+> If a tree falls in the woods, does it make a sound?
+>
+> If a pure function mutates some local data in order to produce an immutable return value, is that ok?
+
+`withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change.
+Generally this isn't necessary since the vast majority of schema changes happen during the initial
+declaration, and only happen once over the lifetime of the schema, so performance isn't an issue.
+However certain mutations _do_ occur at cast/validation time, (such as conditional schema using `when()`), or
+when instantiating a schema object.
+
+```js
+object()
+  .shape({ key: string() })
+  .withMutation(schema => {
+    return arrayOfObjectTests.forEach(test => {
+      schema.test(test)
+    })
+  })
+```
+
 #### `mixed.default(Any value)`
 
 Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable).
@@ -242,12 +322,7 @@ for objects and arrays. To avoid this overhead you can also pass a function that
 Calling `default` with no arguments will return the current default value
 
 
-#### `mixed.typeError(String message)` (default: '${path} (value: \`${value}\`) must be a \`${type}\` type')
-
-Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
-be used in the `message` argument.
-
-#### `mixed.nullable(Bool isNullable)` (default: `false`)
+#### `mixed.nullable(Bool isNullable = false)`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `isType()` checks.
@@ -255,6 +330,11 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 #### `mixed.required([String message])`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
+
+#### `mixed.typeError(String message)`
+
+Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
+be used in the `message` argument.
 
 #### `mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`
 
@@ -692,8 +772,8 @@ var invalidDate = new Date('');
 function parseDateFromFormats(formats, parseStrict) {
 
   return this.transform(function(value, originalValue){
-
-    if ( this.isType(value) ) return value
+    if (this.isType(value))
+      return value
 
     value = Moment(originalValue, formats, parseStrict)
 
@@ -707,32 +787,45 @@ yup.addMethod(yup.date, 'format', parseDateFromFormats)
 ```
 
 __Creating new Types__
+
+Yup schema use the common constructor pattern for modeling inheritance. You can use any
+utility or pattern that works with that pattern. The below demonstrates using the es6 class
+syntax since its less verbose, but you absolutely aren't required to use it.
+
 ```js
-  var inherits = require('inherits')
-  var invalidDate = new Date(''); // our failed to coerce value
+var DateSchema = yup.date
+var invalidDate = new Date(''); // our failed to coerce value
 
-  function MomentDateSchemaType(){
-    // so we don't need to use the `new` keyword
-    if ( !(this instanceof MomentDateSchemaType))
-      return new MomentDateSchemaType()
+class MomentDateSchemaType extends DateSchema {
+  constructor() {
+    super();
+    this._validFormats = [];
 
-    yup.date.call(this)
-  }
-
-  inherits(MomentDateSchemaType, yup.date)
-
-  MomentDateSchemaType.prototype.format = function(formats, strict){
-    if (!formats) throw new Error('must enter a valid format')
-
-    this.transforms.push(function(value, originalValue) {
-      if ( this.isType(value) ) // we have a valid value
-        return value
-      value = Moment(originalValue, formats, strict)
-      return value.isValid() ? value.toDate() : invalidDate
+    this.withMutation(() => {
+      this.transform(function (value, originalvalue) {
+        if (this.isType(value)) // we have a valid value
+          return value
+        return Moment(originalValue, this._validFormats, true)
+      })
     })
   }
 
-  var schema = MomentDateSchemaType().format('YYYY-MM-DD')
+  _typeCheck(value) {
+    return super._typeCheck(value)
+        || (moment.isMoment(value) && value.isValid())
+  }
 
-  schema.cast('It is 2012-05-25') // Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
+  format(formats) {
+    if (!formats)
+      throw new Error('must enter a valid format')
+    let next = this.clone()
+    next._validFormats = {}.concat(formats);
+  }
+}
+
+var schema = new MomentDateSchemaType()
+
+schema
+  .format('YYYY-MM-DD')
+  .cast('It is 2012-05-25') // Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
 ```

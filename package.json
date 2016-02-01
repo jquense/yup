@@ -7,7 +7,8 @@
     "test": "npm run build && karma start --single-run",
     "tdd": "npm run build && karma start",
     "clean": "rimaf ./lib/*",
-    "build": "babel src --out-dir lib",
+    "toc": "doctoc README.md --github",
+    "build": "babel src --out-dir lib && toc",
     "release": "release"
   },
   "repository": {
@@ -28,6 +29,7 @@
     "benchmark": "^2.0.0",
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
+    "doctoc": "^1.0.0",
     "eslint": "^0.24.1",
     "karma": "^0.13.14",
     "karma-chrome-launcher": "^0.2.0",
