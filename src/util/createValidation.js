@@ -1,24 +1,19 @@
 'use strict';
 var Promise = require('promise/lib/es6-extensions')
-  , Condition   = require('./condition')
-  , ValidationError = require('./validation-error')
-  , getter = require('property-expr').getter
-  , locale = require('../locale.js').mixed
-  , _ = require('./_');
+  , ValidationError = require('./validation-error');
 
 let formatError = ValidationError.formatError
 
-
-function createErrorFactory(orginalMessage, orginalPath, value, params, originalType) {
-  return function createError({ path = orginalPath, message = orginalMessage, type = originalType } = {}) {
+function createErrorFactory(orginalMessage, orginalPath, value, orginalParams, originalType) {
+  return function createError({ path = orginalPath, message = orginalMessage, type = originalType, params } = {}) {
     return new ValidationError(
-      formatError(message, { path, value, ...params}), value, path, type)
+      formatError(message, { path, value, ...orginalParams, ...params }), value, path, type)
   }
 }
 
 module.exports = function createValidation(options) {
   let { name, message, test, params, useCallback } = options
-  
+
   function validate({ value, path, state: { parent }, ...rest }) {
     var createError = createErrorFactory(message, path, value, params, name)
     var ctx = { path, parent, createError, type: name, ...rest }
@@ -43,3 +38,5 @@ module.exports = function createValidation(options) {
 
   return validate
 }
+
+module.exports.createErrorFactory = createErrorFactory

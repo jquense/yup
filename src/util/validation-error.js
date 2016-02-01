@@ -38,6 +38,7 @@ ValidationError.isError = function(err){
 }
 
 ValidationError.formatError = function(message, params) {
+  
   if ( typeof message === 'string')
     message = replace(message)
 

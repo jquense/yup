@@ -10,9 +10,13 @@ var Promise = require('promise/lib/es6-extensions')
   , createValidation = require('./util/createValidation')
   , BadSet = require('./util/set');
 
-let formatError = ValidationError.formatError
-
 let notEmpty = value => !isAbsent(value);
+
+function runValidations(validations, endEarly, value, path) {
+  return endEarly
+    ? Promise.all(validations)
+    : _.collectErrors(validations, value, path)
+}
 
 module.exports = SchemaType
 
@@ -27,7 +31,10 @@ function SchemaType(options = {}){
   this._blacklist   = new BadSet()
   this.tests        = []
   this.transforms   = []
-  this._typeError   = formatError(locale.notType)
+
+  this.withMutation(() => {
+    this.typeError(locale.notType)
+  })
 
   if (_.has(options, 'default'))
     this._defaultDefault = options.default
@@ -114,9 +121,7 @@ SchemaType.prototype = {
 
   //-- tests
   _validate(_value, options = {}, state = {}) {
-    let valids   = this._whitelist
-      , invalids = this._blacklist
-      , context  = options.context
+    let context  = options.context
       , parent   = state.parent
       , value    = _value
       , schema, endEarly, isStrict;
@@ -127,41 +132,28 @@ SchemaType.prototype = {
 
     let path = state.path
 
-    let errors = [];
-    let reject = () => Promise.reject(new ValidationError(errors, value));
-
     if (!state.isCast && !isStrict)
       value = schema._cast(value, options)
 
     // value is cast, we can check if it meets type requirements
-    if (value !== undefined && !schema.isType(value)) {
-      errors.push(schema._typeError({ value, path, type: schema._type }))
-      if ( endEarly ) return reject()
-    }
+    let validationParams = { value, path, state, schema, options }
+    let initialTests = []
 
-    // next check Whitelist for matching values
-    if (valids.length && !valids.has(value)) {
-      errors.push(schema._whitelistError(valids.values(), path))
-      if (endEarly) return reject()
-    }
+    if (schema._typeError)
+      initialTests.push(schema._typeError(validationParams));
+    if (schema._whitelistError)
+      initialTests.push(schema._whitelistError(validationParams));
+    if (schema._blacklistError)
+      initialTests.push(schema._blacklistError(validationParams));
 
-    // next check Blacklist for matching values
-    if (invalids.has(value)) {
-      errors.push(schema._blacklistError(invalids.values(), path))
-      if (endEarly) return reject()
-    }
-
-    // It makes no sense to validate further at this point if their are errors
-    if (errors.length)
-      return reject()
-
-    let result = schema.tests.map(fn => fn({ value, path, state, schema, options }))
-
-    result = endEarly
-      ? Promise.all(result)
-      : _.collectErrors(result, value, path)
-
-    return result.then(() => value);
+    return runValidations(initialTests, endEarly, value, path)
+      .then(() => runValidations(
+          schema.tests.map(fn => fn(validationParams))
+        , endEarly
+        , value
+        , path
+      ))
+      .then(() => value)
   },
 
   validate(value, options, cb) {
@@ -210,12 +202,6 @@ SchemaType.prototype = {
       msg || locale.required,
       notEmpty
     )
-  },
-
-  typeError(msg){
-    var next = this.clone()
-    next._typeError = formatError(msg)
-    return next
   },
 
   nullable(value) {
@@ -296,32 +282,65 @@ SchemaType.prototype = {
     return next
   },
 
-  oneOf(enums, msg) {
+  typeError(message) {
     var next = this.clone()
 
-    if( next.tests.length )
+    next._typeError = createValidation({
+      message,
+      name: 'typeError',
+      test(value) {
+        if (value !== undefined && !this.schema.isType(value))
+          return this.createError({
+            params: { type: this.schema._type }
+          })
+        return true
+      }
+    })
+    return next
+  },
+
+  oneOf(enums, message = locale.oneOf) {
+    var next = this.clone();
+
+    if (next.tests.length)
       throw new TypeError('Cannot specify values when there are validation rules specified')
 
-    next._whitelistError = (valids, path) =>
-      formatError(msg || locale.oneOf, { values: valids.join(', '), path })
-
-    enums.forEach( val => {
+    enums.forEach(val => {
       next._blacklist.delete(val)
       next._whitelist.add(val)
+    })
+
+    next._whitelistError = createValidation({
+      message,
+      name: 'oneOf',
+      test(value) {
+        let valids = this.schema._whitelist
+        if (valids.length && !valids.has(value))
+          return this.createError({ params: { values: valids.values().join(', ') }})
+        return true
+      }
     })
 
     return next
   },
 
-  notOneOf(enums, msg) {
-    var next = this.clone()
-
-    next._blacklistError = (invalids, path) =>
-      formatError(msg || locale.notOneOf, { values: invalids.join(', '), path })
+  notOneOf(enums, message = locale.notOneOf) {
+    var next = this.clone();
 
     enums.forEach( val => {
       next._whitelist.delete(val)
       next._blacklist.add(val)
+    })
+
+    next._blacklistError = createValidation({
+      message,
+      name: 'notOneOf',
+      test(value) {
+        let invalids = this.schema._blacklist
+        if (invalids.length && invalids.has(value))
+          return this.createError({ params: { values: invalids.values().join(', ') }})
+        return true
+      }
     })
 
     return next

@@ -40,6 +40,23 @@ describe( 'Mixed Types ', function(){
     return inst.cast().should.equal('hello')
   })
 
+  it('should check types', function(){
+    var inst = string().strict().typeError('must be a ${type}!')
+
+    return Promise.all([
+      inst.validate(5).should.be.rejected.then(function(err) {
+        err.type.should.equal('typeError')
+        err.message.should.equal('must be a string!')
+        err.inner.length.should.equal(0)
+      }),
+      inst.validate(5, { abortEarly: false }).should.be.rejected.then(function(err) {
+        chai.expect(err.type).to.not.exist
+        err.message.should.equal('must be a string!')
+        err.inner.length.should.equal(1)
+      })
+    ])
+  })
+
   it('should limit values', function(){
     var inst = mixed().oneOf(['hello', 5])
 
@@ -65,9 +82,20 @@ describe( 'Mixed Types ', function(){
       inst.validate(5).should.be.rejected.then(function(err){
         err.errors[0].should.equal('this must not be one the following values: hello, 5')
       }),
-
       inst.oneOf([5]).isValid(5).should.eventually.equal(true)
     ])
+  })
+
+  it('should run subset of validations first', function(){
+    var called = false;
+    var inst = string()
+      .strict()
+      .test('test', 'boom', () => called = true)
+
+    return inst.validate(25).should.be.rejected
+      .then(() => {
+        called.should.equal(false)
+      })
   })
 
   it('should respect strict', function(){
@@ -181,7 +209,7 @@ describe( 'Mixed Types ', function(){
         message: 'invalid',
         exclusive: true,
         name: 'max',
-        test: function(){
+        test() {
           this.path.should.equal('test')
           this.parent.should.eql({ other: 5, test : 'hi' })
           this.options.context.should.eql({ user: 'jason' })
@@ -197,7 +225,7 @@ describe( 'Mixed Types ', function(){
     var inst = mixed().test({
         message: 'invalid ${path}',
         name: 'max',
-        test: function(){
+        test() {
           return this.createError({ path: 'my.path' })
         }
       })
