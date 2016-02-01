@@ -5,21 +5,22 @@ var MixedSchema = require('./mixed')
 module.exports = BooleanSchema
 
 function BooleanSchema(){
-  if (!(this instanceof BooleanSchema)) 
+  if (!(this instanceof BooleanSchema))
     return new BooleanSchema()
- 
+
   MixedSchema.call(this, { type: 'boolean'})
 
-  this.transforms.push(function(value) {
-    if ( this.isType(value) ) return value
-    return (/true|1/i).test(value)
+  this.withMutation(() => {
+    this.transform(function(value) {
+      if ( this.isType(value) ) return value
+      return (/true|1/i).test(value)
+    })
   })
 }
 
 inherits(BooleanSchema, MixedSchema, {
 
-  _typeCheck(v){ 
+  _typeCheck(v){
     return (typeof v === 'boolean') || (typeof v === 'object' && v instanceof Boolean)
   }
 })
-

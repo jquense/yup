@@ -20,18 +20,20 @@ function ArraySchema(){
 
   MixedSchema.call(this, { type: 'array'})
 
-  this.transforms.push(function(values) {
-    if (typeof values === 'string')
-      try {
-        values = JSON.parse(values)
-      } catch (err){ values = null }
+  this.withMutation(() => {
+    this.transform(function(values) {
+      if (typeof values === 'string')
+        try {
+          values = JSON.parse(values)
+        } catch (err){ values = null }
 
-    if (Array.isArray(values))
-        return this._subType
-          ? values.map(this._subType.cast, this._subType)
-          : values
+      if (Array.isArray(values))
+          return this._subType
+            ? values.map(this._subType.cast, this._subType)
+            : values
 
-    return this.isType(values) ? values : null
+      return this.isType(values) ? values : null
+    })
   })
 }
 

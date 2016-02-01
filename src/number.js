@@ -14,11 +14,13 @@ function NumberSchema(){
 
   SchemaObject.call(this, { type: 'number' })
 
-  this.transforms.push(function(value) {
-    if ( this.isType(value) )  return value
-    if ( typeof value === 'boolean' )  return value ? 1 : 0
+  this.withMutation(() => {
+    this.transform(function(value) {
+      if (this.isType(value)) return value
+      if (typeof value === 'boolean') return value ? 1 : 0
 
-    return isDate(value) ? +value : parseFloat(value)
+      return isDate(value) ? +value : parseFloat(value)
+    })
   })
 }
 

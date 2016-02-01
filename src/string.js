@@ -18,10 +18,12 @@ function StringSchema(){
 
   MixedSchema.call(this, { type: 'string'})
 
-  this.transforms.push(function(value) {
-    if (this.isType(value)) return value
-    return value == null ? ''
-      : value.toString ? value.toString() : '' + value
+  this.withMutation(() => {
+    this.transform(function(value) {
+      if (this.isType(value)) return value
+      return value == null ? ''
+        : value.toString ? value.toString() : '' + value
+    })
   })
 }
 

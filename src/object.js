@@ -1,8 +1,6 @@
 'use strict';
 var MixedSchema = require('./mixed')
   , Promise = require('promise/lib/es6-extensions')
-  //, Reference = require('./util/Reference')
-  , cloneDeep = require('./util/clone')
   , toposort = require('toposort')
   , locale = require('./locale.js').object
   , split = require('property-expr').split
@@ -45,18 +43,18 @@ function ObjectSchema(spec) {
     }
   })
 
-  this.transforms.push(function coerce(value) {
-    if (typeof value === 'string') {
-      try {
-        value = JSON.parse(value)
+  this.withMutation(() => {
+    this.transform(function coerce(value) {
+      if (typeof value === 'string') {
+        try {
+          value = JSON.parse(value)
+        }
+        catch (err){ value = null }
       }
-      catch (err){ value = null }
-    }
-
-    if( this.isType(value) )
-      return value
-
-    return null
+      if (this.isType(value))
+        return value
+      return null
+    })
   })
 
   this.fields = Object.create(null)
