@@ -15,6 +15,13 @@ var MixedSchema = require('./mixed')
 
 let isRecursive = schema =>  (schema._subType || schema) === '$this'
 
+c.type('altCamel', function(str) {
+  let result = c.camel(str)
+    , idx = str.search(/[^_]/)
+
+  return idx === 0 ? result : (str.substr(0, idx) + result)
+})
+
 let childSchema = (field, parent) => {
   return isRecursive(field)
     ? field.of
@@ -215,7 +222,7 @@ inherits(ObjectSchema, MixedSchema, {
 
   camelcase(){
     return this.transform(obj => obj == null ? obj
-      : transform(obj, (newobj, val, key ) => newobj[c.camel(key)] = val))
+      : transform(obj, (newobj, val, key ) => newobj[c.altCamel(key)] = val))
   },
 
   constantcase(){

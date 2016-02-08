@@ -446,6 +446,15 @@ describe('Object types', function(){
       .cast(null)).to.equal(null)
   })
 
+  it('should camelCase with leading underscore', function(){
+    var inst = object().camelcase()
+
+    inst
+      .cast({ CON_STAT: 5, __isNew: true, __IS_FUN: true })
+      .should
+      .eql({ conStat: 5, __isNew: true, __isFun: true })
+  })
+
   it('should CONSTANT_CASE keys', function(){
     var inst = object().shape({
           CON_STAT: number(),
