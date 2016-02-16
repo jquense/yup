@@ -142,6 +142,24 @@ describe('Object types', function(){
   })
 
 
+  it('should pass options to children', function() {
+    object({
+      names: object({
+        first: string()
+      })
+    })
+    .cast({
+        extra: true,
+        names: { first: 'john', extra: true }
+      }, { stripUnknown: true }
+    )
+    .should.eql({
+      names: {
+        first: 'john'
+      }
+    })
+  })
+
   it('should call shape with constructed with an arg', function(){
     var inst = object({
           prop: mixed()
@@ -196,20 +214,29 @@ describe('Object types', function(){
           prop: mixed(),
           other: mixed()
         })
-        .noUnknown('hi')
 
-    return inst.validate({ extra: 'field' })
-      .should.be.rejected
-      .then(function(err){
-        err.errors[0].should.equal('hi')
-      })
+    return Promise.all([
+      inst
+        .noUnknown('hi')
+        .validate({ extra: 'field' }, { strict: true }).should.be.rejected
+          .then(function(err){
+            err.errors[0].should.equal('hi')
+          }),
+
+      inst
+        .noUnknown()
+        .validate({ extra: 'field' }, { strict: true }).should.be.rejected
+          .then(function(err){
+            err.errors[0].should.be.a('string')
+          })
+    ])
   })
 
   it('should handle custom validation', function(){
     var inst = object().shape({
-          prop: mixed(),
-          other: mixed()
-        })
+      prop: mixed(),
+      other: mixed()
+    })
 
     inst = inst.test('test', '${path} oops', function(){
       return false
@@ -328,7 +355,7 @@ describe('Object types', function(){
 
   it('should not move keys when it does not exist', function(){
     var inst = object().shape({
-          myProp: mixed(),
+          myProp: mixed()
         })
         .from('prop', 'myProp')
 
@@ -386,7 +413,7 @@ describe('Object types', function(){
 
   it('should use correct default when concating', function(){
     var inst = object().shape({
-          other: bool(),
+          other: bool()
         })
         .default(undefined)
 

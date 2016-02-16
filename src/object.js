@@ -92,13 +92,15 @@ inherits(ObjectSchema, MixedSchema, {
       , props  = schema._nodes.concat(extra);
 
     schema.withMutation(() => {
+      let innerOptions = { ..._opts, context: {} };
+
       value = transform(props, function(obj, prop) {
         var exists = has(value, prop);
 
         if (exists && fields[prop]) {
           var fieldSchema = childSchema(fields[prop], schema.default(undefined))
 
-          obj[prop] = fieldSchema.cast(value[prop], { context: obj })
+          obj[prop] = fieldSchema.cast(value[prop], innerOptions)
         }
         else if (exists && !strip)
           obj[prop] = value[prop]
@@ -109,7 +111,7 @@ inherits(ObjectSchema, MixedSchema, {
           if (fieldDefault !== undefined)
             obj[prop] = fieldDefault
         }
-      }, {})
+      }, innerOptions.context)
 
       delete schema._default
     })
@@ -201,23 +203,23 @@ inherits(ObjectSchema, MixedSchema, {
     })
   },
 
-  noUnknown(noAllow, message) {
-    if ( typeof noAllow === 'string')
+  noUnknown(noAllow = true, message = locale.noUnknown) {
+    if (typeof noAllow === 'string')
       message = noAllow, noAllow = true;
 
     var next = this.test({
       name: 'noUnknown',
       exclusive: true,
-      message:  message || locale.noUnknown,
+      message: message,
       test(value) {
         return value == null || !noAllow || unknown(this.schema, value).length === 0
       }
     })
 
-    if ( noAllow )
-      this._options.stripUnknown = true
+    if (noAllow)
+      next._options.stripUnknown = true
 
-    return  next
+    return next
   },
 
   camelcase(){
