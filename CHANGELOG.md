@@ -1,3 +1,10 @@
+v0.14.1 - Tue, 16 Feb 2016 19:51:25 GMT
+---------------------------------------
+
+- [ff19720](../../commit/ff19720) [fixed] noUnknown and stripUnknown work and propagate to children
+
+
+
 v0.14.0 - Mon, 08 Feb 2016 16:17:40 GMT
 ---------------------------------------
 
