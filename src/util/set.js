@@ -1,43 +1,30 @@
-var toString = Object.prototype.toString
-var isDate = obj => toString.call(obj) === '[object Date]'
-
-module.exports =  class BadSet {
+module.exports = class BadSet {
 
   constructor(){
-    this._array = []
-    this.length = 0
+    this._map = {}
   }
 
   values(){
-    return this._array
+    return Object.keys(this._map).map(v => this._map[v])
   }
 
-  add(item) {
-    if(!this.has(item)) 
-      this._array.push(item)
+  get length(){
+    return Object.keys(this._map).length
+  }
 
-    this.length = this._array.length
+  add(item){
+    this._map[stringify(item)] = item
   }
 
   delete(item){
-    var idx = indexOf(this._array, item)
-    if( idx !== -1) 
-      this._array.splice(idx, 1)
-
-    this.length = this._array.length
+    delete this._map[stringify(item)]
   }
 
-  has(val){
-    return indexOf(this._array, val) !== -1
+  has(item){
+    return this._map.hasOwnProperty(stringify(item))
   }
 }
 
-
-function indexOf(arr, val){
-  for (var i = 0; i < arr.length; i++) {
-    var item = arr[i]
-    if (item === val || (isDate(item) && +val === +item)) 
-      return i
-  }
-  return -1
+function stringify(item){
+  return JSON.stringify(item)
 }
