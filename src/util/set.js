@@ -1,7 +1,9 @@
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
 module.exports = class BadSet {
 
   constructor(){
-    this._map = {}
+    this._map = Object.create(null)
   }
 
   values(){
@@ -21,7 +23,7 @@ module.exports = class BadSet {
   }
 
   has(item){
-    return this._map.hasOwnProperty(stringify(item))
+    return hasOwnProperty.call(this._map, stringify(item))
   }
 }
 
