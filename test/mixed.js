@@ -58,14 +58,14 @@ describe( 'Mixed Types ', function(){
   })
 
   it('should limit values', function(){
-    var inst = mixed().oneOf(['hello', 5])
+    var inst = mixed().oneOf([5, 'hello'])
 
     return Promise.all([
       inst.isValid(5).should.eventually.equal(true),
       inst.isValid('hello').should.eventually.equal(true),
 
       inst.validate(6).should.be.rejected.then(function(err) {
-        err.errors[0].should.equal('this must be one the following values: hello, 5')
+        err.errors[0].should.equal('this must be one the following values: 5, hello')
       })
     ])
   })
@@ -85,7 +85,7 @@ describe( 'Mixed Types ', function(){
   })
 
   it('should exclude values', function(){
-    var inst = mixed().notOneOf(['hello', 5])
+    var inst = mixed().notOneOf([5, 'hello'])
 
     return Promise.all([
       inst.isValid(6).should.eventually.equal(true),
@@ -94,7 +94,7 @@ describe( 'Mixed Types ', function(){
       inst.isValid(5).should.eventually.equal(false),
 
       inst.validate(5).should.be.rejected.then(function(err){
-        err.errors[0].should.equal('this must not be one the following values: hello, 5')
+        err.errors[0].should.equal('this must not be one the following values: 5, hello')
       }),
       inst.oneOf([5]).isValid(5).should.eventually.equal(true)
     ])
