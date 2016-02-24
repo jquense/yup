@@ -12,7 +12,7 @@ module.exports = {
   string: {
     required:  '${path} is a required field',
     min:       '${path} must be at least ${min} characters',
-    max:       '${path} must be less than ${max} characters',
+    max:       '${path} must be at most ${max} characters',
     matches:   '${path} must match the following: "${regex}"',
     email:     '${path} must be a valid email',
     url:       '${path} must be a valid URL',
@@ -22,7 +22,7 @@ module.exports = {
   },
 
   number: {
-    min:       '${path} must be at least ${min}',
+    min:       '${path} must be greater than or equal to ${min}',
     max:       '${path} must be less than or equal to ${max}',
     positive:  '${path} must be a positive number',
     negative:  '${path} must be a negative number',
