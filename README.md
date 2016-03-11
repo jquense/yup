@@ -24,6 +24,7 @@ json separate from validating it, via the `cast` method.
     - [`ValidationError(String|Array<String> errors, Any value, String path)`](#validationerrorstringarraystring-errors-any-value-string-path)
   - [mixed](#mixed)
     - [`mixed.clone()`](#mixedclone)
+    - [`mixed.label(String label)`](#mixedlabel)
     - [`mixed.concat(Schema schema)`](#mixedconcatschema-schema)
     - [`mixed.validate(Any value, [Object options, Function callback])`](#mixedvalidateany-value-object-options-function-callback)
     - [`mixed.isValid(Any value, [Object options, Function callback]) -> Promise`](#mixedisvalidany-value-object-options-function-callback---promise)
@@ -199,6 +200,10 @@ schema.isValid(undefined, function(valid){
 #### `mixed.clone()`
 
 Creates a deep copy of the schema. Clone is used internally to return a new schema with every schema state change.
+
+#### `mixed.label(String label)`
+
+Overrides the key name which is used in error messages.
 
 #### `mixed.concat(Schema schema)`
 
