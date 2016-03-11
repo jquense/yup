@@ -434,4 +434,17 @@ describe( 'Mixed Types ', function(){
     inst.default().should.eql({ prop: undefined })
   })
 
+    it('should use label in error message', function () {
+        var label = 'Label'
+        var inst = object({
+            prop: string().required().label(label)
+        })
+
+        return Promise.all([
+            inst.validate({}).should.be.rejected.then(function (err) {
+                err.message.should.equal(`${label} is a required field`)
+            })
+        ])
+  })
+
 })

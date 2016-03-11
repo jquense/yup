@@ -42,8 +42,8 @@ ValidationError.formatError = function(message, params) {
   if ( typeof message === 'string')
     message = replace(message)
 
-  let fn = ({ path, ...params }) => {
-    params.path = path || 'this'
+  let fn = ({ path, label, ...params }) => {
+    params.path = label || path || 'this'
 
     return message(params)
   }
