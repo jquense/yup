@@ -55,6 +55,12 @@ SchemaType.prototype = {
     return cloneDeep(this);
   },
 
+  label: function(label){
+    var next = this.clone();
+    next._label = label;
+    return next;
+  },
+
   withMutation(fn) {
     this._mutate = true
     let result = fn(this)
@@ -131,12 +137,13 @@ SchemaType.prototype = {
     endEarly = schema._option('abortEarly', options)
 
     let path = state.path
+    let label = this._label
 
     if (!state.isCast && !isStrict)
       value = schema._cast(value, options)
 
     // value is cast, we can check if it meets type requirements
-    let validationParams = { value, path, state, schema, options }
+    let validationParams = { value, path, state, schema, options, label }
     let initialTests = []
 
     if (schema._typeError)

@@ -14,8 +14,8 @@ function createErrorFactory(orginalMessage, orginalPath, value, orginalParams, o
 module.exports = function createValidation(options) {
   let { name, message, test, params, useCallback } = options
 
-  function validate({ value, path, state: { parent }, ...rest }) {
-    var createError = createErrorFactory(message, path, value, params, name)
+  function validate({ value, path, label, state: { parent }, ...rest }) {
+    var createError = createErrorFactory(message, label || path, value, params, name)
     var ctx = { path, parent, createError, type: name, ...rest }
 
     return new Promise((resolve, reject) => {
