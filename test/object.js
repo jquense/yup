@@ -442,7 +442,7 @@ describe('Object types', function(){
 
       inst.validate({ stats: { isBig: true, count: 3 }, other: true }).should.be.rejected
         .then(function(err){
-          err.errors[0].should.contain('must be at least 5')
+          err.errors[0].should.contain('must be greater than or equal to 5')
         }),
 
       inst.validate({ stats: { isBig: true, count: 10 }, other: true }).should.be.fulfilled
