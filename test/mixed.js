@@ -76,6 +76,11 @@ describe( 'Mixed Types ', function(){
         .oneOf(['hello'])
         .isValid(undefined)
         .should.eventually.equal(true),
+      mixed()
+        .oneOf(['hello'])
+        .required()
+        .isValid(null)
+        .should.eventually.equal(false),
       string()
         .nullable()
         .oneOf(['hello'])
@@ -96,7 +101,10 @@ describe( 'Mixed Types ', function(){
       inst.validate(5).should.be.rejected.then(function(err){
         err.errors[0].should.equal('this must not be one the following values: 5, hello')
       }),
-      inst.oneOf([5]).isValid(5).should.eventually.equal(true)
+      inst.oneOf([5]).isValid(5).should.eventually.equal(true),
+
+      inst.isValid(null).should.eventually.equal(true),
+      inst.required().isValid(null).should.eventually.equal(false)
     ])
   })
 
