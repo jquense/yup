@@ -4,6 +4,7 @@ var MixedSchema = require('./mixed')
   , toposort = require('toposort')
   , locale = require('./locale.js').object
   , split = require('property-expr').split
+  , toSchema = require('./util/toSchema')
   , Ref = require('./util/reference')
   , c = require('case')
   , {
@@ -183,14 +184,14 @@ inherits(ObjectSchema, MixedSchema, {
 
   shape(schema, excludes = []) {
     var next = this.clone()
-      , fields = assign(next.fields, schema);
+      , fields = assign(next.fields, transform(schema, (obj, v, k) => { obj[k] = toSchema(v) }));
 
-    if ( !Array.isArray(excludes[0]))
+    if (!Array.isArray(excludes[0]))
       excludes = [excludes]
 
     next.fields = fields
 
-    if ( excludes.length )
+    if (excludes.length)
       next._excludedEdges = next._excludedEdges.concat(
         excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
 

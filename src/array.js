@@ -2,6 +2,7 @@
 var MixedSchema = require('./mixed')
   , Promise = require('promise/lib/es6-extensions')
   , isAbsent = require('./util/isAbsent')
+  , toSchema = require('./util/toSchema')
   , { mixed, array: locale } = require('./locale.js')
   , { inherits, collectErrors } = require('./util/_');
 
@@ -87,7 +88,7 @@ inherits(ArraySchema, MixedSchema, {
 
   of(schema){
     var next = this.clone()
-    next._subType = schema
+    next._subType = toSchema(schema)
     return next
   },
 
