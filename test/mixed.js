@@ -71,21 +71,27 @@ describe( 'Mixed Types ', function(){
   })
 
   it('should ignore absent values', function(){
-    return  Promise.all([
+    return Promise.all([
       mixed()
         .oneOf(['hello'])
         .isValid(undefined)
         .should.eventually.equal(true),
       mixed()
-        .oneOf(['hello'])
-        .required()
-        .isValid(null)
-        .should.eventually.equal(false),
-      string()
         .nullable()
         .oneOf(['hello'])
         .isValid(null)
-        .should.eventually.equal(true)
+        .should.eventually.equal(false),
+      mixed()
+        .oneOf(['hello'])
+        .required()
+        .isValid(undefined)
+        .should.eventually.equal(false),
+      mixed()
+        .nullable()
+        .oneOf(['hello'])
+        .required()
+        .isValid(null)
+        .should.eventually.equal(false)
     ])
   })
 
