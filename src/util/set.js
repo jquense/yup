@@ -1,9 +1,10 @@
-var hasOwnProperty = Object.prototype.hasOwnProperty
+var { has } = require('./_')
 
 module.exports = class BadSet {
 
   constructor(){
     this._map = Object.create(null)
+    this._refs = Object.create(null)
   }
 
   values(){
@@ -23,7 +24,7 @@ module.exports = class BadSet {
   }
 
   has(item){
-    return hasOwnProperty.call(this._map, stringify(item))
+    return has(this._map, stringify(item))
   }
 }
 

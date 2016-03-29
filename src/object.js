@@ -4,6 +4,7 @@ var MixedSchema = require('./mixed')
   , toposort = require('toposort')
   , locale = require('./locale.js').object
   , split = require('property-expr').split
+  , Ref = require('./util/reference')
   , c = require('case')
   , {
     isObject
@@ -11,7 +12,7 @@ var MixedSchema = require('./mixed')
   , assign
   , inherits
   , collectErrors
-  , has } = require('./util/_');
+  , isSchema, has } = require('./util/_');
 
 let isRecursive = schema =>  (schema._subType || schema) === '$this'
 
@@ -23,11 +24,9 @@ c.type('altCamel', function(str) {
 })
 
 let childSchema = (field, parent) => {
-  return isRecursive(field)
-    ? field.of
-        ? field.of(parent)
-        : parent
-    : field
+  if (!isRecursive(field)) return field
+
+  return field.of ? field.of(parent) : parent
 }
 
 let scopeError = value => err => {
@@ -78,7 +77,7 @@ inherits(ObjectSchema, MixedSchema, {
     return isObject(value) || typeof value === 'function';
   },
 
-  _cast(_value, _opts) {
+  _cast(_value, _opts = {}) {
     var schema = this
       , value  = MixedSchema.prototype._cast.call(schema, _value)
 
@@ -92,28 +91,43 @@ inherits(ObjectSchema, MixedSchema, {
       , props  = schema._nodes.concat(extra);
 
     schema.withMutation(() => {
-      let innerOptions = { ..._opts, context: {} };
+      let innerOptions = { ..._opts, parent: {} };
+
+
 
       value = transform(props, function(obj, prop) {
-        var exists = has(value, prop);
+        let field = fields[prop]
+        let exists = has(value, prop);
 
-        if (exists && fields[prop]) {
-          var fieldSchema = childSchema(fields[prop], schema.default(undefined))
+        if (Ref.isRef(field)) {
+          let refValue = field.getValue(obj, innerOptions.context)
+
+          if (refValue !== undefined)
+            obj[prop] = refValue
+        }
+        else if (exists && field) {
+          // ugly optimization avoiding a clone. clears default for recursive
+          // cast and resets it below;
+          let hasDflt = has(schema, '_default')
+            , dflt = schema._default;
+
+          let fieldSchema = childSchema(field, schema.default(undefined))
 
           obj[prop] = fieldSchema.cast(value[prop], innerOptions)
+
+          if (hasDflt) schema.default(dflt)
+          else delete schema._default
         }
         else if (exists && !strip)
           obj[prop] = value[prop]
 
-        else if(fields[prop]) {
-          var fieldDefault = fields[prop].default ? fields[prop].default() : undefined
+        else if (field) {
+          var fieldDefault = field.default ? field.default() : undefined
 
           if (fieldDefault !== undefined)
             obj[prop] = fieldDefault
         }
-      }, innerOptions.context)
-
-      delete schema._default
+      }, innerOptions.parent)
     })
 
     return value
@@ -243,21 +257,25 @@ function sortFields(fields, excludes = []){
   var edges = [], nodes = []
 
   for (var key in fields) if (has(fields, key)) {
-    if (!~nodes.indexOf(key)) nodes.push(key)
+    let value = fields[key];
 
-    fields[key]._deps &&
-      fields[key]._deps.forEach(dep => {   //eslint-disable-line no-loop-func
-        if (dep.isContext)
-          return
+    if (!~nodes.indexOf(key))
+      nodes.push(key)
 
-        var node = split(dep.key)[0]
+    let addNode = depPath => {   //eslint-disable-line no-loop-func
+      var node = split(depPath)[0]
 
-        if (!~nodes.indexOf(node))
-          nodes.push(node)
+      if (!~nodes.indexOf(node))
+        nodes.push(node)
 
-        if (!~excludes.indexOf(`${key}-${node}`))
-          edges.push([key, node])
-      })
+      if (!~excludes.indexOf(`${key}-${node}`))
+        edges.push([key, node])
+    }
+
+    if (Ref.isRef(value) && !value.isContext)
+      addNode(value.path)
+    else if (isSchema(value))
+      value._deps.forEach(addNode)
   }
 
   return toposort.array(nodes, edges).reverse()

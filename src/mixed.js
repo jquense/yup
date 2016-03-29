@@ -2,13 +2,13 @@
 
 var Promise = require('promise/lib/es6-extensions')
   , Condition   = require('./util/condition')
-  , ValidationError = require('./util/validation-error')
   , locale = require('./locale.js').mixed
   , _ = require('./util/_')
   , isAbsent = require('./util/isAbsent')
   , cloneDeep = require('./util/clone')
   , createValidation = require('./util/createValidation')
-  , BadSet = require('./util/set');
+  , BadSet = require('./util/set')
+  , Ref = require('./util/reference');
 
 let notEmpty = value => !isAbsent(value);
 
@@ -25,6 +25,7 @@ function SchemaType(options = {}){
     return new SchemaType()
 
   this._deps        = []
+  this._conditions  = []
   this._options     = { abortEarly: true, recursive: true }
   this._exclusive   = Object.create(null)
   this._whitelist   = new BadSet()
@@ -100,9 +101,9 @@ SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v)
   },
 
-  cast(_value, _opts) {
-    var schema = this._resolve((_opts || {}).context)
-    return schema._cast(_value, _opts)
+  cast(value, opts = {}) {
+    var schema = this._resolve(opts.context, opts.parent)
+    return schema._cast(value, opts)
   },
 
   _cast(_value) {
@@ -116,9 +117,9 @@ SchemaType.prototype = {
     return value
   },
 
-  _resolve(context, parent){
-    if (this._deps.length) {
-      return this._deps.reduce((schema, match) =>
+  _resolve(context, parent) {
+    if (this._conditions.length) {
+      return this._conditions.reduce((schema, match) =>
         match.resolve(schema, match.getValue(parent, context)), this)
     }
 
@@ -186,7 +187,7 @@ SchemaType.prototype = {
     },
 
   default(def) {
-    if( arguments.length === 0){
+    if (arguments.length === 0) {
       var dflt = _.has(this, '_default') ? this._default : this._defaultDefault
       return typeof dflt === 'function'
         ? dflt.call(this) : cloneDeep(dflt)
@@ -277,11 +278,16 @@ SchemaType.prototype = {
     return next
   },
 
-  when(key, options){
+  when(keys, options) {
     var next = this.clone()
-      , dep = new Condition(key, next._type, options);
+      , deps = [].concat(keys).map(key => new Ref(key));
 
-    next._deps.push(dep)
+    deps.forEach(dep => {
+      if (!dep.isContext)
+        next._deps.push(dep.key)
+    })
+
+    next._conditions.push(new Condition(deps, options))
 
     return next
   },
@@ -295,7 +301,9 @@ SchemaType.prototype = {
       test(value) {
         if (value !== undefined && !this.schema.isType(value))
           return this.createError({
-            params: { type: this.schema._type }
+            params: {
+              type: this.schema._type
+            }
           })
         return true
       }
@@ -320,7 +328,11 @@ SchemaType.prototype = {
       test(value) {
         let valids = this.schema._whitelist
         if (valids.length && !(valids.has(value) || isAbsent(value)))
-          return this.createError({ params: { values: valids.values().join(', ') }})
+          return this.createError({
+            params: {
+              values: valids.values().join(', ')
+            }
+          })
         return true
       }
     })
@@ -342,7 +354,11 @@ SchemaType.prototype = {
       test(value) {
         let invalids = this.schema._blacklist
         if (invalids.length && invalids.has(value))
-          return this.createError({ params: { values: invalids.values().join(', ') }})
+          return this.createError({
+            params: {
+              values: invalids.values().join(', ')
+            }
+          })
         return true
       }
     })

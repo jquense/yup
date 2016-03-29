@@ -1,47 +1,44 @@
 'use strict';
-var { has, isSchema } = require('./_')
-  , getter = require('property-expr').getter
+var { transform, has, isSchema } = require('./_')
 
 module.exports = Conditional
 
 class Conditional {
 
-  constructor(key, type, options){
-    let { is, then, otherwise } = options
-      , prefix = options.contextPrefix || '$';
+  constructor(refs, options) {
+    let { is, then, otherwise } = options;
 
-    this.prefix = prefix;
-    this.key = key
-    this.isContext = key.indexOf(prefix) === 0
+    this.refs = [].concat(refs)
 
-    if ( typeof options === 'function')
+    if (typeof options === 'function')
       this.fn = options
     else
     {
-      if( !has(options, 'is') )
+      if (!has(options, 'is'))
         throw new TypeError('`is:` is required for `when()` conditions')
 
-      if( !options.then && !options.otherwise )
+      if (!options.then && !options.otherwise)
         throw new TypeError('either `then:` or `otherwise:` is required for `when()` conditions')
 
-      is = typeof is === 'function'
-        ? is : ((is, value) => is === value).bind(null, is)
 
-      this.fn = (value, ctx) => is(value) ? ctx.concat(then) : ctx.concat(otherwise)
+      let isFn = typeof is === 'function'
+        ? is : ((...values) => values.every(value => value === is))
+
+      this.fn = function (...values) {
+        let ctx = values.pop();
+        return isFn(...values) ? ctx.concat(then) : ctx.concat(otherwise)
+      }
     }
   }
 
-  getValue(parent, context){
-    var path = this.isContext ? this.key.slice(this.prefix.length) : this.key
+  getValue(parent, context) {
+    let values = this.refs.map(r => r.getValue(parent, context))
 
-    if ( (this.isContext && !context) || (!this.isContext && !context && !parent))
-      throw new Error('missing the context necessary to cast this value')
-
-    return getter(path)(this.isContext ? context : (parent || context) )
+    return values
   }
 
-  resolve(ctx, value) {
-    let schema = this.fn.call(ctx, value, ctx)
+  resolve(ctx, values) {
+    let schema = this.fn.apply(ctx, values.concat(ctx))
 
     if (schema !== undefined && !isSchema(schema))
       throw new TypeError('conditions must return a schema object')

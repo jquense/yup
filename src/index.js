@@ -1,6 +1,7 @@
 'use strict';
 var mixed = require('./mixed')
-  , bool = require('./boolean');
+  , bool = require('./boolean')
+  , Ref = require('./util/reference');
 
 var isSchema = schema => schema && !!schema.__isYupSchema__;
 
@@ -17,6 +18,7 @@ module.exports = {
   reach: require('./util/reach'),
 
   ValidationError: require('./util/validation-error'),
+  ref: (key, options) => new Ref(key, options),
 
   isSchema,
 

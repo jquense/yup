@@ -3,13 +3,10 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('promise/src/es6-extensions')
-  , mixed = require('../src/mixed')
-  , string = require('../src/string')
-  , date = require('../src/date')
-  , number = require('../src/number')
-  , bool = require('../src/boolean')
-  , array = require('../src/array')
-  , object = require('../src/object');
+  , {
+      mixed, string, date, number
+    , bool, array, object, ref
+  } = require('../src');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -245,6 +242,27 @@ describe('Object types', function(){
     return inst.validate({}).should.be.rejected
       .then(function(err){
         err.errors[0].should.equal('this oops')
+      })
+  })
+
+  it('should allow refs', function() {
+    var schema = object({
+      quz: ref('baz'),
+      baz: ref('foo.bar'),
+      foo: object({
+        bar: string()
+      }),
+      x: ref('$x')
+    })
+
+    schema.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
+      .should.eql({
+        foo: {
+          bar: 'boom'
+        },
+        baz: 'boom',
+        quz: 'boom',
+        x: 5
       })
   })
 
