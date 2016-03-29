@@ -109,7 +109,9 @@ inherits(ArraySchema, MixedSchema, {
       name: 'min',
       exclusive: true,
       params: { min },
-      test: value => isAbsent(value) || value.length >= min
+      test(value) {
+        return isAbsent(value) || value.length >= this.resolve(min)
+      }
     })
   },
 
@@ -120,7 +122,9 @@ inherits(ArraySchema, MixedSchema, {
       name: 'max',
       exclusive: true,
       params: { max },
-      test: value => isAbsent(value) || value.length <= max
+      test(value) {
+        return isAbsent(value) || value.length <= this.resolve(max)
+      }
     })
   },
 

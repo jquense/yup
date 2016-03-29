@@ -185,6 +185,25 @@ Thrown on failed validations, with the following properties
  validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
  alternatively `errors` will have all the of the messages from each inner error.
 
+#### `ref(String path, Object options)`
+
+Creates a reference to another sibling or sibling descendant field. Ref's are resolved
+at _run time_ and supported where specified. Ref's are evaluated in in the proper order so that
+the ref value is resolved before the field using the ref (be careful of circular dependencies!).
+
+```js
+var schema = object({
+  baz: ref('foo.bar'),
+  foo: object({
+    bar: string()
+  })
+  x: ref('$x')
+})
+
+inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
+// { baz: 'boom',  x: 5, { foo: { bar: 'boom' } }, }
+```
+
 
 ### mixed
 
@@ -365,7 +384,7 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
-#### `mixed.when(String key, Object options | Function func)`
+#### `mixed.when(String|Array<String> keys, Object options | Function func)`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object
 literal where the key `is` is value or a matcher function, `then` provides the true schema and/or
@@ -374,11 +393,8 @@ literal where the key `is` is value or a matcher function, `then` provides the t
 `is` conditions are strictly compared (`===`) if you want to use a different form of equality you
 can provide a function like: `is: (value) => value == true`.
 
-Alternatively you can provide a function the returns a schema (called with the value of the key
-  and the current schema). `when` conditions are additive.
-
 Like joi you can also prefix properties with `$` to specify a property that is dependent
-on `context` passed in by `validate()` or `isValid`.
+on `context` passed in by `validate()` or `isValid`. `when` conditions are additive.
 
 ```javascript
 var inst = yup.object({
@@ -395,6 +411,42 @@ var inst = yup.object({
     })
 
 inst.validate(value, { context: { other: 4 }})
+```
+
+You can also specify more than one dependent key, in which case each value will be spread as an argument.
+
+```javascript
+var inst = yup.object({
+      isSpecial: yup.bool()
+      isBig: yup.bool(),
+      count: yup.number()
+        .when(['isBig', 'isSpecial'], {
+          is: true,  // alternatively: (isBig, isSpecial) => isBig && isSpecial
+          then:      yup.number().min(5),
+          otherwise: yup.number().min(0)
+        })
+    })
+
+inst.validate({
+  isBig: true,
+  isSpecial: true,
+  count: 10
+})
+```
+
+Alternatively you can provide a function the returns a schema
+(called with the value of the key and the current schema).
+
+```js
+var inst = yup.object({
+      isBig: yup.boolean(),
+      count: yup.number()
+        .when('isBig', (isBig, schema) => {
+          return isBig ? schema.min(5) : schema.min(0)
+        })
+    })
+
+inst.validate({ isBig: false, count: 4 })
 ```
 
 
@@ -539,11 +591,11 @@ schema.isValid('hello') //=> true
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
 To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
-#### `string.min(Number limit, [String message])`
+#### `string.min(Number|Ref limit, [String message])`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `string.max(Number limit, [String message])`
+#### `string.max(Number|Ref limit, [String message])`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
@@ -588,12 +640,12 @@ var schema = yup.number();
 schema.isValid(10) //=> true
 ```
 
-#### `number.min(Number limit, [String message])`
+#### `number.min(Number|Ref limit, [String message])`
 
 Set the minimum value allowed. The `${min}` interpolation can be used in the
 `message` argument.
 
-#### `number.max(Number limit, [String message])`
+#### `number.max(Number|Ref limit, [String message])`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the
 `message` argument.
@@ -636,11 +688,11 @@ var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
 
-#### `date.min(Date|String limit, [String message])`
+#### `date.min(Date|String|Ref limit, [String message])`
 
 Set the minimum date allowed.
 
-#### `date.max(Date|String limit, [String message])`
+#### `date.max(Date|String|Ref limit, [String message])`
 
 Set the maximum date allowed.
 
@@ -668,11 +720,11 @@ not validate its contents.
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
 To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
-#### `array.min(Number limit, [String message])`
+#### `array.min(Number|Ref limit, [String message])`
 
 Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(Number limit, [String message])`
+#### `array.max(Number|Ref limit, [String message])`
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 

@@ -410,6 +410,29 @@ describe( 'Mixed Types ', function(){
     })
   })
 
+  it('should handle multiple conditionals', function() {
+    let called = false
+    var inst = mixed()
+      .when(['prop', 'other'], function(prop, other) {
+        other.should.equal(true)
+        prop.should.equal(1)
+        called = true
+      })
+
+    inst.cast({}, { context: { prop: 1, other: true }})
+    called.should.equal(true)
+
+    inst = mixed().when(['prop', 'other'], {
+      is: 5,
+      then: mixed().required()
+    })
+
+    return inst
+      .isValid(undefined, { context: { prop: 5, other: 5 }})
+      .should.eventually.equal(false)
+
+  })
+
   it('should require context when needed', function(){
     var inst = mixed()
       .when('$prop', { is: 5, then: mixed().required('from context') })
@@ -442,17 +465,17 @@ describe( 'Mixed Types ', function(){
     inst.default().should.eql({ prop: undefined })
   })
 
-    it('should use label in error message', function () {
-        var label = 'Label'
-        var inst = object({
-            prop: string().required().label(label)
-        })
+  it('should use label in error message', function () {
+      var label = 'Label'
+      var inst = object({
+          prop: string().required().label(label)
+      })
 
-        return Promise.all([
-            inst.validate({}).should.be.rejected.then(function (err) {
-                err.message.should.equal(`${label} is a required field`)
-            })
-        ])
+      return Promise.all([
+          inst.validate({}).should.be.rejected.then(function (err) {
+              err.message.should.equal(`${label} is a required field`)
+          })
+      ])
   })
 
 })

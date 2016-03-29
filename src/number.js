@@ -39,7 +39,9 @@ inherits(NumberSchema, SchemaObject, {
       exclusive: true,
       params: { min },
       message: msg || locale.min,
-      test: value => isAbsent(value) || value >= min
+      test(value) {
+        return isAbsent(value) || value >= this.resolve(min)
+      }
     })
   },
 
@@ -49,7 +51,9 @@ inherits(NumberSchema, SchemaObject, {
       exclusive: true,
       params: { max },
       message: msg || locale.max,
-      test: value => isAbsent(value) || value <= max
+      test(value) {
+        return isAbsent(value) || value <= this.resolve(max)
+      }
     })
   },
 

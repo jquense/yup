@@ -33,7 +33,7 @@ inherits(StringSchema, MixedSchema, {
      return (typeof value === 'string') || (typeof value === 'object' && value instanceof String)
   },
 
-  required(msg){
+  required(msg) {
     var next = MixedSchema.prototype.required.call(this, msg || mixed.required )
 
     return next.test(
@@ -43,27 +43,31 @@ inherits(StringSchema, MixedSchema, {
     )
   },
 
-  min(min, msg){
+  min(min, msg) {
     return this.test({
       name: 'min',
       exclusive: true,
       message:  msg || locale.min,
       params: { min },
-      test: value => isAbsent(value) || value.length >= min
+      test(value) {
+        return isAbsent(value) || value.length >= this.resolve(min)
+      }
     })
   },
 
-  max(max, msg){
+  max(max, msg) {
     return this.test({
       name: 'max',
       exclusive: true,
       message: msg || locale.max,
       params: { max },
-      test: value => isAbsent(value) || value.length <= max
+      test(value) {
+        return isAbsent(value) || value.length <= this.resolve(max)
+      }
     })
   },
 
-  matches(regex, msg){
+  matches(regex, msg) {
     return this.test({
       message: msg || locale.matches,
       params: { regex },
@@ -71,16 +75,16 @@ inherits(StringSchema, MixedSchema, {
     })
   },
 
-  email(msg){
+  email(msg) {
     return this.matches(rEmail, msg || locale.email);
   },
 
-  url(msg){
+  url(msg) {
     return this.matches(rUrl, msg || locale.url);
   },
 
   //-- transforms --
-  trim(msg){
+  trim(msg) {
     msg = msg || locale.trim
 
     return this
@@ -88,7 +92,7 @@ inherits(StringSchema, MixedSchema, {
       .test('trim', msg, isTrimmed)
   },
 
-  lowercase(msg){
+  lowercase(msg) {
     return this
       .transform(value => !isAbsent(value) ? value.toLowerCase() : value)
       .test({

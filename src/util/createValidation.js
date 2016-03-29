@@ -1,13 +1,27 @@
 'use strict';
 var Promise = require('promise/lib/es6-extensions')
-  , ValidationError = require('./validation-error');
+  , ValidationError = require('./validation-error')
+  , Ref = require('./reference')
+  , { transform } = require('./_');
 
 let formatError = ValidationError.formatError
 
-function createErrorFactory(orginalMessage, orginalPath, value, orginalParams, originalType, label) {
-  return function createError({ path = orginalPath, message = orginalMessage, type = originalType, params } = {}) {
+function resolveParams(oldParams, newParams, resolve) {
+  let start = { ...oldParams, ...newParams }
+  return transform(start, (obj, value, key) => {
+    obj[key] = resolve(value)
+  })
+}
+
+function createErrorFactory({ value, label, resolve, ...opts}) {
+  return function createError({ path = opts.path, message = opts.message, type = opts.name, params } = {}) {
+    params = resolveParams(opts.params, params, resolve)
+
     return new ValidationError(
-      formatError(message, { path, value, label, ...orginalParams, ...params }), value, path, type)
+        formatError(message, { path, value, label, ...params })
+      , value
+      , path
+      , type)
   }
 }
 
@@ -15,8 +29,16 @@ module.exports = function createValidation(options) {
   let { name, message, test, params, useCallback } = options
 
   function validate({ value, path, label, state: { parent }, ...rest }) {
-    var createError = createErrorFactory(message, path, value, params, name, label)
-    var ctx = { path, parent, createError, type: name, ...rest }
+    var resolve = (value) => Ref.isRef(value)
+      ? value.getValue(parent, rest.options.context)
+      : value
+
+    var createError = createErrorFactory({
+        message, path, value, params
+      , label, resolve, name
+    })
+
+    var ctx = { path, parent, type: name, createError, resolve, ...rest }
 
     return new Promise((resolve, reject) => {
       !useCallback

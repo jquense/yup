@@ -42,7 +42,9 @@ inherits(DateSchema, MixedSchema, {
       exclusive: true,
       message: msg || locale.min,
       params: { min: min },
-      test: value => isAbsent(value) || (value >= limit)
+      test(value) {
+        return isAbsent(value) || value >= this.resolve(limit)
+      }
     })
   },
 
@@ -57,7 +59,9 @@ inherits(DateSchema, MixedSchema, {
       exclusive: true,
       message: msg || locale.max,
       params: { max: max },
-      test: value => isAbsent(value) || (value <= limit)
+      test(value) {
+        return isAbsent(value) || value <= this.resolve(limit)
+      }
     })
   }
 

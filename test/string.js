@@ -4,7 +4,7 @@ var chai  = require('chai')
   , Promise = require('promise/src/es6-extensions')
   , sinonChai = require('sinon-chai')
   , chaiAsPromised = require('chai-as-promised')
-  , string = require('../src/string');
+  , { string, number, object, ref } = require('../src');
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
@@ -89,6 +89,10 @@ describe('String types', function(){
 
   it('should check MIN correctly', function(){
     var v = string().min(5);
+    var obj = object({
+      len: number(),
+      name: string().min(ref('len'))
+    })
 
     return Promise.all([
       v.isValid('hiiofff').should.eventually.equal(true),
@@ -96,14 +100,19 @@ describe('String types', function(){
       v.isValid('noffasfasfasf saf').should.eventually.equal(true),
 
       v.isValid(null).should.eventually.equal(false), // null -> ''
-      v.nullable().isValid(null).should.eventually.equal(true) // null -> null
+      v.nullable().isValid(null).should.eventually.equal(true), // null -> null
+
+      obj.isValid({ len: 10, name: 'john' }).should.eventually.equal(false)
     ])
 
   })
 
   it('should check MAX correctly', function(){
     var v = string().max(5);
-
+    var obj = object({
+      len: number(),
+      name: string().max(ref('len'))
+    })
     return Promise.all([
       v.isValid('adgf').should.eventually.equal(true),
       v.isValid('bigdfdsfsdf').should.eventually.equal(false),
@@ -114,7 +123,9 @@ describe('String types', function(){
 
       v.isValid(null).should.eventually.equal(true),
 
-      v.nullable().isValid(null).should.eventually.equal(true)
+      v.nullable().isValid(null).should.eventually.equal(true),
+
+      obj.isValid({ len: 3, name: 'john' }).should.eventually.equal(false)
     ])
   })
 
