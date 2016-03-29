@@ -1,3 +1,11 @@
+v0.15.0 - Tue, 29 Mar 2016 14:56:15 GMT
+---------------------------------------
+
+- [3ae5fdc](../../commit/3ae5fdc) [changed] `null` is not considered an empty value for isValid
+- [9eb42c6](../../commit/9eb42c6) [added] refs!
+
+
+
 v0.14.2 - Tue, 29 Mar 2016 14:48:37 GMT
 ---------------------------------------
 
