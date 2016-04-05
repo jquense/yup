@@ -19,7 +19,7 @@ json separate from validating it, via the `cast` method.
 - [Usage](#usage)
 - [API](#api)
   - [`yup`](#yup)
-    - [`.reach(Schema schema, String path, Object options)`](#reachschema-schema-string-path-object-options)
+    - [`.reach(Schema schema, String path, [Object value, Object context])`](#reachschema-schema-string-path-object-value-object-context)
     - [`.addMethod(schemaType, name, method)`](#addmethodschematype-name-method)
     - [`ValidationError(String|Array<String> errors, Any value, String path)`](#validationerrorstringarraystring-errors-any-value-string-path)
     - [`ref(String path, Object options)`](#refstring-path-object-options)
