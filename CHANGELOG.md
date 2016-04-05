@@ -1,3 +1,11 @@
+v0.16.1 - Tue, 05 Apr 2016 20:56:45 GMT
+---------------------------------------
+
+- [9d70a7b](../../commit/9d70a7b) [changed] doesn't throw when context is missing.
+- [594fa53](../../commit/594fa53) [changed] added reach error
+
+
+
 v0.16.0 - Tue, 05 Apr 2016 20:17:40 GMT
 ---------------------------------------
 
