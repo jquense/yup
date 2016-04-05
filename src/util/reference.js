@@ -18,18 +18,13 @@ export default class Ref {
     this.prefix = prefix;
     this.isContext = key.indexOf(prefix) === 0
     this.path = this.isContext ? this.key.slice(this.prefix.length) : this.key
-    this._get = getter(this.path)
+    this._get = getter(this.path, true)
     this.map = mapFn || (value => value);
   }
 
   getValue(parent, context) {
     let isContext = this.isContext
-
-    if ((isContext && !context) || (!isContext && !context && !parent))
-      throw new Error('missing the context necessary to cast this value')
-
-    let value = this._get(isContext ? context : (parent || context))
-
+    let value = this._get(isContext ? context : (parent || context) || {})
     return this.map(value)
   }
 }
