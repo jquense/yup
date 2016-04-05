@@ -139,9 +139,12 @@ yup.addMethod
 yup.ValidationError
 ```
 
-#### `.reach(Schema schema, String path, Object options)`
+#### `.reach(Schema schema, String path, [Object value, Object context])`
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
+
+For nested schema that need to resolve dynamically, you can provide a `value` and optionally
+a `context` object.
 
 ```js
 var schema = object().shape({

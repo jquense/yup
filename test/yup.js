@@ -85,6 +85,50 @@ describe('Yup', function(){
     })
   })
 
+  it('should REACH conditionally correctly', function(){
+    var num = number()
+      , inst = object().shape({
+          num: number().max(4),
+          nested: object()
+            .shape({
+              arr: array().when('$bar', function(bar) {
+                return bar !== 3
+                  ? array().of(number())
+                  : array().of(
+                    object().shape({
+                      foo: number(),
+                      num: number().when('foo', (foo) => {
+                        if (foo === 5)
+                          return num
+                      })
+                    })
+                  )
+              })
+          })
+        })
+
+    let context = { bar: 3 }
+    let value = {
+      bar: 3,
+      nested: {
+        arr: [{ foo: 5 }]
+      }
+    }
+
+    reach(inst, 'nested.arr.num', value).should.equal(num)
+    reach(inst, 'nested.arr[].num', value).should.equal(num)
+
+    reach(inst, 'nested.arr.num', value, context).should.equal(num)
+    reach(inst, 'nested.arr[].num', value, context).should.equal(num)
+    reach(inst, 'nested.arr[1].num', value, context).should.equal(num)
+    reach(inst, 'nested["arr"][1].num', value, context).should.not.equal(number())
+
+    return reach(inst, 'nested.arr[].num', value, context).isValid(5)
+      .then((valid) => {
+        valid.should.equal(true)
+      })
+  })
+
   describe('BadSet', function(){
     it('should preserve primitive types', function(){
       var set = new BadSet()

@@ -20,6 +20,8 @@ function ArraySchema(){
 
   MixedSchema.call(this, { type: 'array'})
 
+  this._subType = null;
+  
   this.withMutation(() => {
     this.transform(function(values) {
       if (typeof values === 'string')
