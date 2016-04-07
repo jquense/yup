@@ -26,6 +26,8 @@ json separate from validating it, via the `cast` method.
   - [mixed](#mixed)
     - [`mixed.clone()`](#mixedclone)
     - [`mixed.label(String label)`](#mixedlabelstring-label)
+    - [`mixed.meta(Object metadata)`](#mixedmetaobject-metadata)
+    - [`mixed.describe() => Object description`](#mixeddescribe--object-description)
     - [`mixed.concat(Schema schema)`](#mixedconcatschema-schema)
     - [`mixed.validate(Any value, [Object options, Function callback])`](#mixedvalidateany-value-object-options-function-callback)
     - [`mixed.isValid(Any value, [Object options, Function callback]) -> Promise`](#mixedisvalidany-value-object-options-function-callback---promise)
