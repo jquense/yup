@@ -484,4 +484,28 @@ describe( 'Mixed Types ', function(){
       ])
   })
 
+  it('should add meta() data', () => {
+    string()
+      .meta({ input: 'foo' })
+      .meta({ foo: 'bar' })
+      .meta().should.eql({
+        input: 'foo',
+        foo: 'bar'
+      })
+  })
+
+  it('should describe', () => {
+    string().max(2)
+      .meta({ input: 'foo' })
+      .label('str!')
+      .describe().should.eql({
+        type: 'string',
+        label: 'str!',
+        tests: ['max'],
+        meta: {
+          input: 'foo'
+        }
+      })
+  })
+
 })

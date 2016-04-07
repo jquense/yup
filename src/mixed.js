@@ -12,6 +12,7 @@ var Promise = require('promise/lib/es6-extensions')
 
 let notEmpty = value => !isAbsent(value);
 
+
 function runValidations(validations, endEarly, value, path) {
   return endEarly
     ? Promise.all(validations)
@@ -56,9 +57,18 @@ SchemaType.prototype = {
     return cloneDeep(this);
   },
 
-  label: function(label){
+  label(label) {
     var next = this.clone();
     next._label = label;
+    return next;
+  },
+
+  meta(obj) {
+    if (arguments.length === 0)
+      return this._meta;
+
+    var next = this.clone();
+    next._meta = Object.assign(next._meta || {}, { ...obj })
     return next;
   },
 
@@ -149,8 +159,10 @@ SchemaType.prototype = {
 
     if (schema._typeError)
       initialTests.push(schema._typeError(validationParams));
+
     if (schema._whitelistError)
       initialTests.push(schema._whitelistError(validationParams));
+
     if (schema._blacklistError)
       initialTests.push(schema._blacklistError(validationParams));
 
@@ -185,6 +197,10 @@ SchemaType.prototype = {
         throw err
       }), cb)
     },
+
+  getDefault({ context, parent }) {
+    return this._resolve(context, parent).default()
+  },
 
   default(def) {
     if (arguments.length === 0) {
@@ -369,6 +385,17 @@ SchemaType.prototype = {
   _option(key, overrides){
     return _.has(overrides, key)
       ? overrides[key] : this._options[key]
+  },
+
+  describe() {
+    let next = this.clone();
+
+    return {
+      type: next._type,
+      meta: next._meta,
+      label: next._label,
+      tests: next.tests.map((fn) => fn.TEST_NAME, {})
+    }
   }
 }
 

@@ -228,6 +228,16 @@ Creates a deep copy of the schema. Clone is used internally to return a new sche
 
 Overrides the key name which is used in error messages.
 
+#### `mixed.meta(Object metadata)`
+
+Adds to a metadata object, useful for storing data with a schema, that doesn't belong
+the cast object itself.
+
+#### `mixed.describe() => Object description`
+
+Collects schema details (like meta, labels, and active tests) into a serializable 
+description object.
+
 #### `mixed.concat(Schema schema)`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
