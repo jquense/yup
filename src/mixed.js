@@ -68,7 +68,7 @@ SchemaType.prototype = {
       return this._meta;
 
     var next = this.clone();
-    next._meta = Object.assign(next._meta || {}, { ...obj })
+    next._meta = Object.assign(next._meta || {}, obj)
     return next;
   },
 

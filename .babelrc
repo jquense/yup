@@ -1,23 +1,11 @@
 {
-  "stage": 0,
-  "loose": [
-    "all"
+  "presets": [
+    "es2015-loose",
+    "react",
+    "stage-0"
   ],
   "plugins": [
-    "external-helpers"
-  ],
-  "blacklist": [
-    "es6.tailCall",
-    "es6.forOf",
-    "es7.trailingFunctionCommas",
-    "es7.comprehensions",
-    "es7.exportExtensions"
-  ],
-
-  "extra": {
-    "externalHelperPlugin": {
-      "path": "utils/babelHelpers",
-      "base": "./src"
-    }
-  }
+    "transform-object-assign",
+    "add-module-exports"
+  ]
 }
