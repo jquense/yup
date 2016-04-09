@@ -2,7 +2,7 @@
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('promise/src/es6-extensions')
-  , date = require('../src/date');
+  , { ref, date } = require('../src');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -56,28 +56,48 @@ describe('Date types', function(){
   })
 
   it('should check MIN correctly', function(){
-    var v = date().min(new Date(2014, 3, 15));
+    var min = new Date(2014, 3, 15)
+      , invalid = new Date(2014, 1, 15)
+      , valid = new Date(2014, 5, 15)
 
     ;(function(){ date().max('hello') }).should.throw(TypeError)
+    ;(function(){ date().max(ref('$foo')) }).should.not.throw
 
     return Promise.all([
-      v.isValid(new Date(2014, 5, 15)).should.eventually.equal(true),
-      v.isValid(new Date(2014, 1, 15)).should.eventually.equal(false),
+      date().min(min).isValid(valid).should.eventually.equal(true),
+      date().min(min).isValid(invalid).should.eventually.equal(false),
+      date().min(min).isValid(null).should.eventually.equal(false),
 
-      v.isValid(null).should.eventually.equal(false)
+      date().min(ref('$foo'))
+        .isValid(valid, { context: { foo: min }})
+        .should.eventually.equal(true),
+      date().min(ref('$foo'))
+        .isValid(invalid, { context: { foo: min }})
+        .should.eventually.equal(false)
     ])
   })
 
-  it('should check MAX correctly', function(){
-    var v = date().max(new Date(2014, 7, 15));
+  it('should check MAX correctly', function() {
+    var max = new Date(2014, 7, 15)
+      , invalid = new Date(2014, 9, 15)
+      , valid = new Date(2014, 5, 15)
 
     ;(function(){ date().max('hello') }).should.throw(TypeError)
+    ;(function(){ date().max(ref('$foo')) }).should.not.throw
 
     return Promise.all([
-      v.isValid(new Date(2014, 5, 15)).should.eventually.equal(true),
-      v.isValid(new Date(2014, 9, 15)).should.eventually.equal(false),
-      v.nullable(true).isValid(null).should.eventually.equal(true)
+      date().max(max).isValid(valid).should.eventually.equal(true),
+      date().max(max).isValid(invalid).should.eventually.equal(false),
+      date().max(max)
+        .nullable(true)
+        .isValid(null).should.eventually.equal(true),
+
+      date().max(ref('$foo'))
+        .isValid(valid, { context: { foo: max }})
+        .should.eventually.equal(true),
+      date().max(ref('$foo'))
+        .isValid(invalid, { context: { foo: max }})
+        .should.eventually.equal(false)
     ])
   })
 })
-
