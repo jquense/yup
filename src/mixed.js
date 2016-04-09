@@ -396,6 +396,14 @@ SchemaType.prototype = {
       label: next._label,
       tests: next.tests.map((fn) => fn.TEST_NAME, {})
     }
+  },
+
+  match(key, message) {
+    return this.test(`${key}-match`, message, function(value) {
+      const isMatch = value === this.parent[key];
+
+      return isMatch;
+    });
   }
 }
 

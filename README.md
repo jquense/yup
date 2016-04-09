@@ -43,6 +43,7 @@ json separate from validating it, via the `cast` method.
     - [`mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`](#mixedoneofarrayany-arrayofvalues-string-message-alias-equals)
     - [`mixed.notOneOf(Array<Any> arrayOfValues, [String message])`](#mixednotoneofarrayany-arrayofvalues-string-message)
     - [`mixed.when(String|Array<String> keys, Object options | Function func)`](#mixedwhenstringarraystring-keys-object-options--function-func)
+    - [`mixed.match(String key, String message)`](#mixedmatch)
     - [`mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])`](#mixedteststring-name-string-message-function-fn-bool-callbackstyleasync)
     - [`mixed.test(Object options)`](#mixedtestobject-options)
     - [`mixed.transform(Function fn)`](#mixedtransformfunction-fn)
@@ -237,7 +238,7 @@ the cast object itself.
 
 #### `mixed.describe() => Object description`
 
-Collects schema details (like meta, labels, and active tests) into a serializable 
+Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
 
 #### `mixed.concat(Schema schema)`
@@ -465,6 +466,20 @@ var inst = yup.object({
 inst.validate({ isBig: false, count: 4 })
 ```
 
+#### `mixed.match(String key, String message)`
+
+Matches two sibling fields.  `key` should be the name of the field you wish to match against.
+
+```js
+
+var inst = yup.object.shape({
+        email: yup.string().email(),
+        confirmEmail: yup.string().match('email', 'Email addresses do not match')
+    });
+
+inst.validate({email: 'hello@world.com', confirmEmail: 'hello@world.com'});
+inst.validate({email: 'hello@world.com', confirmEmail: 'foo@bar.com'});
+```
 
 #### `mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])`
 
@@ -479,11 +494,11 @@ or `false` or a `ValidationError`. If you prefer the Node callback style, you ca
 and the validation function will pass in an additional `done` function as the last parameter to
  be called with the validity.
 
-for the `message` argument you can provide a string which is will interpolate certain values
+For the `message` argument you can provide a string which is will interpolate certain values
 if specified using the `${param}` syntax. By default all test messages are passed a `path` value
 which is valuable in nested schemas.
 
-the `test` function is called with the current `value`, along with `path` and `context` if they exist.
+The `test` function is called with the current `value`, along with `path` and `context` if they exist.
 For more advanced validations you can use the alternate signature to provide more options (see below):
 
 ```js
