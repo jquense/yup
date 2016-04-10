@@ -14,14 +14,14 @@ let hasLength = value => !isAbsent(value) && value.length > 0;
 
 module.exports = ArraySchema
 
-function ArraySchema(){
+function ArraySchema(type) {
   if (!(this instanceof ArraySchema))
-    return new ArraySchema()
+    return new ArraySchema(type)
 
   MixedSchema.call(this, { type: 'array'})
 
   this._subType = null;
-  
+
   this.withMutation(() => {
     this.transform(function(values) {
       if (typeof values === 'string')
@@ -31,6 +31,9 @@ function ArraySchema(){
 
       return this.isType(values) ? values : null
     })
+
+    if (type)
+      this.of(type)
   })
 }
 
@@ -128,6 +131,12 @@ inherits(ArraySchema, MixedSchema, {
         return isAbsent(value) || value.length <= this.resolve(max)
       }
     })
+  },
+
+  ensure() {
+    return this
+      .default([])
+      .transform(val => val != null ? [] : [].concat(val))
   },
 
   compact(rejector){

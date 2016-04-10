@@ -60,10 +60,11 @@ describe('Array types', function(){
   })
 
   it('should pass options to children', function(){
-    array()
-      .of(object({ name: string() }))
-      .cast([{ id: 1, name: 'john' }], { stripUnknown: true })
-      .should.eql([{name: 'john'}])
+    array(
+      object({ name: string() })
+    )
+    .cast([{ id: 1, name: 'john' }], { stripUnknown: true })
+    .should.eql([{name: 'john'}])
   })
 
   it('should VALIDATE correctly', function(){
