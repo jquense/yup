@@ -19,66 +19,67 @@ json separate from validating it, via the `cast` method.
 - [Usage](#usage)
 - [API](#api)
   - [`yup`](#yup)
-    - [`.reach(Schema schema, String path, [Object value, Object context])`](#reachschema-schema-string-path-object-value-object-context)
-    - [`.addMethod(schemaType, name, method)`](#addmethodschematype-name-method)
-    - [`ValidationError(String|Array<String> errors, Any value, String path)`](#validationerrorstringarraystring-errors-any-value-string-path)
-    - [`ref(String path, Object options)`](#refstring-path-object-options)
+    - [`.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#reachschema-schema-path-string-value-object-context-object-schema)
+    - [`.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#addmethodschematype-schema-name-string-method--schema-void)
+    - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
+    - [`ref(path: string, options: { contextPrefix: string }): Ref`](#refpath-string-options--contextprefix-string--ref)
   - [mixed](#mixed)
-    - [`mixed.clone()`](#mixedclone)
-    - [`mixed.label(String label)`](#mixedlabelstring-label)
-    - [`mixed.meta(Object metadata)`](#mixedmetaobject-metadata)
-    - [`mixed.describe() => Object description`](#mixeddescribe--object-description)
-    - [`mixed.concat(Schema schema)`](#mixedconcatschema-schema)
-    - [`mixed.validate(Any value, [Object options, Function callback])`](#mixedvalidateany-value-object-options-function-callback)
-    - [`mixed.isValid(Any value, [Object options, Function callback]) -> Promise`](#mixedisvalidany-value-object-options-function-callback---promise)
-    - [`mixed.cast(value) -> Any`](#mixedcastvalue---any)
-    - [`mixed.isType(Any value) -> Boolean`](#mixedistypeany-value---boolean)
-    - [`mixed.strict()` (default: `false`)](#mixedstrict-default-false)
-    - [`mixed.withMutation(Function fn)`](#mixedwithmutationfunction-fn)
-    - [`mixed.default(Any value)`](#mixeddefaultany-value)
-    - [`mixed.default() -> Any`](#mixeddefault---any)
-    - [`mixed.nullable(Bool isNullable = false)`](#mixednullablebool-isnullable--false)
-    - [`mixed.required([String message])`](#mixedrequiredstring-message)
-    - [`mixed.typeError(String message)`](#mixedtypeerrorstring-message)
-    - [`mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`](#mixedoneofarrayany-arrayofvalues-string-message-alias-equals)
-    - [`mixed.notOneOf(Array<Any> arrayOfValues, [String message])`](#mixednotoneofarrayany-arrayofvalues-string-message)
-    - [`mixed.when(String|Array<String> keys, Object options | Function func)`](#mixedwhenstringarraystring-keys-object-options--function-func)
-    - [`mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])`](#mixedteststring-name-string-message-function-fn-bool-callbackstyleasync)
-    - [`mixed.test(Object options)`](#mixedtestobject-options)
-    - [`mixed.transform(Function fn)`](#mixedtransformfunction-fn)
+    - [`mixed.clone(): Schema`](#mixedclone-schema)
+    - [`mixed.label(label: string): Schema`](#mixedlabellabel-string-schema)
+    - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
+    - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
+    - [`mixed.concat(schema: Schema)`](#mixedconcatschema-schema)
+    - [`mixed.validate(value: any, options: ?object, callback: ?function): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-callback-function-promiseany-validationerror)
+    - [`mixed.isValid(value: any, options: ?object, callback: ?function): Promise<boolean>`](#mixedisvalidvalue-any-options-object-callback-function-promiseboolean)
+    - [`mixed.cast(value: any): any`](#mixedcastvalue-any-any)
+    - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
+    - [`mixed.strict(isStrict: boolean = false): void`](#mixedstrictisstrict-boolean--false-void)
+    - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
+    - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
+    - [`mixed.default(): Any`](#mixeddefault-any)
+    - [`mixed.nullable(isNullable: boolean = false): Schema`](#mixednullableisnullable-boolean--false-schema)
+    - [`mixed.required(message: ?string): Schema`](#mixedrequiredmessage-string-schema)
+    - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
+    - [`mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
+    - [`mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`](#mixednotoneofarrayofvalues-arrayany-string-message)
+    - [`mixed.when(keys: string |Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string-arraystring-builder-object--value-schema-schema-schema)
+    - [`mixed.test(name: string, message: string, test: function, callbackStyleAsync: ?boolean)`](#mixedtestname-string-message-string-test-function-callbackstyleasync-boolean)
+    - [`mixed.test(options: object)`](#mixedtestoptions-object)
+    - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
   - [string](#string)
-    - [`string.required([String message])`](#stringrequiredstring-message)
-    - [`string.min(Number|Ref limit, [String message])`](#stringminnumberref-limit-string-message)
-    - [`string.max(Number|Ref limit, [String message])`](#stringmaxnumberref-limit-string-message)
-    - [`string.matches(Regex regex, [String message])`](#stringmatchesregex-regex-string-message)
-    - [`string.email([String message])`](#stringemailstring-message)
-    - [`string.url([String message])`](#stringurlstring-message)
-    - [`string.trim([String message])`](#stringtrimstring-message)
-    - [`string.lowercase([String message])`](#stringlowercasestring-message)
-    - [`string.uppercase([String message])`](#stringuppercasestring-message)
+    - [`string.required(message: ?string): Schema`](#stringrequiredmessage-string-schema)
+    - [`string.min(limit: number | Ref, message: ?string): Schema`](#stringminlimit-number--ref-message-string-schema)
+    - [`string.max(limit: number | Ref, message: ?string): Schema`](#stringmaxlimit-number--ref-message-string-schema)
+    - [`string.matches(regex: Regex, message: ?string): Schema`](#stringmatchesregex-regex-message-string-schema)
+    - [`string.email(message: ?string): Schema`](#stringemailmessage-string-schema)
+    - [`string.url(message: ?string): Schema`](#stringurlmessage-string-schema)
+    - [`string.trim(message: ?string): Schema`](#stringtrimmessage-string-schema)
+    - [`string.lowercase(message: ?string): Schema`](#stringlowercasemessage-string-schema)
+    - [`string.uppercase(message: ?string): Schema`](#stringuppercasemessage-string-schema)
   - [number](#number)
-    - [`number.min(Number|Ref limit, [String message])`](#numberminnumberref-limit-string-message)
-    - [`number.max(Number|Ref limit, [String message])`](#numbermaxnumberref-limit-string-message)
-    - [`number.positive([String message])`](#numberpositivestring-message)
-    - [`number.negative([String message])`](#numbernegativestring-message)
-    - [`number.integer([String message])`](#numberintegerstring-message)
-    - [`round(String type)` - 'floor', 'ceil', 'round'](#roundstring-type---floor-ceil-round)
+    - [`number.min(limit: number | Ref, message: ?string): Schema`](#numberminlimit-number--ref-message-string-schema)
+    - [`number.max(limit: number | Ref, message: ?string): Schema`](#numbermaxlimit-number--ref-message-string-schema)
+    - [`number.positive(message: ?string): Schema`](#numberpositivemessage-string-schema)
+    - [`number.negative(message: ?string): Schema`](#numbernegativemessage-string-schema)
+    - [`number.integer(message: ?string): Schema`](#numberintegermessage-string-schema)
+    - [`round(type: 'floor' | 'ceil' | 'round' = 'round'): Schema`](#roundtype-floor--ceil--round--round-schema)
   - [boolean](#boolean)
   - [date](#date)
-    - [`date.min(Date|String|Ref limit, [String message])`](#datemindatestringref-limit-string-message)
-    - [`date.max(Date|String|Ref limit, [String message])`](#datemaxdatestringref-limit-string-message)
+    - [`date.min(limit: Date | string | Ref, message: ?string)`](#dateminlimit-date--string--ref-message-string)
+    - [`date.max(limit: Date | string | Ref, message: ?string)`](#datemaxlimit-date--string--ref-message-string)
   - [array](#array)
-  - [`array.of(Schema type)`](#arrayofschema-type)
-    - [`array.required([String message])`](#arrayrequiredstring-message)
-    - [`array.min(Number|Ref limit, [String message])`](#arrayminnumberref-limit-string-message)
-    - [`array.max(Number|Ref limit, [String message])`](#arraymaxnumberref-limit-string-message)
-  - [`array.compact(Function rejector)`](#arraycompactfunction-rejector)
+  - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
+    - [`array.required(message: ?string): Schema`](#arrayrequiredmessage-string-schema)
+    - [`array.min(limit: number | Ref, message: ?string): Schema`](#arrayminlimit-number--ref-message-string-schema)
+    - [`array.max(limit: number | Ref, message: ?string): Schema`](#arraymaxlimit-number--ref-message-string-schema)
+  - [`array.ensure(): Schema`](#arrayensure-schema)
+  - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
   - [object](#object)
-    - [`object.shape(Object schemaHash, [noSortEdges])`](#objectshapeobject-schemahash-nosortedges)
-    - [`object.from(String fromKey, String toKey, Bool alias)`](#objectfromstring-fromkey-string-tokey-bool-alias)
-    - [`object.noUnknown([Bool onlyKnownKeys, String msg])`](#objectnounknownbool-onlyknownkeys-string-msg)
-    - [`object.camelcase()`](#objectcamelcase)
-    - [`object.constantcase()`](#objectconstantcase)
+    - [`object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
+    - [`object.camelcase(): Schema`](#objectcamelcase-schema)
+    - [`object.constantcase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -141,7 +142,7 @@ yup.addMethod
 yup.ValidationError
 ```
 
-#### `.reach(Schema schema, String path, [Object value, Object context])`
+#### `.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
 
@@ -163,7 +164,7 @@ reach(schema, 'nested.arr[1].num')
 reach(schema, 'nested["arr"][1].num')
 ```
 
-#### `.addMethod(schemaType, name, method)`
+#### `.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`
 
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
@@ -181,17 +182,17 @@ Adds a new method to the core schema types. A friendlier convenience method for 
   })
 ```
 
-#### `ValidationError(String|Array<String> errors, Any value, String path)`
+#### `ValidationError(errors: string | Array<string>, value: any, path: string)`
 
 Thrown on failed validations, with the following properties
- - `name`: ValidationError
+ - `name`: "ValidationError"
  - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
  - `errors`: array of error messages
  - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
  validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
  alternatively `errors` will have all the of the messages from each inner error.
 
-#### `ref(String path, Object options)`
+#### `ref(path: string, options: { contextPrefix: string }): Ref`
 
 Creates a reference to another sibling or sibling descendant field. Ref's are resolved
 at _run time_ and supported where specified. Ref's are evaluated in in the proper order so that
@@ -222,29 +223,37 @@ schema.isValid(undefined, function(valid){
 })
 ```
 
-#### `mixed.clone()`
+#### `mixed.clone(): Schema`
 
 Creates a deep copy of the schema. Clone is used internally to return a new schema with every schema state change.
 
-#### `mixed.label(String label)`
+#### `mixed.label(label: string): Schema`
 
 Overrides the key name which is used in error messages.
 
-#### `mixed.meta(Object metadata)`
+#### `mixed.meta(metadata: object): Schema`
 
 Adds to a metadata object, useful for storing data with a schema, that doesn't belong
 the cast object itself.
 
-#### `mixed.describe() => Object description`
+#### `mixed.describe(): SchemaDescription`
 
-Collects schema details (like meta, labels, and active tests) into a serializable 
+Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
+```
+SchemaDescription {
+  type: string,
+  label: string,
+  meta: object,
+  tests: Array<string>
+}
+```
 
-#### `mixed.concat(Schema schema)`
+#### `mixed.concat(schema: Schema)`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
-#### `mixed.validate(Any value, [Object options, Function callback])`
+#### `mixed.validate(value: any, options: ?object, callback: ?function): Promise<any, ValidationError>`
 
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise.
 This method is __asynchronous__ and returns a Promise object, that is fulfilled with the value, or rejected
@@ -256,15 +265,23 @@ as the second).
 The `options` argument is an object hash containing any schema options you may want to override
 (or specify for the first time).
 
-- `strict` -> boolean: default `false`, only validate the input, and skip and coercion or transformation
-- `abortEarly` -> boolean: default `true`, return from validation methods on the first error rather
+```js
+Options = {
+  strict: boolean = false;
+  stripUnknown: boolean = false;
+  recursive: boolean = true;
+  context: ?object;
+}
+```
+- `strict`: only validate the input, and skip and coercion or transformation
+- `abortEarly`: return from validation methods on the first error rather
 than after all validations run.
-- `stripUnknown` -> boolean: default `false` remove unspecified keys from objects.
-- `recursive` -> boolean: default `true` when `false` validations will not descend into sub schemas
-(relavant for objects or arrays).
-- `context` -> an `object` containing any context for validating schema conditions (see: `when()`)
+- `stripUnknown`: remove unspecified keys from objects.
+- `recursive`: when `false` validations will not descend into nested schema
+(relevant for objects or arrays).
+- `context`: any context needed for validating schema conditions (see: `when()`)
 
-```javascript
+```js
 schema.validate({ name: 'jimmy',age: 24 })
   .then(function(value){
     value // => { name: 'jimmy',age: 24 }  
@@ -277,7 +294,6 @@ schema.validate({ name: 'jimmy', age: 'hi' })
   })
 
 //or with callbacks
-
 schema.validate({ name: 'jimmy',age: 24 }, function(err, value){
   err === null // true
   value        // => { name: 'jimmy',age: 24 }  
@@ -290,7 +306,7 @@ schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
 })
 ```
 
-#### `mixed.isValid(Any value, [Object options, Function callback]) -> Promise`
+#### `mixed.isValid(value: any, options: ?object, callback: ?function): Promise<boolean>`
 
 Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors`
 field which is an array of validation error messages (strings), thrown by the schema. `isValid`
@@ -299,24 +315,24 @@ providing a function as the last argument will opt into that interface.
 
 Takes the same options as `validate()`.
 
-#### `mixed.cast(value) -> Any`
+#### `mixed.cast(value: any): any`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will
 cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also
 return results like `NaN` and unexpected strings.
 
-#### `mixed.isType(Any value) -> Boolean`
+#### `mixed.isType(value: any): boolean`
 
 Runs a type check against the passed in `value`. It returns true if it matches,
 it does not cast the value. When `nullable()` is set `null` is considered a valid value of the type.
 You should use `isType` for all Schema type checks.
 
-#### `mixed.strict()` (default: `false`)
+#### `mixed.strict(isStrict: boolean = false): Schema`
 
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts,
 validating the value "as is".
 
-#### `mixed.withMutation(Function fn)`
+#### `mixed.withMutation(builder: (current: Schema) => void): void`
 
 First the legally required Rich Hickey quote:
 
@@ -340,7 +356,7 @@ object()
   })
 ```
 
-#### `mixed.default(Any value)`
+#### `mixed.default(value: any): Schema`
 
 Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable).
 Defaults are created after transformations are executed, but before validations, to help ensure that safe
@@ -358,26 +374,26 @@ for objects and arrays. To avoid this overhead you can also pass a function that
 
 ```
 
-#### `mixed.default() -> Any`
+#### `mixed.default(): Any`
 
 Calling `default` with no arguments will return the current default value
 
 
-#### `mixed.nullable(Bool isNullable = false)`
+#### `mixed.nullable(isNullable: boolean = false): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `isType()` checks.
 
-#### `mixed.required([String message])`
+#### `mixed.required(message: ?string): Schema`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
-#### `mixed.typeError(String message)`
+#### `mixed.typeError(message: string): Schema`
 
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
 be used in the `message` argument.
 
-#### `mixed.oneOf(Array<Any> arrayOfValues, [String message])` Alias: `equals`
+#### `mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
@@ -389,7 +405,7 @@ schema.isValid('jimmy')  //=> true
 schema.isValid(new Date) //=> false
 ```
 
-#### `mixed.notOneOf(Array<Any> arrayOfValues, [String message])`
+#### `mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
@@ -400,7 +416,7 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
-#### `mixed.when(String|Array<String> keys, Object options | Function func)`
+#### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object
 literal where the key `is` is value or a matcher function, `then` provides the true schema and/or
@@ -466,7 +482,7 @@ inst.validate({ isBig: false, count: 4 })
 ```
 
 
-#### `mixed.test(String name, String message, Function fn, [Bool callbackStyleAsync])`
+#### `mixed.test(name: string, message: string, test: function, callbackStyleAsync: ?boolean): Schema`
 
 Adds a test function to the validation chain. Tests are run after any object is cast.
 Many types have some tests built in, but you can create custom ones easily.
@@ -524,20 +540,26 @@ validation error. Useful for dynamically setting the `path`, or more likely, the
 If either option is omitted it will use the current path, or default message.
 
 
-#### `mixed.test(Object options)`
+#### `mixed.test(options: object): Schema`
 
 Alternative `test(..)` signature. `options` is an object containing some of the following options:
 
-- `name`: string, all validations must have a name.
-- `test`: function(value), the validator run against the value, should return `true`
-or `false` or a promise that resolves to `true` or `false`
-- `message`: string, validation error message
-- `params`: object, passed to message for interpolation
-- `exclusive`: boolean (default `false`), when true, there can only be one active
-`test` of the same name on a schema, validations of the same name will replace previous ones.
-when `false` the validations will stack. e.g. `max` is an exclusive validation,
-whereas the string `matches` is not. This is helpful for "toggling" validations on and off.
-- `useCallback`: boolean (default `false`), use the callback interface for asynchrony instead of promises
+```js
+Options = {
+  // Unique name identifying the test
+  name: string;
+  // test function, determines schema validity
+  test: (value: any) => boolean;
+  // The validation error message
+  message: string;
+  // values passed to message for interpolation
+  params: ?object;
+  // mark the test as exclusive, meaning only one of the same can be active at once
+  exclusive: boolean = false;
+  // opt into the node callback style over promises for async validation
+  useCallback: boolean: false;
+}
+```
 
 In the case of mixing exclusive and non-exclusive tests the following logic is used.
 If a non-exclusive test is added to a schema with an exclusive test of the same name
@@ -556,7 +578,7 @@ var schema = yup.mixed().test({
     });
 ```
 
-#### `mixed.transform(Function fn)`
+#### `mixed.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
 default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)).
@@ -602,20 +624,20 @@ var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
 
-#### `string.required([String message])`
+#### `string.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
 To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
-#### `string.min(Number|Ref limit, [String message])`
+#### `string.min(limit: number | Ref, message: ?string): Schema`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `string.max(Number|Ref limit, [String message])`
+#### `string.max(limit: number | Ref, message: ?string): Schema`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
-#### `string.matches(Regex regex, [String message])`
+#### `string.matches(regex: Regex, message: ?string): Schema`
 
 Provide an arbitrary `regex` to match the value against.
 
@@ -625,25 +647,25 @@ v.isValid('hi').should.eventually.equal(true)
 v.isValid('nope').should.eventually.equal(false)
 ```
 
-#### `string.email([String message])`
+#### `string.email(message: ?string): Schema`
 
 Validates the value as an email address via a regex.
 
-#### `string.url([String message])`
+#### `string.url(message: ?string): Schema`
 
 Validates the value as a valid URL via a regex.
 
 
-#### `string.trim([String message])`
+#### `string.trim(message: ?string): Schema`
 
 Transforms string values by removing leading and trailing whitespace. If
 `strict()` is set it will only validate that the value is trimmed.
 
-#### `string.lowercase([String message])`
+#### `string.lowercase(message: ?string): Schema`
 
 Transforms the string value to lowercase. If `strict()` is set it will only validate that the value is lowercase.
 
-#### `string.uppercase([String message])`
+#### `string.uppercase(message: ?string): Schema`
 
 Transforms the string value to uppercase. If `strict()` is set it will only validate that the value is uppercase.
 
@@ -656,30 +678,30 @@ var schema = yup.number();
 schema.isValid(10) //=> true
 ```
 
-#### `number.min(Number|Ref limit, [String message])`
+#### `number.min(limit: number | Ref, message: ?string): Schema`
 
 Set the minimum value allowed. The `${min}` interpolation can be used in the
 `message` argument.
 
-#### `number.max(Number|Ref limit, [String message])`
+#### `number.max(limit: number | Ref, message: ?string): Schema`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the
 `message` argument.
 
-#### `number.positive([String message])`
+#### `number.positive(message: ?string): Schema`
 
 Value must be a positive number.
 
-#### `number.negative([String message])`
+#### `number.negative(message: ?string): Schema`
 
 Value must be a negative number.
 
-#### `number.integer([String message])`
+#### `number.integer(message: ?string): Schema`
 
 Transformation that coerces the value into an integer via truncation
 ` value | 0`. If `strict()` is set it will only validate that the value is an integer.
 
-#### `round(String type)` - 'floor', 'ceil', 'round'
+#### `round(type: 'floor' | 'ceil' | 'round' = 'round'): Schema`
 
 Rounds the value by the specified method (defaults to 'round').
 
@@ -704,13 +726,15 @@ var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
 
-#### `date.min(Date|String|Ref limit, [String message])`
+#### `date.min(limit: Date | string | Ref, message: ?string): Schema`
 
-Set the minimum date allowed.
+Set the minimum date allowed. When a string is provided it will attempt to cast to a date first
+and use the result as the limit.
 
-#### `date.max(Date|String|Ref limit, [String message])`
+#### `date.max(limit: Date | string | Ref, message: ?string): Schema`
 
-Set the maximum date allowed.
+Set the maximum date allowed, When a string is provided it will attempt to cast to a date first
+and use the result as the limit.
 
 ### array
 
@@ -726,25 +750,44 @@ schema.isValid([1, -24]) //=> false
 schema.cast(['2', '3'])  //=> [2, 3]
 ```
 
-### `array.of(Schema type)`
+You can also pass a subtype schema to the array constructor as a convenience.
+
+```js
+array().of(number())
+//or
+array(number())
+```
+
+### `array.of(type: Schema): Schema`
 
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
 
-#### `array.required([String message])`
+#### `array.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
 To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
-#### `array.min(Number|Ref limit, [String message])`
+#### `array.min(limit: number | Ref, message: ?string): Schema`
 
 Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(Number|Ref limit, [String message])`
+#### `array.max(limit: number | Ref, message: ?string): Schema`
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
-### `array.compact(Function rejector)`
+### `array.ensure(): Schema`
+
+Ensures that the value is an array, by setting the default to `[]` and transforming `null` and `undefined`
+values to an empty array as well. Any non-empty, non-array value will be wrapped in an array.
+
+```js
+array().ensure().cast(null) // -> []
+array().ensure().cast(1) // -> [1]
+array().ensure().cast([1]) // -> [1]
+```
+
+### `array.compact(rejector: (value) => boolean): Schema`
 
 Removes falsey values from the array. Providing a rejecter function lets you specify the rejection criteria yourself.
 
@@ -774,37 +817,35 @@ yup.object().shape({
 })
 ```
 
-#### `object.shape(Object schemaHash, [noSortEdges])`
+#### `object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`
 
 Define the keys of the object and the schemas for said keys.
 
-#### `object.from(String fromKey, String toKey, Bool alias)`
+#### `object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
 ```javascript
-var schema = object()
-      .shape({
-        myProp: mixed(),
-        Other: mixed(),
-      })
-      .from('prop', 'myProp')
-      .from('other', 'Other', true)
+var schema = object({
+    myProp: mixed(),
+    Other: mixed(),
+  })
+  .from('prop', 'myProp')
+  .from('other', 'Other', true)
 
 inst.cast({ prop: 5, other: 6}) // => { myProp: 5, other: 6, Other: 6 }
 ```
 
-
-#### `object.noUnknown([Bool onlyKnownKeys, String msg])`
+#### `object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`
 
 Validate that the object value only contains keys specified in `shape`, pass `false` as the first
 argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
 
-#### `object.camelcase()`
+#### `object.camelcase(): Schema`
 
 Transforms all object keys to camelCase
 
-#### `object.constantcase()`
+#### `object.constantcase(): Schema`
 
 Transforms all object keys to CONSTANT_CASE.
 
