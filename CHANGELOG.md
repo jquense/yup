@@ -1,3 +1,11 @@
+v0.16.5 - Tue, 12 Apr 2016 13:36:38 GMT
+---------------------------------------
+
+- [c3b613b](../../commit/c3b613b) [added] strip() method for objects
+- [68fc010](../../commit/68fc010) [added] array.of shorthand
+
+
+
 v0.16.4 - Sat, 09 Apr 2016 20:13:13 GMT
 ---------------------------------------
 
