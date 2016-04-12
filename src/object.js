@@ -49,6 +49,10 @@ function ObjectSchema(spec) {
     }
   })
 
+  this.fields = Object.create(null)
+  this._nodes = []
+  this._excludedEdges = []
+
   this.withMutation(() => {
     this.transform(function coerce(value) {
       if (typeof value === 'string') {
@@ -61,14 +65,10 @@ function ObjectSchema(spec) {
         return value
       return null
     })
+
+    if (spec)
+      this.shape(spec);
   })
-
-  this.fields = Object.create(null)
-  this._nodes = []
-  this._excludedEdges = []
-
-  if ( spec )
-    return this.shape(spec);
 }
 
 inherits(ObjectSchema, MixedSchema, {
@@ -106,17 +106,13 @@ inherits(ObjectSchema, MixedSchema, {
             obj[prop] = refValue
         }
         else if (exists && field) {
-          // ugly optimization avoiding a clone. clears default for recursive
-          // cast and resets it below;
-          let hasDflt = has(schema, '_default')
-            , dflt = schema._default;
+          tempClearDefault(schema, () => {
+            let fieldSchema = childSchema(field, schema.default(undefined))
 
-          let fieldSchema = childSchema(field, schema.default(undefined))
-
-          obj[prop] = fieldSchema.cast(value[prop], innerOptions)
-
-          if (hasDflt) schema.default(dflt)
-          else delete schema._default
+            if (fieldSchema._strip !== true) {
+              obj[prop] = fieldSchema.cast(value[prop], innerOptions)
+            }
+          })
         }
         else if (exists && !strip)
           obj[prop] = value[prop]
@@ -251,6 +247,18 @@ function unknown(ctx, value) {
   var known = Object.keys(ctx.fields)
   return Object.keys(value)
     .filter(key => known.indexOf(key) === -1)
+}
+
+// ugly optimization avoiding a clone. clears default for recursive
+// cast and resets it below;
+function tempClearDefault(schema, fn) {
+  let hasDflt = has(schema, '_default')
+    , dflt = schema._default;
+
+  fn(schema)
+
+  if (hasDflt) schema.default(dflt)
+  else delete schema._default
 }
 
 function sortFields(fields, excludes = []){

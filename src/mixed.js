@@ -382,6 +382,12 @@ SchemaType.prototype = {
     return next
   },
 
+  strip(strip = true) {
+    let next = this.clone()
+    next._strip = strip
+    return next
+  },
+
   _option(key, overrides){
     return _.has(overrides, key)
       ? overrides[key] : this._options[key]

@@ -229,6 +229,18 @@ describe('Object types', function(){
     ])
   })
 
+  it('should strip specific fields', function(){
+    var inst = object().shape({
+          prop: mixed().strip(false),
+          other: mixed().strip()
+        })
+
+    inst.cast({ other: 'boo', prop: 'bar'})
+      .should.eql({
+        prop: 'bar'
+      })
+  })
+
   it('should handle custom validation', function(){
     var inst = object().shape({
       prop: mixed(),

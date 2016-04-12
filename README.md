@@ -332,6 +332,19 @@ You should use `isType` for all Schema type checks.
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts,
 validating the value "as is".
 
+#### `mixed.strip(stripField: boolean = true): Schema`
+
+Marks a schema to be removed from an output object. Only works as a nested schema.
+
+```js
+let schema = object({
+  useThis: number(),
+  notThis: string().strip()
+})
+
+schema.cast({ notThis: 'foo', useThis: 4 }) // { useThis: 4 }
+```
+
 #### `mixed.withMutation(builder: (current: Schema) => void): void`
 
 First the legally required Rich Hickey quote:
@@ -816,6 +829,19 @@ yup.object().shape({
   website    string().url(),
 })
 ```
+
+You can also pass a shape to the object constructor as a convenience.
+
+```js
+object().shape({
+  num: number()
+})
+//or
+object({
+  num: number()
+})
+```
+
 
 #### `object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`
 
