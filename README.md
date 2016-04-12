@@ -88,6 +88,7 @@ json separate from validating it, via the `cast` method.
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
 
+__try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup__
 ```js  
 var yup = require('yup')
 
@@ -142,7 +143,7 @@ yup.addMethod
 yup.ValidationError
 ```
 
-#### `.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`
+#### `yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
 
@@ -164,7 +165,7 @@ reach(schema, 'nested.arr[1].num')
 reach(schema, 'nested["arr"][1].num')
 ```
 
-#### `.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`
+#### `yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`
 
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
@@ -182,17 +183,7 @@ Adds a new method to the core schema types. A friendlier convenience method for 
   })
 ```
 
-#### `ValidationError(errors: string | Array<string>, value: any, path: string)`
-
-Thrown on failed validations, with the following properties
- - `name`: "ValidationError"
- - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
- - `errors`: array of error messages
- - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
- validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
- alternatively `errors` will have all the of the messages from each inner error.
-
-#### `ref(path: string, options: { contextPrefix: string }): Ref`
+#### `yup.ref(path: string, options: { contextPrefix: string }): Ref`
 
 Creates a reference to another sibling or sibling descendant field. Ref's are resolved
 at _run time_ and supported where specified. Ref's are evaluated in in the proper order so that
@@ -211,6 +202,15 @@ inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
 // { baz: 'boom',  x: 5, { foo: { bar: 'boom' } }, }
 ```
 
+#### `ValidationError(errors: string | Array<string>, value: any, path: string)`
+
+Thrown on failed validations, with the following properties
+ - `name`: "ValidationError"
+ - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
+ - `errors`: array of error messages
+ - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
+ validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
+ alternatively `errors` will have all the of the messages from each inner error.
 
 ### mixed
 
@@ -701,7 +701,7 @@ Value must be a negative number.
 Transformation that coerces the value into an integer via truncation
 ` value | 0`. If `strict()` is set it will only validate that the value is an integer.
 
-#### `round(type: 'floor' | 'ceil' | 'round' = 'round'): Schema`
+#### `number.round(type: 'floor' | 'ceil' | 'round' = 'round'): Schema`
 
 Rounds the value by the specified method (defaults to 'round').
 
@@ -758,7 +758,7 @@ array().of(number())
 array(number())
 ```
 
-### `array.of(type: Schema): Schema`
+#### `array.of(type: Schema): Schema`
 
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
@@ -776,7 +776,7 @@ Set an minimum length limit for the array. The `${min}` interpolation can be use
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
-### `array.ensure(): Schema`
+#### `array.ensure(): Schema`
 
 Ensures that the value is an array, by setting the default to `[]` and transforming `null` and `undefined`
 values to an empty array as well. Any non-empty, non-array value will be wrapped in an array.
@@ -787,7 +787,7 @@ array().ensure().cast(1) // -> [1]
 array().ensure().cast([1]) // -> [1]
 ```
 
-### `array.compact(rejector: (value) => boolean): Schema`
+#### `array.compact(rejector: (value) => boolean): Schema`
 
 Removes falsey values from the array. Providing a rejecter function lets you specify the rejection criteria yourself.
 
