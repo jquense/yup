@@ -1,3 +1,10 @@
+v0.17.0 - Thu, 14 Apr 2016 17:13:50 GMT
+---------------------------------------
+
+- [6e9046b](../../commit/6e9046b) [changed] clean up interface, added lazy(), and fixed object strict semantics
+
+
+
 v0.16.5 - Tue, 12 Apr 2016 13:36:38 GMT
 ---------------------------------------
 
