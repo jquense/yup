@@ -7,7 +7,7 @@ by [Joi](https://github.com/hapijs/joi), which is an amazing library but is gene
 to package for use in a browser. Yup is a leaner in the same spirit without some of the fancy features.
 You can use it on the server as well, but in that case you might as well just use Joi.
 
-Yup is also a a good bit less opinionated than joi, allowing for custom transformations and async validation.
+Yup is also a good bit less opinionated than joi, allowing for custom transformations and async validation.
 It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or
 child property. Yup separates the parsing and validating functions into separate steps so it can be used to parse
 json separate from validating it, via the `cast` method.
