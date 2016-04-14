@@ -22,6 +22,7 @@ json separate from validating it, via the `cast` method.
     - [`yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
     - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
     - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
+    - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
     - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
   - [mixed](#mixed)
     - [`mixed.clone(): Schema`](#mixedclone-schema)
