@@ -28,9 +28,10 @@ function createErrorFactory({ value, label, resolve, ...opts}) {
 module.exports = function createValidation(options) {
   let { name, message, test, params, useCallback } = options
 
-  function validate({ value, path, label, state: { parent }, ...rest }) {
+  function validate({ value, path, label, options, ...rest }) {
+    let parent = options.parent;
     var resolve = (value) => Ref.isRef(value)
-      ? value.getValue(parent, rest.options.context)
+      ? value.getValue(parent, options.context)
       : value
 
     var createError = createErrorFactory({
@@ -38,7 +39,7 @@ module.exports = function createValidation(options) {
       , label, resolve, name
     })
 
-    var ctx = { path, parent, type: name, createError, resolve, ...rest }
+    var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
     return new Promise((resolve, reject) => {
       !useCallback

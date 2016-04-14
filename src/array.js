@@ -44,7 +44,7 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _cast(_value, _opts) {
-    var value = MixedSchema.prototype._cast.call(this, _value)
+    var value = MixedSchema.prototype._cast.call(this, _value, _opts)
 
     //should ignore nulls here
     if (!this._typeCheck(value) || !this._subType)
@@ -53,38 +53,40 @@ inherits(ArraySchema, MixedSchema, {
     return value.map(v => this._subType.cast(v, _opts))
   },
 
-  _validate(_value, _opts, _state){
+  _validate(_value, options = {}) {
     var errors = []
-      , context, subType, schema, endEarly, recursive;
+      , subType, endEarly, recursive;
 
-    _state    = _state || {}
-    context   = _state.parent || (_opts || {}).context
-    schema    = this._resolve(context)
-    subType   = schema._subType
-    endEarly  = schema._option('abortEarly', _opts)
-    recursive = schema._option('recursive', _opts)
+    subType   = this._subType
+    endEarly  = this._option('abortEarly', options)
+    recursive = this._option('recursive', options)
 
-    return MixedSchema.prototype._validate.call(this, _value, _opts, _state)
+    return MixedSchema.prototype._validate.call(this, _value, options)
       .catch(endEarly ? null : err => {
         errors = err
         return err.value
       })
-      .then(function(value){
-        if (!recursive || !subType || !schema._typeCheck(value) ) {
+      .then((value) => {
+        if (!recursive || !subType || !this._typeCheck(value) ) {
           if (errors.length) throw errors[0]
           return value
         }
 
         let result = value.map((item, key) => {
-          var path  = (_state.path || '') + '[' + key + ']'
-            , state = { ..._state, path, key, parent: value};
+          var path  = (options.path || '') + '[' + key + ']'
 
-          return subType._validate(item, _opts, state)
+          // object._validate note for isStrict explanation
+          var innerOptions = { ...options, path, key, strict: true, parent: value };
+
+          if (subType.validate)
+            return subType.validate(item, innerOptions)
+
+          return true
         })
 
         result = endEarly
           ? Promise.all(result).catch(scopeError(value))
-          : collectErrors(result, value, _state.path, errors)
+          : collectErrors(result, value, options.path, errors)
 
         return result.then(() => value)
       })

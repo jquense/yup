@@ -5,7 +5,7 @@ var chai  = require('chai')
   , Promise = require('promise/src/es6-extensions')
   , {
       mixed, string, date, number
-    , bool, array, object, ref
+    , bool, array, object, ref, lazy, reach
   } = require('../src');
 
 chai.use(chaiAsPromised);
@@ -14,26 +14,31 @@ chai.should();
 
 describe('Object types', function(){
 
-  it('should CAST correctly', function(){
+  describe('casting', ()=> {
+    it ('should parse json strings', () => {
+      object({ hello: number() })
+        .cast('{ \"hello\": \"5\" }')
+        .should.eql({
+          hello: 5
+        })
+    })
 
-    var inst = object()
-      , obj = {
-          num: '5',
-          str: 'hello',
-          arr: ['4', 5, false],
-          dte: '2014-09-23T19:25:25Z',
-          nested: { str: 5 },
-          arrNested: [{ num: 5 }, { num: '5' }]
-        }
+    it ('should return null for failed casts', () => {
+      chai.expect(
+        object().cast('dfhdfh')).to.equal(null)
+    })
 
-    object()
-      .shape({ hello: number() })
-      .cast('{ \"hello\": \"5\" }').should.eql({ hello: 5 })
+    it ('should recursively cast fields', () => {
+      var obj = {
+        num: '5',
+        str: 'hello',
+        arr: ['4', 5, false],
+        dte: '2014-09-23T19:25:25Z',
+        nested: { str: 5 },
+        arrNested: [{ num: 5 }, { num: '5' }]
+      }
 
-    chai.expect(
-      object().cast('dfhdfh')).to.eql(null)
-
-    inst = inst.shape({
+      object({
         num: number(),
         str: string(),
         arr: array().of(number()),
@@ -43,99 +48,119 @@ describe('Object types', function(){
           object().shape({ num: number() })
         )
       })
-    //console.log(inst.cast(obj))
-
-    inst.cast(obj).should.eql({
-      num: 5,
-      str: 'hello',
-      arr: [4, 5, 0],
-      dte: new Date(1411500325000),
-      nested: { str: '5' },
-      arrNested: [
-        { num: 5 },
-        { num: 5 }
-      ]
+      .cast(obj).should.eql({
+        num: 5,
+        str: 'hello',
+        arr: [4, 5, 0],
+        dte: new Date(1411500325000),
+        nested: { str: '5' },
+        arrNested: [{ num: 5 }, { num: 5 }]
+      })
     })
   })
 
+  describe('validation', () => {
+    var inst, obj;
 
-  it('should VALIDATE correctly', function(){
-    var inst
-      , obj = {
-          num: '4',
-          str: 'hello',
-          arr: ['4', 5, false],
-          dte: '2014-09-23T19:25:25Z',
-          nested: { str: 5 },
-          arrNested: [{ num: 5 }, { num: '2' }]
-        }
-
-    inst = object().shape({
+    beforeEach(() => {
+      inst = object().shape({
         num: number().max(4),
         str: string(),
         arr: array().of(number().max(6)),
         dte: date(),
-
-        nested: object()
-          .shape({ str: string().min(3) })
-          .required(),
-
-        arrNested: array().of(
-          object().shape({ num: number() })
-        )
+        nested: object().shape({ str: string().min(3) }).required(),
+        arrNested: array().of(object().shape({ num: number() }))
       })
-
-    return inst.validate(obj).should.be.rejected
-      .then(function(err){
-        err.errors.length.should.equal(1)
-        err.errors[0].should.contain('nested.str')
-      })
-      .then(function(){
-
-        obj.arr[1] = 8
-
-        return Promise.all([
-          inst.isValid().should.eventually.equal(true),
-
-          inst.validate(obj).should.be.rejected.then(function(err){
-            err.errors[0].should.contain('arr[1]')
-          })
-        ])
-      })
-  })
-
-  it('should not clone during validating', function(){
-    var inst = object().shape({
-        num: number().max(4),
-        str: string(),
-        arr: array().of(number().max(6)),
-        dte: date(),
-
-        nested: object()
-          .shape({ str: string().min(3) })
-          .required(),
-
-        arrNested: array().of(
-          object().shape({ num: number() })
-        )
-      })
-
-    let base = mixed.prototype.clone;
-    let replace = () => mixed.prototype.clone = base
-    mixed.prototype.clone = function(...args) {
-      if (!this._mutate)
-        throw new Error('should not call clone')
-
-      return base.apply(this, args)
-    }
-
-    return inst
-      .validate({
+      obj = {
+        num: '4',
+        str: 'hello',
+        arr: ['4', 5, false],
+        dte: '2014-09-23T19:25:25Z',
         nested: { str: 5 },
         arrNested: [{ num: 5 }, { num: '2' }]
+      }
+    })
+
+    it ('should run validations recursively', async () => {
+      let error = await inst.validate(obj).should.be.rejected;
+
+      error.errors.length.should.equal(1)
+      error.errors[0].should.contain('nested.str')
+
+      obj.arr[1] = 8
+
+      await inst.isValid().should.eventually.equal(true),
+
+      error = await inst.validate(obj).should.be.rejected
+      error.errors[0].should.contain('arr[1]')
+    })
+
+    it('should prevent recursive casting', async () => {
+      let castSpy = sinon.spy(string.prototype, '_cast');
+
+      inst = object({
+        field: string()
       })
-      .then(replace)
-      .catch(replace)
+
+      let value = await inst.validate({ field: 5 })
+
+      value.field.should.equal('5')
+      
+      castSpy.should.have.been.calledOnce
+
+      string.prototype._cast.restore()
+    })
+
+    it('should respect strict for nested values', async () => {
+      inst = object({
+        field: string()
+      })
+      .strict()
+
+      let err = await inst.validate({ field: 5 }).should.be.rejected
+
+      err.message.should.match(/must be a `string` type/)
+    })
+
+    it('should handle custom validation', async function(){
+      var inst = object().shape({
+        prop: mixed(),
+        other: mixed()
+      })
+      .test('test', '${path} oops', () => false)
+
+      let err = await inst.validate({}).should.be.rejected
+
+      err.errors[0].should.equal('this oops')
+    })
+
+    it('should not clone during validating', async function() {
+      let base = mixed.prototype.clone;
+
+      mixed.prototype.clone = function(...args) {
+        if (!this._mutate)
+          throw new Error('should not call clone')
+
+        return base.apply(this, args)
+      }
+
+      try {
+        await inst.validate({
+          nested: { str: 'jimmm' },
+          arrNested: [{ num: 5 }, { num: '2' }]
+        })
+        await inst.validate({
+          nested: { str: 5 },
+          arrNested: [{ num: 5 }, { num: '2' }]
+        })
+      }
+      catch (err) {} //eslint-disable-line
+      finally {
+        mixed.prototype.clone = base
+      }
+    })
+
+
   })
 
 
@@ -165,37 +190,63 @@ describe('Object types', function(){
     inst.should.have.deep.property('fields.prop')
   })
 
-  it('should create a reasonable default', function(){
+  describe('object defaults', () => {
+    let objSchema;
 
-    object({
-        str: string(),
+    beforeEach(() => {
+      objSchema = object({
         nest: object({
           str: string().default('hi')
         })
+      })
     })
-    .default().should.eql({ nest: { str: 'hi' }, str: undefined })
 
-    object({
-        str: string(),
-        nest: object({ str: string().default('hi') })
+    it ('should expand objects by default', () => {
+      objSchema.default().should.eql({
+        nest: { str: 'hi' }
+      })
     })
-    .default({ boom: 'hi'})
-    .default()
-    .should.eql({ boom: 'hi'})
 
+    it ('should accept a user provided default', () => {
+      objSchema = objSchema.default({ boom: 'hi'})
 
-    chai.expect(object({
+      objSchema.default().should.eql({
+        boom: 'hi'
+      })
+    })
+
+    it ('should add empty keys when sub schema has no default', () => {
+      object({
         str: string(),
         nest: object({ str: string() })
+      })
+      .default()
+      .should.eql({
+        nest: { str: undefined },
+        str: undefined
+      })
     })
-    .default()).to.eql({ nest: { str: undefined }, str: undefined })
+
+    it ('should create defaults for missing object fields', () => {
+
+      object({
+        prop: mixed(),
+        other: object({
+          x: object({ b: string() })
+        })
+      })
+      .cast({ prop: 'foo' })
+      .should.eql({
+        prop: 'foo',
+        other: { x: { b: undefined } }
+      })
+    })
   })
 
   it('should handle empty keys', function(){
     var inst = object().shape({
-          prop: mixed()
-        })
-
+      prop: mixed()
+    })
 
     return Promise.all([
 
@@ -241,23 +292,9 @@ describe('Object types', function(){
       })
   })
 
-  it('should handle custom validation', function(){
-    var inst = object().shape({
-      prop: mixed(),
-      other: mixed()
-    })
 
-    inst = inst.test('test', '${path} oops', function(){
-      return false
-    })
 
-    return inst.validate({}).should.be.rejected
-      .then(function(err){
-        err.errors[0].should.equal('this oops')
-      })
-  })
-
-  it('should allow refs', function() {
+  it('should allow refs', async function() {
     var schema = object({
       quz: ref('baz'),
       baz: ref('foo.bar'),
@@ -267,52 +304,129 @@ describe('Object types', function(){
       x: ref('$x')
     })
 
-    schema.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
-      .should.eql({
-        foo: {
-          bar: 'boom'
-        },
-        baz: 'boom',
-        quz: 'boom',
-        x: 5
-      })
-  })
+    let value = await schema.validate({
+      foo: { bar: 'boom' }
+    }, { context: { x: 5 } })
 
-  it('should allow nesting with "$this"', function(){
-    var inst = object().shape({
-          child: '$this',
-          str: string().trim().default('yo!'),
-          other: string().required('required!'),
-          arr: array().of('$this')
-        })
-
-    inst.default().should.eql({
-      child: undefined,
-      other: undefined,
-      arr: undefined,
-      str: 'yo!'
+    //console.log(value)
+    value.should.eql({
+      foo: {
+        bar: 'boom'
+      },
+      baz: 'boom',
+      quz: 'boom',
+      x: 5
     })
 
-    return Promise.all([
 
-      inst.validate({
-        child: { other: undefined },
-        other: 'ff'
-      }).should.be.rejected
-        .then(function(err){
-          err.errors[0].should.equal('required!')
-        }),
-
-      inst.validate({
-        arr: [{ other: undefined, str: '   john ' }],
-        other: 'ff'
-      }).should.be.rejected
-        .then(function(err){
-          err.value.arr[0].str.should.equal('john')
-          err.errors[0].should.equal('required!')
-        })
-    ])
   })
+
+  describe('lazy evaluation', () => {
+    let types = {
+      'string': string(),
+      'number': number()
+    }
+
+    it('should be cast-able', () => {
+      let inst = lazy(()=> number())
+
+      inst.cast.should.be.a('function')
+      inst.cast('4').should.equal(4)
+    })
+
+    it('should be validatable', async () => {
+      let inst = lazy(()=> string().trim('trim me!').strict())
+
+      inst.validate.should.be.a('function')
+
+      try {
+        await inst.validate('  john  ')
+      }
+      catch (err) {
+        err.message.should.equal('trim me!')
+      }
+    })
+
+    it('should resolve to schema', () => {
+      let inst = object({
+        nested: lazy(()=> inst),
+        x: object({
+          y: lazy(()=> inst)
+        })
+      })
+
+      reach(inst, 'nested').should.equal(inst)
+      reach(inst, 'x.y').should.equal(inst)
+    })
+
+    it('should be passed the value', (done) => {
+      let inst = object({
+        nested: lazy(value => {
+          value.should.equal('foo')
+          done()
+        })
+      })
+
+      inst.cast({ nested: 'foo' })
+    })
+
+    it('should always return a schema', () => {
+      (() => lazy(() => {}).cast())
+        .should.throw(/must return a valid schema/)
+    })
+
+    it('should set the correct path', async () => {
+      let inst = object({
+        str: string().required().nullable(),
+        nested: lazy(() => inst.default(undefined))
+      })
+
+      let value = {
+        nested: { str: null },
+        str: 'foo'
+      }
+
+      try {
+        await inst.validate(value, { strict: true })
+      }
+      catch (err) {
+        err.path.should.equal('nested.str')
+        err.message.should.match(/required/)
+      }
+    })
+
+    it('should resolve array sub types', async () => {
+      let inst = object({
+        str: string().required().nullable(),
+        nested: array().of(
+          lazy(() => inst.default(undefined))
+        )
+      })
+
+      let value = {
+        nested: [{ str: null }],
+        str: 'foo'
+      }
+
+      try {
+        await inst.validate(value, { strict: true })
+      }
+      catch (err) {
+        err.path.should.equal('nested[0].str')
+        err.message.should.match(/required/)
+      }
+    })
+
+    it('should resolve for each array item', async () => {
+      let inst = array()
+        .of(lazy(value => types[typeof value]))
+
+      let val = await inst.validate(['john', 4], { strict: true })
+
+      val.should.eql(['john', 4])
+    })
+  })
+
 
   it('should respect abortEarly', function(){
     var inst = object({

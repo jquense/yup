@@ -13,29 +13,40 @@ chai.should();
 
 describe('Array types', function(){
 
-  it('should CAST correctly', function(){
-    var inst = array();
+  describe('casting', ()=> {
+    it ('should parse json strings', () => {
+      array()
+        .cast('[2,3,5,6]')
+        .should.eql([2, 3, 5, 6])
+    })
 
-    inst.cast('[2,3,5,6]').should.eql([2, 3, 5, 6])
+    it ('should return null for failed casts', () => {
+      expect(
+        array().cast('asfasf')).to.equal(null)
 
-    inst.cast(['4', 5, false]).should.eql(['4', 5, false])
+      expect(
+        array().cast(null)).to.equal(null)
+    })
 
-    inst.of(number()).cast(['4', 5, false]).should.eql([4, 5, 0])
-    inst.of(string()).cast(['4', 5, false]).should.eql(['4', '5', 'false'])
+    it ('should recursively cast fields', () => {
+      array().of(number())
+        .cast(['4', 5, false])
+        .should.eql([4, 5, 0])
 
-    chai.expect(
-      inst.cast(null)).to.equal(null)
-
-    chai.expect(inst.nullable()
-      .compact()
-      .cast(null)).to.equal(null)
+      array().of(string())
+        .cast(['4', 5, false])
+        .should.eql(['4', '5', 'false'])
+    })
   })
 
-  it('should handle DEFAULT', function(){
-    var inst = array()
 
-    chai.expect(inst.default()).to.equal(undefined)
-    inst.default(function(){ return [1, 2, 3] }).default().should.eql([1, 2, 3])
+  it('should handle DEFAULT', function(){
+    expect(array().default()).to.equal(undefined)
+
+    array()
+      .default(() => [1, 2, 3])
+      .default()
+      .should.eql([1, 2, 3])
   })
 
   it('should type check', function(){
@@ -47,7 +58,7 @@ describe('Array types', function(){
     inst.isType(NaN).should.equal(false)
     inst.isType(34545).should.equal(false)
 
-    chai.expect(
+    expect(
       inst.isType(null)).to.equal(false)
 
     inst.nullable().isType(null).should.equal(true)
@@ -67,34 +78,47 @@ describe('Array types', function(){
     .should.eql([{name: 'john'}])
   })
 
-  it('should VALIDATE correctly', function(){
+  describe('validation', () => {
 
-    var inst = array().required().of(number().max(5))
+    it ('should allow undefined', async () => {
 
-    return Promise.all([
+      await array().of(number().max(5))
+        .isValid()
+        .should.become(true)
+    })
 
-      array().of(number().max(5)).isValid().should.eventually.equal(true),
+    it ('should not allow null when not nullable', async () => {
 
-      array().isValid(null).should.eventually.equal(false),
-      array().nullable().isValid(null).should.eventually.equal(true),
+      await array().isValid(null).should.become(false)
 
-      inst.isValid(['gg', 3]).should.eventually.equal(false),
+      await array().nullable().isValid(null).should.become(true)
+    })
 
-      inst.isValid(['4', 3]).should.eventually.equal(true),
+    it ('should respect subtype validations', async () => {
+      var inst = array()
+        .of(number().max(5))
 
-      inst.validate(['4', 3]).should.be.fulfilled.then(function(val){
-        val.should.eql([4, 3])
-      }),
+      await inst.isValid(['gg', 3]).should.become(false)
+      await inst.isValid([7, 3]).should.become(false)
 
-      inst.validate(['7', 3]).should.be.rejected,
+      let value = await inst.validate(['4', 3])
+      
+      value.should.eql([4, 3])
+    })
 
-      inst.validate().should.be.rejected.then(function(err){
-        err.errors.length.should.equal(1)
-        err.errors[0].should.contain('required')
-      })
-    ])
+    it('should prevent recursive casting', async () => {
+      let castSpy = sinon.spy(string.prototype, '_cast');
 
+      let value = await array(string())
+        .validate([ 5 ])
+
+      value[0].should.equal('5')
+
+      castSpy.should.have.been.calledOnce
+      string.prototype._cast.restore()
+    })
   })
+
 
   it('should respect abortEarly', function(){
     var inst = array()

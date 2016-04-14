@@ -187,7 +187,7 @@ Adds a new method to the core schema types. A friendlier convenience method for 
 #### `yup.ref(path: string, options: { contextPrefix: string }): Ref`
 
 Creates a reference to another sibling or sibling descendant field. Ref's are resolved
-at _run time_ and supported where specified. Ref's are evaluated in in the proper order so that
+at _validation/cast time_ and supported where specified. Ref's are evaluated in in the proper order so that
 the ref value is resolved before the field using the ref (be careful of circular dependencies!).
 
 ```js
@@ -201,6 +201,36 @@ var schema = object({
 
 inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
 // { baz: 'boom',  x: 5, { foo: { bar: 'boom' } }, }
+```
+
+#### `yup.lazy((value: any) => Schema): Lazy`
+
+creates a schema that is evaluated at validation/cast time. Useful for creating
+recursive schema like Trees, for polymophic fields and arrays.
+
+__CAUTION!__ When defining parent-child recursive object schema, you want to reset the `default()`
+to `undefined` on the child otherwise the object will infinitely nest itself when you cast it!.
+
+```js
+var node = object({
+  id: number(),
+  child: yup.lazy(() =>
+    node.default(undefined)
+  )
+})
+
+let renderable = yup.lazy(value => {
+  switch (typeof value) {
+    case 'number':
+      return number()
+    case 'string':
+      return string()
+    default:
+      return mixed()
+  }  
+})
+
+let renderables = array().of(renderable)
 ```
 
 #### `ValidationError(errors: string | Array<string>, value: any, path: string)`
@@ -241,6 +271,7 @@ the cast object itself.
 
 Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
+
 ```
 SchemaDescription {
   type: string,

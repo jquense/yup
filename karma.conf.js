@@ -11,6 +11,7 @@ module.exports = function (config) {
     reporters: ['mocha'],
 
     files: [
+      require.resolve('sinon/pkg/sinon-1.17.3.js'),
       'tests-webpack.js'
     ],
 

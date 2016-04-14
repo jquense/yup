@@ -9,12 +9,10 @@ var MixedSchema = require('./mixed')
   , {
     isObject
   , transform
-  , assign
   , inherits
   , collectErrors
   , isSchema, has } = require('./util/_');
 
-let isRecursive = schema =>  (schema._subType || schema) === '$this'
 
 c.type('altCamel', function(str) {
   let result = c.camel(str)
@@ -23,11 +21,6 @@ c.type('altCamel', function(str) {
   return idx === 0 ? result : (str.substr(0, idx) + result)
 })
 
-let childSchema = (field, parent) => {
-  if (!isRecursive(field)) return field
-
-  return field.of ? field.of(parent) : parent
-}
 
 let scopeError = value => err => {
       err.value = value
@@ -77,93 +70,87 @@ inherits(ObjectSchema, MixedSchema, {
     return isObject(value) || typeof value === 'function';
   },
 
-  _cast(_value, _opts = {}) {
-    var schema = this
-      , value  = MixedSchema.prototype._cast.call(schema, _value)
+  _cast(_value, opts = {}) {
+    var value = MixedSchema.prototype._cast.call(this, _value, opts)
 
     //should ignore nulls here
-    if (!schema._typeCheck(value))
+    if (value === undefined)
+      return this.default();
+
+    if (!this._typeCheck(value))
       return value;
 
-    var fields = schema.fields
-      , strip  = schema._option('stripUnknown', _opts) === true
-      , extra  = Object.keys(value).filter( v => schema._nodes.indexOf(v) === -1)
-      , props  = schema._nodes.concat(extra);
+    var fields = this.fields
+      , strip  = this._option('stripUnknown', opts) === true
+      , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
+      , props  = this._nodes.concat(extra);
 
-    schema.withMutation(() => {
-      let innerOptions = { ..._opts, parent: {} };
+    let innerOptions = { ...opts, parent: {} };
 
+    value = transform(props, function(obj, prop) {
+      let field = fields[prop]
+      let exists = has(value, prop);
 
+      if (field) {
+        let fieldValue;
 
-      value = transform(props, function(obj, prop) {
-        let field = fields[prop]
-        let exists = has(value, prop);
+        if (field._strip === true)
+          return
 
-        if (Ref.isRef(field)) {
-          let refValue = field.getValue(obj, innerOptions.context)
+        fieldValue = field.cast(value[prop], innerOptions)
 
-          if (refValue !== undefined)
-            obj[prop] = refValue
-        }
-        else if (exists && field) {
-          tempClearDefault(schema, () => {
-            let fieldSchema = childSchema(field, schema.default(undefined))
+        if (fieldValue !== undefined)
+          obj[prop] = fieldValue
+      }
+      else if (exists && !strip)
+        obj[prop] = value[prop]
 
-            if (fieldSchema._strip !== true) {
-              obj[prop] = fieldSchema.cast(value[prop], innerOptions)
-            }
-          })
-        }
-        else if (exists && !strip)
-          obj[prop] = value[prop]
-
-        else if (field) {
-          var fieldDefault = field.default ? field.default() : undefined
-
-          if (fieldDefault !== undefined)
-            obj[prop] = fieldDefault
-        }
-      }, innerOptions.parent)
-    })
+    }, innerOptions.parent)
 
     return value
   },
 
-  _validate(_value, _opts, _state) {
+  _validate(_value, opts = {}) {
     var errors = []
-      , state = _state || {}
-      , context, schema
-      , endEarly, recursive;
+      , endEarly, isStrict, recursive;
 
-    context   = state.parent || (_opts || {}).context
-    schema    = this._resolve(context)
-    endEarly  = schema._option('abortEarly', _opts)
-    recursive = schema._option('recursive', _opts)
+    isStrict = this._option('strict', opts)
+    endEarly = this._option('abortEarly', opts)
+    recursive = this._option('recursive', opts)
 
     return MixedSchema.prototype._validate
-      .call(this, _value, _opts, state)
+      .call(this, _value, opts)
       .catch(endEarly ? null : err => {
         errors.push(err)
         return err.value
       })
       .then(value => {
         if (!recursive || !isObject(value)) { // only iterate though actual objects
-          if ( errors.length ) throw errors[0]
+          if (errors.length) throw errors[0]
           return value
         }
 
-        let result = schema._nodes.map(function(key) {
-          var path  = (state.path ?  (state.path + '.') : '') + key
-            , field = childSchema(schema.fields[key], schema)
+        let result = this._nodes.map((key) => {
+          var path  = (opts.path ?  (opts.path + '.') : '') + key
+            , field = this.fields[key]
+            , innerOptions = { ...opts, key, path, parent: value };
 
-          return field._validate(value[key]
-            , _opts
-            , { ...state, key, path, parent: value  })
+          if (field) {
+            // inner fields are always strict:
+            // 1. this isn't strict so we just cast the value leaving nested values already cast
+            // 2. this is strict in which case the nested values weren't cast either
+            innerOptions.strict = true;
+
+            if (field.validate)
+              return field.validate(value[key], innerOptions)
+          }
+
+          return true
         })
 
         result = endEarly
           ? Promise.all(result).catch(scopeError(value))
-          : collectErrors(result, value, state.path, errors)
+          : collectErrors(result, value, opts.path, errors)
 
         return result.then(() => value)
       })
@@ -179,14 +166,14 @@ inherits(ObjectSchema, MixedSchema, {
 
   shape(schema, excludes = []) {
     var next = this.clone()
-      , fields = assign(next.fields, schema);
+      , fields = Object.assign(next.fields, schema);
 
-    if ( !Array.isArray(excludes[0]))
+    if (!Array.isArray(excludes[0]))
       excludes = [excludes]
 
     next.fields = fields
 
-    if ( excludes.length )
+    if (excludes.length)
       next._excludedEdges = next._excludedEdges.concat(
         excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
 
@@ -251,15 +238,15 @@ function unknown(ctx, value) {
 
 // ugly optimization avoiding a clone. clears default for recursive
 // cast and resets it below;
-function tempClearDefault(schema, fn) {
-  let hasDflt = has(schema, '_default')
-    , dflt = schema._default;
-
-  fn(schema)
-
-  if (hasDflt) schema.default(dflt)
-  else delete schema._default
-}
+// function tempClearDefault(schema, fn) {
+//   let hasDflt = has(schema, '_default')
+//     , dflt = schema._default;
+//
+//   fn(schema)
+//
+//   if (hasDflt) schema.default(dflt)
+//   else delete schema._default
+// }
 
 function sortFields(fields, excludes = []){
   var edges = [], nodes = []

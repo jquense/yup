@@ -111,23 +111,7 @@ SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v)
   },
 
-  cast(value, opts = {}) {
-    var schema = this._resolve(opts.context, opts.parent)
-    return schema._cast(value, opts)
-  },
-
-  _cast(_value) {
-    let value = _value === undefined ? _value
-      : this.transforms.reduce(
-          (value, transform) => transform.call(this, value, _value), _value)
-
-    if (value === undefined && _.has(this, '_default'))
-      value = this.default()
-
-    return value
-  },
-
-  _resolve(context, parent) {
+  resolve(context, parent) {
     if (this._conditions.length) {
       return this._conditions.reduce((schema, match) =>
         match.resolve(schema, match.getValue(parent, context)), this)
@@ -136,39 +120,64 @@ SchemaType.prototype = {
     return this
   },
 
+  cast(value, opts = {}) {
+    let schema = this.resolve(opts.context, opts.parent)
+
+    return schema._cast(value, opts)
+  },
+
+  _cast(_value) {
+    let value = _value === undefined ? _value
+      : this.transforms.reduce(
+          (value, transform) => transform.call(this, value, _value), _value)
+
+    if (value === undefined && (_.has(this, '_default'))) {
+      value = this.default()
+    }
+
+    return value
+  },
+
+  validate(value, options = {}, cb) {
+    if (typeof options === 'function')
+      cb = options, options = {}
+
+    let schema = this.resolve(options.context, options.parent)
+
+    return nodeify(schema._validate(value, options), cb)
+  },
+
   //-- tests
-  _validate(_value, options = {}, state = {}) {
-    let context  = options.context
-      , parent   = state.parent
-      , value    = _value
+  _validate(_value, options = {}) {
+    let value  = _value
       , schema, endEarly, isStrict;
 
-    schema   = this._resolve(context, parent)
-    isStrict = schema._option('strict', options)
-    endEarly = schema._option('abortEarly', options)
+    schema   = this
+    isStrict = this._option('strict', options)
+    endEarly = this._option('abortEarly', options)
 
-    let path = state.path
+    let path = options.path
     let label = this._label
 
-    if (!state.isCast && !isStrict)
-      value = schema._cast(value, options)
-
+    if (!isStrict) {
+      value = this._cast(value, options, options)
+    }
     // value is cast, we can check if it meets type requirements
-    let validationParams = { value, path, state, schema, options, label }
+    let validationParams = { value, path, schema: this, options, label }
     let initialTests = []
 
     if (schema._typeError)
-      initialTests.push(schema._typeError(validationParams));
+      initialTests.push(this._typeError(validationParams));
 
-    if (schema._whitelistError)
-      initialTests.push(schema._whitelistError(validationParams));
+    if (this._whitelistError)
+      initialTests.push(this._whitelistError(validationParams));
 
-    if (schema._blacklistError)
-      initialTests.push(schema._blacklistError(validationParams));
+    if (this._blacklistError)
+      initialTests.push(this._blacklistError(validationParams));
 
     return runValidations(initialTests, endEarly, value, path)
       .then(() => runValidations(
-          schema.tests.map(fn => fn(validationParams))
+          this.tests.map(fn => fn(validationParams))
         , endEarly
         , value
         , path
@@ -176,12 +185,6 @@ SchemaType.prototype = {
       .then(() => value)
   },
 
-  validate(value, options, cb) {
-    if (typeof options === 'function')
-      cb = options, options = {}
-
-    return nodeify(this._validate(value, options, {}), cb)
-  },
 
   isValid(value, options, cb) {
     if (typeof options === 'function')

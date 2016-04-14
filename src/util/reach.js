@@ -13,12 +13,23 @@ module.exports = function (obj, path, value, context) {
     let part = isBracket ? trim(_part) : _part;
 
     if (isArray || has(obj, '_subType')) { // we skipped an array
-      obj = obj._resolve(context, parent)._subType;
-      value = value && value[0]
+      let idx = isArray ? parseInt(part, 10) : 0
+      obj = obj.resolve(context, parent)._subType;
+
+      if (value) {
+
+        if (isArray && idx >= value.length) {
+          throw new Error(
+            `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
+            `because there is no value at that index. `
+          )
+        }
+        value = value[idx]
+      }
     }
 
     if (!isArray) {
-      obj = obj._resolve(context, parent);
+      obj = obj.resolve(context, parent);
 
       if (!has(obj, 'fields') || !has(obj.fields, part))
         throw new Error(
@@ -34,5 +45,5 @@ module.exports = function (obj, path, value, context) {
     }
   })
 
-  return obj && obj._resolve(parent)
+  return obj && obj.resolve(value, parent)
 }

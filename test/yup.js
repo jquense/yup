@@ -111,7 +111,7 @@ describe('Yup', function(){
     let value = {
       bar: 3,
       nested: {
-        arr: [{ foo: 5 }]
+        arr: [{ foo: 5 }, { foo: 3 }]
       }
     }
 
@@ -120,8 +120,10 @@ describe('Yup', function(){
 
     reach(inst, 'nested.arr.num', value, context).should.equal(num)
     reach(inst, 'nested.arr[].num', value, context).should.equal(num)
-    reach(inst, 'nested.arr[1].num', value, context).should.equal(num)
-    reach(inst, 'nested["arr"][1].num', value, context).should.not.equal(number())
+    reach(inst, 'nested.arr[0].num', value, context).should.equal(num)
+
+    // should fail b/c item[1] is used to resolve the schema
+    reach(inst, 'nested["arr"][1].num', value, context).should.not.equal(num)
 
     return reach(inst, 'nested.arr[].num', value, context).isValid(5)
       .then((valid) => {

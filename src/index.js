@@ -1,7 +1,8 @@
 'use strict';
 var mixed = require('./mixed')
   , bool = require('./boolean')
-  , Ref = require('./util/reference');
+  , Ref = require('./util/reference')
+  , Lazy = require('./util/lazy');
 
 var isSchema = schema => schema && !!schema.__isYupSchema__;
 
@@ -19,6 +20,7 @@ module.exports = {
 
   ValidationError: require('./util/validation-error'),
   ref: (key, options) => new Ref(key, options),
+  lazy: (fn) => new Lazy(fn),
 
   isSchema,
 

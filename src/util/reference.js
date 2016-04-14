@@ -14,12 +14,23 @@ export default class Ref {
     validateName(key)
     let prefix = options.contextPrefix || '$';
 
-    this.key = key;
+    if (typeof key === 'function') {
+      key = '.';
+
+    }
+
+    this.key = key.trim();
     this.prefix = prefix;
-    this.isContext = key.indexOf(prefix) === 0
+    this.isContext = this.key.indexOf(prefix) === 0
+    this.isSelf =  this.key === '.';
+
     this.path = this.isContext ? this.key.slice(this.prefix.length) : this.key
     this._get = getter(this.path, true)
     this.map = mapFn || (value => value);
+  }
+
+  cast(value, { parent, context }) {
+    return this.getValue(parent, context)
   }
 
   getValue(parent, context) {
