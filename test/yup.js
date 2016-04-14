@@ -5,9 +5,7 @@ var Promise = require('promise/src/es6-extensions')
   , chaiAsPromised = require('chai-as-promised')
   , reach = require('../src/util/reach')
   , BadSet = require('../src/util/set')
-  , number = require('../src/number')
-  , array = require('../src/array')
-  , object = require('../src/object')
+  , { object, array, string, lazy, number } = require('../src')
   , _ = require('../src/util/_');
 
 chai.use(chaiAsPromised);
@@ -129,6 +127,27 @@ describe('Yup', function(){
       .then((valid) => {
         valid.should.equal(true)
       })
+  })
+
+  it('should reach through lazy', async () => {
+    let types = {
+      '1': object({ foo: string() }),
+      '2': object({ foo: number() })
+    }
+
+    let err = await object({
+      x: array(
+        lazy(val => types[val.type])
+      )
+    })
+    .strict()
+    .validate({ x: [
+      { type: 1, foo: '4' },
+      { type: 2, foo: '5' }
+    ]})
+    .should.be.rejected
+
+    err.message.should.match(/must be a `number` type/)
   })
 
   describe('BadSet', function(){

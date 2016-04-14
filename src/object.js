@@ -112,9 +112,8 @@ inherits(ObjectSchema, MixedSchema, {
 
   _validate(_value, opts = {}) {
     var errors = []
-      , endEarly, isStrict, recursive;
+      , endEarly, recursive;
 
-    isStrict = this._option('strict', opts)
     endEarly = this._option('abortEarly', opts)
     recursive = this._option('recursive', opts)
 
