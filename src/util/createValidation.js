@@ -1,5 +1,5 @@
 'use strict';
-var Promise = require('promise/lib/es6-extensions')
+var Promise = require('universal-promise')
   , ValidationError = require('./validation-error')
   , Ref = require('./reference')
   , { transform } = require('./_');

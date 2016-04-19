@@ -1,6 +1,6 @@
 'use strict';
 var MixedSchema = require('./mixed')
-  , Promise = require('promise/lib/es6-extensions')
+  , Promise = require('universal-promise')
   , toposort = require('toposort')
   , locale = require('./locale.js').object
   , split = require('property-expr').split

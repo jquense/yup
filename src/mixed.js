@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('promise/lib/es6-extensions')
+var Promise = require('universal-promise')
   , Condition   = require('./util/condition')
   , locale = require('./locale.js').mixed
   , _ = require('./util/_')

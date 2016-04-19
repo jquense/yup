@@ -48,7 +48,6 @@
     "mocha": "^1.21.4",
     "mt-changelog": "^0.6.2",
     "node-libs-browser": "^0.5.2",
-    "phantomjs": "^1.9.17",
     "release-script": "^0.5.2",
     "sinon": "^1.17.3",
     "sinon-chai": "^2.8.0",
@@ -57,9 +56,9 @@
   "dependencies": {
     "case": "^1.2.1",
     "fn-name": "~1.0.1",
-    "promise": "~7.0.0",
     "property-expr": "^1.2.0",
-    "toposort": "^0.2.10"
+    "toposort": "^0.2.10",
+    "universal-promise": "^1.0.1"
   },
   "release-script": {
     "defaultDryRun": "false"

@@ -1,4 +1,4 @@
-var Promise = require('promise/lib/es6-extensions')
+var Promise = require('universal-promise')
   , ValidationError = require('./validation-error');
 
 let toString = Object.prototype.toString
