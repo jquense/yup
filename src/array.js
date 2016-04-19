@@ -138,7 +138,7 @@ inherits(ArraySchema, MixedSchema, {
   ensure() {
     return this
       .default([])
-      .transform(val => val != null ? [] : [].concat(val))
+      .transform(val => val == null ? [] : [].concat(val))
   },
 
   compact(rejector){

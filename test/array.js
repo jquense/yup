@@ -102,7 +102,7 @@ describe('Array types', function(){
       await inst.isValid([7, 3]).should.become(false)
 
       let value = await inst.validate(['4', 3])
-      
+
       value.should.eql([4, 3])
     })
 
@@ -152,5 +152,15 @@ describe('Array types', function(){
 
     inst.compact(function(v){ return v == null })
       .cast(arr).should.eql(['', 1, 0, 4, false])
+  })
+
+  it('should ensure arrays', function(){
+    var inst = array().ensure()
+
+    inst.cast([1, 4])
+      .should.eql([1, 4])
+
+    inst.cast(null)
+      .should.eql([])
   })
 })
