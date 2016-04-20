@@ -11,6 +11,9 @@
     "build": "babel src --out-dir lib && npm run toc",
     "release": "release"
   },
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/jquense/yup.git"
