@@ -26,5 +26,6 @@ class Lazy {
   }
 }
 
+Lazy.prototype.__isYupSchema__ = true;
 
 export default Lazy

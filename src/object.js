@@ -268,7 +268,7 @@ function sortFields(fields, excludes = []){
 
     if (Ref.isRef(value) && !value.isContext)
       addNode(value.path)
-    else if (isSchema(value))
+    else if (isSchema(value) && value._deps)
       value._deps.forEach(addNode)
   }
 
