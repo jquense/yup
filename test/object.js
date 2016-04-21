@@ -105,7 +105,7 @@ describe('Object types', function(){
       let value = await inst.validate({ field: 5 })
 
       value.field.should.equal('5')
-      
+
       castSpy.should.have.been.calledOnce
 
       string.prototype._cast.restore()
@@ -368,6 +368,16 @@ describe('Object types', function(){
       })
 
       inst.cast({ nested: 'foo' })
+    })
+
+    it('should be passed the options', (done) => {
+      let opts = {}
+      let inst = lazy((_, options) => {
+        options.should.equal(opts)
+        done()
+      })
+
+      inst.cast({ nested: 'foo' }, opts)
     })
 
     it('should always return a schema', () => {

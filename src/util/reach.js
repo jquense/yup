@@ -14,7 +14,7 @@ module.exports = function (obj, path, value, context) {
 
     if (isArray || has(obj, '_subType')) { // we skipped an array
       let idx = isArray ? parseInt(part, 10) : 0
-      obj = obj.resolve(context, parent, value)._subType;
+      obj = obj.resolve({ context, parent, value })._subType;
 
       if (value) {
 
@@ -29,7 +29,7 @@ module.exports = function (obj, path, value, context) {
     }
 
     if (!isArray) {
-      obj = obj.resolve(context, parent, value);
+      obj = obj.resolve({ context, parent, value });
 
       if (!has(obj, 'fields') || !has(obj.fields, part))
         throw new Error(
@@ -45,5 +45,5 @@ module.exports = function (obj, path, value, context) {
     }
   })
 
-  return obj && obj.resolve(value, parent, value)
+  return obj && obj.resolve({ context, parent, value })
 }

@@ -111,7 +111,7 @@ SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v)
   },
 
-  resolve(context, parent) {
+  resolve({ context, parent }) {
     if (this._conditions.length) {
       return this._conditions.reduce((schema, match) =>
         match.resolve(schema, match.getValue(parent, context)), this)
@@ -121,7 +121,7 @@ SchemaType.prototype = {
   },
 
   cast(value, opts = {}) {
-    let schema = this.resolve(opts.context, opts.parent)
+    let schema = this.resolve(opts)
 
     return schema._cast(value, opts)
   },
@@ -142,7 +142,7 @@ SchemaType.prototype = {
     if (typeof options === 'function')
       cb = options, options = {}
 
-    let schema = this.resolve(options.context, options.parent)
+    let schema = this.resolve(options)
 
     return nodeify(schema._validate(value, options), cb)
   },
