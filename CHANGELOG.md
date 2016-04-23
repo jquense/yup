@@ -1,3 +1,10 @@
+v0.18.0 - Sat, 23 Apr 2016 01:20:27 GMT
+---------------------------------------
+
+- [f827822](../../commit/f827822) [changed] validate() on objects won't cast nested schema with strict()
+
+
+
 v0.17.6 - Thu, 21 Apr 2016 14:59:59 GMT
 ---------------------------------------
 
