@@ -122,6 +122,18 @@ describe('Object types', function(){
       err.message.should.match(/must be a `string` type/)
     })
 
+    it ('should respect child schema with strict()', async () => {
+      inst = object({
+        field: number().strict()
+      })
+
+      let err = await inst.validate({ field: '5' }).should.be.rejected
+
+      err.message.should.match(/must be a `number` type/)
+
+      inst.cast({ field: '5' }).should.eql({ field: 5 })
+    })
+
     it('should handle custom validation', async function(){
       var inst = object().shape({
         prop: mixed(),

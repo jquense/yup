@@ -85,7 +85,7 @@ inherits(ObjectSchema, MixedSchema, {
       , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
       , props  = this._nodes.concat(extra);
 
-    let innerOptions = { ...opts, parent: {} };
+    let innerOptions = { ...opts, parent: {}, __validating: false };
 
     value = transform(props, function(obj, prop) {
       let field = fields[prop]
@@ -94,10 +94,14 @@ inherits(ObjectSchema, MixedSchema, {
       if (field) {
         let fieldValue;
 
+        let strict = field._options && field._options.strict;
+
         if (field._strip === true)
           return
 
-        fieldValue = field.cast(value[prop], innerOptions)
+        fieldValue = !opts.__validating || !strict
+          ? field.cast(value[prop], innerOptions)
+          : value[prop]
 
         if (fieldValue !== undefined)
           obj[prop] = fieldValue
@@ -116,6 +120,8 @@ inherits(ObjectSchema, MixedSchema, {
 
     endEarly = this._option('abortEarly', opts)
     recursive = this._option('recursive', opts)
+
+    opts = {...opts, __validating: true };
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
