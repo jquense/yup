@@ -15,10 +15,10 @@ function resolveParams(oldParams, newParams, resolve) {
 
 function createErrorFactory({ value, label, resolve, ...opts}) {
   return function createError({ path = opts.path, message = opts.message, type = opts.name, params } = {}) {
-    params = resolveParams(opts.params, params, resolve)
+    params = { path, value, label, ...resolveParams(opts.params, params, resolve) };
 
     return Object.assign(new ValidationError(
-        formatError(message, { path, value, label, ...params })
+        typeof message ==='string' ? formatError(message, params) : message
       , value
       , path
       , type)

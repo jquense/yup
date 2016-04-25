@@ -19,6 +19,21 @@ function runValidations(validations, endEarly, value, path) {
     : _.collectErrors(validations, value, path)
 }
 
+function extractTestParams(name, message, test, useCallback) {
+  var opts = name;
+
+  if (typeof message === 'function')
+    test = message, message = locale.default;
+
+  if (typeof name === 'string' || name === null)
+    opts = { name, test, message, useCallback, exclusive: false }
+
+  if (typeof opts.test !== 'function')
+    throw new TypeError('`test` is a required parameters')
+
+  return opts
+}
+
 module.exports = SchemaType
 
 function SchemaType(options = {}){
@@ -257,18 +272,8 @@ SchemaType.prototype = {
    * the previous tests are removed and further tests of the same name will replace each other.
    */
   test(name, message, test, useCallback) {
-    var opts = name
+    var opts = extractTestParams(name, message, test, useCallback)
       , next = this.clone();
-
-    if (typeof name === 'string') {
-      if (typeof message === 'function')
-        test = message, message = name, name = null
-
-      opts = { name, test, message, useCallback, exclusive: false }
-    }
-
-    if (typeof opts.message !== 'string' || typeof opts.test !== 'function')
-      throw new TypeError('`message` and `test` are required parameters')
 
     var validate = createValidation(opts);
 

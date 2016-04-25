@@ -38,8 +38,8 @@ ValidationError.isError = function(err){
 }
 
 ValidationError.formatError = function(message, params) {
-  
-  if ( typeof message === 'string')
+
+  if (typeof message === 'string')
     message = replace(message)
 
   let fn = ({ path, label, ...params }) => {
@@ -49,17 +49,4 @@ ValidationError.formatError = function(message, params) {
   }
 
   return arguments.length === 1 ? fn : fn(params)
-}
-
-ValidationError.prototype.toJSON = function(){
-  if (this.inner.length)
-    return this.inner.reduce((list, e) => {
-      list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.toJSON())
-      return list
-    }, {})
-
-  if (this.path)
-    return { [this.path]: { errors: this.errors, path: this.path, type: this.type } }
-
-  return err.errors
 }

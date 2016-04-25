@@ -149,6 +149,26 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
+  it('should overload test()', function(){
+    var inst = mixed().test('test', noop)
+
+    inst.tests.length.should.equal(1)
+    inst.tests[0].TEST.test.should.equal(noop)
+    inst.tests[0].TEST.message.should.equal('${path} is invalid')
+  })
+
+  it('should allow non string messages', async () => {
+    var message = { key: 'foo' };
+    var inst = mixed().test('test', message, ()=> false)
+
+    inst.tests.length.should.equal(1)
+    inst.tests[0].TEST.message.should.equal(message)
+
+    let error = await inst.validate('foo').should.be.rejected;
+
+    error.message.should.equal(message)
+  })
+
   it('should dedupe tests with the same test function', function(){
     var inst = mixed()
       .test('test', ' ', noop)
