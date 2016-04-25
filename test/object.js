@@ -122,7 +122,7 @@ describe('Object types', function(){
       err.message.should.match(/must be a `string` type/)
     })
 
-    it ('should respect child schema with strict()', async () => {
+    it('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict()
       })
@@ -132,6 +132,14 @@ describe('Object types', function(){
       err.message.should.match(/must be a `number` type/)
 
       inst.cast({ field: '5' }).should.eql({ field: 5 })
+
+      err = await object({
+        port: number()
+          .strict()
+          .integer()
+      })
+      .validate({ port: 'asdad' })
+      .should.be.rejected
     })
 
     it('should handle custom validation', async function(){
