@@ -301,6 +301,7 @@ The `options` argument is an object hash containing any schema options you may w
 ```js
 Options = {
   strict: boolean = false;
+  abortEarly: boolean = false;
   stripUnknown: boolean = false;
   recursive: boolean = true;
   context: ?object;
