@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.18.2",
+  "version": "0.18.3",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
