@@ -16,14 +16,17 @@ let notEmpty = value => !isAbsent(value);
 function runValidations(validations, endEarly, value, path) {
   return endEarly
     ? Promise.all(validations)
-    : _.collectErrors(validations, value, path)
+    : _.collectErrors({ validations, value, path })
 }
 
 function extractTestParams(name, message, test, useCallback) {
   var opts = name;
 
   if (typeof message === 'function')
-    test = message, message = locale.default;
+    test = message, message = locale.default, name = null;
+
+  if (typeof name === 'function')
+    test = name, message = locale.default, name = null;
 
   if (typeof name === 'string' || name === null)
     opts = { name, test, message, useCallback, exclusive: false }

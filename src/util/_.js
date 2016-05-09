@@ -19,16 +19,21 @@ function settled(promises){
   return Promise.all(promises.map(settle))
 }
 
-function collectErrors(promises, value, path, errors = []){
+function collectErrors({ validations, value, path, errors = [], sort }){
   // unwrap aggregate errors
   errors = errors.inner && errors.inner.length
     ? errors.inner : [].concat(errors)
 
-  return settled(promises).then( results => {
-    errors = results.reduce(
-      (arr, r) => !r.fulfilled ? arr.concat(r.value) : arr, errors)
+  return settled(validations).then(results => {
+    let nestedErrors = results
+      .filter(r => !r.fulfilled)
+      .reduce((arr, r) => arr.concat(r.value), [])
 
-    if ( errors.length )
+    if (sort) nestedErrors.sort(sort)
+    //show parent errors after the nested ones: name.first, name
+    errors = nestedErrors.concat(errors)
+
+    if (errors.length)
       throw new ValidationError(errors, value, path)
   })
 }

@@ -72,7 +72,7 @@ inherits(ArraySchema, MixedSchema, {
           return value
         }
 
-        let result = value.map((item, key) => {
+        let validations = value.map((item, key) => {
           var path  = (options.path || '') + '[' + key + ']'
 
           // object._validate note for isStrict explanation
@@ -84,11 +84,11 @@ inherits(ArraySchema, MixedSchema, {
           return true
         })
 
-        result = endEarly
-          ? Promise.all(result).catch(scopeError(value))
-          : collectErrors(result, value, options.path, errors)
+        validations = endEarly
+          ? Promise.all(validations).catch(scopeError(value))
+          : collectErrors({ validations, value, errors, path: options.path })
 
-        return result.then(() => value)
+        return validations.then(() => value)
       })
   },
 

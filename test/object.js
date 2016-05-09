@@ -482,11 +482,28 @@ describe('Object types', function(){
         .then(function(err) {
           err.value.should.eql({ nest: { str: '' } })
           err.errors.length.should.equal(2)
-          err.errors.should.eql(['oops', 'nest.str is a required field'])
+          err.errors.should.eql(['nest.str is a required field', 'oops'])
         })
     ])
   })
 
+  it('should sort errors by insertion order', async () => {
+    var inst = object({
+      foo: string().test('foo', function() {
+        return new Promise(resolve => setTimeout(() => resolve(false), 10))
+      }),
+      bar: string().required()
+    })
+
+    let err = await inst.validate(
+      { foo: 'foo', bar: null },
+      { abortEarly: false }).should.rejected;
+
+    err.errors.should.eql([
+      'foo is invalid',
+      'bar is a required field'
+    ])
+  })
 
   it('should respect recursive', function(){
     var inst = object({

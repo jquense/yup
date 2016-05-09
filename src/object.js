@@ -6,6 +6,7 @@ var MixedSchema = require('./mixed')
   , split = require('property-expr').split
   , Ref = require('./util/reference')
   , c = require('case')
+  , sortByFields = require('./util/sortByFields')
   , {
     isObject
   , transform
@@ -21,11 +22,11 @@ c.type('altCamel', function(str) {
   return idx === 0 ? result : (str.substr(0, idx) + result)
 })
 
-
 let scopeError = value => err => {
       err.value = value
       throw err
     }
+
 
 module.exports = ObjectSchema
 
@@ -135,7 +136,7 @@ inherits(ObjectSchema, MixedSchema, {
           return value
         }
 
-        let result = this._nodes.map((key) => {
+        let validations = this._nodes.map((key) => {
           var path  = (opts.path ?  (opts.path + '.') : '') + key
             , field = this.fields[key]
             , innerOptions = { ...opts, key, path, parent: value };
@@ -153,11 +154,14 @@ inherits(ObjectSchema, MixedSchema, {
           return true
         })
 
-        result = endEarly
-          ? Promise.all(result).catch(scopeError(value))
-          : collectErrors(result, value, opts.path, errors)
+        validations = endEarly
+          ? Promise.all(validations).catch(scopeError(value))
+          : collectErrors({ validations, value, errors,
+              path: opts.path,
+              sort: sortByFields(this)
+            })
 
-        return result.then(() => value)
+        return validations.then(() => value)
       })
   },
 

@@ -138,7 +138,7 @@ describe('Array types', function(){
           err.value.should.eql([{ str: '' }])
 
           err.errors.length.should.equal(2)
-          err.errors.should.eql(['oops', '[0].str is a required field'])
+          err.errors.should.eql(['[0].str is a required field', 'oops' ])
         })
     ])
   })
