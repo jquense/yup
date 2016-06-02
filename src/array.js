@@ -3,7 +3,8 @@ var MixedSchema = require('./mixed')
   , Promise = require('universal-promise')
   , isAbsent = require('./util/isAbsent')
   , { mixed, array: locale } = require('./locale.js')
-  , { inherits, collectErrors } = require('./util/_');
+  , { inherits, collectErrors } = require('./util/_')
+  , SyncPromise = require('./util/syncPromise');
 
 let scopeError = value => err => {
   err.value = value
@@ -84,9 +85,21 @@ inherits(ArraySchema, MixedSchema, {
           return true
         })
 
-        validations = endEarly
-          ? Promise.all(validations).catch(scopeError(value))
-          : collectErrors({ validations, value, errors, path: options.path })
+        if (endEarly) {
+          validations = options.sync
+            ? SyncPromise.all(validations)
+            : Promise.all(validations)
+
+          validations = validations.catch(scopeError(value))
+        } else {
+          validations = collectErrors({
+            validations,
+            value,
+            errors,
+            path: options.path,
+            sync: options.sync
+          })
+        }
 
         return validations.then(() => value)
       })

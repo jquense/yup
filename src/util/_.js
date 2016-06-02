@@ -1,5 +1,6 @@
 var Promise = require('universal-promise')
-  , ValidationError = require('./validation-error');
+  , ValidationError = require('./validation-error')
+  , SyncPromise = require('./syncPromise');
 
 let toString = Object.prototype.toString
 
@@ -11,20 +12,22 @@ let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
 
 let isSchema = obj => obj && obj.__isYupSchema__
 
-function settled(promises){
+function settled(promises, sync){
   let settle = promise => promise.then(
     value => ({ fulfilled: true, value }),
     value => ({ fulfilled: false, value }))
 
-  return Promise.all(promises.map(settle))
+  return sync
+    ? SyncPromise.all(promises.map(settle))
+    : Promise.all(promises.map(settle))
 }
 
-function collectErrors({ validations, value, path, errors = [], sort }){
+function collectErrors({ validations, value, path, errors = [], sort, sync }){
   // unwrap aggregate errors
   errors = errors.inner && errors.inner.length
     ? errors.inner : [].concat(errors)
 
-  return settled(validations).then(results => {
+  return settled(validations, sync).then(results => {
     let nestedErrors = results
       .filter(r => !r.fulfilled)
       .reduce((arr, r) => arr.concat(r.value), [])

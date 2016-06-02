@@ -330,6 +330,19 @@ describe( 'Mixed Types ', function(){
     })
   })
 
+  it('should work synchronously', function(){
+    var inst = string().oneOf(['hello', '5'])
+
+    let valid = inst.isValid(5, { sync: true })
+    valid.should.equal(true)
+
+    let { error } = inst.strict().validate(5, { sync: true })
+    error.should.be.an.instanceOf(ValidationError)
+
+    ;({ error } = inst.strict().validate(5, { abortEarly: false, sync: true }))
+    error.errors.length.should.equal(2)
+  })
+
   describe('concat', () => {
     var next
     var inst = object({

@@ -12,7 +12,8 @@ var MixedSchema = require('./mixed')
   , transform
   , inherits
   , collectErrors
-  , isSchema, has } = require('./util/_');
+  , isSchema, has } = require('./util/_')
+  , SyncPromise = require('./util/syncPromise');
 
 
 c.type('altCamel', function(str) {
@@ -154,12 +155,19 @@ inherits(ObjectSchema, MixedSchema, {
           return true
         })
 
-        validations = endEarly
-          ? Promise.all(validations).catch(scopeError(value))
-          : collectErrors({ validations, value, errors,
+        if (endEarly) {
+          validations = opts.sync
+            ? SyncPromise.all(validations)
+            : Promise.all(validations)
+
+          validations = validations.catch(scopeError(value))
+        } else {
+          validations = collectErrors({ validations, value, errors,
               path: opts.path,
-              sort: sortByFields(this)
+              sort: sortByFields(this),
+              sync: opts.sync
             })
+        }
 
         return validations.then(() => value)
       })

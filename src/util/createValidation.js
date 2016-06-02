@@ -2,7 +2,8 @@
 var Promise = require('universal-promise')
   , ValidationError = require('./validation-error')
   , Ref = require('./reference')
-  , { transform } = require('./_');
+  , { transform } = require('./_')
+  , SyncPromise = require('./syncPromise');
 
 let formatError = ValidationError.formatError
 
@@ -42,11 +43,20 @@ module.exports = function createValidation(options) {
 
     var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
-    return new Promise((resolve, reject) => {
-      !useCallback
-        ? resolve(test.call(ctx, value))
-        : test.call(ctx, value, (err, valid) => err ? reject(err) : resolve(valid))
-    })
+    let promise
+
+    if (useCallback)
+      promise = new Promise((resolve, reject) => {
+        test.call(ctx, value, (err, valid) => err ? reject(err) : resolve(valid))
+      })
+
+    else if (options.sync)
+      promise = SyncPromise.resolve(resolve(test.call(ctx, value)))
+
+    else
+      promise = Promise.resolve(resolve(test.call(ctx, value)))
+
+    return promise
     .then(validOrError => {
       if (ValidationError.isError(validOrError))
         throw validOrError
