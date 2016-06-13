@@ -27,8 +27,8 @@ function NumberSchema(){
 inherits(NumberSchema, SchemaObject, {
 
   _typeCheck(v) {
-    if ( typeof v === 'number' && !(v !== +v) ) return true
-    if ( typeof v === 'object' && v instanceof Number ) return true
+    if (typeof v === 'number' && !(v !== +v)) return true
+    if (v instanceof Number && !isNaN(+v))  return true
 
     return false
   },
