@@ -88,6 +88,7 @@ describe('Object types', function(){
       error.errors[0].should.contain('nested.str')
 
       obj.arr[1] = 8
+      obj.nested.str = '123'
 
       await inst.isValid().should.eventually.equal(true),
 

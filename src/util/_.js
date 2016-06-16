@@ -119,9 +119,14 @@ function inherits(ctor, superCtor, spec) {
   assign(ctor.prototype, spec)
 }
 
+function isPromise(value) {
+  return value && typeof value.then === 'function'
+}
+
+
 module.exports = {
   inherits, uniq, has,
   assign, merge, transform,
   isSchema, isObject, isPlainObject, isDate,
-  settled, collectErrors
+  settled, collectErrors, isPromise
 }

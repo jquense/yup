@@ -8,15 +8,39 @@ var Promise = require('universal-promise')
   , cloneDeep = require('./util/clone')
   , createValidation = require('./util/createValidation')
   , BadSet = require('./util/set')
-  , Ref = require('./util/reference');
+  , Ref = require('./util/reference')
+  , ValidationError = require('./util/validation-error');
 
 let notEmpty = value => !isAbsent(value);
 
 
-function runValidations(validations, endEarly, value, path) {
-  return endEarly
-    ? Promise.all(validations)
-    : _.collectErrors({ validations, value, path })
+function runValidations(validations, endEarly, value, path, sync) {
+  const asyncValidations = validations.filter(_.isPromise)
+  const syncValidations = validations.filter(validation => !_.isPromise(validation))
+
+  if (sync && asyncValidations.length)
+    throw new Error('Cannot perform synchronous validation with async validators')
+
+  let errors = syncValidations.reduce((errors, validation) => {
+    return ValidationError.isError(validation)
+      ? errors.concat(validation)
+      : errors
+  }, [])
+
+  if (sync && endEarly)
+    return errors[0] || null
+
+  else if (sync)
+    return errors.length ? errors : null
+
+  else if (!endEarly)
+    return _.collectErrors({ validations: asyncValidations, value, path, errors })
+
+  else if (errors.length === 0)
+    return Promise.all(asyncValidations)
+
+  else
+    return Promise.reject(errors[0])
 }
 
 function extractTestParams(name, message, test, useCallback) {
@@ -162,7 +186,11 @@ SchemaType.prototype = {
 
     let schema = this.resolve(options)
 
-    return nodeify(schema._validate(value, options), cb)
+    let validationResult = schema._validate(value, options)
+
+    return options.sync
+      ? validationResult
+      : nodeify(validationResult, cb)
   },
 
   //-- tests
@@ -174,7 +202,7 @@ SchemaType.prototype = {
     isStrict = this._option('strict', options)
     endEarly = this._option('abortEarly', options)
 
-    let path = options.path
+    let { path, sync } = options
     let label = this._label
 
     if (!isStrict) {
@@ -193,14 +221,26 @@ SchemaType.prototype = {
     if (this._blacklistError)
       initialTests.push(this._blacklistError(validationParams));
 
-    return runValidations(initialTests, endEarly, value, path)
-      .then(() => runValidations(
-          this.tests.map(fn => fn(validationParams))
-        , endEarly
-        , value
-        , path
-      ))
-      .then(() => value)
+    let initialValidations = runValidations(initialTests, endEarly, value, path, true)
+
+    const getParamValidations = () => runValidations(
+        this.tests.map(fn => fn(validationParams))
+      , endEarly
+      , value
+      , path
+      , sync
+    )
+
+    if (!sync)
+      return runValidations(initialTests, endEarly, value, path)
+        .then(getParamValidations)
+        .then(() => value)
+
+    else if (initialValidations)
+      return { value, errors: initialValidations }
+
+    else
+      return { value, errors: getParamValidations() }
   },
 
 
@@ -208,15 +248,21 @@ SchemaType.prototype = {
     if (typeof options === 'function')
       cb = options, options = {}
 
-    return nodeify(this
-      .validate(value, options)
-      .then(() => true)
-      .catch(err => {
-        if ( err.name === 'ValidationError')
-          return false
+    let validationResult = this.validate(value, options)
 
-        throw err
-      }), cb)
+    if (options && options.sync)
+      return !validationResult.errors
+
+    else
+      return nodeify(
+        validationResult
+        .then(() => true)
+        .catch(err => {
+          if ( err.name === 'ValidationError')
+            return false
+
+          throw err
+        }), cb)
     },
 
   getDefault({ context, parent }) {
