@@ -8,15 +8,16 @@ var Promise = require('universal-promise')
   , cloneDeep = require('./util/clone')
   , createValidation = require('./util/createValidation')
   , BadSet = require('./util/set')
-  , Ref = require('./util/reference');
+  , Ref = require('./util/reference')
+  , SyncPromise = require('./util/syncPromise');
 
 let notEmpty = value => !isAbsent(value);
 
 
-function runValidations(validations, endEarly, value, path) {
+function runValidations(validations, endEarly, value, path, sync) {
   return endEarly
-    ? Promise.all(validations)
-    : _.collectErrors({ validations, value, path })
+    ? (sync ? SyncPromise.all(validations) : Promise.all(validations))
+    : _.collectErrors({ validations, value, path, sync })
 }
 
 function extractTestParams(name, message, test, useCallback) {
@@ -161,8 +162,11 @@ SchemaType.prototype = {
       cb = options, options = {}
 
     let schema = this.resolve(options)
+    let outputValue = schema._validate(value, options)
 
-    return nodeify(schema._validate(value, options), cb)
+    return (options && options.sync)
+      ? (options.__validating ? outputValue : outputValue.unwrap())
+      : nodeify(outputValue, cb)
   },
 
   //-- tests
@@ -174,7 +178,7 @@ SchemaType.prototype = {
     isStrict = this._option('strict', options)
     endEarly = this._option('abortEarly', options)
 
-    let path = options.path
+    let { path, sync } = options
     let label = this._label
 
     if (!isStrict) {
@@ -193,31 +197,37 @@ SchemaType.prototype = {
     if (this._blacklistError)
       initialTests.push(this._blacklistError(validationParams));
 
-    return runValidations(initialTests, endEarly, value, path)
+    return runValidations(initialTests, endEarly, value, path, sync)
       .then(() => runValidations(
           this.tests.map(fn => fn(validationParams))
         , endEarly
         , value
         , path
+        , sync
       ))
       .then(() => value)
   },
 
 
-  isValid(value, options, cb) {
+  isValid(value, options = {}, cb) {
     if (typeof options === 'function')
       cb = options, options = {}
 
-    return nodeify(this
-      .validate(value, options)
+    let schema = this.resolve(options)
+    let outputValue = schema
+      ._validate(value, options)
       .then(() => true)
       .catch(err => {
         if ( err.name === 'ValidationError')
           return false
 
         throw err
-      }), cb)
-    },
+      })
+
+    return (options && options.sync)
+      ? (outputValue.unwrap().value)
+      : nodeify(outputValue, cb)
+  },
 
   getDefault({ context, parent }) {
     return this._resolve(context, parent).default()

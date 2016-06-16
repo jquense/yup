@@ -81,6 +81,19 @@ describe('Object types', function(){
       }
     })
 
+    it('should work synchronously', function(){
+      let { error } = inst.validate(obj, { sync: true });
+
+      error.errors.length.should.equal(1)
+      error.errors[0].should.contain('nested.str')
+
+      obj.nested.str = '123'
+      obj.arr[1] = 8
+
+      ;({ error } = inst.validate(obj, { sync: true }))
+      error.errors[0].should.contain('arr[1]')
+    })
+
     it ('should run validations recursively', async () => {
       let error = await inst.validate(obj).should.be.rejected;
 
