@@ -1,3 +1,13 @@
+v0.19.0 - Fri, 24 Jun 2016 15:19:48 GMT
+---------------------------------------
+
+- [b0dd021](../../commit/b0dd021) [changed] Split integer(), remove transform
+- [758ac51](../../commit/758ac51) [added] string.ensure
+- [f2b0078](../../commit/f2b0078) [changed] Less aggressive type coercions
+- [ab94510](../../commit/ab94510) [fixed] boxed number allowed NaN
+
+
+
 v0.18.3 - Mon, 09 May 2016 15:50:47 GMT
 ---------------------------------------
 
