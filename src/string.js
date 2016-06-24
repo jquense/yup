@@ -88,6 +88,12 @@ inherits(StringSchema, MixedSchema, {
   },
 
   //-- transforms --
+  ensure() {
+    return this
+      .default('')
+      .transform(val => val === null ? '' : val)
+  },
+
   trim(msg) {
     msg = msg || locale.trim
 
