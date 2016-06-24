@@ -8,7 +8,7 @@ import reach from '../src/util/reach';
 
 let noop = function(){}
 
-describe.only( 'Mixed Types ', function(){
+describe( 'Mixed Types ', function(){
 
   it('should be immutable', function(){
     var inst = mixed(), next;
