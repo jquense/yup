@@ -1,4 +1,4 @@
-var { has } = require('./_')
+import has from 'lodash/has';
 
 module.exports = class BadSet {
 

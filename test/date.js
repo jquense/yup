@@ -1,11 +1,5 @@
-'use strict';
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/src/es6-extensions')
-  , { ref, date } = require('../src');
-
-chai.use(chaiAsPromised);
-chai.should();
+import Promise from 'promise/src/es6-extensions';
+import { ref, date } from '../src';
 
 function isValidDate(date){
   return date instanceof Date && !isNaN(date.getTime())
@@ -13,17 +7,20 @@ function isValidDate(date){
 
 describe('Date types', function(){
 
-  it('should CAST correctly', function(){
 
+  it('should CAST correctly', function(){
     var inst = date()
 
-    inst.cast(null).should.not.satisfy(isValidDate)
-    inst.cast('').should.not.satisfy(isValidDate)
-
-    inst.cast(new Date()).should.be.a('date')
     inst.cast(new Date()).should.be.a('date')
     inst.cast('jan 15 2014').should.eql(new Date(2014, 0, 15))
     inst.cast('2014-09-23T19:25:25Z').should.eql(new Date(1411500325000))
+  })
+
+  it('should return invalid date for failed casts', function(){
+    var inst = date()
+
+    inst.cast(null, { assert: false }).should.not.satisfy(isValidDate)
+    inst.cast('', { assert: false }).should.not.satisfy(isValidDate)
   })
 
   it('should type check', function(){

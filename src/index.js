@@ -1,12 +1,10 @@
-'use strict';
-var mixed = require('./mixed')
-  , bool = require('./boolean')
-  , Ref = require('./util/reference')
-  , Lazy = require('./util/lazy');
+import mixed from './mixed';
+import bool from './boolean';
+import Ref from './Reference';
+import Lazy from './Lazy';
+import isSchema from './util/isSchema';
 
-var isSchema = schema => schema && !!schema.__isYupSchema__;
-
-module.exports = {
+export default {
   mixed:   mixed,
   string:  require('./string'),
   number:  require('./number'),
@@ -18,7 +16,7 @@ module.exports = {
 
   reach: require('./util/reach'),
 
-  ValidationError: require('./util/validation-error'),
+  ValidationError: require('./ValidationError'),
   ref: (key, options) => new Ref(key, options),
   lazy: (fn) => new Lazy(fn),
 

@@ -15,14 +15,17 @@ describe('Boolean types', function(){
     var inst = bool();
 
     inst.cast('true').should.equal(true)
+    inst.cast('True').should.equal(true)
+    inst.cast('false').should.equal(false)
+    inst.cast('False').should.equal(false)
     inst.cast(1).should.equal(true)
     inst.cast(0).should.equal(false)
 
-    chai.expect(
-      inst.cast(null)).to.equal(false)
+    TestHelpers
+      .castAndShouldFail(inst, 'foo')
 
-    chai.expect(
-      inst.nullable().cast(null)).to.equal(null)
+    TestHelpers
+      .castAndShouldFail(inst, 'bar1')
   })
 
   it('should handle DEFAULT', function(){
@@ -39,6 +42,8 @@ describe('Boolean types', function(){
     inst.isType(false).should.equal(true)
     inst.isType('true').should.equal(false)
     inst.isType(NaN).should.equal(false)
+    inst.isType(new Number('foooo')).should.equal(false)
+
     inst.isType(34545).should.equal(false)
     inst.isType(new Boolean(false)).should.equal(true)
     chai.expect(
@@ -51,7 +56,7 @@ describe('Boolean types', function(){
     var inst = bool().required()
 
     return Promise.all([
-      bool().isValid(null).should.eventually.equal(true), //coerced to false
+      bool().isValid('1').should.eventually.equal(true),
 
       bool().strict().isValid(null).should.eventually.equal(false),
 

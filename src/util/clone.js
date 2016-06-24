@@ -2,17 +2,14 @@
 // Copyright (c) 2011, Yahoo Inc.
 // All rights reserved. https://github.com/hapijs/hoek/blob/master/LICENSE
 
-var isSchema = schema => schema && !!schema.__isYupSchema__;
+import isSchema from './isSchema';
 
-module.exports = function clone(obj, seen) {
+export default function clone(obj, seen) {
   var isFirst = !seen
     , isImmutable = isSchema(obj) && !isFirst
 
   if (typeof obj !== 'object' || obj === null || isImmutable)
     return obj;
-
-  // if (global.REPORT_CLONE && isFirst)
-  //   throw new Error() //console.log('clone')
 
   seen = seen || { orig: [], copy: [] };
 

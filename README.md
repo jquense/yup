@@ -633,7 +633,7 @@ transforms are run before validations and only applied when `strict` is `true`. 
 
 Transformations are useful for arbitrarily altering how the object is cast, __however, you should take care
 not to mutate the passed in value.__ Transforms are run sequentially so each `value` represents the
-current state of the cast, you can use the `orignalValue` param if you need to work on the raw initial value.
+current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```javascript
 var schema = yup.string().transform(function(currentValue, originalvalue){
@@ -671,6 +671,11 @@ var schema = yup.string();
 schema.isValid('hello') //=> true
 ```
 
+By default, the `cast` logic of `string` is to call `toString` on the value if it exists.
+empty values are not coerced (use `ensure()` to coerce empty values to empty strings).
+
+Failed casts return the input value.
+
 #### `string.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
@@ -702,6 +707,10 @@ Validates the value as an email address via a regex.
 
 Validates the value as a valid URL via a regex.
 
+#### `string.ensure(): Schema`
+
+Transforms `undefined` and `null` values to an empty string along with
+setting the `default` to an empty string.
 
 #### `string.trim(message: ?string): Schema`
 
@@ -710,11 +719,13 @@ Transforms string values by removing leading and trailing whitespace. If
 
 #### `string.lowercase(message: ?string): Schema`
 
-Transforms the string value to lowercase. If `strict()` is set it will only validate that the value is lowercase.
+Transforms the string value to lowercase. If `strict()` is set it
+will only validate that the value is lowercase.
 
 #### `string.uppercase(message: ?string): Schema`
 
-Transforms the string value to uppercase. If `strict()` is set it will only validate that the value is uppercase.
+Transforms the string value to uppercase. If `strict()` is set it
+will only validate that the value is uppercase.
 
 ### number
 
@@ -724,6 +735,10 @@ Define a number schema. Supports all the same methods as [`mixed`](#mixed).
 var schema = yup.number();
 schema.isValid(10) //=> true
 ```
+
+The default `cast` logic of `number` is: [`parseFloat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat).
+
+Failed casts return `NaN`.
 
 #### `number.min(limit: number | Ref, message: ?string): Schema`
 
@@ -745,13 +760,16 @@ Value must be a negative number.
 
 #### `number.integer(message: ?string): Schema`
 
-Transformation that coerces the value into an integer via truncation
-` value | 0`. If `strict()` is set it will only validate that the value is an integer.
+Validates that a number is an integer.
 
-#### `number.round(type: 'floor' | 'ceil' | 'round' = 'round'): Schema`
+#### `number.truncate(): Schema`
 
-Rounds the value by the specified method (defaults to 'round').
+Transformation that coerces the value to an integer by stripping off the digits
+to the right of the decimal point.
 
+#### `number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`
+
+Adjusts the value via the specified method of `Math` (defaults to 'round').
 
 ### boolean
 
@@ -772,6 +790,12 @@ Supports all the same methods as [`mixed`](#mixed).
 var schema = yup.date();
 schema.isValid(new Date) //=> true
 ```
+
+The default `cast` logic of `date` is pass the value to the `Date` constructor, failing that, it will attempt
+to parse the date as an ISO date string.
+
+Failed casts return an invalid Date.
+
 
 #### `date.min(limit: Date | string | Ref, message: ?string): Schema`
 
@@ -804,6 +828,10 @@ array().of(number())
 //or
 array(number())
 ```
+
+The default `cast` behavior for `array` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
+
+Failed casts return: `null`;
 
 #### `array.of(type: Schema): Schema`
 
@@ -876,6 +904,10 @@ object({
 })
 ```
 
+The default `cast` behavior for `object` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
+
+Failed casts return: `null`;
+
 
 #### `object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`
 
@@ -908,6 +940,8 @@ Transforms all object keys to camelCase
 #### `object.constantcase(): Schema`
 
 Transforms all object keys to CONSTANT_CASE.
+
+
 
 ## Extending Schema Types
 

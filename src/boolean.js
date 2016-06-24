@@ -1,8 +1,7 @@
-'use strict';
-var MixedSchema = require('./mixed')
-  , inherits = require('./util/_').inherits;
+import inherits from './util/inherits';
+import MixedSchema from './mixed';
 
-module.exports = BooleanSchema
+export default BooleanSchema
 
 function BooleanSchema(){
   if (!(this instanceof BooleanSchema))
@@ -12,15 +11,20 @@ function BooleanSchema(){
 
   this.withMutation(() => {
     this.transform(function(value) {
-      if ( this.isType(value) ) return value
-      return (/true|1/i).test(value)
+      if (!this.isType(value)) {
+        if (/^(true|1)$/i.test(value)) return true
+        if (/^(false|0)$/i.test(value)) return false
+      }
+      return value
     })
   })
 }
 
 inherits(BooleanSchema, MixedSchema, {
 
-  _typeCheck(v){
-    return (typeof v === 'boolean') || (typeof v === 'object' && v instanceof Boolean)
+  _typeCheck(v) {
+    if (v instanceof Boolean) v = v.valueOf();
+
+    return typeof v === 'boolean'
   }
 })

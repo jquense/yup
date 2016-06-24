@@ -1,20 +1,14 @@
-'use strict';
-/*global describe, it */
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , ValidationError = require('../src/util/validation-error')
-  , Promise = require('promise/src/es6-extensions')
-  , mixed = require('../src/mixed')
-  , object = require('../src/object')
-  , string = require('../src/string')
-  , reach = require('../src/util/reach');
 
-chai.use(chaiAsPromised);
-chai.should();
+import Promise from 'promise/src/es6-extensions';
+import mixed from '../src/mixed';
+import object from '../src/object';
+import string from '../src/string';
+import ValidationError from '../src/ValidationError';
+import reach from '../src/util/reach';
 
 let noop = function(){}
 
-describe( 'Mixed Types ', function(){
+describe.only( 'Mixed Types ', function(){
 
   it('should be immutable', function(){
     var inst = mixed(), next;
@@ -51,7 +45,7 @@ describe( 'Mixed Types ', function(){
 
     error = await inst.validate(5, { abortEarly: false }).should.be.rejected
 
-    chai.expect(error.type).to.not.exist
+    expect(error.type).to.not.exist
     error.message.should.equal('must be a string!')
     error.inner.length.should.equal(1)
   })
@@ -250,14 +244,14 @@ describe( 'Mixed Types ', function(){
         name: 'max',
         test() {
           this.path.should.equal('test')
-          this.parent.should.eql({ other: 5, test : 'hi' })
+          this.parent.should.eql({ other: 5, test: 'hi' })
           this.options.context.should.eql({ user: 'jason' })
           done()
         }
       })
     })
 
-    inst.validate({ other: 5, test : 'hi' }, { context: { user: 'jason' } })
+    inst.validate({ other: 5, test: 'hi' }, { context: { user: 'jason' } })
   })
 
   it('tests can return an error', function(){
@@ -320,11 +314,11 @@ describe( 'Mixed Types ', function(){
 
     inst.isValid(5, function(err, valid){
       valid.should.equal(true)
-      chai.expect(err).to.equal(null)
+      expect(err).to.equal(null)
 
       inst.strict().validate(5, function(err, value){
         err.should.be.an.instanceOf(ValidationError)
-        chai.expect(value).to.equal(undefined)
+        expect(value).to.equal(undefined)
         done()
       })
     })
@@ -349,7 +343,7 @@ describe( 'Mixed Types ', function(){
       }))
     })
 
-    it ('should have teh correct number of tests', () => {
+    it ('should have the correct number of tests', () => {
       reach(next, 'str').tests.length.should.equal(3) // presence, alt presence, and trim
     })
 
@@ -405,7 +399,7 @@ describe( 'Mixed Types ', function(){
   it('concat should maintain undefined defaults', function(){
     var inst = string().default('hi')
 
-    chai.expect(
+    expect(
       inst.concat(string().default(undefined)).default()).to.equal(undefined)
   })
 

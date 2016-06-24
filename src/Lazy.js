@@ -1,4 +1,4 @@
-var { isSchema } = require('./_')
+import isSchema from './util/isSchema';
 
 class Lazy {
   constructor(mapFn) {

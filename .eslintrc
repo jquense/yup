@@ -3,21 +3,24 @@
   "extends": "eslint:recommended",
   "globals": {
     "sinon": true,
-    "expect": true
+    "expect": true,
+    "TestHelpers": true,
   },
   "env": {
     "browser": true,
     "node": true,
-    "mocha": true
+    "mocha": true,
   },
   "rules": {
+    "eqeqeq": 0,
+    "no-loop-func": 0,
+    "comma-dangle": 0,
     "no-eval": 2,
     "strict": 0,
     "eol-last": 0,
     "dot-notation": [2, { "allowKeywords": true }],
     "semi": [0, "never"],
     "curly": 0,
-    "eqeqeq": [2, "allow-null"],
     "no-undef": 2,
     "quotes": [2, "single", "avoid-escape"],
     "no-trailing-spaces": 0,

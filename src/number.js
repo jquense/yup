@@ -1,36 +1,39 @@
-'use strict';
-var SchemaObject = require('./mixed')
-  , locale = require('./locale.js').number
-  , isAbsent = require('./util/isAbsent')
-  , { isDate, inherits } = require('./util/_');
+import inherits from './util/inherits';
+import MixedSchema from './mixed';
+import { number as locale} from './locale.js';
+import isAbsent from './util/isAbsent';
 
 module.exports = NumberSchema
 
+let isNaN = value => value != +value
+
 let isInteger = val => isAbsent(val) || val === (val | 0)
 
-function NumberSchema(){
+function NumberSchema() {
   if ( !(this instanceof NumberSchema))
     return new NumberSchema()
 
-  SchemaObject.call(this, { type: 'number' })
+  MixedSchema.call(this, { type: 'number' })
 
   this.withMutation(() => {
     this.transform(function(value) {
       if (this.isType(value)) return value
-      if (typeof value === 'boolean') return value ? 1 : 0
 
-      return isDate(value) ? +value : parseFloat(value)
+      let parsed = parseFloat(value);
+      if (this.isType(parsed)) return parsed
+
+      return NaN;
     })
   })
 }
 
-inherits(NumberSchema, SchemaObject, {
+inherits(NumberSchema, MixedSchema, {
 
-  _typeCheck(v) {
-    if (typeof v === 'number' && !(v !== +v)) return true
-    if (v instanceof Number && !isNaN(+v))  return true
+  _typeCheck(value) {
+    if (value instanceof Number)
+      value = value.valueOf();
 
-    return false
+    return typeof value === 'number' && !isNaN(value)
   },
 
   min(min, msg) {

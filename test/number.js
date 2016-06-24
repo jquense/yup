@@ -1,40 +1,68 @@
-'use strict';
-/* global describe, it */
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/src/es6-extensions')
-  , number = require('../src/number');
+import Promise from 'promise/src/es6-extensions';
+import number from '../src/number';
 
-chai.use(chaiAsPromised);
-chai.should();
+describe('Number types', function() {
 
-describe('Number types', function(){
+  it('is newable', () => {
+    let schema = new number();
+    schema.integer().required()
+  })
 
-  it('should CAST correctly', function(){
+  it('is extensible', () => {
+    class MyNumber extends number {
+      foo() {
+        return this;
+      }
+    }
 
-    var inst = number(), date = new Date()
+    new MyNumber().foo().integer().required()
+  })
 
-    chai.expect(
-      inst.cast(null)).to.eql(NaN)
+  describe('casting', ()=> {
+    let schema = number();
 
-    inst.cast('5').should.equal(5)
-    inst.cast('').should.eql(NaN)
-    inst.cast(3).should.equal(3)
-    inst.cast(false).should.equal(0)
-    inst.cast(true).should.equal(1)
-    inst.cast(date).should.equal(date.getTime())
+    TestHelpers.castAll(schema, {
+      valid: [
+        ['5', 5],
+        [3, 3],
+        //[new Number(5), 5],
+        [' 5.656 ', 5.656],
+      ],
+      invalid: [
+        '',
+        false,
+        true,
+        new Date(),
+        new Number('foo')
+      ]
+    })
 
-    inst.integer().cast(45.55).should.equal(45)
-    inst.round('Floor').cast(45.99999).should.equal(45)
-    inst.round('ceIl').cast(45.1111).should.equal(46)
-    inst.round().cast(45.444444).should.equal(45)
+    it('should round', () => {
+      schema.round('floor').cast(45.99999).should.equal(45)
+      schema.round('ceIl').cast(45.1111).should.equal(46)
+      schema.round().cast(45.444444).should.equal(45)
 
-    ;(function(){ inst.round('fasf') }).should.throw(TypeError)
+      expect(
+        schema.nullable()
+          .integer()
+          .round()
+          .cast(null)
+      ).to.equal(null)
 
-    chai.expect(inst.nullable()
-      .integer()
-      .round()
-      .cast(null)).to.equal(null)
+      ;(function(){ schema.round('fasf') }).should.throw(TypeError)
+    })
+
+    it('should truncate', () => {
+      schema.truncate().cast(45.55).should.equal(45)
+    })
+
+    it ('should return NaN for failed casts', () => {
+      expect(
+        number().cast('asfasf', { assert: false })).to.eql(NaN)
+
+      expect(
+        number().cast(null, { assert: false })).to.eql(NaN)
+    })
   })
 
   it('should handle DEFAULT', function(){
@@ -49,6 +77,7 @@ describe('Number types', function(){
 
     inst.isType(5).should.equal(true)
     inst.isType(new Number(5)).should.equal(true)
+    inst.isType(new Number('foo')).should.equal(false)
     inst.isType(false).should.equal(false)
     inst.isType(null).should.equal(false)
     inst.isType(NaN).should.equal(false)
@@ -73,40 +102,69 @@ describe('Number types', function(){
     ])
   })
 
-  it('should check MIN correctly', function(){
-    var v = number().min(5);
+  describe('min', () => {
+    var schema = number().min(5);
+
+    TestHelpers.validateAll(schema, {
+      valid: [
+        7,
+        35738787838,
+        [null, schema.nullable()]
+      ],
+      invalid: [
+        2,
+        null,
+        [14, schema.min(10).min(15)]
+      ]
+    })
+  })
+
+  describe('max', () => {
+    var schema = number().max(5);
+
+    TestHelpers.validateAll(schema, {
+      valid: [
+        4,
+        -5222,
+        [null, schema.nullable()]
+      ],
+      invalid: [
+        10,
+        null,
+        [16, schema.max(20).max(15)]
+      ]
+    })
+  })
+
+  describe('integer', ()=> {
+    TestHelpers.validateAll(
+      number().integer(),
+      {
+        valid: [
+          4,
+          -5222,
+        ],
+        invalid: [
+          10.53,
+          0.1 * 0.2,
+          -34512535.626,
+          3.12312e+51,
+          new Date(),
+        ]
+      }
+    )
+  })
+  it('should check integer', function(){
+    var v = number().positive();
 
     return Promise.all([
       v.isValid(7).should.eventually.equal(true),
-      v.isValid(2).should.eventually.equal(false),
-      v.isValid(35738787838).should.eventually.equal(true),
 
-      v.min(10).min(15).isValid(14).should.eventually.equal(false),
+      v.isValid(0).should.eventually.equal(true),
 
-      v.isValid(new Date).should.eventually.equal(true),
-
-      v.isValid(null).should.eventually.equal(false), // -> NaN fails type check
-
-      v.nullable().isValid(null).should.eventually.equal(true),
-    ])
-  })
-
-  it('should check MAX correctly', function(){
-    var v = number().max(5);
-
-    return Promise.all([
-      v.isValid(4).should.eventually.equal(true),
-      v.isValid(10).should.eventually.equal(false),
-      v.isValid(-5222).should.eventually.equal(true),
-
-      v.isValid(false).should.eventually.equal(true),
-      v.isValid(new Date).should.eventually.equal(false),
-
-      v.max(10).max(15).isValid(16).should.eventually.equal(false),
-
-      v.isValid(null).should.eventually.equal(false), // null -> NaN fails type check
-
-      v.nullable().isValid(null).should.eventually.equal(true),
+      v.validate(-4).should.be.rejected.then(null, function(err){
+        err.errors[0].should.contain('this must be a positive number')
+      })
     ])
   })
 

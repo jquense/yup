@@ -1,18 +1,13 @@
-'use strict';
-var MixedSchema = require('./mixed')
-  , Promise = require('universal-promise')
-  , isAbsent = require('./util/isAbsent')
-  , { mixed, array: locale } = require('./locale.js')
-  , { inherits, collectErrors } = require('./util/_');
+import inherits from './util/inherits';
+import isAbsent from './util/isAbsent';
+import MixedSchema from './mixed';
+import { mixed, array as locale } from './locale.js';
+import runValidations, { propagateErrors } from './util/runValidations';
 
-let scopeError = value => err => {
-  err.value = value
-  throw err
-}
 
 let hasLength = value => !isAbsent(value) && value.length > 0;
 
-module.exports = ArraySchema
+export default ArraySchema
 
 function ArraySchema(type) {
   if (!(this instanceof ArraySchema))
@@ -54,29 +49,31 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _validate(_value, options = {}) {
-    var errors = []
-      , subType, endEarly, recursive;
+    let errors = []
+    let path = options.path
+    let subType   = this._subType
+    let endEarly  = this._option('abortEarly', options)
+    let recursive = this._option('recursive', options)
 
-    subType   = this._subType
-    endEarly  = this._option('abortEarly', options)
-    recursive = this._option('recursive', options)
-
-    return MixedSchema.prototype._validate.call(this, _value, options)
-      .catch(endEarly ? null : err => {
-        errors = err
-        return err.value
-      })
+    return MixedSchema.prototype._validate
+      .call(this, _value, options)
+      .catch(propagateErrors(endEarly, errors))
       .then((value) => {
         if (!recursive || !subType || !this._typeCheck(value) ) {
           if (errors.length) throw errors[0]
           return value
         }
 
-        let validations = value.map((item, key) => {
-          var path  = (options.path || '') + '[' + key + ']'
+        let validations = value.map((item, idx) => {
+          var path  = (options.path || '') + '[' + idx + ']'
 
           // object._validate note for isStrict explanation
-          var innerOptions = { ...options, path, key, strict: true, parent: value };
+          var innerOptions = {
+            ...options,
+            path,
+            strict: true,
+            parent: value
+          };
 
           if (subType.validate)
             return subType.validate(item, innerOptions)
@@ -84,11 +81,13 @@ inherits(ArraySchema, MixedSchema, {
           return true
         })
 
-        validations = endEarly
-          ? Promise.all(validations).catch(scopeError(value))
-          : collectErrors({ validations, value, errors, path: options.path })
-
-        return validations.then(() => value)
+        return runValidations({
+          path,
+          value,
+          errors,
+          endEarly,
+          validations
+        })
       })
   },
 
@@ -137,8 +136,8 @@ inherits(ArraySchema, MixedSchema, {
 
   ensure() {
     return this
-      .default([])
-      .transform(val => val == null ? [] : [].concat(val))
+      .default(() => [])
+      .transform(val => val === null ? [] : [].concat(val))
   },
 
   compact(rejector){

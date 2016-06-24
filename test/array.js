@@ -1,15 +1,8 @@
-'use strict';
-/* global describe, it */
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/src/es6-extensions')
-  , string = require('../src/string')
-  , number = require('../src/number')
-  , object = require('../src/object')
-  , array = require('../src/array');
-
-chai.use(chaiAsPromised);
-chai.should();
+import Promise from 'promise/src/es6-extensions'
+import string from '../src/string'
+import number from '../src/number'
+import object from '../src/object'
+import array from '../src/array'
 
 describe('Array types', function(){
 
@@ -22,16 +15,16 @@ describe('Array types', function(){
 
     it ('should return null for failed casts', () => {
       expect(
-        array().cast('asfasf')).to.equal(null)
+        array().cast('asfasf', { assert: false })).to.equal(null)
 
       expect(
-        array().cast(null)).to.equal(null)
+        array().cast(null, { assert: false })).to.equal(null)
     })
 
     it ('should recursively cast fields', () => {
       array().of(number())
-        .cast(['4', 5, false])
-        .should.eql([4, 5, 0])
+        .cast(['4', '5'])
+        .should.eql([4, 5])
 
       array().of(string())
         .cast(['4', 5, false])
@@ -126,14 +119,14 @@ describe('Array types', function(){
         .test('name', 'oops', function(){ return false })
 
     return Promise.all([
-      inst.validate([{ str: null }]).should.be.rejected
+      inst.validate([{ str: '' }]).should.be.rejected
         .then(function(err){
           err.value.should.eql([{ str: '' }])
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
         }),
 
-      inst.validate([{ str: null }], { abortEarly: false }).should.be.rejected
+      inst.validate([{ str: '' }], { abortEarly: false }).should.be.rejected
         .then(function(err) {
           err.value.should.eql([{ str: '' }])
 

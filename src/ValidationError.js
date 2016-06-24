@@ -1,5 +1,5 @@
-'use strict';
-var strReg = /\$\{\s*(\w+)\s*\}/g;
+
+let strReg = /\$\{\s*(\w+)\s*\}/g;
 
 let replace = str =>
   params => str.replace(strReg, (_, key) => params[key] || '')

@@ -1,23 +1,18 @@
-'use strict';
+import typeOf from 'type-name';
+import has from 'lodash/has';
 
-var Promise = require('universal-promise')
-  , Condition   = require('./util/condition')
-  , locale = require('./locale.js').mixed
-  , _ = require('./util/_')
-  , isAbsent = require('./util/isAbsent')
-  , cloneDeep = require('./util/clone')
-  , createValidation = require('./util/createValidation')
-  , BadSet = require('./util/set')
-  , Ref = require('./util/reference');
+import { mixed as locale } from './locale';
+import Condition from './Condition';
+import runValidations from './util/runValidations';
+import merge from './util/merge';
+import isAbsent from './util/isAbsent';
+import cloneDeep from './util/clone';
+import createValidation from './util/createValidation';
+import BadSet from './util/set';
+import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
 
-
-function runValidations(validations, endEarly, value, path) {
-  return endEarly
-    ? Promise.all(validations)
-    : _.collectErrors({ validations, value, path })
-}
 
 function extractTestParams(name, message, test, useCallback) {
   var opts = name;
@@ -56,7 +51,7 @@ function SchemaType(options = {}){
     this.typeError(locale.notType)
   })
 
-  if (_.has(options, 'default'))
+  if (has(options, 'default'))
     this._defaultDefault = options.default
 
   this._type = options.type || 'mixed'
@@ -104,10 +99,10 @@ SchemaType.prototype = {
     if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
     var cloned = this.clone()
-    var next = _.merge(this.clone(), schema.clone())
+    var next = merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
-    if (schema._default === undefined && _.has(this, '_default'))
+    if (schema._default === undefined && has(this, '_default'))
       next._default = schema._default
 
     next.tests = cloned.tests;
@@ -141,7 +136,16 @@ SchemaType.prototype = {
   cast(value, opts = {}) {
     let schema = this.resolve(opts)
 
-    return schema._cast(value, opts)
+    let result = schema._cast(value, opts);
+
+    if (opts.assert !== false && !this.isType(result)) {
+      throw new TypeError(
+        `Expected ${opts.path || 'field'} to be type: "${this._type}". ` +
+        `Got "${typeOf(value)}" instead.`
+      );
+    }
+
+    return result;
   },
 
   _cast(_value) {
@@ -149,7 +153,7 @@ SchemaType.prototype = {
       : this.transforms.reduce(
           (value, transform) => transform.call(this, value, _value), _value)
 
-    if (value === undefined && (_.has(this, '_default'))) {
+    if (value === undefined && (has(this, '_default'))) {
       value = this.default()
     }
 
@@ -178,7 +182,7 @@ SchemaType.prototype = {
     let label = this._label
 
     if (!isStrict) {
-      value = this._cast(value, options, options)
+      value = this._cast(value, { assert: false, ...options })
     }
     // value is cast, we can check if it meets type requirements
     let validationParams = { value, path, schema: this, options, label }
@@ -193,14 +197,13 @@ SchemaType.prototype = {
     if (this._blacklistError)
       initialTests.push(this._blacklistError(validationParams));
 
-    return runValidations(initialTests, endEarly, value, path)
-      .then(() => runValidations(
-          this.tests.map(fn => fn(validationParams))
-        , endEarly
-        , value
-        , path
-      ))
-      .then(() => value)
+    return runValidations({ validations: initialTests, endEarly, value, path })
+      .then(value => runValidations({
+        path,
+        value,
+        endEarly,
+        validations: this.tests.map(fn => fn(validationParams)),
+      }))
   },
 
 
@@ -225,7 +228,7 @@ SchemaType.prototype = {
 
   default(def) {
     if (arguments.length === 0) {
-      var dflt = _.has(this, '_default') ? this._default : this._defaultDefault
+      var dflt = has(this, '_default') ? this._default : this._defaultDefault
       return typeof dflt === 'function'
         ? dflt.call(this) : cloneDeep(dflt)
     }
@@ -400,7 +403,7 @@ SchemaType.prototype = {
   },
 
   _option(key, overrides){
-    return _.has(overrides, key)
+    return has(overrides, key)
       ? overrides[key] : this._options[key]
   },
 
@@ -417,26 +420,22 @@ SchemaType.prototype = {
 }
 
 
-var aliases = {
+let aliases = {
   oneOf: ['equals', 'is'],
   notOneOf: ['not', 'nope']
 }
 
-
-for (var method in aliases) if ( _.has(aliases, method) )
-  aliases[method].forEach(
-    alias => SchemaType.prototype[alias] = SchemaType.prototype[method]) //eslint-disable-line no-loop-func
-
+Object.keys(aliases).forEach(method => {
+  aliases[method].forEach(alias =>
+    SchemaType.prototype[alias] = SchemaType.prototype[method]
+  )
+})
 
 function nodeify(promise, cb){
   if(typeof cb !== 'function') return promise
 
-  promise.then(val => cb(null, val), err => cb(err))
+  promise.then(
+    val => cb(null, val),
+    err => cb(err)
+  )
 }
-
-// [{ value, exclude }]
-
-// values.every(({ value, exclude }) => {
-//   var isEql = eql(value, otherval)
-//   return (exclude && !isEql) || isEql
-// })

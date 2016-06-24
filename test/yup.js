@@ -1,16 +1,10 @@
-'use strict';
-/*global describe, it */
-var Promise = require('promise/src/es6-extensions')
-  , chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , reach = require('../src/util/reach')
-  , BadSet = require('../src/util/set')
-  , { object, array, string, lazy, number } = require('../src')
-  , _ = require('../src/util/_');
+import Promise from 'promise/src/es6-extensions';
+import reach from '../src/util/reach';
+import BadSet from '../src/util/set';
+import merge from '../src/util/merge';
+import { settled } from '../src/util/runValidations';
 
-chai.use(chaiAsPromised);
-
-chai.should();
+import { object, array, string, lazy, number } from '../src';
 
 describe('Yup', function(){
 
@@ -18,18 +12,10 @@ describe('Yup', function(){
     require('../lib')
   })
 
-  it('should uniq', function(){
-    _.uniq([1, 1, 2, 3, 4, 3], function(i){ return i})
-      .should.eql([1, 2, 3, 4])
-
-    _.uniq([{ a: 1}, { a: 2}, { a: 3}, { a: 1}], function(i){ return i.a})
-      .should.deep.eql([{ a: 1}, { a: 2}, { a: 3}])
-  })
-
   it('should do settled', function(){
     return Promise.all([
 
-      _.settled([Promise.resolve('hi'), Promise.reject('error')]).should.be.fulfilled
+      settled([Promise.resolve('hi'), Promise.reject('error')]).should.be.fulfilled
         .then(function (results) {
           results.length.should.equal(2)
           results[0].fulfilled.should.equal(true)
@@ -42,10 +28,9 @@ describe('Yup', function(){
 
   it('should merge', function(){
     var a = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5} }
-
     var b = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5}, g: null }
 
-    _.merge(a, b).should.deep.eql({
+    merge(a, b).should.deep.eql({
       a: 4,
       b: 'hello',
       c: [1, 2, 3, 4, 5, 3],

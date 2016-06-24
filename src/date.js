@@ -1,14 +1,15 @@
-'use strict';
-var MixedSchema = require('./mixed')
-  , isoParse = require('./util/isodate')
-  , locale = require('./locale.js').date
-  , isAbsent = require('./util/isAbsent')
-  , Ref = require('./util/reference')
-  , { isDate, inherits } = require('./util/_');
+import MixedSchema from './mixed';
+import inherits from './util/inherits';
+import isoParse from './util/isodate';
+import { date as locale } from './locale.js';
+import isAbsent from './util/isAbsent';
+import Ref from './Reference';
 
 let invalidDate = new Date('')
 
-module.exports = DateSchema
+let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
+
+export default DateSchema
 
 function DateSchema(){
   if ( !(this instanceof DateSchema)) return new DateSchema()

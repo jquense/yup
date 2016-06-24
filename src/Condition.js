@@ -1,7 +1,5 @@
-'use strict';
-var { transform, has, isSchema } = require('./_')
-
-module.exports = Conditional
+import has from 'lodash/has';
+import isSchema from './util/isSchema';
 
 class Conditional {
 
@@ -18,8 +16,9 @@ class Conditional {
         throw new TypeError('`is:` is required for `when()` conditions')
 
       if (!options.then && !options.otherwise)
-        throw new TypeError('either `then:` or `otherwise:` is required for `when()` conditions')
-
+        throw new TypeError(
+          'either `then:` or `otherwise:` is required for `when()` conditions'
+        )
 
       let isFn = typeof is === 'function'
         ? is : ((...values) => values.every(value => value === is))
@@ -47,4 +46,4 @@ class Conditional {
   }
 }
 
-module.exports = Conditional;
+export default Conditional;

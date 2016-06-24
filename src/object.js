@@ -1,42 +1,46 @@
-'use strict';
-var MixedSchema = require('./mixed')
-  , Promise = require('universal-promise')
-  , toposort = require('toposort')
-  , locale = require('./locale.js').object
-  , split = require('property-expr').split
-  , Ref = require('./util/reference')
-  , c = require('case')
-  , sortByFields = require('./util/sortByFields')
-  , {
-    isObject
-  , transform
-  , inherits
-  , collectErrors
-  , isSchema, has } = require('./util/_');
+import changeCase from 'case';
+import has from 'lodash/has';
+import omit from 'lodash/omit';
+import mapKeys from 'lodash/mapKeys';
+import transform from 'lodash/transform';
 
+import MixedSchema from './mixed';
+import { object as locale } from './locale.js';
+import sortFields from './util/sortFields';
+import sortByKeyOrder from './util/sortByKeyOrder';
+import inherits from './util/inherits';
+import runValidations, { propagateErrors } from './util/runValidations';
 
-c.type('altCamel', function(str) {
-  let result = c.camel(str)
+let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
+
+function unknown(ctx, value) {
+  var known = Object.keys(ctx.fields)
+  return Object.keys(value)
+    .filter(key => known.indexOf(key) === -1)
+}
+
+/**
+ * maintain "private" fields
+ * `"__FOO_BAR"` becomes `"__fooBar"` not `"fooBar"`
+ */
+function camelize(str) {
+  let result = changeCase.camel(str)
     , idx = str.search(/[^_]/)
 
   return idx === 0 ? result : (str.substr(0, idx) + result)
-})
-
-let scopeError = value => err => {
-      err.value = value
-      throw err
-    }
-
+}
 
 module.exports = ObjectSchema
 
 function ObjectSchema(spec) {
-  if ( !(this instanceof ObjectSchema))
-      return new ObjectSchema(spec)
+  if (!(this instanceof ObjectSchema))
+    return new ObjectSchema(spec)
 
   MixedSchema.call(this, { type: 'object', default() {
       var dft = transform(this._nodes, (obj, key) => {
-        obj[key] = this.fields[key].default ? this.fields[key].default() : undefined
+        obj[key] = this.fields[key].default
+          ? this.fields[key].default()
+          : undefined
       }, {})
 
       return Object.keys(dft).length === 0 ? undefined : dft
@@ -60,8 +64,9 @@ function ObjectSchema(spec) {
       return null
     })
 
-    if (spec)
+    if (spec) {
       this.shape(spec);
+    }
   })
 }
 
@@ -86,15 +91,18 @@ inherits(ObjectSchema, MixedSchema, {
       , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
       , props  = this._nodes.concat(extra);
 
-    let innerOptions = { ...opts, parent: {}, __validating: false };
+    let innerOptions = {
+      ...opts,
+      parent: {}, // is filled during the transform below
+      __validating: false,
+    };
 
-    value = transform(props, function(obj, prop) {
+    value = transform(props, (obj, prop) => {
       let field = fields[prop]
       let exists = has(value, prop);
 
       if (field) {
         let fieldValue;
-
         let strict = field._options && field._options.strict;
 
         if (field._strip === true)
@@ -126,20 +134,17 @@ inherits(ObjectSchema, MixedSchema, {
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
-      .catch(endEarly ? null : err => {
-        errors.push(err)
-        return err.value
-      })
+      .catch(propagateErrors(endEarly, errors))
       .then(value => {
         if (!recursive || !isObject(value)) { // only iterate though actual objects
           if (errors.length) throw errors[0]
           return value
         }
 
-        let validations = this._nodes.map((key) => {
+        let validations = this._nodes.map(key => {
           var path  = (opts.path ?  (opts.path + '.') : '') + key
             , field = this.fields[key]
-            , innerOptions = { ...opts, key, path, parent: value };
+            , innerOptions = { ...opts, path, parent: value };
 
           if (field) {
             // inner fields are always strict:
@@ -154,14 +159,14 @@ inherits(ObjectSchema, MixedSchema, {
           return true
         })
 
-        validations = endEarly
-          ? Promise.all(validations).catch(scopeError(value))
-          : collectErrors({ validations, value, errors,
-              path: opts.path,
-              sort: sortByFields(this)
-            })
-
-        return validations.then(() => value)
+        return runValidations({
+          validations,
+          value,
+          errors,
+          endEarly,
+          path: opts.path,
+          sort: sortByKeyOrder(this.fields)
+        })
       })
   },
 
@@ -182,9 +187,11 @@ inherits(ObjectSchema, MixedSchema, {
 
     next.fields = fields
 
-    if (excludes.length)
-      next._excludedEdges = next._excludedEdges.concat(
-        excludes.map(v => `${v[0]}-${v[1]}`)) // 'node-othernode'
+    if (excludes.length) {
+      let keys = excludes.map(([first, second]) => `${first}-${second}`);
+
+      next._excludedEdges = next._excludedEdges.concat(keys)
+    }
 
     next._nodes = sortFields(fields, next._excludedEdges)
 
@@ -192,17 +199,18 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   from(from, to, alias) {
-    return this.transform( obj => {
+    return this.transform(obj => {
       var newObj = obj;
 
       if (obj == null)
         return obj
 
       if (has(obj, from)) {
-        newObj = transform(obj, (o, val, key) => key !== from && (o[key] = val), {})
+        newObj = omit(obj, from);
         newObj[to] = obj[from]
 
-        if(alias) newObj[from] = obj[from]
+        if (alias)
+          newObj[from] = obj[from]
       }
 
       return newObj
@@ -218,7 +226,11 @@ inherits(ObjectSchema, MixedSchema, {
       exclusive: true,
       message: message,
       test(value) {
-        return value == null || !noAllow || unknown(this.schema, value).length === 0
+        return (
+          value == null ||
+          !noAllow ||
+          unknown(this.schema, value).length === 0
+        )
       }
     })
 
@@ -228,59 +240,18 @@ inherits(ObjectSchema, MixedSchema, {
     return next
   },
 
-  camelcase(){
-    return this.transform(obj => obj == null ? obj
-      : transform(obj, (newobj, val, key ) => newobj[c.altCamel(key)] = val))
+  camelcase() {
+    return this.transform(obj =>
+      obj && mapKeys(obj, (_, key) => camelize(key))
+    )
   },
 
-  constantcase(){
-    return this.transform( obj => obj == null ? obj
-      : transform(obj, (newobj, val, key ) => newobj[c.constant(key)] = val))
-  }
+  constantcase() {
+    return this.transform(obj =>
+      obj && mapKeys(obj, (_, key) => changeCase.constant(key))
+    )
+  },
 })
 
-function unknown(ctx, value) {
-  var known = Object.keys(ctx.fields)
-  return Object.keys(value)
-    .filter(key => known.indexOf(key) === -1)
-}
-
-// ugly optimization avoiding a clone. clears default for recursive
-// cast and resets it below;
-// function tempClearDefault(schema, fn) {
-//   let hasDflt = has(schema, '_default')
-//     , dflt = schema._default;
-//
-//   fn(schema)
-//
-//   if (hasDflt) schema.default(dflt)
-//   else delete schema._default
-// }
-
-function sortFields(fields, excludes = []){
-  var edges = [], nodes = []
-
-  for (var key in fields) if (has(fields, key)) {
-    let value = fields[key];
-
-    if (!~nodes.indexOf(key))
-      nodes.push(key)
-
-    let addNode = depPath => {   //eslint-disable-line no-loop-func
-      var node = split(depPath)[0]
-
-      if (!~nodes.indexOf(node))
-        nodes.push(node)
-
-      if (!~excludes.indexOf(`${key}-${node}`))
-        edges.push([key, node])
-    }
-
-    if (Ref.isRef(value) && !value.isContext)
-      addNode(value.path)
-    else if (isSchema(value) && value._deps)
-      value._deps.forEach(addNode)
-  }
-
-  return toposort.array(nodes, edges).reverse()
-}
+ObjectSchema.prototype.camelCase = ObjectSchema.prototype.camelcase;
+ObjectSchema.prototype.constantCase = ObjectSchema.prototype.constantcase;

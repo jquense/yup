@@ -1,16 +1,9 @@
-'use strict';
-/*global describe, it */
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/src/es6-extensions')
-  , {
-      mixed, string, date, number
-    , bool, array, object, ref, lazy, reach
-  } = require('../src');
 
-chai.use(chaiAsPromised);
-chai.should();
-
+import Promise from 'promise/src/es6-extensions';
+import {
+    mixed, string, date, number
+  , bool, array, object, ref, lazy, reach
+} from '../src';
 
 describe('Object types', function(){
 
@@ -24,15 +17,15 @@ describe('Object types', function(){
     })
 
     it ('should return null for failed casts', () => {
-      chai.expect(
-        object().cast('dfhdfh')).to.equal(null)
+      expect(
+        object().cast('dfhdfh', { assert: false })).to.equal(null)
     })
 
     it ('should recursively cast fields', () => {
       var obj = {
         num: '5',
         str: 'hello',
-        arr: ['4', 5, false],
+        arr: ['4', 5],
         dte: '2014-09-23T19:25:25Z',
         nested: { str: 5 },
         arrNested: [{ num: 5 }, { num: '5' }]
@@ -51,7 +44,7 @@ describe('Object types', function(){
       .cast(obj).should.eql({
         num: 5,
         str: 'hello',
-        arr: [4, 5, 0],
+        arr: [4, 5],
         dte: new Date(1411500325000),
         nested: { str: '5' },
         arrNested: [{ num: 5 }, { num: 5 }]
@@ -74,14 +67,14 @@ describe('Object types', function(){
       obj = {
         num: '4',
         str: 'hello',
-        arr: ['4', 5, false],
+        arr: ['4', 5, 6],
         dte: '2014-09-23T19:25:25Z',
         nested: { str: 5 },
         arrNested: [{ num: 5 }, { num: '2' }]
       }
     })
 
-    it ('should run validations recursively', async () => {
+    it('should run validations recursively', async () => {
       let error = await inst.validate(obj).should.be.rejected;
 
       error.errors.length.should.equal(1)
@@ -468,7 +461,7 @@ describe('Object types', function(){
 
     return Promise.all([
       inst
-        .validate({ nest: { str: null } }).should.be.rejected
+        .validate({ nest: { str: '' } }).should.be.rejected
         .then(function(err) {
           err.value.should.eql({ nest: { str: '' }  })
           err.errors.length.should.equal(1)
@@ -478,7 +471,11 @@ describe('Object types', function(){
         }),
 
       inst
-        .validate({ nest: { str: null } }, { abortEarly: false }).should.be.rejected
+        .validate(
+          { nest: { str: '' } },
+          { abortEarly: false }
+        )
+        .should.be.rejected
         .then(function(err) {
           err.value.should.eql({ nest: { str: '' } })
           err.errors.length.should.equal(2)
@@ -496,7 +493,7 @@ describe('Object types', function(){
     })
 
     let err = await inst.validate(
-      { foo: 'foo', bar: null },
+      { foo: 'foo' },
       { abortEarly: false }).should.rejected;
 
     err.errors.should.eql([
@@ -608,9 +605,9 @@ describe('Object types', function(){
         })
         .default(undefined)
 
-    chai.expect(inst.concat(object()).default()).to.equal(undefined)
+    expect(inst.concat(object()).default()).to.equal(undefined)
 
-    chai.expect(inst.concat(object().default({})).default()).to.eql({})
+    expect(inst.concat(object().default({})).default()).to.eql({})
   })
 
   it('should handle nested conditionals', function(){
@@ -659,14 +656,14 @@ describe('Object types', function(){
     inst.cast({ CON_STAT: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ conStat: 5, caseStatus: 6, hiJohn: 4 })
 
-    chai.expect(inst
+    expect(inst
       .nullable()
       .cast(null)).to.equal(null)
   })
 
   it('should camelCase with leading underscore', function(){
     var inst = object().camelcase()
-
+ 
     inst
       .cast({ CON_STAT: 5, __isNew: true, __IS_FUN: true })
       .should
@@ -684,7 +681,7 @@ describe('Object types', function(){
     inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })
 
-    chai.expect(inst
+    expect(inst
       .nullable()
       .cast(null)).to.equal(null)
   })

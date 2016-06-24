@@ -1,5 +1,5 @@
-let { forEach } = require('property-expr')
-  , { has } = require('./_');
+import { forEach } from 'property-expr';
+import has from 'lodash/has';
 
 let trim = part => part.substr(0, part.length - 1).substr(1)
 

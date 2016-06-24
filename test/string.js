@@ -1,45 +1,69 @@
 'use strict';
-/* global describe, it */
-var chai  = require('chai')
-  , Promise = require('promise/src/es6-extensions')
-  , sinonChai = require('sinon-chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , { string, number, object, ref } = require('../src');
-
-chai.use(chaiAsPromised);
-chai.use(sinonChai);
-chai.should();
+import Promise from 'promise/src/es6-extensions'
+import { string, number, object, ref } from '../src';
 
 describe('String types', function(){
 
-  it('should CAST correctly', function(){
+  describe('casting', ()=> {
+    let schema = string();
 
-    var inst = string()
+    TestHelpers.castAll(schema, {
+      valid: [
+        [5, '5'],
+        ['3', '3'],
+        //[new String('foo'), 'foo'],
+        ['', ''],
+        [true, 'true'],
+        [false, 'false'],
+        [0, '0'],
+        [null, null, schema.nullable()]
+      ],
+      invalid: [
+        undefined,
+        null,
+      ]
+    })
 
-    inst.cast(5).should.equal('5')
+    describe('ensure', () => {
+      let schema = string().ensure();
 
-    chai.expect(
-      inst.cast(null)).to.equal('')
+      TestHelpers.castAll(
+        schema,
+        {
+          valid: [
+            [5, '5'],
+            ['3', '3'],
+            [null, ''],
+            [undefined, ''],
+            [null, '', schema.default('foo')],
+            [undefined, 'foo', schema.default('foo')],
+          ]
+        }
+      )
+    })
 
-    chai.expect(
-      inst.nullable().cast(null)).to.equal(null)
+    it('should trim', () => {
+      schema.trim().cast(' 3  ').should.equal('3')
+    })
 
-    inst.cast('3').should.equal('3')
-    inst.cast(false).should.equal('false')
-    inst.cast(true).should.equal('true')
+    it('should transform to lowercase', () => {
+      schema.lowercase()
+        .cast('HellO JohN')
+        .should.equal('hello john')
+    })
+    it('should transform to lowercase', () => {
+      schema.uppercase()
+        .cast('HellO JohN')
+        .should.equal('HELLO JOHN')
+    })
 
-    chai.expect(inst.cast()).to.equal(undefined)
-
-    inst.trim().cast(' 3  ').should.equal('3')
-
-    inst.lowercase().cast('HellO JohN').should.equal('hello john')
-    inst.uppercase().cast('HellO JohN').should.equal('HELLO JOHN')
-
-    chai.expect(inst.nullable()
-      .trim()
-      .lowercase()
-      .uppercase()
-      .cast(null)).to.equal(null)
+    it('should handle nulls', () => {
+      expect(schema.nullable()
+        .trim()
+        .lowercase()
+        .uppercase()
+        .cast(null)).to.equal(null)
+    })
   })
 
   it('should handle DEFAULT', function(){
@@ -118,10 +142,7 @@ describe('String types', function(){
       v.isValid('bigdfdsfsdf').should.eventually.equal(false),
       v.isValid('no').should.eventually.equal(true),
 
-      v.isValid(5).should.eventually.equal(true),
-      v.isValid(new Date()).should.eventually.equal(false),
-
-      v.isValid(null).should.eventually.equal(true),
+      v.isValid(null).should.eventually.equal(false),
 
       v.nullable().isValid(null).should.eventually.equal(true),
 

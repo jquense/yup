@@ -1,13 +1,13 @@
-var getter = require('property-expr').getter
+import { getter } from 'property-expr';
 
 let validateName = d => {
   if (typeof d !== 'string')
     throw new TypeError('ref\'s must be strings, got: ' + d)
 }
 
-export default class Ref {
+export default class Reference {
   static isRef(value) {
-    return !!(value && (value.__isYupRef || value instanceof Ref))
+    return !!(value && (value.__isYupRef || value instanceof Reference))
   }
 
   constructor(key, mapFn, options = {}) {
@@ -40,4 +40,4 @@ export default class Ref {
   }
 }
 
-Ref.prototype.__isYupRef = true
+Reference.prototype.__isYupRef = true

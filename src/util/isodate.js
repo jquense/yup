@@ -22,12 +22,12 @@ module.exports = function parseIsoDate(date) {
     struct[3] = +struct[3] || 1;
 
     // allow arbitrary sub-second precision beyond milliseconds
-    struct[7] = struct[7] ? + (struct[7] + "00").substr(0, 3) : 0;
+    struct[7] = struct[7] ? + (struct[7] + '00').substr(0, 3) : 0;
 
     // timestamps without timezone identifiers should be considered local time
-    if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === '')) 
+    if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === ''))
       timestamp = +new Date(struct[1], struct[2], struct[3], struct[4], struct[5], struct[6], struct[7]);
-    
+
     else {
       if (struct[8] !== 'Z' && struct[9] !== undefined) {
         minutesOffset = struct[10] * 60 + struct[11];
@@ -38,9 +38,9 @@ module.exports = function parseIsoDate(date) {
 
       timestamp = Date.UTC(struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7]);
     }
-  }        
-  else 
+  }
+  else
     timestamp = Date.parse ? Date.parse(date) : NaN;
-  
+
   return timestamp;
 }

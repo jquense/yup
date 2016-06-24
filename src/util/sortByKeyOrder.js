@@ -1,5 +1,4 @@
 
-
 function findIndex(arr, err) {
   let idx = Infinity;
   arr.some((key, ii) => {
@@ -12,8 +11,8 @@ function findIndex(arr, err) {
   return idx
 }
 
-module.exports = function sortByFields(schema) {
-  let keys = Object.keys(schema.fields);
+module.exports = function sortByKeyOrder(fields) {
+  let keys = Object.keys(fields);
   return (a, b) => {
     return findIndex(keys, a) - findIndex(keys, b)
   }

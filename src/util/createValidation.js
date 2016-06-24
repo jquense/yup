@@ -1,16 +1,12 @@
-'use strict';
-var Promise = require('universal-promise')
-  , ValidationError = require('./validation-error')
-  , Ref = require('./reference')
-  , { transform } = require('./_');
+import Promise from 'universal-promise'
+import mapValues from 'lodash/mapValues';
+import ValidationError from '../ValidationError'
+import Ref from '../Reference'
 
 let formatError = ValidationError.formatError
 
 function resolveParams(oldParams, newParams, resolve) {
-  let start = { ...oldParams, ...newParams }
-  return transform(start, (obj, value, key) => {
-    obj[key] = resolve(value)
-  })
+  return mapValues({ ...oldParams, ...newParams }, resolve)
 }
 
 function createErrorFactory({ value, label, resolve, ...opts}) {
