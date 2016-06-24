@@ -69,18 +69,25 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   integer(msg) {
-    msg = msg || locale.integer
+    msg = msg || locale.integer;
 
-    return this
-      .transform(value => !isAbsent(value) ? (value | 0) : value)
-      .test('integer', msg, isInteger)
+    return this.test('integer', msg, isInteger)
+  },
+
+  truncate() {
+    return this.transform(value =>
+      !isAbsent(value) ? (value | 0) : value)
   },
 
   round(method) {
-    var avail = ['ceil', 'floor', 'round']
+    var avail = ['ceil', 'floor', 'round', 'trunc']
     method = (method && method.toLowerCase()) || 'round'
 
-    if( avail.indexOf(method.toLowerCase()) === -1 )
+    // this exists for symemtry with the new Math.trunc
+    if (method === 'trunc')
+      return this.truncate()
+
+    if (avail.indexOf(method.toLowerCase()) === -1)
       throw new TypeError('Only valid options for round() are: ' + avail.join(', '))
 
     return this.transform(value => !isAbsent(value) ? Math[method](value) : value)
