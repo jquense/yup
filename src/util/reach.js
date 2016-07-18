@@ -12,18 +12,19 @@ module.exports = function (obj, path, value, context) {
   forEach(path, (_part, isBracket, isArray) => {
     let part = isBracket ? trim(_part) : _part;
 
-    if (isArray || has(obj, '_subType')) { // we skipped an array
-      let idx = isArray ? parseInt(part, 10) : 0
+    if (isArray || has(obj, '_subType')) { // we skipped an array: foo[].bar
+      let idx = isArray ? parseInt(part, 10) : 0;
+
       obj = obj.resolve({ context, parent, value })._subType;
 
       if (value) {
-
         if (isArray && idx >= value.length) {
           throw new Error(
             `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
             `because there is no value at that index. `
           )
         }
+
         value = value[idx]
       }
     }
@@ -45,5 +46,9 @@ module.exports = function (obj, path, value, context) {
     }
   })
 
-  return obj && obj.resolve({ context, parent, value })
+  if (obj) {
+    obj = obj.resolve({ context, parent, value });
+  }
+
+  return obj
 }

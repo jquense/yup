@@ -63,6 +63,22 @@ describe('Array types', function(){
       .cast(['1', '3']).should.eql([1, 3])
   })
 
+  it('should concat subType correctly', function(){
+    expect(
+      array()
+        .of(number())
+        .concat(array())
+        ._subType
+    ).to.exist
+
+    expect(
+      array()
+        .of(number())
+        .concat(array().of(false))
+        ._subType
+    ).to.equal(false)
+  })
+
   it('should pass options to children', function(){
     array(
       object({ name: string() })

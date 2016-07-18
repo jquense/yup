@@ -1,5 +1,8 @@
+import typeOf from 'type-name';
+
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
+import isSchema from './util/isSchema';
 import MixedSchema from './mixed';
 import { mixed, array as locale } from './locale.js';
 import runValidations, { propagateErrors } from './util/runValidations';
@@ -15,7 +18,9 @@ function ArraySchema(type) {
 
   MixedSchema.call(this, { type: 'array'})
 
-  this._subType = null;
+  // `undefined` specifically means uninitialized, as opposed to
+  // "no subtype"
+  this._subType = undefined;
 
   this.withMutation(() => {
     this.transform(function(values) {
@@ -91,9 +96,27 @@ inherits(ArraySchema, MixedSchema, {
       })
   },
 
-  of(schema){
+  // concat(schema) {
+  //   var next = MixedSchema.prototype.concat.call(this, schema)
+  //
+  //   next._subType = schema._subType === undefined
+  //     ? this._subType
+  //     : schema._subType;
+  //
+  //   return next
+  // },
+
+  of(schema) {
     var next = this.clone()
-    next._subType = schema
+
+    if (schema !== false && !isSchema(schema))
+      throw new TypeError(
+        '`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
+        'got: ' + typeOf(schema) + ' instead'
+      )
+
+    next._subType = schema;
+
     return next
   },
 
