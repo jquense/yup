@@ -1,3 +1,10 @@
+v0.19.1 - Mon, 18 Jul 2016 21:53:05 GMT
+---------------------------------------
+
+- [69c0ad4](../../commit/69c0ad4) [fixed] array().concat() incorrectly cleared the sub-schema
+
+
+
 v0.19.0 - Fri, 24 Jun 2016 15:19:48 GMT
 ---------------------------------------
 
