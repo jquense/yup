@@ -9,6 +9,7 @@ import { object as locale } from './locale.js';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';
+import makePath from './util/makePath';
 import runValidations, { propagateErrors } from './util/runValidations';
 
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
@@ -76,8 +77,8 @@ inherits(ObjectSchema, MixedSchema, {
     return isObject(value) || typeof value === 'function';
   },
 
-  _cast(_value, opts = {}) {
-    var value = MixedSchema.prototype._cast.call(this, _value, opts)
+  _cast(_value, options = {}) {
+    var value = MixedSchema.prototype._cast.call(this, _value, options)
 
     //should ignore nulls here
     if (value === undefined)
@@ -87,18 +88,18 @@ inherits(ObjectSchema, MixedSchema, {
       return value;
 
     var fields = this.fields
-      , strip  = this._option('stripUnknown', opts) === true
+      , strip  = this._option('stripUnknown', options) === true
       , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
       , props  = this._nodes.concat(extra);
 
     let innerOptions = {
-      ...opts,
+      ...options,
       parent: {}, // is filled during the transform below
       __validating: false,
     };
 
     value = transform(props, (obj, prop) => {
-      let field = fields[prop]
+      let field = fields[prop];
       let exists = has(value, prop);
 
       if (field) {
@@ -108,7 +109,10 @@ inherits(ObjectSchema, MixedSchema, {
         if (field._strip === true)
           return
 
-        fieldValue = !opts.__validating || !strict
+        // should be safe to mutate since this is fired in sequence
+        innerOptions.path = makePath`${options.path}.${prop}`;
+
+        fieldValue = !options.__validating || !strict
           ? field.cast(value[prop], innerOptions)
           : value[prop]
 
@@ -142,7 +146,7 @@ inherits(ObjectSchema, MixedSchema, {
         }
 
         let validations = this._nodes.map(key => {
-          var path  = (opts.path ?  (opts.path + '.') : '') + key
+          var path  = makePath`${opts.path}.${key}`
             , field = this.fields[key]
             , innerOptions = { ...opts, path, parent: value };
 
