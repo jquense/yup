@@ -3,6 +3,7 @@ import typeOf from 'type-name';
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
+import makePath from './util/makePath';
 import MixedSchema from './mixed';
 import { mixed, array as locale } from './locale.js';
 import runValidations, { propagateErrors } from './util/runValidations';
@@ -70,7 +71,7 @@ inherits(ArraySchema, MixedSchema, {
         }
 
         let validations = value.map((item, idx) => {
-          var path  = (options.path || '') + '[' + idx + ']'
+          var path  = makePath`${options.path}[${idx}]`
 
           // object._validate note for isStrict explanation
           var innerOptions = {
@@ -96,23 +97,13 @@ inherits(ArraySchema, MixedSchema, {
       })
   },
 
-  // concat(schema) {
-  //   var next = MixedSchema.prototype.concat.call(this, schema)
-  //
-  //   next._subType = schema._subType === undefined
-  //     ? this._subType
-  //     : schema._subType;
-  //
-  //   return next
-  // },
-
   of(schema) {
     var next = this.clone()
 
     if (schema !== false && !isSchema(schema))
       throw new TypeError(
         '`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
-        'got: ' + typeOf(schema) + ' instead'
+        'not: ' + typeOf(schema)
       )
 
     next._subType = schema;

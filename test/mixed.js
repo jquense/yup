@@ -28,10 +28,10 @@ describe( 'Mixed Types ', function(){
     ])
   })
 
-  it('cast should return a default is empty', function(){
+  it('cast should return a default when undefined', function(){
     var inst = mixed().default('hello')
 
-    return inst.cast().should.equal('hello')
+    return inst.cast(undefined).should.equal('hello')
   })
 
   it('should check types', async function(){
@@ -235,7 +235,8 @@ describe( 'Mixed Types ', function(){
       .isValid(8).should.eventually.become(true)
   })
 
-  it('tests should be called with the correct `this`', function(done){
+  it('tests should be called with the correct `this`', async () => {
+    let called = false;
     var inst = object({
       other: mixed(),
       test: mixed().test({
@@ -246,12 +247,15 @@ describe( 'Mixed Types ', function(){
           this.path.should.equal('test')
           this.parent.should.eql({ other: 5, test: 'hi' })
           this.options.context.should.eql({ user: 'jason' })
-          done()
+          called = true;
+          return true;
         }
       })
     })
 
-    inst.validate({ other: 5, test: 'hi' }, { context: { user: 'jason' } })
+    await inst.validate({ other: 5, test: 'hi' }, { context: { user: 'jason' } })
+
+    called.should.equal(true)
   })
 
   it('tests can return an error', function(){
@@ -290,13 +294,13 @@ describe( 'Mixed Types ', function(){
 
   it('should allow custom validation of either style', function(){
     var inst = string()
-      .test('name', 'test a', function(val){
-        return Promise.resolve(val === 'jim')
-      })
-      .test('name', 'test b', function(val, done){
-        process.nextTick(function(){
+      .test('name', 'test a', val =>
+        Promise.resolve(val === 'jim')
+      )
+      .test('name', 'test b', (val, done) => {
+        process.nextTick(() =>
           done(null, val !== 'jim')
-        })
+        )
       }, true)
 
     return Promise.all([

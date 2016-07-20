@@ -663,7 +663,7 @@ describe('Object types', function(){
 
   it('should camelCase with leading underscore', function(){
     var inst = object().camelcase()
- 
+
     inst
       .cast({ CON_STAT: 5, __isNew: true, __IS_FUN: true })
       .should

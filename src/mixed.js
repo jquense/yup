@@ -155,12 +155,12 @@ SchemaType.prototype = {
     return result;
   },
 
-  _cast(_value) {
-    let value = _value === undefined ? _value
+  _cast(rawValue) {
+    let value = rawValue === undefined ? rawValue
       : this.transforms.reduce(
-          (value, transform) => transform.call(this, value, _value), _value)
+          (value, fn) => fn.call(this, value, rawValue), rawValue)
 
-    if (value === undefined && (has(this, '_default'))) {
+    if (value === undefined && has(this, '_default')) {
       value = this.default()
     }
 
@@ -176,26 +176,24 @@ SchemaType.prototype = {
     return nodeify(schema._validate(value, options), cb)
   },
 
-  //-- tests
   _validate(_value, options = {}) {
-    let value  = _value
-      , schema, endEarly, isStrict;
+    let value  = _value;
 
-    schema   = this
-    isStrict = this._option('strict', options)
-    endEarly = this._option('abortEarly', options)
+    let isStrict = this._option('strict', options)
+    let endEarly = this._option('abortEarly', options)
 
     let path = options.path
     let label = this._label
 
     if (!isStrict) {
+
       value = this._cast(value, { assert: false, ...options })
     }
     // value is cast, we can check if it meets type requirements
     let validationParams = { value, path, schema: this, options, label }
     let initialTests = []
 
-    if (schema._typeError)
+    if (this._typeError)
       initialTests.push(this._typeError(validationParams));
 
     if (this._whitelistError)
@@ -235,9 +233,13 @@ SchemaType.prototype = {
 
   default(def) {
     if (arguments.length === 0) {
-      var dflt = has(this, '_default') ? this._default : this._defaultDefault
-      return typeof dflt === 'function'
-        ? dflt.call(this) : cloneDeep(dflt)
+      var defaultValue = has(this, '_default')
+        ? this._default
+        : this._defaultDefault
+
+      return typeof defaultValue === 'function'
+        ? defaultValue.call(this)
+        : cloneDeep(defaultValue)
     }
 
     var next = this.clone()
@@ -285,18 +287,18 @@ SchemaType.prototype = {
    * the previous tests are removed and further tests of the same name will replace each other.
    */
   test(name, message, test, useCallback) {
-    var opts = extractTestParams(name, message, test, useCallback)
+    let opts = extractTestParams(name, message, test, useCallback)
       , next = this.clone();
 
-    var validate = createValidation(opts);
+    let validate = createValidation(opts);
 
-    var isExclusive = (
+    let isExclusive = (
       opts.exclusive ||
       (opts.name && next._exclusive[opts.name] === true)
     )
 
     if (opts.exclusive && !opts.name) {
-      throw new TypeError('You cannot have an exclusive validation without a `name`')
+      throw new TypeError('Exclusive tests must provide a unique `name` identifying the test')
     }
 
     next._exclusive[opts.name] = !!opts.exclusive
@@ -333,8 +335,8 @@ SchemaType.prototype = {
     var next = this.clone()
 
     next._typeError = createValidation({
-      message,
       name: 'typeError',
+      message,
       test(value) {
         if (value !== undefined && !this.schema.isType(value))
           return this.createError({
@@ -350,9 +352,6 @@ SchemaType.prototype = {
 
   oneOf(enums, message = locale.oneOf) {
     var next = this.clone();
-
-    if (next.tests.length)
-      throw new TypeError('Cannot specify values when there are validation rules specified')
 
     enums.forEach(val => {
       next._blacklist.delete(val)
@@ -439,7 +438,7 @@ Object.keys(aliases).forEach(method => {
 })
 
 function nodeify(promise, cb){
-  if(typeof cb !== 'function') return promise
+  if (typeof cb !== 'function') return promise
 
   promise.then(
     val => cb(null, val),
