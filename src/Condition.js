@@ -1,12 +1,22 @@
 import has from 'lodash/has';
 import isSchema from './util/isSchema';
 
+function callOrConcat(schema) {
+  if (typeof schema === 'function')
+    return schema
+
+  return base => base.concat(schema)
+}
+
 class Conditional {
 
   constructor(refs, options) {
     let { is, then, otherwise } = options;
 
     this.refs = [].concat(refs)
+
+    then = callOrConcat(then);
+    otherwise = callOrConcat(otherwise);
 
     if (typeof options === 'function')
       this.fn = options
@@ -24,8 +34,10 @@ class Conditional {
         ? is : ((...values) => values.every(value => value === is))
 
       this.fn = function (...values) {
-        let ctx = values.pop();
-        return isFn(...values) ? ctx.concat(then) : ctx.concat(otherwise)
+        let currentSchema = values.pop();
+        let option = isFn(...values) ? then : otherwise
+
+        return option(currentSchema)
       }
     }
   }
