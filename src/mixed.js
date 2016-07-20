@@ -1,4 +1,3 @@
-import typeOf from 'type-name';
 import has from 'lodash/has';
 
 import { mixed as locale } from './locale';
@@ -133,15 +132,23 @@ SchemaType.prototype = {
     return this
   },
 
-  cast(value, opts = {}) {
-    let schema = this.resolve(opts)
+  cast(value, options = {}) {
+    let resolvedSchema = this.resolve(options)
+    let result = resolvedSchema._cast(value, options);
 
-    let result = schema._cast(value, opts);
-
-    if (opts.assert !== false && !this.isType(result)) {
+    if (
+      value !== undefined &&
+      options.assert !== false &&
+      resolvedSchema.isType(result) !== true
+    ) {
+      let formattedValue = JSON.stringify(value);
+      let formattedResult = JSON.stringify(result);
       throw new TypeError(
-        `Expected ${opts.path || 'field'} to be type: "${this._type}". ` +
-        `Got "${typeOf(value)}" instead.`
+        `The value of ${options.path || 'field'} could not be cast to a value ` +
+        `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
+        `attempted value: ${JSON.stringify(value)} \n` +
+        ((formattedResult !== formattedValue)
+          ? `result of cast: ${JSON.stringify(result)}` : '')
       );
     }
 

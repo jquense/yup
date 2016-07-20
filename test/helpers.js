@@ -1,10 +1,9 @@
-import typeOf from 'type-name';
 
 export let castAndShouldFail = (schema, value) => {
   (()=> schema.cast(value))
     .should.throw(
       TypeError,
-      new RegExp(`Got "${typeOf(value)}" instead`, 'gi')
+      /The value of (.+) could not be cast to a value that satisfies the schema type/gi
     )
 }
 

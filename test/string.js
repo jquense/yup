@@ -19,7 +19,6 @@ describe('String types', function(){
         [null, null, schema.nullable()]
       ],
       invalid: [
-        undefined,
         null,
       ]
     })
