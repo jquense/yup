@@ -1,3 +1,12 @@
+v0.20.0 - Wed, 20 Jul 2016 02:02:08 GMT
+---------------------------------------
+
+- [f7446d2](../../commit/f7446d2) [fixed] pass path correctly to cast()
+- [9b5232a](../../commit/9b5232a) [added] allow function then/otherwise bodies
+- [73858fe](../../commit/73858fe) [changed] Don't throw on undefined values in cast()
+
+
+
 v0.19.1 - Mon, 18 Jul 2016 21:53:05 GMT
 ---------------------------------------
 
