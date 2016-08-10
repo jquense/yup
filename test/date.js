@@ -14,6 +14,10 @@ describe('Date types', function(){
     inst.cast(new Date()).should.be.a('date')
     inst.cast('jan 15 2014').should.eql(new Date(2014, 0, 15))
     inst.cast('2014-09-23T19:25:25Z').should.eql(new Date(1411500325000))
+    // Leading-zero milliseconds
+    inst.cast('2016-08-10T11:32:19.012Z').should.eql(new Date(1470828739012))
+    // Microsecond precision
+    inst.cast('2016-08-10T11:32:19.2125Z').should.eql(new Date(1470828739212))
   })
 
   it('should return invalid date for failed casts', function(){
