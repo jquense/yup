@@ -22,7 +22,7 @@ module.exports = function parseIsoDate(date) {
     struct[3] = +struct[3] || 1;
 
     // allow arbitrary sub-second precision beyond milliseconds
-    struct[7] = struct[7] ? + (struct[7] + '00').substr(0, 3) : 0;
+    struct[7] = struct[7] ? String(struct[7]).substr(0, 3) : 0;
 
     // timestamps without timezone identifiers should be considered local time
     if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === ''))
