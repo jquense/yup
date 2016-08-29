@@ -1,6 +1,7 @@
-import changeCase from 'case';
 import has from 'lodash/has';
 import omit from 'lodash/omit';
+import snakeCase from 'lodash/snakeCase';
+import camelCase from 'lodash/camelCase';
 import mapKeys from 'lodash/mapKeys';
 import transform from 'lodash/transform';
 
@@ -20,20 +21,8 @@ function unknown(ctx, value) {
     .filter(key => known.indexOf(key) === -1)
 }
 
-/**
- * maintain "private" fields
- * `"__FOO_BAR"` becomes `"__fooBar"` not `"fooBar"`
- */
-function camelize(str) {
-  let result = changeCase.camel(str)
-    , idx = str.search(/[^_]/)
 
-  return idx === 0 ? result : (str.substr(0, idx) + result)
-}
-
-module.exports = ObjectSchema
-
-function ObjectSchema(spec) {
+export default function ObjectSchema(spec) {
   if (!(this instanceof ObjectSchema))
     return new ObjectSchema(spec)
 
@@ -222,8 +211,10 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   noUnknown(noAllow = true, message = locale.noUnknown) {
-    if (typeof noAllow === 'string')
-      message = noAllow, noAllow = true;
+    if (typeof noAllow === 'string') {
+      message = noAllow;
+      noAllow = true;
+    }
 
     var next = this.test({
       name: 'noUnknown',
@@ -244,18 +235,21 @@ inherits(ObjectSchema, MixedSchema, {
     return next
   },
 
-  camelcase() {
-    return this.transform(obj =>
-      obj && mapKeys(obj, (_, key) => camelize(key))
+  transformKeys(fn) {
+    return this.transform(obj => obj &&
+      mapKeys(obj, (_, key) => fn(key))
     )
   },
 
-  constantcase() {
-    return this.transform(obj =>
-      obj && mapKeys(obj, (_, key) => changeCase.constant(key))
-    )
+  camelCase() {
+    return this.transformKeys(camelCase)
+  },
+
+  snakeCase() {
+    return this.transformKeys(snakeCase)
+  },
+
+  constantCase() {
+    return this.transformKeys(key => snakeCase(key).toUpperCase())
   },
 })
-
-ObjectSchema.prototype.camelCase = ObjectSchema.prototype.camelcase;
-ObjectSchema.prototype.constantCase = ObjectSchema.prototype.constantcase;
