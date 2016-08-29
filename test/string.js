@@ -1,5 +1,6 @@
-'use strict';
 import Promise from 'promise/src/es6-extensions'
+import * as TestHelpers from './helpers';
+
 import { string, number, object, ref } from '../src';
 
 describe('String types', function(){
@@ -86,15 +87,15 @@ describe('String types', function(){
 
     return Promise.all([
 
-      string().strict().isValid(null).should.eventually.equal(false),
+      string().strict().isValid(null).should.eventually().equal(false),
 
-      string().strict().nullable(true).isValid(null).should.eventually.equal(true),
+      string().strict().nullable(true).isValid(null).should.eventually().equal(true),
 
-      inst.isValid('hello').should.eventually.equal(true),
+      inst.isValid('hello').should.eventually().equal(true),
 
-      inst.isValid('hel').should.eventually.equal(false),
+      inst.isValid('hel').should.eventually().equal(false),
 
-      inst.validate('').should.be.rejected.then(function(err) {
+      inst.validate('').should.be.rejected().then(function(err) {
         err.errors.length.should.equal(1)
       })
     ])
@@ -104,9 +105,9 @@ describe('String types', function(){
     var v = string().matches(/(hi|bye)/);
 
     return Promise.all([
-      v.isValid('hi').should.eventually.equal(true),
-      v.isValid('nope').should.eventually.equal(false),
-      v.isValid('bye').should.eventually.equal(true)
+      v.isValid('hi').should.eventually().equal(true),
+      v.isValid('nope').should.eventually().equal(false),
+      v.isValid('bye').should.eventually().equal(true)
     ])
   })
 
@@ -118,14 +119,14 @@ describe('String types', function(){
     })
 
     return Promise.all([
-      v.isValid('hiiofff').should.eventually.equal(true),
-      v.isValid('big').should.eventually.equal(false),
-      v.isValid('noffasfasfasf saf').should.eventually.equal(true),
+      v.isValid('hiiofff').should.eventually().equal(true),
+      v.isValid('big').should.eventually().equal(false),
+      v.isValid('noffasfasfasf saf').should.eventually().equal(true),
 
-      v.isValid(null).should.eventually.equal(false), // null -> ''
-      v.nullable().isValid(null).should.eventually.equal(true), // null -> null
+      v.isValid(null).should.eventually().equal(false), // null -> ''
+      v.nullable().isValid(null).should.eventually().equal(true), // null -> null
 
-      obj.isValid({ len: 10, name: 'john' }).should.eventually.equal(false)
+      obj.isValid({ len: 10, name: 'john' }).should.eventually().equal(false)
     ])
 
   })
@@ -137,34 +138,34 @@ describe('String types', function(){
       name: string().max(ref('len'))
     })
     return Promise.all([
-      v.isValid('adgf').should.eventually.equal(true),
-      v.isValid('bigdfdsfsdf').should.eventually.equal(false),
-      v.isValid('no').should.eventually.equal(true),
+      v.isValid('adgf').should.eventually().equal(true),
+      v.isValid('bigdfdsfsdf').should.eventually().equal(false),
+      v.isValid('no').should.eventually().equal(true),
 
-      v.isValid(null).should.eventually.equal(false),
+      v.isValid(null).should.eventually().equal(false),
 
-      v.nullable().isValid(null).should.eventually.equal(true),
+      v.nullable().isValid(null).should.eventually().equal(true),
 
-      obj.isValid({ len: 3, name: 'john' }).should.eventually.equal(false)
+      obj.isValid({ len: 3, name: 'john' }).should.eventually().equal(false)
     ])
   })
 
   it('should validate transforms', function(){
     return Promise.all([
-      string().trim().isValid(' 3  ').should.eventually.equal(true),
+      string().trim().isValid(' 3  ').should.eventually().equal(true),
 
-      string().lowercase().isValid('HellO JohN').should.eventually.equal(true),
+      string().lowercase().isValid('HellO JohN').should.eventually().equal(true),
 
-      string().uppercase().isValid('HellO JohN').should.eventually.equal(true),
+      string().uppercase().isValid('HellO JohN').should.eventually().equal(true),
 
       string().trim().isValid(' 3  ', { strict: true })
-        .should.eventually.equal(false),
+        .should.eventually().equal(false),
 
       string().lowercase().isValid('HellO JohN', { strict: true })
-        .should.eventually.equal(false),
+        .should.eventually().equal(false),
 
       string().uppercase().isValid('HellO JohN', { strict: true })
-        .should.eventually.equal(false)
+        .should.eventually().equal(false)
     ])
   })
 })

@@ -82,8 +82,8 @@ json separate from validating it, via the `cast` method.
     - [`object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
-    - [`object.camelcase(): Schema`](#objectcamelcase-schema)
-    - [`object.constantcase(): Schema`](#objectconstantcase-schema)
+    - [`object.camelCase(): Schema`](#objectcamelCase-schema)
+    - [`object.constantCase(): Schema`](#objectconstantCase-schema)
 - [Extending Schema Types](#extending-schema-types)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -697,8 +697,8 @@ Provide an arbitrary `regex` to match the value against.
 
 ```javascript
 var v = string().matches(/(hi|bye)/);
-v.isValid('hi').should.eventually.equal(true)
-v.isValid('nope').should.eventually.equal(false)
+v.isValid('hi').should.eventually().equal(true)
+v.isValid('nope').should.eventually().equal(false)
 ```
 
 #### `string.email(message: ?string): Schema`
@@ -935,11 +935,11 @@ inst.cast({ prop: 5, other: 6}) // => { myProp: 5, other: 6, Other: 6 }
 Validate that the object value only contains keys specified in `shape`, pass `false` as the first
 argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
 
-#### `object.camelcase(): Schema`
+#### `object.camelCase(): Schema`
 
 Transforms all object keys to camelCase
 
-#### `object.constantcase(): Schema`
+#### `object.constantCase(): Schema`
 
 Transforms all object keys to CONSTANT_CASE.
 

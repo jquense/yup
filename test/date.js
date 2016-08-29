@@ -38,14 +38,14 @@ describe('Date types', function(){
     var inst = date().required().max(new Date(2014, 5, 15))
 
     return Promise.all([
-      date().isValid(null).should.eventually.equal(false),
-      date().nullable().isValid(null).should.eventually.equal(true),
+      date().isValid(null).should.eventually().equal(false),
+      date().nullable().isValid(null).should.eventually().equal(true),
 
-      inst.isValid(new Date(2014, 0, 15)).should.eventually.equal(true),
-      inst.isValid(new Date(2014, 7, 15)).should.eventually.equal(false),
-      inst.isValid('5').should.eventually.equal(true),
+      inst.isValid(new Date(2014, 0, 15)).should.eventually().equal(true),
+      inst.isValid(new Date(2014, 7, 15)).should.eventually().equal(false),
+      inst.isValid('5').should.eventually().equal(true),
 
-      inst.validate().should.be.rejected.then(function(err){
+      inst.validate().should.be.rejected().then(function(err){
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })
@@ -61,16 +61,16 @@ describe('Date types', function(){
     ;(function(){ date().max(ref('$foo')) }).should.not.throw
 
     return Promise.all([
-      date().min(min).isValid(valid).should.eventually.equal(true),
-      date().min(min).isValid(invalid).should.eventually.equal(false),
-      date().min(min).isValid(null).should.eventually.equal(false),
+      date().min(min).isValid(valid).should.eventually().equal(true),
+      date().min(min).isValid(invalid).should.eventually().equal(false),
+      date().min(min).isValid(null).should.eventually().equal(false),
 
       date().min(ref('$foo'))
         .isValid(valid, { context: { foo: min }})
-        .should.eventually.equal(true),
+        .should.eventually().equal(true),
       date().min(ref('$foo'))
         .isValid(invalid, { context: { foo: min }})
-        .should.eventually.equal(false)
+        .should.eventually().equal(false)
     ])
   })
 
@@ -83,18 +83,18 @@ describe('Date types', function(){
     ;(function(){ date().max(ref('$foo')) }).should.not.throw
 
     return Promise.all([
-      date().max(max).isValid(valid).should.eventually.equal(true),
-      date().max(max).isValid(invalid).should.eventually.equal(false),
+      date().max(max).isValid(valid).should.eventually().equal(true),
+      date().max(max).isValid(invalid).should.eventually().equal(false),
       date().max(max)
         .nullable(true)
-        .isValid(null).should.eventually.equal(true),
+        .isValid(null).should.eventually().equal(true),
 
       date().max(ref('$foo'))
         .isValid(valid, { context: { foo: max }})
-        .should.eventually.equal(true),
+        .should.eventually().equal(true),
       date().max(ref('$foo'))
         .isValid(invalid, { context: { foo: max }})
-        .should.eventually.equal(false)
+        .should.eventually().equal(false)
     ])
   })
 })

@@ -3,13 +3,12 @@ import MixedSchema from './mixed';
 import { number as locale} from './locale.js';
 import isAbsent from './util/isAbsent';
 
-module.exports = NumberSchema
 
 let isNaN = value => value != +value
 
 let isInteger = val => isAbsent(val) || val === (val | 0)
 
-function NumberSchema() {
+export default function NumberSchema() {
   if ( !(this instanceof NumberSchema))
     return new NumberSchema()
 

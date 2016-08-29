@@ -4,9 +4,8 @@ let strReg = /\$\{\s*(\w+)\s*\}/g;
 let replace = str =>
   params => str.replace(strReg, (_, key) => params[key] || '')
 
-module.exports = ValidationError;
 
-function ValidationError(errors, value, field, type) {
+export default function ValidationError(errors, value, field, type) {
   this.name   = 'ValidationError'
   this.value  = value
   this.path   = field

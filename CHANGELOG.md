@@ -170,7 +170,7 @@ v0.14.1 - Tue, 16 Feb 2016 19:51:25 GMT
 v0.14.0 - Mon, 08 Feb 2016 16:17:40 GMT
 ---------------------------------------
 
-- [86b6446](../../commit/86b6446) [fixed] camelcase should maintain leading underscores
+- [86b6446](../../commit/86b6446) [fixed] camelCase should maintain leading underscores
 
 
 

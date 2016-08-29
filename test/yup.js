@@ -9,7 +9,7 @@ import { object, array, string, lazy, number } from '../src';
 describe('Yup', function(){
 
   it('should export', function(){
-    require('../lib')
+    require('../lib') // eslint-disable-line global-require
   })
 
   it('cast should not assert on undefined', () => {
@@ -33,7 +33,8 @@ describe('Yup', function(){
   it('should do settled', function(){
     return Promise.all([
 
-      settled([Promise.resolve('hi'), Promise.reject('error')]).should.be.fulfilled
+      settled([Promise.resolve('hi'), Promise.reject('error')])
+        .should.be.fulfilled()
         .then(function (results) {
           results.length.should.equal(2)
           results[0].fulfilled.should.equal(true)
@@ -148,8 +149,7 @@ describe('Yup', function(){
       { type: 1, foo: '4' },
       { type: 2, foo: '5' }
     ]})
-    .should.be.rejected
-
+    .should.be.rejected()
     err.message.should.match(/must be a `number` type/)
   })
 
@@ -158,33 +158,33 @@ describe('Yup', function(){
       var set = new BadSet()
 
       set.add(2)
-      set.has(2).should.be.true
-      set.has('2').should.be.false
+      set.has(2).should.be.true()
+      set.has('2').should.be.false()
       set.values().should.eql([2])
 
       set.add('3')
-      set.has('3').should.be.true
-      set.has(3).should.be.false
+      set.has('3').should.be.true()
+      set.has(3).should.be.false()
       set.values().should.eql([2, '3'])
 
       set.add(false)
-      set.has(false).should.be.true
-      set.has('false').should.be.false
+      set.has(false).should.be.true()
+      set.has('false').should.be.false()
       set.values().should.eql([2, '3', false])
 
       set.add('true')
-      set.has('true').should.be.true
-      set.has(true).should.be.false
+      set.has('true').should.be.true()
+      set.has(true).should.be.false()
       set.values().should.eql([2, '3', false, 'true'])
 
       set.add(null)
-      set.has(null).should.be.true
-      set.has('null').should.be.false
+      set.has(null).should.be.true()
+      set.has('null').should.be.false()
       set.values().should.eql([2, '3', false, 'true', null])
 
       set.add(undefined)
-      set.has(undefined).should.be.true
-      set.has('undefined').should.be.false
+      set.has(undefined).should.be.true()
+      set.has('undefined').should.be.false()
       set.values().should.eql([2, '3', false, 'true', null, undefined])
     })
 
@@ -193,27 +193,27 @@ describe('Yup', function(){
 
       var oneTwoThree = [1, '2', 3]
       set.add(oneTwoThree)
-      set.has(oneTwoThree).should.be.true
-      set.has([1, '2', 3]).should.be.true
+      set.has(oneTwoThree).should.be.true()
+      set.has([1, '2', 3]).should.be.true()
       set.values().should.eql([[1, '2', 3]])
       set.length.should.equal(1)
 
       set.add([1, '2', 3])
-      set.has(oneTwoThree).should.be.true
-      set.has([1, '2', 3]).should.be.true
+      set.has(oneTwoThree).should.be.true()
+      set.has([1, '2', 3]).should.be.true()
       set.values().should.eql([[1, '2', 3]])
       set.length.should.equal(1)
 
       var aOnebTwo = { a: 1, b: '2'}
       set.add(aOnebTwo)
-      set.has(aOnebTwo).should.be.true
-      set.has({ a: 1, b: '2'}).should.be.true
+      set.has(aOnebTwo).should.be.true()
+      set.has({ a: 1, b: '2'}).should.be.true()
       set.values().should.eql([[1, '2', 3], { a: 1, b: '2'}])
       set.length.should.equal(2)
 
       set.add({ a: 1, b: '2'})
-      set.has(aOnebTwo).should.be.true
-      set.has({ a: 1, b: '2'}).should.be.true
+      set.has(aOnebTwo).should.be.true()
+      set.has({ a: 1, b: '2'}).should.be.true()
       set.values().should.eql([[1, '2', 3], { a: 1, b: '2'}])
       set.length.should.equal(2)
     })
@@ -223,14 +223,14 @@ describe('Yup', function(){
 
       var someDate = new Date('12-12-12')
       set.add(someDate)
-      set.has(someDate).should.be.true
-      set.has(new Date('12-12-12')).should.be.true
+      set.has(someDate).should.be.true()
+      set.has(new Date('12-12-12')).should.be.true()
       set.values().should.eql([new Date('12-12-12')])
       set.length.should.equal(1)
 
       set.add(new Date('12-12-12'))
-      set.has(someDate).should.be.true
-      set.has(new Date('12-12-12')).should.be.true
+      set.has(someDate).should.be.true()
+      set.has(new Date('12-12-12')).should.be.true()
       set.values().should.eql([new Date('12-12-12')])
       set.length.should.equal(1)
     })
@@ -259,24 +259,24 @@ describe('Yup', function(){
       var set = new BadSet()
 
       set.add(2)
-      set.has(2).should.be.true
+      set.has(2).should.be.true()
       set.length.should.equal(1)
       set.values().should.eql([2])
 
       set.delete('2')
-      set.has(2).should.be.true
+      set.has(2).should.be.true()
       set.length.should.equal(1)
       set.values().should.eql([2])
 
       set.add('3')
-      set.has(2).should.be.true
-      set.has('3').should.be.true
+      set.has(2).should.be.true()
+      set.has('3').should.be.true()
       set.length.should.equal(2)
       set.values().should.eql([2, '3'])
 
       set.delete('3')
-      set.has(2).should.be.true
-      set.has('3').should.be.false
+      set.has(2).should.be.true()
+      set.has('3').should.be.false()
       set.length.should.equal(1)
       set.values().should.eql([2])
     })

@@ -1,14 +1,12 @@
-'use strict';
 require('babel-polyfill')
 
-var chai = require('chai')
 
-chai.use(require('chai-as-promised'))
-chai.use(require('sinon-chai'))
+global.chai.use(require('dirty-chai'))
+global.chai.use(require('chai-as-promised'))
 
-chai.should();
+global.chai.should();
 
-global.expect = window.expect = chai.expect;
+global.expect = window.expect = global.chai.expect;
 global.TestHelpers = window.TestHelpers = require('./test/helpers');
 
 var testsContext = require.context('./test', true);

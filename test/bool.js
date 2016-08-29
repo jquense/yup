@@ -1,5 +1,3 @@
-'use strict';
-/* global describe, it */
 var chai  = require('chai')
   , chaiAsPromised = require('chai-as-promised')
   , Promise = require('promise/src/es6-extensions')
@@ -56,13 +54,13 @@ describe('Boolean types', function(){
     var inst = bool().required()
 
     return Promise.all([
-      bool().isValid('1').should.eventually.equal(true),
+      bool().isValid('1').should.eventually().equal(true),
 
-      bool().strict().isValid(null).should.eventually.equal(false),
+      bool().strict().isValid(null).should.eventually().equal(false),
 
-      bool().nullable().isValid(null).should.eventually.equal(true),
+      bool().nullable().isValid(null).should.eventually().equal(true),
 
-      inst.validate().should.be.rejected.then(function(err){
+      inst.validate().should.be.rejected().then(function(err){
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })

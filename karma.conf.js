@@ -6,12 +6,11 @@ module.exports = function (config) {
 
     basePath: '',
 
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'sinon-chai'],
 
     reporters: ['mocha'],
 
     files: [
-      require.resolve('sinon/pkg/sinon-1.17.3.js'),
       'tests-webpack.js'
     ],
 
@@ -31,9 +30,6 @@ module.exports = function (config) {
     webpack: {
       devtool: 'inline-source-map',
       cache: true,
-      resolve: {
-        extensions: ['', '.js', '.jsx']
-      },
       module: {
         loaders: [
           {

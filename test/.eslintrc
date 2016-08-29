@@ -1,0 +1,7 @@
+
+parser: babel-eslint
+extends: jason/testing
+globals:
+  TestHelpers: true
+  expect: true
+  sinon: true

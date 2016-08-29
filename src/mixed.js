@@ -12,15 +12,16 @@ import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
 
-
 function extractTestParams(name, message, test, useCallback) {
   var opts = name;
 
-  if (typeof message === 'function')
-    test = message, message = locale.default, name = null;
+  if (typeof message === 'function') {
+    test = message; message = locale.default; name = null;
+  }
 
-  if (typeof name === 'function')
-    test = name, message = locale.default, name = null;
+  if (typeof name === 'function') {
+    test = name; message = locale.default; name = null;
+  }
 
   if (typeof name === 'string' || name === null)
     opts = { name, test, message, useCallback, exclusive: false }
@@ -31,9 +32,7 @@ function extractTestParams(name, message, test, useCallback) {
   return opts
 }
 
-module.exports = SchemaType
-
-function SchemaType(options = {}){
+export default function SchemaType(options = {}){
   if ( !(this instanceof SchemaType))
     return new SchemaType()
 

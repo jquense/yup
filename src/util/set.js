@@ -1,6 +1,6 @@
 import has from 'lodash/has';
 
-module.exports = class BadSet {
+export default class BadSet {
 
   constructor(){
     this._map = Object.create(null)

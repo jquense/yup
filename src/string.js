@@ -9,9 +9,7 @@ let rUrl   = /^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDC
 let hasLength = value => isAbsent(value) || value.length > 0;
 let isTrimmed = value => isAbsent(value) || value === value.trim()
 
-module.exports = StringSchema;
-
-function StringSchema(){
+export default function StringSchema() {
   if ( !(this instanceof StringSchema))
     return new StringSchema()
 
@@ -71,11 +69,15 @@ inherits(StringSchema, MixedSchema, {
     })
   },
 
-  matches(regex, msg) {
+  matches(regex, msg, { excludeEmptyString = true } = {}) {
     return this.test({
       message: msg || locale.matches,
       params: { regex },
-      test: value => isAbsent(value) || regex.test(value)
+      test: value => (
+        isAbsent(value) ||
+        (value === '' && excludeEmptyString) ||
+        regex.test(value)
+      )
     })
   },
 

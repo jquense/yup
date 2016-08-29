@@ -9,18 +9,18 @@ export let castAndShouldFail = (schema, value) => {
 
 export let castAll = (inst, { invalid = [], valid = [] }) => {
   valid.forEach(([value, result, schema = inst ]) => {
-    it(`should cast ${JSON.stringify(value)} to ${JSON.stringify(result)}`, () =>
+    it(`should cast ${JSON.stringify(value)} to ${JSON.stringify(result)}`, () => {
       expect(
         schema.cast(value)
       )
       .to.equal(result)
-    )
+    })
   })
 
   invalid.forEach((value) => {
-    it(`should not cast ${JSON.stringify(value)}`, () =>
+    it(`should not cast ${JSON.stringify(value)}`, () => {
       castAndShouldFail(inst, value)
-    )
+    })
   })
 }
 

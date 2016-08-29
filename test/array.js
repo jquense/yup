@@ -1,4 +1,5 @@
-import Promise from 'promise/src/es6-extensions'
+import Promise from 'promise/src/es6-extensions';
+
 import string from '../src/string'
 import number from '../src/number'
 import object from '../src/object'
@@ -7,13 +8,13 @@ import array from '../src/array'
 describe('Array types', function(){
 
   describe('casting', ()=> {
-    it ('should parse json strings', () => {
+    it('should parse json strings', () => {
       array()
         .cast('[2,3,5,6]')
         .should.eql([2, 3, 5, 6])
     })
 
-    it ('should return null for failed casts', () => {
+    it('should return null for failed casts', () => {
       expect(
         array().cast('asfasf', { assert: false })).to.equal(null)
 
@@ -21,7 +22,7 @@ describe('Array types', function(){
         array().cast(null, { assert: false })).to.equal(null)
     })
 
-    it ('should recursively cast fields', () => {
+    it('should recursively cast fields', () => {
       array().of(number())
         .cast(['4', '5'])
         .should.eql([4, 5])
@@ -88,22 +89,20 @@ describe('Array types', function(){
   })
 
   describe('validation', () => {
-
-    it ('should allow undefined', async () => {
-
+    it('should allow undefined', async () => {
       await array().of(number().max(5))
         .isValid()
         .should.become(true)
     })
 
-    it ('should not allow null when not nullable', async () => {
+    it('should not allow null when not nullable', async () => {
 
       await array().isValid(null).should.become(false)
 
       await array().nullable().isValid(null).should.become(true)
     })
 
-    it ('should respect subtype validations', async () => {
+    it('should respect subtype validations', async () => {
       var inst = array()
         .of(number().max(5))
 
@@ -123,7 +122,7 @@ describe('Array types', function(){
 
       value[0].should.equal('5')
 
-      castSpy.should.have.been.calledOnce
+      castSpy.should.have.been.calledOnce()
       string.prototype._cast.restore()
     })
   })
@@ -135,14 +134,14 @@ describe('Array types', function(){
         .test('name', 'oops', function(){ return false })
 
     return Promise.all([
-      inst.validate([{ str: '' }]).should.be.rejected
+      inst.validate([{ str: '' }]).should.be.rejected()
         .then(function(err){
           err.value.should.eql([{ str: '' }])
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
         }),
 
-      inst.validate([{ str: '' }], { abortEarly: false }).should.be.rejected
+      inst.validate([{ str: '' }], { abortEarly: false }).should.be.rejected()
         .then(function(err) {
           err.value.should.eql([{ str: '' }])
 

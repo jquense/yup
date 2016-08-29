@@ -22,7 +22,7 @@ function createErrorFactory({ value, label, resolve, ...opts}) {
   }
 }
 
-module.exports = function createValidation(options) {
+export default function createValidation(options) {
   let { name, message, test, params, useCallback } = options
 
   function validate({ value, path, label, options, ...rest }) {

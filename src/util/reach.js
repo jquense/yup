@@ -3,7 +3,7 @@ import has from 'lodash/has';
 
 let trim = part => part.substr(0, part.length - 1).substr(1)
 
-module.exports = function (obj, path, value, context) {
+export default function reach(obj, path, value, context) {
   let parent, lastPart;
 
   // if only one "value" arg then use it for both

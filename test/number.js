@@ -1,4 +1,6 @@
 import Promise from 'promise/src/es6-extensions';
+import * as TestHelpers from './helpers';
+
 import number from '../src/number';
 
 describe('Number types', function() {
@@ -56,7 +58,7 @@ describe('Number types', function() {
       schema.truncate().cast(45.55).should.equal(45)
     })
 
-    it ('should return NaN for failed casts', () => {
+    it('should return NaN for failed casts', () => {
       expect(
         number().cast('asfasf', { assert: false })).to.eql(NaN)
 
@@ -89,13 +91,13 @@ describe('Number types', function() {
     var inst = number().required().min(4)
 
     return Promise.all([
-      number().isValid(null).should.eventually.equal(false),
-      number().nullable().isValid(null).should.eventually.equal(true),
+      number().isValid(null).should.eventually().equal(false),
+      number().nullable().isValid(null).should.eventually().equal(true),
 
-      inst.isValid(5).should.eventually.equal(true),
-      inst.isValid(2).should.eventually.equal(false),
+      inst.isValid(5).should.eventually().equal(true),
+      inst.isValid(2).should.eventually().equal(false),
 
-      inst.validate().should.be.rejected.then(function(err){
+      inst.validate().should.be.rejected().then(function(err){
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })
@@ -158,11 +160,11 @@ describe('Number types', function() {
     var v = number().positive();
 
     return Promise.all([
-      v.isValid(7).should.eventually.equal(true),
+      v.isValid(7).should.eventually().equal(true),
 
-      v.isValid(0).should.eventually.equal(true),
+      v.isValid(0).should.eventually().equal(true),
 
-      v.validate(-4).should.be.rejected.then(null, function(err){
+      v.validate(-4).should.be.rejected().then(null, function(err){
         err.errors[0].should.contain('this must be a positive number')
       })
     ])
@@ -172,11 +174,11 @@ describe('Number types', function() {
     var v = number().positive();
 
     return Promise.all([
-      v.isValid(7).should.eventually.equal(true),
+      v.isValid(7).should.eventually().equal(true),
 
-      v.isValid(0).should.eventually.equal(true),
+      v.isValid(0).should.eventually().equal(true),
 
-      v.validate(-4).should.be.rejected.then(null, function(err){
+      v.validate(-4).should.be.rejected().then(null, function(err){
         err.errors[0].should.contain('this must be a positive number')
       })
     ])
@@ -186,11 +188,11 @@ describe('Number types', function() {
     var v = number().negative();
 
     return Promise.all([
-      v.isValid(-4).should.eventually.equal(true),
+      v.isValid(-4).should.eventually().equal(true),
 
-      v.isValid(0).should.eventually.equal(true),
+      v.isValid(0).should.eventually().equal(true),
 
-      v.validate(10).should.be.rejected.then(null, function(err){
+      v.validate(10).should.be.rejected().then(null, function(err){
         err.errors[0].should.contain('this must be a negative number')
       })
     ])

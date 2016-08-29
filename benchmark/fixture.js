@@ -66,7 +66,7 @@ var ChildAttribute = object({
 
   seqID: number()
 
-}).camelcase()
+}).camelCase()
 
 var schema = object({
 
@@ -93,11 +93,11 @@ var schema = object({
       valueID: number(),
       text: string()
     })
-    .camelcase()
+    .camelCase()
   ),
 
   children: array().of(ChildAttribute)
-}).camelcase()
+}).camelCase()
 
 
 module.exports = {

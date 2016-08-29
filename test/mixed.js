@@ -23,29 +23,29 @@ describe( 'Mixed Types ', function(){
     next.should.be.an.instanceOf(mixed)
 
     return Promise.all([
-      inst.isValid().should.eventually.equal(true),
-      next.isValid().should.eventually.equal(false)
+      inst.isValid().should.eventually().equal(true),
+      next.isValid().should.eventually().equal(false)
     ])
   })
 
-  it('cast should return a default when undefined', function(){
+  it('cast should return a default when undefined', () => {
     var inst = mixed().default('hello')
 
-    return inst.cast(undefined).should.equal('hello')
+    inst.cast(undefined).should.equal('hello')
   })
 
-  it('should check types', async function(){
+  it('should check types', async () => {
     var inst = string().strict().typeError('must be a ${type}!')
 
-    let error = await inst.validate(5).should.be.rejected
+    let error = await inst.validate(5).should.be.rejected()
 
     error.type.should.equal('typeError')
     error.message.should.equal('must be a string!')
     error.inner.length.should.equal(0)
 
-    error = await inst.validate(5, { abortEarly: false }).should.be.rejected
+    error = await inst.validate(5, { abortEarly: false }).should.be.rejected()
 
-    expect(error.type).to.not.exist
+    expect(error.type).to.not.exist()
     error.message.should.equal('must be a string!')
     error.inner.length.should.equal(1)
   })
@@ -53,10 +53,10 @@ describe( 'Mixed Types ', function(){
   it('should limit values', async function(){
     var inst = mixed().oneOf([5, 'hello'])
 
-    await inst.isValid(5).should.eventually.equal(true)
-    await inst.isValid('hello').should.eventually.equal(true)
+    await inst.isValid(5).should.eventually().equal(true)
+    await inst.isValid('hello').should.eventually().equal(true)
 
-    let err = await inst.validate(6).should.be.rejected
+    let err = await inst.validate(6).should.be.rejected()
 
     err.errors[0].should.equal('this must be one the following values: 5, hello')
   })
@@ -66,23 +66,23 @@ describe( 'Mixed Types ', function(){
       mixed()
         .oneOf(['hello'])
         .isValid(undefined)
-        .should.eventually.equal(true),
+        .should.eventually().equal(true),
       mixed()
         .nullable()
         .oneOf(['hello'])
         .isValid(null)
-        .should.eventually.equal(false),
+        .should.eventually().equal(false),
       mixed()
         .oneOf(['hello'])
         .required()
         .isValid(undefined)
-        .should.eventually.equal(false),
+        .should.eventually().equal(false),
       mixed()
         .nullable()
         .oneOf(['hello'])
         .required()
         .isValid(null)
-        .should.eventually.equal(false)
+        .should.eventually().equal(false)
     ])
   })
 
@@ -90,18 +90,18 @@ describe( 'Mixed Types ', function(){
     var inst = mixed().notOneOf([5, 'hello'])
 
     return Promise.all([
-      inst.isValid(6).should.eventually.equal(true),
-      inst.isValid('hfhfh').should.eventually.equal(true),
+      inst.isValid(6).should.eventually().equal(true),
+      inst.isValid('hfhfh').should.eventually().equal(true),
 
-      inst.isValid(5).should.eventually.equal(false),
+      inst.isValid(5).should.eventually().equal(false),
 
-      inst.validate(5).should.be.rejected.then(function(err){
+      inst.validate(5).should.be.rejected().then(function(err){
         err.errors[0].should.equal('this must not be one the following values: 5, hello')
       }),
-      inst.oneOf([5]).isValid(5).should.eventually.equal(true),
+      inst.oneOf([5]).isValid(5).should.eventually().equal(true),
 
-      inst.isValid(null).should.eventually.equal(true),
-      inst.required().isValid(null).should.eventually.equal(false)
+      inst.isValid(null).should.eventually().equal(true),
+      inst.required().isValid(null).should.eventually().equal(false)
     ])
   })
 
@@ -111,7 +111,7 @@ describe( 'Mixed Types ', function(){
       .strict()
       .test('test', 'boom', () => called = true)
 
-    return inst.validate(25).should.be.rejected
+    return inst.validate(25).should.be.rejected()
       .then(() => {
         called.should.equal(false)
       })
@@ -121,8 +121,8 @@ describe( 'Mixed Types ', function(){
     var inst = string().equals(['hello', '5'])
 
     return Promise.all([
-      inst.isValid(5).should.eventually.equal(true),
-      inst.strict().isValid(5).should.eventually.equal(false)
+      inst.isValid(5).should.eventually().equal(true),
+      inst.strict().isValid(5).should.eventually().equal(false)
     ])
   })
 
@@ -131,12 +131,12 @@ describe( 'Mixed Types ', function(){
 
     return Promise.all([
 
-      inst.strict().validate(' hi ').should.be.rejected
+      inst.strict().validate(' hi ').should.be.rejected()
         .then(function(err){
           err.errors.length.should.equal(1)
         }),
 
-      inst.strict().validate(' hi ', { abortEarly: false }).should.be.rejected
+      inst.strict().validate(' hi ', { abortEarly: false }).should.be.rejected()
         .then(function(err){
           err.errors.length.should.equal(2)
         })
@@ -158,7 +158,7 @@ describe( 'Mixed Types ', function(){
     inst.tests.length.should.equal(1)
     inst.tests[0].TEST.message.should.equal(message)
 
-    let error = await inst.validate('foo').should.be.rejected;
+    let error = await inst.validate('foo').should.be.rejected();
 
     error.message.should.equal(message)
   })
@@ -226,13 +226,19 @@ describe( 'Mixed Types ', function(){
   })
 
   it('exclusive tests should replace previous ones', async function(){
-    var inst = mixed().test({ message: 'invalid', exclusive: true, name: 'max', test: v => v < 5 })
+    var inst = mixed().test({
+      message: 'invalid',
+      exclusive: true,
+      name: 'max',
+      test: v => v < 5
+    });
 
-    await inst.isValid(8).should.eventually.become(false),
+    (await inst.isValid(8)).should.equal(false);
 
-    await inst
+    (await inst
       .test({ message: 'invalid', exclusive: true, name: 'max', test: v => v < 10 })
-      .isValid(8).should.eventually.become(true)
+      .isValid(8)
+    ).should.equal(true)
   })
 
   it('tests should be called with the correct `this`', async () => {
@@ -268,7 +274,7 @@ describe( 'Mixed Types ', function(){
       })
 
     return inst.validate('')
-      .should.be.rejected
+      .should.be.rejected()
       .then(function(e){
         e.path.should.equal('my.path')
         e.errors[0].should.equal('invalid my.path')
@@ -285,7 +291,7 @@ describe( 'Mixed Types ', function(){
       })
 
     return inst.validate({ other: 5, test : 'hi' })
-      .should.be.rejected
+      .should.be.rejected()
       .then(function(e){
         e.path.should.equal('my.path')
         e.errors[0].should.equal('my.path nope!')
@@ -304,10 +310,10 @@ describe( 'Mixed Types ', function(){
       }, true)
 
     return Promise.all([
-      inst.validate('jim').should.be.rejected.then(function(e){
+      inst.validate('jim').should.be.rejected().then(function(e){
         e.errors[0].should.equal('test b')
       }),
-      inst.validate('joe').should.be.rejected.then(function(e){
+      inst.validate('joe').should.be.rejected().then(function(e){
         e.errors[0].should.equal('test a')
       })
     ])
@@ -347,36 +353,36 @@ describe( 'Mixed Types ', function(){
       }))
     })
 
-    it ('should have the correct number of tests', () => {
+    it('should have the correct number of tests', () => {
       reach(next, 'str').tests.length.should.equal(3) // presence, alt presence, and trim
     })
 
-    it ('should have the tests in the correct order', () => {
+    it('should have the tests in the correct order', () => {
       reach(next, 'str').tests[0].TEST_NAME.should.equal('required')
     })
 
-    it ('should validate correctly', async () => {
+    it('should validate correctly', async () => {
       await inst
         .isValid({ str: 'hi', str2: 'hi', obj: {} })
         .should.become(true)
 
       ;(await next
         .validate({ str: ' hi  ', str2: 'hi', obj: { str: 'hi' } })
-        .should.be.fulfilled)
+        .should.be.fulfilled())
         .should.deep.eql({ str: 'hi', str2: 'hi', obj: {str: 'hi'} })
     })
 
-    it ('should throw the correct validation errors', async () => {
+    it('should throw the correct validation errors', async () => {
 
       let result = await next
         .validate({ str: 'hi', str2: 'hi', obj: {} })
-        .should.be.rejected
+        .should.be.rejected()
 
       result.message.should.contain('obj.str is a required field')
 
       result = await next
         .validate({ str2: 'hi', obj: { str: 'hi'} })
-        .should.be.rejected
+        .should.be.rejected()
 
       result.message.should.contain('str is a required field')
     })
@@ -410,7 +416,7 @@ describe( 'Mixed Types ', function(){
   it('defaults should be validated but not transformed', function(){
     var inst = string().trim().default('  hi  ')
 
-    return inst.validate(undefined).should.be.rejected
+    return inst.validate(undefined).should.be.rejected()
       .then(function(err){
         err.message.should.equal('this must be a trimmed string')
       })
@@ -420,9 +426,9 @@ describe( 'Mixed Types ', function(){
     var inst = mixed()
       .when('prop', { is: 5, then: mixed().required('from parent') })
 
-    await inst.validate(undefined, { parent: { prop: 5 }}).should.be.rejected,
-    await inst.validate(undefined, { parent: { prop: 1 }}).should.be.fulfilled,
-    await inst.validate('hello', { parent: { prop: 5 }}).should.be.fulfilled
+    await inst.validate(undefined, { parent: { prop: 5 }}).should.be.rejected()
+    await inst.validate(undefined, { parent: { prop: 1 }}).should.be.fulfilled()
+    await inst.validate('hello', { parent: { prop: 5 }}).should.be.fulfilled()
 
     inst = string().when('prop', {
       is:        function(val) { return val === 5 },
@@ -430,9 +436,9 @@ describe( 'Mixed Types ', function(){
       otherwise: string().min(4)
     })
 
-    await inst.validate(undefined, { parent: { prop: 5 }}).should.be.rejected,
-    await inst.validate('hello', { parent: { prop: 1 }}).should.be.fulfilled,
-    await inst.validate('hel', { parent: { prop: 1 }}).should.be.rejected
+    await inst.validate(undefined, { parent: { prop: 5 }}).should.be.rejected()
+    await inst.validate('hello', { parent: { prop: 1 }}).should.be.fulfilled()
+    await inst.validate('hel', { parent: { prop: 1 }}).should.be.rejected()
   })
 
   it('should handle multiple conditionals', function() {
@@ -454,7 +460,7 @@ describe( 'Mixed Types ', function(){
 
     return inst
       .isValid(undefined, { context: { prop: 5, other: 5 }})
-      .should.eventually.equal(false)
+      .should.eventually().equal(false)
 
   })
 
@@ -462,9 +468,9 @@ describe( 'Mixed Types ', function(){
     var inst = mixed()
       .when('$prop', { is: 5, then: mixed().required('from context') })
 
-    await inst.validate(undefined, { context: { prop: 5 }}).should.be.rejected,
-    await inst.validate(undefined, { context: { prop: 1 }}).should.be.fulfilled,
-    await inst.validate('hello',   { context: { prop: 5 }}).should.be.fulfilled
+    await inst.validate(undefined, { context: { prop: 5 }}).should.be.rejected()
+    await inst.validate(undefined, { context: { prop: 1 }}).should.be.fulfilled()
+    await inst.validate('hello',   { context: { prop: 5 }}).should.be.fulfilled()
 
     inst = string().when('$prop', {
       is:        function(val) { return val === 5 },
@@ -472,9 +478,9 @@ describe( 'Mixed Types ', function(){
       otherwise: string().min(4)
     })
 
-    await inst.validate(undefined, { context: { prop: 5 }}).should.be.rejected,
-    await inst.validate('hello', { context: { prop: 1 }}).should.be.fulfilled,
-    await inst.validate('hel', { context: { prop: 1 }}).should.be.rejected
+    await inst.validate(undefined, { context: { prop: 5 }}).should.be.rejected()
+    await inst.validate('hello', { context: { prop: 1 }}).should.be.fulfilled()
+    await inst.validate('hel', { context: { prop: 1 }}).should.be.rejected()
   })
 
   it('should not use context refs in object calculations', function(){
@@ -491,7 +497,7 @@ describe( 'Mixed Types ', function(){
         prop: string().required().label(label)
     })
 
-    await inst.validate({}).should.be.rejected.then(function (err) {
+    await inst.validate({}).should.be.rejected().then(function (err) {
       err.message.should.equal(`${label} is a required field`)
     })
   })
