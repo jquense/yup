@@ -1,3 +1,10 @@
+v0.21.0 - Mon, 29 Aug 2016 18:29:31 GMT
+---------------------------------------
+
+- [8a8cc5b](../../commit/8a8cc5b) [changed] remove case aliases and simplify camelCase
+
+
+
 v0.20.0 - Wed, 20 Jul 2016 02:02:08 GMT
 ---------------------------------------
 
