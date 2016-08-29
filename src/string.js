@@ -69,9 +69,18 @@ inherits(StringSchema, MixedSchema, {
     })
   },
 
-  matches(regex, msg, { excludeEmptyString = true } = {}) {
+  matches(regex, options = {}) {
+    let excludeEmptyString = false
+      , message;
+
+    if (options.message || options.hasOwnProperty('excludeEmptyString')) {
+      ({ excludeEmptyString, message } = options);
+    }
+    else
+      message = options
+
     return this.test({
-      message: msg || locale.matches,
+      message: message || locale.matches,
       params: { regex },
       test: value => (
         isAbsent(value) ||
@@ -82,11 +91,17 @@ inherits(StringSchema, MixedSchema, {
   },
 
   email(msg) {
-    return this.matches(rEmail, msg || locale.email);
+    return this.matches(rEmail, {
+      message: msg || locale.email,
+      excludeEmptyString: true
+    });
   },
 
   url(msg) {
-    return this.matches(rUrl, msg || locale.url);
+    return this.matches(rUrl, {
+      message: msg || locale.url,
+      excludeEmptyString: true
+    });
   },
 
   //-- transforms --

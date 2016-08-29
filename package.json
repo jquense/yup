@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
@@ -12,8 +12,9 @@
     "build": "babel src --out-dir lib && npm run toc",
     "release": "release"
   },
-  "files": ["lib"],
-
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/jquense/yup.git"

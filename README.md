@@ -82,8 +82,8 @@ json separate from validating it, via the `cast` method.
     - [`object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
-    - [`object.camelCase(): Schema`](#objectcamelCase-schema)
-    - [`object.constantCase(): Schema`](#objectconstantCase-schema)
+    - [`object.camelCase(): Schema`](#objectcamelcase-schema)
+    - [`object.constantCase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

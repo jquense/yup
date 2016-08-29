@@ -111,6 +111,24 @@ describe('String types', function(){
     ])
   })
 
+  it('MATCHES should include empty strings', () => {
+    let v = string().matches(/(hi|bye)/);
+
+    return v.isValid('').should.eventually().equal(false)
+  })
+
+  it('MATCHES should exclude empty strings', () => {
+    let v = string().matches(/(hi|bye)/, { excludeEmptyString: true });
+
+    return v.isValid('').should.eventually().equal(true)
+  })
+
+  it('EMAIL should exclude empty strings', () => {
+    let v = string().email();
+
+    return v.isValid('').should.eventually().equal(true)
+  })
+
   it('should check MIN correctly', function(){
     var v = string().min(5);
     var obj = object({
