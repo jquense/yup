@@ -91,7 +91,7 @@ inherits(NumberSchema, MixedSchema, {
       params: { notEqual },
       message: msg || locale.notEqual,
       test(value) {
-        return isAbsent(value) || value > this.resolve(notEqual)
+        return isAbsent(value) || value !== this.resolve(notEqual)
       }
     })
   },
