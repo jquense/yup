@@ -59,6 +59,43 @@ inherits(NumberSchema, MixedSchema, {
     })
   },
 
+  less(less, msg) {
+    return this.test({
+      name: 'min',
+      exclusive: true,
+      params: { less },
+      message: msg || locale.less,
+      test(value) {
+        return isAbsent(value) || value < this.resolve(less)
+      }
+    })
+  },
+
+
+  more(more, msg) {
+    return this.test({
+      name: 'min',
+      exclusive: true,
+      params: { more },
+      message: msg || locale.more,
+      test(value) {
+        return isAbsent(value) || value > this.resolve(more)
+      }
+    })
+  },
+
+  notEqual(notEqual, msg) {
+    return this.test({
+      name: 'min',
+      exclusive: true,
+      params: { notEqual },
+      message: msg || locale.notEqual,
+      test(value) {
+        return isAbsent(value) || value > this.resolve(notEqual)
+      }
+    })
+  },
+
   positive(msg) {
     return this.min(0, msg || locale.positive)
   },
