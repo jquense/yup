@@ -100,7 +100,7 @@ SchemaType.prototype = {
     var next = merge(this.clone(), schema.clone())
 
     // undefined isn't merged over, but is a valid value for default
-    if (schema._default === undefined && has(this, '_default'))
+    if (has(schema, '_default'))
       next._default = schema._default
 
     next.tests = cloned.tests;
