@@ -5,7 +5,7 @@ import {
   , bool, array, object, ref, lazy, reach
 } from '../src';
 
-describe('Object types', function(){
+describe('Object types', () => {
 
   describe('casting', ()=> {
     it('should parse json strings', () => {
@@ -22,7 +22,7 @@ describe('Object types', function(){
     })
 
     it('should recursively cast fields', () => {
-      var obj = {
+      let obj = {
         num: '5',
         str: 'hello',
         arr: ['4', 5],
@@ -53,7 +53,7 @@ describe('Object types', function(){
   })
 
   describe('validation', () => {
-    var inst, obj;
+    let inst, obj;
 
     beforeEach(() => {
       inst = object().shape({
@@ -136,8 +136,8 @@ describe('Object types', function(){
       .should.be.rejected()
     })
 
-    it('should handle custom validation', async function(){
-      var inst = object().shape({
+    it('should handle custom validation', async () => {
+      let inst = object().shape({
         prop: mixed(),
         other: mixed()
       })
@@ -196,8 +196,8 @@ describe('Object types', function(){
     })
   })
 
-  it('should call shape with constructed with an arg', function(){
-    var inst = object({
+  it('should call shape with constructed with an arg', () => {
+    let inst = object({
           prop: mixed()
         })
 
@@ -257,8 +257,8 @@ describe('Object types', function(){
     })
   })
 
-  it('should handle empty keys', function(){
-    var inst = object().shape({
+  it('should handle empty keys', () => {
+    let inst = object().shape({
       prop: mixed()
     })
 
@@ -271,8 +271,8 @@ describe('Object types', function(){
     ])
   })
 
-  it('should work with noUnknown', function(){
-    var inst = object().shape({
+  it('should work with noUnknown', () => {
+    let inst = object().shape({
           prop: mixed(),
           other: mixed()
         })
@@ -281,21 +281,21 @@ describe('Object types', function(){
       inst
         .noUnknown('hi')
         .validate({ extra: 'field' }, { strict: true }).should.be.rejected()
-          .then(function(err){
+          .then((err) => {
             err.errors[0].should.equal('hi')
           }),
 
       inst
         .noUnknown()
         .validate({ extra: 'field' }, { strict: true }).should.be.rejected()
-          .then(function(err){
+          .then(err => {
             err.errors[0].should.be.a('string')
           })
     ])
   })
 
-  it('should strip specific fields', function(){
-    var inst = object().shape({
+  it('should strip specific fields', () => {
+    let inst = object().shape({
           prop: mixed().strip(false),
           other: mixed().strip()
         })
@@ -309,7 +309,7 @@ describe('Object types', function(){
 
 
   it('should allow refs', async function() {
-    var schema = object({
+    let schema = object({
       quz: ref('baz'),
       baz: ref('foo.bar'),
       foo: object({
@@ -452,18 +452,18 @@ describe('Object types', function(){
   })
 
 
-  it('should respect abortEarly', function(){
-    var inst = object({
+  it('should respect abortEarly', () => {
+    let inst = object({
         nest: object({
           str: string().required()
         })
-        .test('name', 'oops', function(){ return false })
+        .test('name', 'oops', () => false)
     })
 
     return Promise.all([
       inst
         .validate({ nest: { str: '' } }).should.be.rejected()
-        .then(function(err) {
+        .then(err => {
           err.value.should.eql({ nest: { str: '' }  })
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
@@ -477,7 +477,7 @@ describe('Object types', function(){
           { abortEarly: false }
         )
         .should.be.rejected()
-        .then(function(err) {
+        .then(err => {
           err.value.should.eql({ nest: { str: '' } })
           err.errors.length.should.equal(2)
           err.errors.should.eql(['nest.str is a required field', 'oops'])
@@ -486,8 +486,8 @@ describe('Object types', function(){
   })
 
   it('should sort errors by insertion order', async () => {
-    var inst = object({
-      foo: string().test('foo', function() {
+    let inst = object({
+      foo: string().test('foo', () => {
         return new Promise(resolve => {
           setTimeout(() => resolve(false), 10)
         })
@@ -505,26 +505,26 @@ describe('Object types', function(){
     ])
   })
 
-  it('should respect recursive', function(){
-    var inst = object({
-        nest: object({
-          str: string().required()
-        })
+  it('should respect recursive', () => {
+    let inst = object({
+      nest: object({
+        str: string().required()
       })
-      .test('name', 'oops', function(){ return false })
+    })
+    .test('name', 'oops', () => false)
 
-    var val = { nest: { str: null } };
+    let val = { nest: { str: null } };
 
     return Promise.all([
       inst
       .validate(val, { abortEarly: false }).should.be.rejected()
-      .then(function(err){
+      .then(err => {
         err.errors.length.should.equal(2)
       }),
 
       inst
         .validate(val, { abortEarly: false, recursive: false }).should.be.rejected()
-        .then(function(err){
+        .then(err => {
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
         })
@@ -532,23 +532,47 @@ describe('Object types', function(){
 
   })
 
-  it('should alias or move keys', function(){
-    var inst = object().shape({
-          myProp: mixed(),
-          Other: mixed()
-        })
-        .from('prop', 'myProp')
-        .from('other', 'Other', true)
+  it('should alias or move keys', () => {
+    let inst = object().shape({
+      myProp: mixed(),
+      Other: mixed()
+    })
+    .from('prop', 'myProp')
+    .from('other', 'Other', true)
 
     inst.cast({ prop: 5, other: 6})
       .should.eql({ myProp: 5, other: 6, Other: 6 })
   })
 
-  it('should not move keys when it does not exist', function(){
-    var inst = object().shape({
-          myProp: mixed()
-        })
-        .from('prop', 'myProp')
+  it('should move nested keys', () => {
+    let inst = object({
+      foo: object({
+        bar: string()
+      }),
+    })
+    .from('foo.bar', 'foobar')
+
+    inst.cast({ foo: { bar: 'quz', foof: 5 } })
+      .should.eql({ foobar: 'quz', foo: { foof: 5 } })
+  })
+
+  it('should alias nested keys', () => {
+    let inst = object({
+      foo: object({
+        bar: string()
+      }),
+    })
+    .from('foo.bar', 'foobar', true)
+
+    inst.cast({ foo: { bar: 'quz' } })
+      .should.eql({ foobar: 'quz', foo: { bar: 'quz' } })
+  })
+
+  it('should not move keys when it does not exist', () => {
+    let inst = object().shape({
+      myProp: mixed()
+    })
+    .from('prop', 'myProp')
 
     inst.cast({ myProp: 5 })
       .should.eql({ myProp: 5 })
@@ -557,16 +581,16 @@ describe('Object types', function(){
       .should.eql({ myProp: 7 })
   })
 
-  it('should handle conditionals', function(){
-    var inst = object().shape({
-          noteDate: number()
-            .when('stats.isBig', { is: true, then: number().min(5) })
-            .when('other', function(v){
-              if (v === 4) return this.max(6)
-            }),
-          stats: object({ isBig: bool() }),
-          other: number().min(1).when('stats', { is: 5, then: number() })
-        })
+  it('should handle conditionals', () => {
+    let inst = object().shape({
+      noteDate: number()
+        .when('stats.isBig', { is: true, then: number().min(5) })
+        .when('other', function(v){
+          if (v === 4) return this.max(6)
+        }),
+      stats: object({ isBig: bool() }),
+      other: number().min(1).when('stats', { is: 5, then: number() })
+    })
 
     return Promise.all([
       inst.isValid({ stats: { isBig: true }, rand: 5, noteDate: 7, other: 4 }).should.eventually().equal(false),
@@ -582,7 +606,7 @@ describe('Object types', function(){
     ])
   })
 
-  it('should allow opt out of topo sort on specific edges', function(){
+  it('should allow opt out of topo sort on specific edges', () => {
     (function() {
       object().shape({
           orgID: number()
@@ -602,59 +626,59 @@ describe('Object types', function(){
     }).should.not.throw()
   })
 
-  it('should use correct default when concating', function(){
-    var inst = object().shape({
-          other: bool()
-        })
-        .default(undefined)
+  it('should use correct default when concating', () => {
+    let inst = object({
+      other: bool()
+    })
+    .default(undefined)
 
     expect(inst.concat(object()).default()).to.equal(undefined)
 
     expect(inst.concat(object().default({})).default()).to.eql({})
   })
 
-  it('should handle nested conditionals', function(){
-    var countSchema = number().when('isBig', { is: true, then: number().min(5) })
-      , inst = object().shape({
-          other: bool(),
-          stats: object({
-              isBig: bool(),
-              count: countSchema
-            })
-            .default(undefined)
-            .when('other', { is: true, then: object().required() })
+  it('should handle nested conditionals', () => {
+    let countSchema = number().when('isBig', { is: true, then: number().min(5) })
+    let inst = object({
+      other: bool(),
+      stats: object({
+          isBig: bool(),
+          count: countSchema
         })
+        .default(undefined)
+        .when('other', { is: true, then: object().required() })
+    })
 
     return Promise.all([
       inst.validate({ stats: undefined, other: true }).should.be.rejected()
-        .then(function(err){
+        .then((err) => {
           err.errors[0].should.contain('required')
         }),
 
       inst.validate({ stats: { isBig: true, count: 3 }, other: true }).should.be.rejected()
-        .then(function(err){
+        .then((err) => {
           err.errors[0].should.contain('must be greater than or equal to 5')
         }),
 
       inst.validate({ stats: { isBig: true, count: 10 }, other: true }).should.be.fulfilled()
-        .then(function(value){
+        .then(value => {
           value.should.deep.equal({ stats: { isBig: true, count: 10 }, other: true })
         }),
 
       countSchema.validate(10, { context: { isBig: true } }).should.be.fulfilled()
-        .then(function(value){
+        .then(value => {
           value.should.deep.equal(10)
         })
     ])
   })
 
-  it('should camelCase keys', function(){
-    var inst = object().shape({
-          conStat: number(),
-          caseStatus: number(),
-          hiJohn: number()
-        })
-        .camelCase()
+  it('should camelCase keys', () => {
+    let inst = object().shape({
+      conStat: number(),
+      caseStatus: number(),
+      hiJohn: number()
+    })
+    .camelCase()
 
     inst.cast({ CON_STAT: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ conStat: 5, caseStatus: 6, hiJohn: 4 })
@@ -664,8 +688,8 @@ describe('Object types', function(){
       .cast(null)).to.equal(null)
   })
 
-  // it('should camelCase with leading underscore', function(){
-  //   var inst = object().camelCase()
+  // it('should camelCase with leading underscore', () => {
+  //   let inst = object().camelCase()
   //
   //   inst
   //     .cast({ CON_STAT: 5, __isNew: true, __IS_FUN: true })
@@ -673,13 +697,13 @@ describe('Object types', function(){
   //     .eql({ conStat: 5, __isNew: true, __isFun: true })
   // })
 
-  it('should CONSTANT_CASE keys', function(){
-    var inst = object().shape({
-          CON_STAT: number(),
-          CASE_STATUS: number(),
-          HI_JOHN: number()
-        })
-        .constantCase()
+  it('should CONSTANT_CASE keys', () => {
+    let inst = object().shape({
+      CON_STAT: number(),
+      CASE_STATUS: number(),
+      HI_JOHN: number()
+    })
+    .constantCase()
 
     inst.cast({ conStat: 5, CaseStatus: 6, 'hi john': 4 })
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 })
