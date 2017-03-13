@@ -409,10 +409,11 @@ object()
 
 #### `mixed.default(value: any): Schema`
 
-Sets a default value to use when the value is `undefined` (or `null` when the schema is not nullable).
+Sets a default value to use when the value is `undefined`.
 Defaults are created after transformations are executed, but before validations, to help ensure that safe
 defaults are specified. The default value will be cloned on each use, which can incur performance penalty
 for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+Note that `null` is considered a separate non-empty value.
 
 ```js
   yup.string.default('nothing');
