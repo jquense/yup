@@ -167,8 +167,10 @@ SchemaType.prototype = {
   },
 
   validate(value, options = {}, cb) {
-    if (typeof options === 'function')
-      cb = options, options = {}
+    if (typeof options === 'function') {
+      cb = options
+      options = {}
+    }
 
     let schema = this.resolve(options)
 
@@ -212,8 +214,10 @@ SchemaType.prototype = {
 
 
   isValid(value, options, cb) {
-    if (typeof options === 'function')
-      cb = options, options = {}
+    if (typeof options === 'function') {
+      cb = options
+      options = {}
+    }
 
     return nodeify(this
       .validate(value, options)
