@@ -2,13 +2,7 @@
 let strReg = /\$\{\s*(\w+)\s*\}/g;
 
 let replace = str =>
-  params => str.replace(strReg, (_, key) => {
-    const val = params[key]
-    if (typeof val === 'number') {
-      return val
-    }
-    return val || ''
-  })
+  params => str.replace(strReg, (_, key) => String(params[key]))
 
 
 export default function ValidationError(errors, value, field, type) {
