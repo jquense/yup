@@ -26,6 +26,20 @@ describe('ValidationError', function() {
       str.should.contain('this')
     })
 
+    it(`should include "undefined" in the message if undefined is provided as a param`, function() {
+      const str = ValidationError.formatError('${path} value is ${min}', {
+        min: undefined
+      })
+      str.should.contain('undefined')
+    })
+
+    it(`should include "null" in the message if null is provided as a param`, function() {
+      const str = ValidationError.formatError('${path} value is ${min}', {
+        min: null
+      })
+      str.should.contain('null')
+    })
+
     it(`should include 0 in the message if 0 is provided as a param`, function() {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: 0
