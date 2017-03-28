@@ -62,7 +62,7 @@ describe('Date types', function(){
       , valid = new Date(2014, 5, 15)
 
     ;(function(){ date().max('hello') }).should.throw(TypeError)
-    ;(function(){ date().max(ref('$foo')) }).should.not.throw
+    ;(function(){ date().max(ref('$foo')) }).should.not.throw()
 
     return Promise.all([
       date().min(min).isValid(valid).should.eventually().equal(true),
@@ -84,7 +84,7 @@ describe('Date types', function(){
       , valid = new Date(2014, 5, 15)
 
     ;(function(){ date().max('hello') }).should.throw(TypeError)
-    ;(function(){ date().max(ref('$foo')) }).should.not.throw
+    ;(function(){ date().max(ref('$foo')) }).should.not.throw()
 
     return Promise.all([
       date().max(max).isValid(valid).should.eventually().equal(true),
