@@ -70,7 +70,7 @@ describe('Array types', function(){
         .of(number())
         .concat(array())
         ._subType
-    ).to.exist
+    ).to.exist()
 
     expect(
       array()
