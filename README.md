@@ -550,8 +550,8 @@ for the `message` argument you can provide a string which is will interpolate ce
 if specified using the `${param}` syntax. By default all test messages are passed a `path` value
 which is valuable in nested schemas.
 
-the `test` function is called with the current `value`, along with `path` and `context` if they exist.
-For more advanced validations you can use the alternate signature to provide more options (see below):
+the `test` function is called with the current `value`. For more advanced validations you can
+use the alternate signature to provide more options (see below):
 
 ```js
 var jimmySchema = yup.string()
