@@ -57,6 +57,7 @@
     "mocha": "^1.21.4",
     "mt-changelog": "^0.6.2",
     "node-libs-browser": "^0.5.2",
+    "promises-aplus-tests": "^2.1.2",
     "release-script": "^0.5.2",
     "sinon": "^1.17.5",
     "sinon-chai": "^2.8.0",
