@@ -1,4 +1,3 @@
-import Promise from 'promise/src/es6-extensions';
 import { ref, date } from '../src';
 
 function isValidDate(date){

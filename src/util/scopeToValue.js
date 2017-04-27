@@ -1,4 +1,3 @@
-import Promise from 'universal-promise';
 
 /**
  * Sets the error on a Validation error to a new

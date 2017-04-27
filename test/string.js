@@ -1,9 +1,8 @@
-import Promise from 'promise/src/es6-extensions'
 import * as TestHelpers from './helpers';
 
 import { string, number, object, ref } from '../src';
 
-describe('String types', function(){
+describe('String types', () => {
 
   describe('casting', ()=> {
     let schema = string();
