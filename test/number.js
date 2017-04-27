@@ -1,4 +1,3 @@
-import Promise from 'promise/src/es6-extensions';
 import * as TestHelpers from './helpers';
 
 import number from '../src/number';

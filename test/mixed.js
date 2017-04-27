@@ -1,5 +1,3 @@
-
-import Promise from 'promise/src/es6-extensions';
 import mixed from '../src/mixed';
 import object from '../src/object';
 import string from '../src/string';

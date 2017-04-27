@@ -1,4 +1,3 @@
-import Promise from 'promise/src/es6-extensions';
 import reach from '../src/util/reach';
 import BadSet from '../src/util/set';
 import merge from '../src/util/merge';

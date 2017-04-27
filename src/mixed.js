@@ -12,7 +12,7 @@ import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
 
-function extractTestParams(name, message, test, useCallback) {
+function extractTestParams(name, message, test) {
   var opts = name;
 
   if (typeof message === 'function') {
@@ -24,7 +24,7 @@ function extractTestParams(name, message, test, useCallback) {
   }
 
   if (typeof name === 'string' || name === null)
-    opts = { name, test, message, useCallback, exclusive: false }
+    opts = { name, test, message, exclusive: false }
 
   if (typeof opts.test !== 'function')
     throw new TypeError('`test` is a required parameters')
@@ -289,8 +289,8 @@ SchemaType.prototype = {
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(name, message, test, useCallback) {
-    let opts = extractTestParams(name, message, test, useCallback)
+  test(name, message, test) {
+    let opts = extractTestParams(name, message, test)
       , next = this.clone();
 
     let validate = createValidation(opts);
