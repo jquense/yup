@@ -5,10 +5,10 @@ function isValidDate(date){
   return date instanceof Date && !isNaN(date.getTime())
 }
 
-describe('Date types', function(){
+describe('Date types', () => {
 
 
-  it('should CAST correctly', function(){
+  it('should CAST correctly', () => {
     var inst = date()
 
     inst.cast(new Date()).should.be.a('date')
@@ -27,7 +27,7 @@ describe('Date types', function(){
     inst.cast('', { assert: false }).should.not.satisfy(isValidDate)
   })
 
-  it('should type check', function(){
+  it('should type check', () => {
     var inst = date()
 
     inst.isType(new Date()).should.equal(true)
@@ -37,7 +37,7 @@ describe('Date types', function(){
     inst.nullable().isType(new Date()).should.equal(true)
   })
 
-  it('should VALIDATE correctly', function(){
+  it('should VALIDATE correctly', () => {
 
     var inst = date().required().max(new Date(2014, 5, 15))
 
@@ -49,14 +49,14 @@ describe('Date types', function(){
       inst.isValid(new Date(2014, 7, 15)).should.eventually().equal(false),
       inst.isValid('5').should.eventually().equal(true),
 
-      inst.validate().should.be.rejected().then(function(err){
+      inst.validate().should.be.rejected().then((err) => {
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })
     ])
   })
 
-  it('should check MIN correctly', function(){
+  it('should check MIN correctly', () => {
     var min = new Date(2014, 3, 15)
       , invalid = new Date(2014, 1, 15)
       , valid = new Date(2014, 5, 15)
@@ -78,7 +78,7 @@ describe('Date types', function(){
     ])
   })
 
-  it('should check MAX correctly', function() {
+  it('should check MAX correctly', () => {
     var max = new Date(2014, 7, 15)
       , invalid = new Date(2014, 9, 15)
       , valid = new Date(2014, 5, 15)

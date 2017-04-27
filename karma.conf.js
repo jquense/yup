@@ -21,7 +21,7 @@ module.exports = function (config) {
 
     logLevel: config.LOG_INFO,
 
-    browsers: ['jsdom'],
+    browsers: ['Chrome'],
 
     preprocessors: {
       'tests-webpack.js': ['webpack', 'sourcemap']

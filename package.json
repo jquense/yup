@@ -43,7 +43,7 @@
     "dirty-chai": "^1.2.2",
     "doctoc": "^1.0.0",
     "eslint": "^3.4.0",
-    "eslint-config-jason": "^2.2.0",
+    "eslint-config-jason": "^4.0.0",
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-react": "^6.2.0",
     "karma": "^0.13.14",

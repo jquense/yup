@@ -1,16 +1,9 @@
-var chai  = require('chai')
-  , chaiAsPromised = require('chai-as-promised')
-  , Promise = require('promise/src/es6-extensions')
-  , bool = require('../src/boolean');
+import bool from '../src/boolean';
 
-chai.use(chaiAsPromised);
-chai.should();
+describe('Boolean types', () => {
 
-
-describe('Boolean types', function(){
-
-  it('should CAST correctly', function(){
-    var inst = bool();
+  it('should CAST correctly', () => {
+    let inst = bool();
 
     inst.cast('true').should.equal(true)
     inst.cast('True').should.equal(true)
@@ -26,15 +19,15 @@ describe('Boolean types', function(){
       .castAndShouldFail(inst, 'bar1')
   })
 
-  it('should handle DEFAULT', function(){
-    var inst = bool()
+  it('should handle DEFAULT', () => {
+    let inst = bool()
 
-    chai.expect(inst.default()).to.equal(undefined)
+    expect(inst.default()).to.equal(undefined)
     inst.default(true).required().default().should.equal(true)
   })
 
-  it('should type check', function(){
-    var inst = bool()
+  it('should type check', () => {
+    let inst = bool()
 
     inst.isType(1).should.equal(false)
     inst.isType(false).should.equal(true)
@@ -44,14 +37,14 @@ describe('Boolean types', function(){
 
     inst.isType(34545).should.equal(false)
     inst.isType(new Boolean(false)).should.equal(true)
-    chai.expect(
-      inst.isType(null)).to.equal(false)
+
+    expect(inst.isType(null)).to.equal(false)
+
     inst.nullable().isType(null).should.equal(true)
   })
 
-  it('should VALIDATE correctly', function(){
-
-    var inst = bool().required()
+  it('should VALIDATE correctly', () => {
+    let inst = bool().required()
 
     return Promise.all([
       bool().isValid('1').should.eventually().equal(true),
@@ -60,7 +53,7 @@ describe('Boolean types', function(){
 
       bool().nullable().isValid(null).should.eventually().equal(true),
 
-      inst.validate().should.be.rejected().then(function(err){
+      inst.validate().should.be.rejected().then(err => {
         err.errors.length.should.equal(1)
         err.errors[0].should.contain('required')
       })

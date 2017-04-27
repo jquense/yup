@@ -5,7 +5,7 @@ import number from '../src/number'
 import object from '../src/object'
 import array from '../src/array'
 
-describe('Array types', function(){
+describe('Array types', () => {
 
   describe('casting', ()=> {
     it('should parse json strings', () => {
@@ -34,7 +34,7 @@ describe('Array types', function(){
   })
 
 
-  it('should handle DEFAULT', function(){
+  it('should handle DEFAULT', () => {
     expect(array().default()).to.equal(undefined)
 
     array()
@@ -43,7 +43,7 @@ describe('Array types', function(){
       .should.eql([1, 2, 3])
   })
 
-  it('should type check', function(){
+  it('should type check', () => {
     var inst = array()
 
     inst.isType([]).should.equal(true)
@@ -58,13 +58,13 @@ describe('Array types', function(){
     inst.nullable().isType(null).should.equal(true)
   })
 
-  it('should cast children', function(){
+  it('should cast children', () => {
     array()
       .of(number())
       .cast(['1', '3']).should.eql([1, 3])
   })
 
-  it('should concat subType correctly', function(){
+  it('should concat subType correctly', () => {
     expect(
       array()
         .of(number())
@@ -80,7 +80,7 @@ describe('Array types', function(){
     ).to.equal(false)
   })
 
-  it('should pass options to children', function(){
+  it('should pass options to children', () => {
     array(
       object({ name: string() })
     )
@@ -128,21 +128,21 @@ describe('Array types', function(){
   })
 
 
-  it('should respect abortEarly', function(){
+  it('should respect abortEarly', () => {
     var inst = array()
         .of(object({ str: string().required() }))
-        .test('name', 'oops', function(){ return false })
+        .test('name', 'oops', () => false)
 
     return Promise.all([
       inst.validate([{ str: '' }]).should.be.rejected()
-        .then(function(err){
+        .then(err => {
           err.value.should.eql([{ str: '' }])
           err.errors.length.should.equal(1)
           err.errors.should.eql(['oops'])
         }),
 
       inst.validate([{ str: '' }], { abortEarly: false }).should.be.rejected()
-        .then(function(err) {
+        .then((err) => {
           err.value.should.eql([{ str: '' }])
 
           err.errors.length.should.equal(2)
@@ -151,18 +151,18 @@ describe('Array types', function(){
     ])
   })
 
-  it('should compact arrays', function(){
+  it('should compact arrays', () => {
     var arr  = ['', 1, 0, 4, false, null]
       , inst = array()
 
     inst.compact().cast(arr)
       .should.eql([1, 4])
 
-    inst.compact(function(v){ return v == null })
+    inst.compact(v => v == null)
       .cast(arr).should.eql(['', 1, 0, 4, false])
   })
 
-  it('should ensure arrays', function(){
+  it('should ensure arrays', () => {
     var inst = array().ensure()
 
     inst.cast([1, 4])
