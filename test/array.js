@@ -1,5 +1,3 @@
-import Promise from 'promise/src/es6-extensions';
-
 import string from '../src/string'
 import number from '../src/number'
 import object from '../src/object'

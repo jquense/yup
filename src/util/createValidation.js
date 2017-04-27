@@ -1,4 +1,3 @@
-import Promise from 'universal-promise'
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError'
 import Ref from '../Reference'
@@ -23,7 +22,7 @@ function createErrorFactory({ value, label, resolve, ...opts}) {
 }
 
 export default function createValidation(options) {
-  let { name, message, test, params, useCallback } = options
+  let { name, message, test, params } = options
 
   function validate({ value, path, label, options, ...rest }) {
     let parent = options.parent;
@@ -38,18 +37,15 @@ export default function createValidation(options) {
 
     var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
-    return new Promise((resolve, reject) => {
-      !useCallback
-        ? resolve(test.call(ctx, value))
-        : test.call(ctx, value, (err, valid) => err ? reject(err) : resolve(valid))
-    })
-    .then(validOrError => {
-      if (ValidationError.isError(validOrError))
-        throw validOrError
+    Promise
+      .resolve(test.call(ctx, value))
+      .then(validOrError => {
+        if (ValidationError.isError(validOrError))
+          throw validOrError
 
-      else if (!validOrError)
-        throw createError()
-    })
+        else if (!validOrError)
+          throw createError()
+      })
   }
 
   validate.TEST_NAME = name

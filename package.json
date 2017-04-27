@@ -68,8 +68,7 @@
     "lodash": "^4.13.1",
     "property-expr": "^1.2.0",
     "toposort": "^0.2.10",
-    "type-name": "^2.0.1",
-    "universal-promise": "^1.0.1"
+    "type-name": "^2.0.1"
   },
   "release-script": {
     "defaultDryRun": "false"

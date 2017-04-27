@@ -88,12 +88,22 @@ json separate from validating it, via the `cast` method.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Install
+
+```sh
+npm install -S yup
+```
+
+**Yup always relies on the `Promise` global object to handle asynchronous values.
+If your environment doesn't have Promise, you'll need to include a polyfill.**
+
 ## Usage
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
 
 __try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup__
-```js  
+
+```js
 var yup = require('yup')
 
 var schema = yup.object().shape({
@@ -112,7 +122,7 @@ schema.isValid({
   age: 24
 })
 .then(function(valid){
-  valid // => true  
+  valid // => true
 })
 
 
@@ -164,8 +174,8 @@ var schema = object().shape({
     })
 
 reach(schema, 'nested.arr.num')
-reach(schema, 'nested.arr[].num')  
-reach(schema, 'nested.arr[1].num')  
+reach(schema, 'nested.arr[].num')
+reach(schema, 'nested.arr[1].num')
 reach(schema, 'nested["arr"][1].num')
 ```
 
@@ -230,7 +240,7 @@ let renderable = yup.lazy(value => {
       return string()
     default:
       return mixed()
-  }  
+  }
 })
 
 let renderables = array().of(renderable)
@@ -320,7 +330,7 @@ than after all validations run.
 ```js
 schema.validate({ name: 'jimmy',age: 24 })
   .then(function(value){
-    value // => { name: 'jimmy',age: 24 }  
+    value // => { name: 'jimmy',age: 24 }
   })
 
 schema.validate({ name: 'jimmy', age: 'hi' })
@@ -332,7 +342,7 @@ schema.validate({ name: 'jimmy', age: 'hi' })
 //or with callbacks
 schema.validate({ name: 'jimmy',age: 24 }, function(err, value){
   err === null // true
-  value        // => { name: 'jimmy',age: 24 }  
+  value        // => { name: 'jimmy',age: 24 }
 })
 
 schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
@@ -562,15 +572,6 @@ var asyncJimmySchema = yup.string()
       .then(response => response.responseText === 'true')
   });
 
-// or callback style for asynchrony
-var asynCallbackJimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', test, true);
-
-function test(value, done){
-  // error argument is for exceptions, not an failed tests
-  done(null, value === 'jimmy')
-}
-
 schema.isValid('jimmy').then(...) //=> true
 
 schema.isValid('john').then(...) //=> false
@@ -605,8 +606,6 @@ Options = {
   params: ?object;
   // mark the test as exclusive, meaning only one of the same can be active at once
   exclusive: boolean = false;
-  // opt into the node callback style over promises for async validation
-  useCallback: boolean: false;
 }
 ```
 
