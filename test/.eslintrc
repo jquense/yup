@@ -1,6 +1,6 @@
 
 parser: babel-eslint
-extends: jason/testing
+extends: jason/mocha
 globals:
   TestHelpers: true
   expect: true

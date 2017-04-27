@@ -46,7 +46,13 @@ export function collectErrors({
   return settled(validations).then(results => {
     let nestedErrors = results
       .filter(r => !r.fulfilled)
-      .reduce((arr, r) => arr.concat(r.value), [])
+      .reduce((arr, { value: error }) => {
+        // we are only collecting validation errors
+        if (!ValidationError.isError(error)) {
+          throw error;
+        }
+        return arr.concat(error)
+      }, [])
 
     if (sort) nestedErrors.sort(sort)
 
