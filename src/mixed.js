@@ -169,7 +169,11 @@ SchemaType.prototype = {
   validate(value, options = {}, cb) {
     if (typeof options === 'function') {
       cb = options
+<<<<<<< HEAD
       options = {}
+=======
+      options = {};
+>>>>>>> WIP
     }
 
     let schema = this.resolve(options)
