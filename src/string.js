@@ -45,6 +45,18 @@ inherits(StringSchema, MixedSchema, {
     )
   },
 
+  length(length, msg) {
+    return this.test({
+      name: 'length',
+      exclusive: true,
+      message:  msg || locale.length,
+      params: { length },
+      test(value) {
+        return isAbsent(value) || value.length === this.resolve(length)
+      }
+    })
+  },
+
   min(min, msg) {
     return this.test({
       name: 'min',

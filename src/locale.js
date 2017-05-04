@@ -9,6 +9,7 @@ export let mixed = {
 
 export let string = {
   required:  '${path} is a required field',
+  length:    '${path} must be exactly ${length} characters',
   min:       '${path} must be at least ${min} characters',
   max:       '${path} must be at most ${max} characters',
   matches:   '${path} must match the following: "${regex}"',
