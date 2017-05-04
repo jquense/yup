@@ -335,14 +335,11 @@ SchemaDescription {
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
-#### `mixed.validate(value: any, options: ?object, callback: ?function): Promise<any, ValidationError>`
+#### `mixed.validate(value: any, options: ?object): Promise<any, ValidationError>`
 
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise.
 This method is __asynchronous__ and returns a Promise object, that is fulfilled with the value, or rejected
-with a `ValidationError`. If you are more comfortable with Node style callbacks, then you can provide one
-to be called when the validation is complete (called with the Error as the first argument, and value
-as the second).
-
+with a `ValidationError`.
 
 The `options` argument is an object hash containing any schema options you may want to override
 (or specify for the first time).
@@ -375,25 +372,12 @@ schema.validate({ name: 'jimmy', age: 'hi' })
     err.name   // 'ValidationError'
     err.errors // => ['age must be a number']
   })
-
-//or with callbacks
-schema.validate({ name: 'jimmy',age: 24 }, function(err, value){
-  err === null // true
-  value        // => { name: 'jimmy',age: 24 }
-})
-
-schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
-  err.name   // 'ValidationError'
-  err.errors // => ['age must be a number']
-  value === undefined // true
-})
 ```
 
-#### `mixed.isValid(value: any, options: ?object, callback: ?function): Promise<boolean>`
+#### `mixed.isValid(value: any, options: ?object: Promise<boolean>`
 
-Returns `true` when the passed in value matches the schema. `isValid`
-is __asynchronous__ and returns a Promise object. If you are more comfortable with Node style callbacks,
-providing a function as the last argument will opt into that interface.
+Returns `true` when the passed in value matches the schema. `isValid` is __asynchronous__ and
+returns a Promise object.
 
 Takes the same options as `validate()`.
 
@@ -578,7 +562,7 @@ inst.validate({ isBig: false, count: 4 })
 ```
 
 
-#### `mixed.test(name: string, message: string, test: function, callbackStyleAsync: ?boolean): Schema`
+#### `mixed.test(name: string, message: string, test: function): Schema`
 
 Adds a test function to the validation chain. Tests are run after any object is cast.
 Many types have some tests built in, but you can create custom ones easily.
@@ -587,9 +571,7 @@ A consequence of this is that test execution order cannot be guaranteed.
 
 All tests must provide a `name`, an error `message` and a validation function that must return
 `true` or `false` or a `ValidationError`. To make a test async return a promise that resolves `true`
-or `false` or a `ValidationError`. If you prefer the Node callback style, you can pass `true` for `callbackStyleAsync`
-and the validation function will pass in an additional `done` function as the last parameter to
- be called with the validity.
+or `false` or a `ValidationError`.
 
 for the `message` argument you can provide a string which is will interpolate certain values
 if specified using the `${param}` syntax. By default all test messages are passed a `path` value
