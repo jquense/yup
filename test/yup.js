@@ -62,7 +62,7 @@ describe('Yup', function(){
     })
   })
 
-  it('should REACH correctly', function(done){
+  it('should REACH correctly', async () => {
     var num = number()
       , inst = object().shape({
         num: number().max(4),
@@ -80,10 +80,8 @@ describe('Yup', function(){
     reach(inst, 'nested.arr[1].num').should.equal(num)
     reach(inst, 'nested["arr"][1].num').should.not.equal(number())
 
-    reach(inst, 'nested.arr[].num').isValid(5, function (err, valid) {
-      valid.should.equal(true)
-      done(err)
-    })
+    let valid = await reach(inst, 'nested.arr[].num').isValid(5)
+    valid.should.equal(true)
   })
 
   it('should REACH conditionally correctly', function(){

@@ -18,6 +18,7 @@ json separate from validating it, via the `cast` method.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [Install](#install)
 - [Usage](#usage)
 - [API](#api)
   - [`yup`](#yup)

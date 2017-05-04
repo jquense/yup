@@ -166,19 +166,15 @@ SchemaType.prototype = {
     return value
   },
 
-  validate(value, options = {}, cb) {
+  validate(value, options = {}) {
     if (typeof options === 'function') {
       cb = options
-<<<<<<< HEAD
       options = {}
-=======
-      options = {};
->>>>>>> WIP
     }
 
     let schema = this.resolve(options)
 
-    return nodeify(schema._validate(value, options), cb)
+    return schema._validate(value, options)
   },
 
   _validate(_value, options = {}) {
@@ -217,13 +213,13 @@ SchemaType.prototype = {
   },
 
 
-  isValid(value, options, cb) {
+  isValid(value, options) {
     if (typeof options === 'function') {
       cb = options
       options = {}
     }
 
-    return nodeify(this
+    return this
       .validate(value, options)
       .then(() => true)
       .catch(err => {
@@ -231,7 +227,7 @@ SchemaType.prototype = {
           return false
 
         throw err
-      }), cb)
+      })
     },
 
   getDefault({ context, parent }) {

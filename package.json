@@ -4,8 +4,8 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "karma start --single-run",
-    "tdd": "karma start",
+    "test": "jest",
+    "tdd": "jest --watch",
     "lint": "eslint src test --fix",
     "clean": "rimaf ./lib/*",
     "toc": "doctoc README.md --github",
@@ -25,18 +25,20 @@
     "url": "https://github.com/jquense/yup/issues"
   },
   "homepage": "https://github.com/jquense/yup",
+  "jest": {
+    "setupTestFrameworkScriptFile": "./test-setup.js",
+    "roots": [
+      "test"
+    ],
+    "testRegex": "\\.js",
+    "testPathIgnorePatterns": [
+      "helpers\\.js"
+    ]
+  },
   "devDependencies": {
     "babel-cli": "^6.6.5",
-    "babel-core": "^6.7.4",
     "babel-eslint": "^6.0.2",
-    "babel-loader": "^6.2.4",
-    "babel-plugin-add-module-exports": "^0.1.2",
-    "babel-plugin-transform-object-assign": "^6.5.0",
     "babel-polyfill": "^6.7.4",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-preset-es2015-loose": "^7.0.0",
-    "babel-preset-react": "^6.5.0",
-    "babel-preset-stage-0": "^6.5.0",
     "benchmark": "^2.0.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
@@ -46,26 +48,18 @@
     "eslint-config-jason": "^4.0.0",
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-react": "^6.2.0",
-    "karma": "^0.13.14",
-    "karma-chrome-launcher": "^0.2.0",
-    "karma-jsdom-launcher": "^1.0.0",
-    "karma-mocha": "^0.2.0",
-    "karma-mocha-reporter": "^1.0.2",
-    "karma-sinon-chai": "^1.2.3",
-    "karma-sourcemap-loader": "^0.3.5",
-    "karma-webpack": "^1.7.0",
-    "mocha": "^1.21.4",
     "mt-changelog": "^0.6.2",
-    "node-libs-browser": "^0.5.2",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^0.5.2",
-    "sinon": "^1.17.5",
-    "sinon-chai": "^2.8.0",
-    "webpack": "^1.12.2"
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.10.0"
   },
   "dependencies": {
+    "babel-jest": "^19.0.0",
+    "babel-preset-jason": "^3.0.0",
     "case": "^1.2.1",
     "fn-name": "~1.0.1",
+    "jest": "^19.0.2",
     "lodash": "^4.17.0",
     "property-expr": "^1.2.0",
     "toposort": "^0.2.10",
