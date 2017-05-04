@@ -168,6 +168,26 @@ describe('String types', function(){
     ])
   })
 
+  it('should check LENGTH correctly', function(){
+    var v = string().length(5);
+    var obj = object({
+      len: number(),
+      name: string().length(ref('len'))
+    })
+
+    return Promise.all([
+      v.isValid('exact').should.eventually().equal(true),
+      v.isValid('sml').should.eventually().equal(false),
+      v.isValid('biiiig').should.eventually().equal(false),
+
+      v.isValid(null).should.eventually().equal(false),
+      v.nullable().isValid(null).should.eventually().equal(true),
+
+      obj.isValid({ len: 5, name: 'foo' }).should.eventually().equal(false)
+
+    ])
+  })
+
   it('should validate transforms', function(){
     return Promise.all([
       string().trim().isValid(' 3  ').should.eventually().equal(true),
