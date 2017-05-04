@@ -1,11 +1,24 @@
 {
   "presets": [
-    "es2015-loose",
-    "react",
-    "stage-0"
+    [
+      "jason",
+      {
+        "debug": false
+      }
+    ]
   ],
-  "plugins": [
-    "transform-object-assign",
-    "add-module-exports"
-  ]
+  "env": {
+    "test": {
+      "presets": [
+        [
+          "jason",
+          {
+            "debug": false,
+            "target": "node",
+            "targets": { "node": "current" }
+          }
+        ]
+      ]
+    }
+  }
 }

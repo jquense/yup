@@ -37,7 +37,7 @@ export default function createValidation(options) {
 
     var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
-    Promise
+    return Promise
       .resolve(test.call(ctx, value))
       .then(validOrError => {
         if (ValidationError.isError(validOrError))

@@ -1,5 +1,3 @@
-import Promise from 'universal-promise'
-
 let isThenable = value => value && typeof value.then === 'function';
 let assertThenable = value => {
   if (!isThenable(value)) return value;
@@ -44,6 +42,7 @@ export default class ZalgoPromise {
     if (assertThenable(value)) return value;
     return new ZalgoPromise(sync, resolve => resolve(value));
   }
+
   static reject(value, sync) {
     if (!sync) return Promise.reject(value);
     if (assertThenable(value)) return value;
