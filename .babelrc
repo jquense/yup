@@ -1,24 +1,5 @@
 {
   "presets": [
-    [
-      "jason",
-      {
-        "debug": false
-      }
-    ]
-  ],
-  "env": {
-    "test": {
-      "presets": [
-        [
-          "jason",
-          {
-            "debug": false,
-            "target": "node",
-            "targets": { "node": "current" }
-          }
-        ]
-      ]
-    }
-  }
+    ["jason", {"debug": false }]
+  ]
 }

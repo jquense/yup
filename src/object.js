@@ -121,13 +121,12 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   _validate(_value, opts = {}) {
-    let endEarly, recursive;
     let errors = []
+    let sync = opts.sync
+    let endEarly = this._option('abortEarly', opts)
+    let recursive = this._option('recursive', opts)
     let originalValue = opts.originalValue != null ?
       opts.originalValue : _value
-
-    endEarly = this._option('abortEarly', opts)
-    recursive = this._option('recursive', opts)
 
     opts = { ...opts, __validating: true, originalValue };
 
@@ -167,6 +166,7 @@ inherits(ObjectSchema, MixedSchema, {
         })
 
         return runValidations({
+          sync,
           validations,
           value,
           errors,
@@ -189,12 +189,12 @@ inherits(ObjectSchema, MixedSchema, {
     var next = this.clone()
       , fields = Object.assign(next.fields, schema);
 
-    if (!Array.isArray(excludes[0]))
-      excludes = [excludes]
-
     next.fields = fields
 
     if (excludes.length) {
+      if (!Array.isArray(excludes[0]))
+        excludes = [excludes]
+
       let keys = excludes.map(([first, second]) => `${first}-${second}`);
 
       next._excludedEdges = next._excludedEdges.concat(keys)

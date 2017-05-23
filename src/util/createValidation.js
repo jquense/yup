@@ -1,6 +1,7 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError'
 import Ref from '../Reference'
+import ZalgoPromise from './ZalgoPromise'
 
 let formatError = ValidationError.formatError
 
@@ -32,7 +33,7 @@ function createErrorFactory({ value, label, resolve, originalValue, ...opts}) {
 export default function createValidation(options) {
   let { name, message, test, params } = options
 
-  function validate({ value, path, label, options, originalValue, ...rest }) {
+  function validate({ value, path, label, options, originalValue, sync, ...rest }) {
     let parent = options.parent;
     var resolve = (value) => Ref.isRef(value)
       ? value.getValue(parent, options.context)
@@ -45,8 +46,8 @@ export default function createValidation(options) {
 
     var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
-    return Promise
-      .resolve(test.call(ctx, value))
+    return ZalgoPromise
+      .resolve(test.call(ctx, value), sync)
       .then(validOrError => {
         if (ValidationError.isError(validOrError))
           throw validOrError

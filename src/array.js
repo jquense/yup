@@ -56,6 +56,7 @@ inherits(ArraySchema, MixedSchema, {
 
   _validate(_value, options = {}) {
     let errors = []
+    let sync = options.sync
     let path = options.path
     let subType   = this._subType
     let endEarly  = this._option('abortEarly', options)
@@ -94,6 +95,7 @@ inherits(ArraySchema, MixedSchema, {
         })
 
         return runValidations({
+          sync,
           path,
           value,
           errors,
