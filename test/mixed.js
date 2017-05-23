@@ -312,9 +312,7 @@ describe('Mixed Types ', () => {
 
   it('should allow custom validation', async () => {
     let inst = string()
-      .test('name', 'test a', val =>
-        Promise.resolve(val === 'jim')
-      )
+      .test('name', 'test a', val => val === 'jim')
 
     return inst.validate('joe').should.be.rejected().then(e => {
       e.errors[0].should.equal('test a')
