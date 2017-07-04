@@ -704,6 +704,16 @@ v.isValid('hi').should.eventually().equal(true)
 v.isValid('nope').should.eventually().equal(false)
 ```
 
+#### `string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`
+
+An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true, 
+short circuits the regex test when the value is an empty string
+
+```javascript
+var v = string().matches(/(hi|bye)/, { excludeEmptyString: true });
+v.isValid('').should.eventually().equal(false)
+```
+
 #### `string.email(message: ?string): Schema`
 
 Validates the value as an email address via a regex.
