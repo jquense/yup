@@ -20,12 +20,9 @@ describe( 'Mixed Types ', function(){
     inst.should.be.an.instanceOf(mixed)
     next.should.be.an.instanceOf(mixed)
 
-    //console.log(next)
     return Promise.all([
-      //inst.isValid().should.eventually().equal(true),
-      next.isValid(null).then(f => {
-        console.log('here', f)
-      })
+      inst.isValid().should.eventually().equal(true),
+      next.isValid(null)
     ])
   })
 

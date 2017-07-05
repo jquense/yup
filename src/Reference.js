@@ -28,6 +28,7 @@ export default class Reference {
     this._get = getter(this.path, true)
     this.map = mapFn || (value => value);
   }
+  resolve() { return this; }
 
   cast(value, { parent, context }) {
     return this.getValue(parent, context)

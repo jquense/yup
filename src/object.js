@@ -77,7 +77,7 @@ inherits(ObjectSchema, MixedSchema, {
     if (!this._typeCheck(value))
       return value;
 
-    var fields = this.fields
+    let fields = this.fields
       , strip  = this._option('stripUnknown', options) === true
       , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
       , props  = this._nodes.concat(extra);
@@ -96,11 +96,14 @@ inherits(ObjectSchema, MixedSchema, {
         let fieldValue;
         let strict = field._options && field._options.strict;
 
+        // safe to mutate since this is fired in sequence
+        innerOptions.path = makePath`${options.path}.${prop}`;
+        innerOptions.value = value[prop];
+
+        field = field.resolve(innerOptions);
+
         if (field._strip === true)
           return
-
-        // should be safe to mutate since this is fired in sequence
-        innerOptions.path = makePath`${options.path}.${prop}`;
 
         fieldValue = !options.__validating || !strict
           ? field.cast(value[prop], innerOptions)
