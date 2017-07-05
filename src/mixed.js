@@ -167,13 +167,7 @@ SchemaType.prototype = {
   },
 
   validate(value, options = {}) {
-    if (typeof options === 'function') {
-      cb = options
-      options = {}
-    }
-
     let schema = this.resolve(options)
-
     return schema._validate(value, options)
   },
 
@@ -214,11 +208,6 @@ SchemaType.prototype = {
 
 
   isValid(value, options) {
-    if (typeof options === 'function') {
-      cb = options
-      options = {}
-    }
-
     return this
       .validate(value, options)
       .then(() => true)
@@ -411,7 +400,7 @@ SchemaType.prototype = {
     return next
   },
 
-  _option(key, overrides){
+  _option(key, overrides) {
     return has(overrides, key)
       ? overrides[key] : this._options[key]
   },
