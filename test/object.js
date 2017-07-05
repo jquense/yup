@@ -305,7 +305,20 @@ describe('Object types', () => {
       })
   })
 
+  it('should handle field striping with `when`', () => {
+    let inst = object().shape({
+          other: bool(),
+          prop: mixed().when('other', {
+            is: true,
+            then: s => s.strip()
+          }),
+        })
 
+    inst.cast({ other: true, prop: 'bar'})
+      .should.eql({
+        other: true
+      })
+  })
 
   it('should allow refs', async function() {
     let schema = object({
@@ -377,6 +390,7 @@ describe('Object types', () => {
         nested: lazy(value => {
           value.should.equal('foo')
           done()
+          return string()
         })
       })
 
@@ -388,6 +402,7 @@ describe('Object types', () => {
       let inst = lazy((_, options) => {
         options.should.equal(opts)
         done()
+        return string()
       })
 
       inst.cast({ nested: 'foo' }, opts)
