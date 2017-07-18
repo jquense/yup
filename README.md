@@ -138,6 +138,19 @@ schema.cast({
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
+### Using a custom locale dictionary
+```js
+import { setLocale } from 'yup/lib/locale'
+
+setLocale({
+  string: {
+    email: 'Invalid',
+  },
+})
+
+// Now use Yup schemas AFTER you defined your custom dicionary
+```
+
 ## API
 
 ### `yup`
