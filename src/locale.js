@@ -3,8 +3,6 @@ import { getLocale } from './customLocale'
 
 const customLocale = getLocale()
 
-console.log('customLocale', customLocale)
-
 export let mixed = merge(customLocale.mixed, {
   default:   '${path} is invalid',
   notType:   '${path} must be a `${type}` type, got: "${value}" instead',
