@@ -20,6 +20,7 @@ json separate from validating it, via the `cast` method.
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
 - [API](#api)
   - [`yup`](#yup)
     - [`yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
