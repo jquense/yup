@@ -151,6 +151,12 @@ setLocale({
 
 // Now use Yup schemas AFTER you defined your custom dicionary
 ```
+Why do you have to set the locales before you use Yup at all?
+As the locale is used directly from the object vars across the project once they boot up
+they'll stick to those values. This is related to the very way modules and objects are interpreted in JS.
+
+To be able to dynamically update the locale dict at any time in the app a more signicant change needs to be made. 
+To instead of the modules of the lib to use `locale.mixed` to be something like `locale().mixed`, so we can change the dict value whenever we want. This is for the future.
 
 ## API
 
