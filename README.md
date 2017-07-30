@@ -20,6 +20,7 @@ json separate from validating it, via the `cast` method.
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
 - [API](#api)
   - [`yup`](#yup)
     - [`yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
@@ -136,6 +137,33 @@ schema.cast({
   createdOn: '2014-09-23T19:25:25Z'
 })
 // => { name: 'jimmy', age: 24, createdOn: Date }
+```
+
+### Using a custom locale dictionary
+Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
+If any message is missing in the custom dictionary the error message will default to Yup's one.
+```js
+import { setLocale } from 'yup/lib/locale'
+
+setLocale({
+  mixed: {
+    default: 'Não é válido',
+  },
+  number: {
+    max: 'Deve ser maior que ${min}',
+  },
+})
+
+// Now use Yup schemas AFTER you defined your custom dicionary
+const schema = yup.object().shape({
+  name: yup.string(),
+  age: yup.number().min(18),
+})
+schema.validate({ name: 'jimmy', age: 'hi' })
+  .catch(function(err){
+    err.name   // 'ValidationError'
+    err.errors // => ['Deve ser maior que 18']
+  })
 ```
 
 ## API
