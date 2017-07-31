@@ -1,12 +1,11 @@
 import mixed from '../src/mixed';
 import object from '../src/object';
 import string from '../src/string';
-import ValidationError from '../src/ValidationError';
 import reach from '../src/util/reach';
 
 let noop = () => {}
 
-describe( 'Mixed Types ', function(){
+describe('Mixed Types ', () => {
 
   it('should be immutable', () => {
     let inst = mixed(), next;
