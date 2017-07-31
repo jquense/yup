@@ -121,13 +121,15 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   _validate(_value, opts = {}) {
-    var errors = []
-      , endEarly, recursive;
+    let endEarly, recursive;
+    let errors = []
+    let originalValue = opts.originalValue != null ?
+      opts.originalValue : _value
 
     endEarly = this._option('abortEarly', opts)
     recursive = this._option('recursive', opts)
 
-    opts = {...opts, __validating: true };
+    opts = { ...opts, __validating: true, originalValue };
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
@@ -138,14 +140,22 @@ inherits(ObjectSchema, MixedSchema, {
           return value
         }
 
+        originalValue = originalValue || value
+
         let validations = this._nodes.map(key => {
-          var path  = makePath`${opts.path}.${key}`
-            , field = this.fields[key]
-            , innerOptions = { ...opts, path, parent: value };
+          let path  = makePath`${opts.path}.${key}`
+          let field = this.fields[key]
+
+          let innerOptions = {
+            ...opts,
+            path,
+            parent: value,
+            originalValue: originalValue[key],
+          };
 
           if (field) {
             // inner fields are always strict:
-            // 1. this isn't strict so we just cast the value leaving nested values already cast
+            // 1. this isn't strict so the casting will also have cast inner values
             // 2. this is strict in which case the nested values weren't cast either
             innerOptions.strict = true;
 

@@ -40,6 +40,13 @@ describe('ValidationError', function() {
       str.should.contain('null')
     })
 
+    it(`should include "NaN" in the message if null is provided as a param`, function() {
+      const str = ValidationError.formatError('${path} value is ${min}', {
+        min: NaN
+      })
+      str.should.contain('NaN')
+    })
+
     it(`should include 0 in the message if 0 is provided as a param`, function() {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: 0
