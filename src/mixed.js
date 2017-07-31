@@ -7,6 +7,7 @@ import merge from './util/merge';
 import isAbsent from './util/isAbsent';
 import cloneDeep from './util/clone';
 import createValidation from './util/createValidation';
+import printValue from './util/printValue';
 import BadSet from './util/set';
 import Ref from './Reference';
 
@@ -140,14 +141,14 @@ SchemaType.prototype = {
       options.assert !== false &&
       resolvedSchema.isType(result) !== true
     ) {
-      let formattedValue = JSON.stringify(value);
-      let formattedResult = JSON.stringify(result);
+      let formattedValue = printValue(value);
+      let formattedResult = printValue(result);
       throw new TypeError(
         `The value of ${options.path || 'field'} could not be cast to a value ` +
         `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
-        `attempted value: ${JSON.stringify(value)} \n` +
+        `attempted value: ${formattedValue} \n` +
         ((formattedResult !== formattedValue)
-          ? `result of cast: ${JSON.stringify(result)}` : '')
+          ? `result of cast: ${formattedResult}` : '')
       );
     }
 
@@ -173,6 +174,8 @@ SchemaType.prototype = {
 
   _validate(_value, options = {}) {
     let value  = _value;
+    let originalValue = options.originalValue != null ?
+      options.originalValue : _value
 
     let isStrict = this._option('strict', options)
     let endEarly = this._option('abortEarly', options)
@@ -181,11 +184,10 @@ SchemaType.prototype = {
     let label = this._label
 
     if (!isStrict) {
-
       value = this._cast(value, { assert: false, ...options })
     }
     // value is cast, we can check if it meets type requirements
-    let validationParams = { value, path, schema: this, options, label }
+    let validationParams = { value, path, schema: this, options, label, originalValue }
     let initialTests = []
 
     if (this._typeError)
@@ -429,11 +431,3 @@ Object.keys(aliases).forEach(method => {
   )
 })
 
-function nodeify(promise, cb){
-  if (typeof cb !== 'function') return promise
-
-  promise.then(
-    val => cb(null, val),
-    err => cb(err)
-  )
-}

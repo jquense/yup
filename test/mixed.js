@@ -1,7 +1,7 @@
 import mixed from '../src/mixed';
 import object from '../src/object';
 import string from '../src/string';
-import ValidationError from '../src/ValidationError';
+import number from '../src/number';
 import reach from '../src/util/reach';
 
 let noop = () => {}
@@ -30,6 +30,20 @@ describe( 'Mixed Types ', function(){
     let inst = mixed().default('hello')
 
     inst.cast(undefined).should.equal('hello')
+  })
+
+  it('should warn about null types', async () => {
+    let error = await string().strict()
+      .validate(null).should.be.rejected()
+
+    expect(error.message).to.match(/If "null" is intended/)
+  })
+
+  it('should print the original value', async () => {
+    let error = await number()
+      .validate('john').should.be.rejected()
+
+    expect(error.message).to.match(/the final value was: `NaN`.+cast from the value `"john"`/)
   })
 
   it('should check types', async () => {
