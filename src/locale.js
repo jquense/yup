@@ -1,13 +1,25 @@
+import printValue from './util/printValue';
 import { getLocale } from './customLocale'
 
 const customLocale = getLocale()
 
 export let mixed = {
   default:   '${path} is invalid',
-  notType:   '${path} must be a `${type}` type, got: "${value}" instead',
   required:  '${path} is a required field',
   oneOf:     '${path} must be one the following values: ${values}',
   notOneOf:  '${path} must not be one the following values: ${values}',
+  notType:   ({ path, type, value, originalValue }) => {
+    let isCast = originalValue != null && originalValue !== value
+    let msg = `${path} must be a \`${type}\` type, ` +
+      `but the final value was: \`${printValue(value, true)}\`` + (isCast ?
+      ` (cast from the value \`${printValue(originalValue, true)}\`).` : '.')
+
+    if (value === null) {
+      msg += `\n If "null" is intended as an empty value be sure to mark the schema as \`.nullable()\``
+    }
+
+    return msg;
+  },
   ...customLocale.mixed,
 }
 
