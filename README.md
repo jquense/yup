@@ -98,8 +98,13 @@ json separate from validating it, via the `cast` method.
 npm install -S yup
 ```
 
-**Yup always relies on the `Promise` global object to handle asynchronous values.
-If your environment doesn't have Promise, you'll need to include a polyfill.**
+Yup always relies on the `Promise` global object to handle asynchronous values as well `Set`.
+For browsers that do not support these, you'll need to include a polyfill, such as core-js:
+
+```js
+import 'core-js/es6/promise';
+import 'core-js/es6/set';
+```
 
 ## Usage
 
@@ -734,7 +739,7 @@ v.isValid('nope').should.eventually().equal(false)
 
 #### `string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`
 
-An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true, 
+An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true,
 short circuits the regex test when the value is an empty string
 
 ```javascript
