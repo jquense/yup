@@ -6,8 +6,8 @@ const customLocale = getLocale()
 export let mixed = {
   default:   '${path} is invalid',
   required:  '${path} is a required field',
-  oneOf:     '${path} must be one the following values: ${values}',
-  notOneOf:  '${path} must not be one the following values: ${values}',
+  oneOf:     '${path} must be one of the following values: ${values}',
+  notOneOf:  '${path} must not be one of the following values: ${values}',
   notType:   ({ path, type, value, originalValue }) => {
     let isCast = originalValue != null && originalValue !== value
     let msg = `${path} must be a \`${type}\` type, ` +
