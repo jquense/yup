@@ -8,15 +8,23 @@ function resolveParams(oldParams, newParams, resolve) {
   return mapValues({ ...oldParams, ...newParams }, resolve)
 }
 
-function createErrorFactory({ value, label, resolve, ...opts}) {
+function createErrorFactory({ value, label, resolve, originalValue, ...opts}) {
   return function createError({ path = opts.path, message = opts.message, type = opts.name, params } = {}) {
-    params = { path, value, label, ...resolveParams(opts.params, params, resolve) };
+    params = {
+      path,
+      value,
+      originalValue,
+      label,
+      ...resolveParams(opts.params, params, resolve)
+    };
 
-    return Object.assign(new ValidationError(
-        typeof message ==='string' ? formatError(message, params) : message
+    return Object.assign(
+      new ValidationError(
+        formatError(message, params)
       , value
       , path
-      , type)
+      , type
+    )
     , { params })
   }
 }
@@ -24,14 +32,14 @@ function createErrorFactory({ value, label, resolve, ...opts}) {
 export default function createValidation(options) {
   let { name, message, test, params } = options
 
-  function validate({ value, path, label, options, ...rest }) {
+  function validate({ value, path, label, options, originalValue, ...rest }) {
     let parent = options.parent;
     var resolve = (value) => Ref.isRef(value)
       ? value.getValue(parent, options.context)
       : value
 
     var createError = createErrorFactory({
-        message, path, value, params
+        message, path, value, originalValue, params
       , label, resolve, name
     })
 
