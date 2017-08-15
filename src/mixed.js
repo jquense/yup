@@ -1,14 +1,15 @@
 import has from 'lodash/has';
+import cloneDeepWith from 'lodash/cloneDeepWith';
+import toArray from 'lodash/toArray';
 
 import { mixed as locale } from './locale';
 import Condition from './Condition';
 import runValidations from './util/runValidations';
 import merge from './util/merge';
+import isSchema from './util/isSchema';
 import isAbsent from './util/isAbsent';
-import cloneDeep from './util/clone';
 import createValidation from './util/createValidation';
 import printValue from './util/printValue';
-import BadSet from './util/set';
 import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
@@ -41,8 +42,8 @@ export default function SchemaType(options = {}){
   this._conditions  = []
   this._options     = { abortEarly: true, recursive: true }
   this._exclusive   = Object.create(null)
-  this._whitelist   = new BadSet()
-  this._blacklist   = new BadSet()
+  this._whitelist   = new Set()
+  this._blacklist   = new Set()
   this.tests        = []
   this.transforms   = []
 
@@ -66,7 +67,12 @@ SchemaType.prototype = {
     if (this._mutate)
       return this;
 
-    return cloneDeep(this);
+    // if the nested value is a schema we can skip cloning, since
+    // they are already immutable
+    return cloneDeepWith(this, (value) => {
+      if (isSchema(value) && value !== this)
+        return value
+    });
   },
 
   label(label) {
@@ -233,7 +239,7 @@ SchemaType.prototype = {
 
       return typeof defaultValue === 'function'
         ? defaultValue.call(this)
-        : cloneDeep(defaultValue)
+        : cloneDeepWith(defaultValue)
     }
 
     var next = this.clone()
@@ -348,7 +354,8 @@ SchemaType.prototype = {
     var next = this.clone();
 
     enums.forEach(val => {
-      next._blacklist.delete(val)
+      if (next._blacklist.has(val))
+        next._blacklist.delete(val)
       next._whitelist.add(val)
     })
 
@@ -357,10 +364,10 @@ SchemaType.prototype = {
       name: 'oneOf',
       test(value) {
         let valids = this.schema._whitelist
-        if (valids.length && !(value === undefined || valids.has(value)))
+        if (valids.size && !(value === undefined || valids.has(value)))
           return this.createError({
             params: {
-              values: valids.values().join(', ')
+              values: toArray(valids).join(', ')
             }
           })
         return true
@@ -383,10 +390,10 @@ SchemaType.prototype = {
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist
-        if (invalids.length && invalids.has(value))
+        if (invalids.size && invalids.has(value))
           return this.createError({
             params: {
-              values: invalids.values().join(', ')
+              values: toArray(invalids).join(', ')
             }
           })
         return true
@@ -430,4 +437,3 @@ Object.keys(aliases).forEach(method => {
     SchemaType.prototype[alias] = SchemaType.prototype[method]
   )
 })
-

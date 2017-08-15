@@ -6,7 +6,7 @@ import reach from '../src/util/reach';
 
 let noop = () => {}
 
-describe( 'Mixed Types ', function(){
+describe('Mixed Types ', () => {
 
   it('should be immutable', () => {
     let inst = mixed(), next;
