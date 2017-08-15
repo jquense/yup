@@ -61,6 +61,9 @@ inherits(ArraySchema, MixedSchema, {
     let endEarly  = this._option('abortEarly', options)
     let recursive = this._option('recursive', options)
 
+    let originalValue = options.originalValue != null ?
+      options.originalValue : _value
+
     return MixedSchema.prototype._validate
       .call(this, _value, options)
       .catch(propagateErrors(endEarly, errors))
@@ -70,6 +73,8 @@ inherits(ArraySchema, MixedSchema, {
           return value
         }
 
+        originalValue = originalValue || value
+
         let validations = value.map((item, idx) => {
           var path  = makePath`${options.path}[${idx}]`
 
@@ -78,7 +83,8 @@ inherits(ArraySchema, MixedSchema, {
             ...options,
             path,
             strict: true,
-            parent: value
+            parent: value,
+            originalValue: originalValue[idx]
           };
 
           if (subType.validate)
