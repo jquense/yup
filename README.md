@@ -148,7 +148,7 @@ schema.cast({
 Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
 If any message is missing in the custom dictionary the error message will default to Yup's one.
 ```js
-import { setLocale } from 'yup/lib/locale'
+import { setLocale } from 'yup/lib/customLocale'
 
 setLocale({
   mixed: {
