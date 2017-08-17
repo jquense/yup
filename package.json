@@ -28,7 +28,9 @@
   "jest": {
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test-setup.js",
-    "roots": ["test"],
+    "roots": [
+      "test"
+    ],
     "testRegex": "\\.js",
     "testPathIgnorePatterns": [
       "helpers\\.js"
@@ -38,10 +40,9 @@
     }
   },
   "devDependencies": {
-    "babel-jest": "^19.0.0",
+    "babel-jest": "^20.0.3",
     "babel-cli": "^6.6.5",
     "babel-eslint": "^6.0.2",
-    "babel-jest": "^20.0.3",
     "babel-polyfill": "^6.7.4",
     "babel-preset-jason": "^3.0.0",
     "benchmark": "^2.0.0",
@@ -61,7 +62,6 @@
     "sinon-chai": "^2.10.0"
   },
   "dependencies": {
-    "babel-preset-jason": "^3.0.0",
     "case": "^1.2.1",
     "fn-name": "~1.0.1",
     "lodash": "^4.17.0",
