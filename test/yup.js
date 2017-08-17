@@ -6,10 +6,6 @@ import { object, array, string, lazy, number } from '../src';
 
 describe('Yup', function(){
 
-  it('should export', function(){
-    require('../lib') // eslint-disable-line global-require
-  })
-
   it('cast should not assert on undefined', () => {
     (() => string().cast(undefined))
       .should.not.throw()
