@@ -390,8 +390,7 @@ schema.validate({ name: 'jimmy', age: 'hi' }, function(err, value){
 
 #### `mixed.isValid(value: any, options: ?object, callback: ?function): Promise<boolean>`
 
-Returns `true` when the passed in value matches the schema. if `false` then the schema also has a `.errors`
-field which is an array of validation error messages (strings), thrown by the schema. `isValid`
+Returns `true` when the passed in value matches the schema. `isValid`
 is __asynchronous__ and returns a Promise object. If you are more comfortable with Node style callbacks,
 providing a function as the last argument will opt into that interface.
 
