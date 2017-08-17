@@ -40,9 +40,10 @@
     }
   },
   "devDependencies": {
-    "babel-jest": "^20.0.3",
     "babel-cli": "^6.6.5",
     "babel-eslint": "^6.0.2",
+    "babel-jest": "^20.0.3",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-polyfill": "^6.7.4",
     "babel-preset-jason": "^3.0.0",
     "benchmark": "^2.0.0",
