@@ -70,7 +70,7 @@ describe('Mixed Types ', () => {
 
     let err = await inst.validate(6).should.be.rejected()
 
-    err.errors[0].should.equal('this must be one the following values: 5, hello')
+    err.errors[0].should.equal('this must be one of the following values: 5, hello')
   })
 
   it('should ignore absent values', () => {
@@ -108,7 +108,7 @@ describe('Mixed Types ', () => {
       inst.isValid(5).should.eventually().equal(false),
 
       inst.validate(5).should.be.rejected().then(err => {
-        err.errors[0].should.equal('this must not be one the following values: 5, hello')
+        err.errors[0].should.equal('this must not be one of the following values: 5, hello')
       }),
       inst.oneOf([5]).isValid(5).should.eventually().equal(true),
 
