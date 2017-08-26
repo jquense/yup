@@ -1,9 +1,14 @@
 v0.22.0 - Sat, 26 Aug 2017 14:48:57 GMT
 ---------------------------------------
 
+** Breaking **
+- Use native Set and lodash CloneDeep: (#109)[https://github.com/jquense/yup/pull/109]
 
-
-
+** Fixes and Features
+- Better custom locale support: (#105)[https://github.com/jquense/yup/pull/105]
+- fix some messages: (#112)[https://github.com/jquense/yup/pull/112]
+- Clearer errors for common mistakes: (#108)[https://github.com/jquense/yup/pull/108]
+- New string validation length: (#67)[https://github.com/jquense/yup/pull/67]
 
 v0.21.3 - Wed, 18 Jan 2017 15:39:25 GMT
 ---------------------------------------
@@ -291,10 +296,10 @@ __breaking__
 __other changes__
 - `transform()` now passes the original value to each transformer. Allowing you to recover from a bad transform.
 - added the `equals()` alias for `oneOf`
-- 
+-
 ## 0.5.0
 __breaking__
 - isValid is now async, provide a node style callback, or use the promise the method returns to read the validity. This change allows for more robust validations, specifically remote ones for client code (or db queries for server code). The cast method is still, and will remain, synchronous.
-- 
+-
 __other changes__
 - added validate method (also async) which resolves to the value, and rejects with a new ValidationError

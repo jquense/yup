@@ -57,6 +57,7 @@ json separate from validating it, via the `cast` method.
     - [`string.min(limit: number | Ref, message: ?string): Schema`](#stringminlimit-number--ref-message-string-schema)
     - [`string.max(limit: number | Ref, message: ?string): Schema`](#stringmaxlimit-number--ref-message-string-schema)
     - [`string.matches(regex: Regex, message: ?string): Schema`](#stringmatchesregex-regex-message-string-schema)
+    - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
     - [`string.email(message: ?string): Schema`](#stringemailmessage-string-schema)
     - [`string.url(message: ?string): Schema`](#stringurlmessage-string-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
