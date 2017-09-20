@@ -156,7 +156,7 @@ setLocale({
     default: 'Não é válido',
   },
   number: {
-    max: 'Deve ser maior que ${min}',
+    min: 'Deve ser maior que ${min}',
   },
 })
 
@@ -165,7 +165,7 @@ const schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
 })
-schema.validate({ name: 'jimmy', age: 'hi' })
+schema.validate({ name: 'jimmy', age: 11 })
   .catch(function(err){
     err.name   // 'ValidationError'
     err.errors // => ['Deve ser maior que 18']
