@@ -24,7 +24,6 @@ export let mixed = {
 }
 
 export let string = {
-  required:  '${path} is a required field',
   length:    '${path} must be exactly ${length} characters',
   min:       '${path} must be at least ${min} characters',
   max:       '${path} must be at most ${max} characters',
@@ -62,7 +61,6 @@ export let object = {
 }
 
 export let array = {
-  required:  '${path} is a required field',
   min:       '${path} field must have at least ${min} items',
   max:       '${path} field must have less than ${max} items',
   ...customLocale.array,
