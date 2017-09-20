@@ -1,9 +1,9 @@
-let dict = {}
+import locale from './locale';
 
 export function setLocale(custom){
-  return (dict = { ...dict, ...custom })
-}
-
-export function getLocale(){
-  return dict
+  Object.keys(custom).forEach(type => {
+    Object.keys(custom[type]).forEach(method => {
+      locale[type][method] = custom[type][method]
+    })
+  })
 }
