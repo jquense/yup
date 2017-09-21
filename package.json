@@ -4,6 +4,7 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
+    "benchmark": "babel-node benchmark/index.js",
     "jest": "jest",
     "test": "npm run lint && npm run jest",
     "tdd": "jest --watchAll",
