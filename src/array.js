@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import typeOf from 'type-name';
+import typeName from 'type-name';
 
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
@@ -105,7 +105,7 @@ inherits(ArraySchema, MixedSchema, {
     if (schema !== false && !isSchema(schema)) {
       throw new TypeError(
         `${'`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
-        'not: '}${typeOf(schema)}`,
+        'not: '}${typeName(schema)}`,
       );
     }
 
