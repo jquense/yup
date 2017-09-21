@@ -6,12 +6,17 @@ const fixture = require('./fixture');
 const suite = new Suite();
 
 suite
+  .add('schema.validate', {
+    fn() {
+      fixture.schema.validate(fixture.data);
+    },
+  })
   .add('schema.cast', {
     fn() {
       fixture.schema.cast(fixture.data);
     },
   })
-  .on('complete', function complete() {
-    console.log('ops/sec', this[0].hz);
+  .on('cycle', (event) => {
+    console.log(String(event.target));
   })
   .run({ async: true });
