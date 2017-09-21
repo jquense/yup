@@ -1,8 +1,4 @@
 import isFunction from 'lodash/isFunction';
-import isMap from 'lodash/isMap';
-import isSet from 'lodash/isSet';
-import isWeakMap from 'lodash/isWeakMap';
-import isWeakSet from 'lodash/isWeakSet';
 import isSymbol from 'lodash/isSymbol';
 
 const toString = Object.prototype.toString;
@@ -12,10 +8,6 @@ const regExpToString = RegExp.prototype.toString;
 const symbolToString = Symbol.prototype.toString;
 
 const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
-const NEWLINE_REGEXP = /\n/gi;
-
-const getSymbols = Object.getOwnPropertySymbols || (obj => []);
-
 
 function printNumber(val) {
   if (val != +val) return 'NaN';
