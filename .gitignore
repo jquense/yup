@@ -73,3 +73,6 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+
+# Ignore build files
+lib/
