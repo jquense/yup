@@ -38,11 +38,11 @@
     ]
   },
   "devDependencies": {
-    "babel-cli": "^6.6.5",
+    "babel-cli": "^6.26.0",
     "babel-eslint": "^8.0.0",
     "babel-jest": "^21.0.2",
-    "babel-polyfill": "^6.7.4",
-    "babel-preset-jason": "^3.0.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-jason": "^3.1.0",
     "benchmark": "^2.0.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
