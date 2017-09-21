@@ -2,6 +2,7 @@
 import { getter } from 'property-expr';
 import camelCase from 'lodash/camelCase';
 import has from 'lodash/has';
+import isArray from 'lodash/isArray';
 import mapKeys from 'lodash/mapKeys';
 import omit from 'lodash/omit';
 import snakeCase from 'lodash/snakeCase';
@@ -181,7 +182,7 @@ inherits(ObjectSchema, MixedSchema, {
     const next = this.clone();
     const fields = Object.assign(next.fields, schema);
 
-    if (!Array.isArray(excludes[0])) { excludes = [excludes]; }
+    if (!isArray(excludes[0])) { excludes = [excludes]; }
 
     next.fields = fields;
 

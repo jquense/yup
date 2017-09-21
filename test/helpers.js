@@ -1,3 +1,4 @@
+import isArray from 'lodash/isArray';
 
 export const castAndShouldFail = (schema, value) => {
   (() => schema.cast(value))
@@ -30,7 +31,7 @@ export const validateAll = (inst, { valid = [], invalid = [] }) => {
       let value = config;
       let schema = inst;
 
-      if (Array.isArray(config)) {
+      if (isArray(config)) {
         [value, schema] = config;
       }
 

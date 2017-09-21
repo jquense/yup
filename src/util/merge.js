@@ -1,5 +1,7 @@
 /* eslint-disable no-param-reassign */
 import has from 'lodash/has';
+import isArray from 'lodash/isArray';
+
 import isSchema from './isSchema';
 
 const isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
@@ -25,8 +27,8 @@ export default function merge(target, source) {
       target[key] = isObject(targetVal)
         ? merge(targetVal, sourceVal)
         : sourceVal;
-    } else if (Array.isArray(sourceVal)) {
-      target[key] = Array.isArray(targetVal)
+    } else if (isArray(sourceVal)) {
+      target[key] = isArray(targetVal)
         ? targetVal.concat(sourceVal)
         : sourceVal;
     } else {

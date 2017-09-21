@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import typeName from 'type-name';
+import isArray from 'lodash/isArray';
 
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
@@ -39,7 +40,7 @@ export default function ArraySchema(type) {
 inherits(ArraySchema, MixedSchema, {
 
   _typeCheck(v) {
-    return Array.isArray(v);
+    return isArray(v);
   },
 
   _cast(_value, _opts) {
