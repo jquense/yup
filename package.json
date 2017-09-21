@@ -6,7 +6,7 @@
   "scripts": {
     "jest": "jest",
     "test": "npm run lint && npm run jest",
-    "tdd": "jest --watch",
+    "tdd": "jest --watchAll",
     "lint": "eslint src test --fix",
     "clean": "rimaf ./lib/*",
     "toc": "doctoc README.md --github",
