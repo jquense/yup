@@ -61,7 +61,6 @@
     "sinon-chai": "^2.13.0"
   },
   "dependencies": {
-    "case": "^1.2.1",
     "lodash": "^4.17.0",
     "property-expr": "^1.2.0",
     "toposort": "^0.2.10",
