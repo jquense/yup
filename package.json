@@ -54,7 +54,6 @@
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.3.0",
     "jest": "^21.1.0",
-    "mt-changelog": "^0.6.2",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^1.0.2",
     "sinon": "^3.3.0",
