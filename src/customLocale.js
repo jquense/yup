@@ -1,9 +1,10 @@
-let dict = {}
+let dict = {};
 
-export function setLocale(custom){
-  return (dict = { ...dict, ...custom })
+export function setLocale(custom) {
+  dict = { ...dict, ...custom };
+  return dict;
 }
 
-export function getLocale(){
-  return dict
+export function getLocale() {
+  return dict;
 }

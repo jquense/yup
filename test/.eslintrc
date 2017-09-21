@@ -1,7 +1,10 @@
-
 parser: babel-eslint
-extends: jason/mocha
+extends: airbnb
 globals:
   TestHelpers: true
   expect: true
   sinon: true
+env:
+  mocha: true
+rules:
+  no-underscore-dangle: off

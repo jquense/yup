@@ -1,14 +1,9 @@
-var yup = require('../lib')
-var object = yup.object
-  , array = yup.array
-  , string = yup.string
-  , bool = yup.bool
-  , number = yup.number
-  , mixed = yup.mixed
-  , date = yup.date
+const yup = require('../src');
+const data = require('./data.json');
 
+const { object, array, string, bool, number, mixed, date } = yup;
 
-var AttributeDatatype = {
+const AttributeDatatype = {
   Number: 1,
   Phone: 2,
   Email: 3,
@@ -21,12 +16,12 @@ var AttributeDatatype = {
   CustomValue: 10,
   Ages: 11,
   BirthYear: 12,
-  DateOfBirth: 13
+  DateOfBirth: 13,
 };
 
-var attributeValue = mixed()
+const attributeValue = mixed()
   .when('dataType', (dataType) => {
-    var newSchema;
+    let newSchema;
 
     switch (dataType) {
       case AttributeDatatype.Email:
@@ -47,15 +42,15 @@ var attributeValue = mixed()
         newSchema = string();
     }
 
-    return newSchema.nullable()
+    return newSchema.nullable();
   });
 
-var values = Object.keys(AttributeDatatype).map(function(k) { return AttributeDatatype[k] })
+const values = Object.keys(AttributeDatatype).map(k => AttributeDatatype[k]);
 
-var ChildAttribute = object({
+const ChildAttribute = object({
   objectAttrID: number(),
-  attributeID:  number(),
-  attribute:    string(),
+  attributeID: number(),
+  attribute: string(),
 
   value: attributeValue,
 
@@ -64,20 +59,20 @@ var ChildAttribute = object({
   dataType: number()
     .oneOf(values),
 
-  seqID: number()
+  seqID: number(),
 
-}).camelCase()
+}).camelCase();
 
-var schema = object({
+const schema = object({
 
   objectAttrID: number(),
-  attributeID:  number(),
-  contactID:    number(),
-  eventID:      number(),
-  docID:        number(),
+  attributeID: number(),
+  contactID: number(),
+  eventID: number(),
+  docID: number(),
 
   attribute: string(),
-  isActive:  bool(),
+  isActive: bool(),
   seqID: number(),
   historyID: number(),
   orgnID: number(),
@@ -91,16 +86,15 @@ var schema = object({
   customValues: array().of(
     object({
       valueID: number(),
-      text: string()
+      text: string(),
     })
-    .camelCase()
+      .camelCase(),
   ),
 
-  children: array().of(ChildAttribute)
-}).camelCase()
-
+  children: array().of(ChildAttribute),
+}).camelCase();
 
 module.exports = {
-  schema: schema,
-  data: require('./data.json')
-}
+  schema,
+  data,
+};
