@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
+import { getter } from 'property-expr';
+import camelCase from 'lodash/camelCase';
 import has from 'lodash/has';
+import mapKeys from 'lodash/mapKeys';
 import omit from 'lodash/omit';
 import snakeCase from 'lodash/snakeCase';
-import camelCase from 'lodash/camelCase';
-import mapKeys from 'lodash/mapKeys';
 import transform from 'lodash/transform';
-import { getter } from 'property-expr';
 
 import MixedSchema from './mixed';
 import { object as locale } from './locale';
