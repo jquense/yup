@@ -3,6 +3,7 @@ import { getter } from 'property-expr';
 import camelCase from 'lodash/camelCase';
 import has from 'lodash/has';
 import isArray from 'lodash/isArray';
+import isPlainObject from 'lodash/isPlainObject';
 import mapKeys from 'lodash/mapKeys';
 import omit from 'lodash/omit';
 import snakeCase from 'lodash/snakeCase';
@@ -15,8 +16,6 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';
 import makePath from './util/makePath';
 import runValidations, { propagateErrors } from './util/runValidations';
-
-const isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
 function unknown(ctx, value) {
   const known = Object.keys(ctx.fields);
@@ -64,7 +63,7 @@ export default function ObjectSchema(spec) {
 inherits(ObjectSchema, MixedSchema, {
 
   _typeCheck(value) {
-    return isObject(value) || typeof value === 'function';
+    return isPlainObject(value) || typeof value === 'function';
   },
 
   _cast(_value, options = {}) {
@@ -129,7 +128,7 @@ inherits(ObjectSchema, MixedSchema, {
       .call(this, _value, opts)
       .catch(propagateErrors(endEarly, errors))
       .then((value) => {
-        if (!recursive || !isObject(value)) { // only iterate though actual objects
+        if (!recursive || !isPlainObject(value)) { // only iterate though actual objects
           if (errors.length) throw errors[0];
           return value;
         }

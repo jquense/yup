@@ -1,10 +1,9 @@
 /* eslint-disable no-param-reassign */
 import has from 'lodash/has';
 import isArray from 'lodash/isArray';
+import isPlainObject from 'lodash/isPlainObject';
 
 import isSchema from './isSchema';
-
-const isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
 export default function merge(target, source) {
   Object.keys(source).forEach((key) => {
@@ -23,8 +22,8 @@ export default function merge(target, source) {
       target[key] = isSchema(targetVal)
         ? targetVal.concat(sourceVal)
         : sourceVal;
-    } else if (isObject(sourceVal)) {
-      target[key] = isObject(targetVal)
+    } else if (isPlainObject(sourceVal)) {
+      target[key] = isPlainObject(targetVal)
         ? merge(targetVal, sourceVal)
         : sourceVal;
     } else if (isArray(sourceVal)) {
