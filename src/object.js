@@ -121,6 +121,7 @@ inherits(ObjectSchema, MixedSchema, {
 
     const abortEarly = this._option('abortEarly', opts);
     const recursive = this._option('recursive', opts);
+    const sync = this._option('sync', opts);
 
     opts = { ...opts, __validating: true, originalValue };
 
@@ -163,6 +164,7 @@ inherits(ObjectSchema, MixedSchema, {
           value,
           errors,
           abortEarly,
+          sync,
           path: opts.path,
           sort: sortByKeyOrder(this.fields),
         });

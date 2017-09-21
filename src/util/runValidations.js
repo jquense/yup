@@ -1,3 +1,4 @@
+import getPromise from './getPromise';
 import ValidationError from '../ValidationError';
 
 const unwrapError = (errors = []) =>
@@ -5,9 +6,9 @@ const unwrapError = (errors = []) =>
     ? errors.inner
     : [].concat(errors));
 
-function scopeToValue(promises, value) {
-  return Promise
-    .all(promises)
+function scopeToValue({ validations, value, sync }) {
+  return getPromise(sync)
+    .all(validations)
     .catch((err) => {
       if (err.name === 'ValidationError') {
         err.value = value; // eslint-disable-line no-param-reassign
@@ -28,12 +29,12 @@ export function propagateErrors(abortEarly, errors) {
   };
 }
 
-export function settled(promises) {
+export function settled(promises, sync) {
   const settle = promise => promise.then(
     value => ({ fulfilled: true, value }),
     value => ({ fulfilled: false, value }));
 
-  return Promise.all(promises.map(settle));
+  return getPromise(sync).all(promises.map(settle));
 }
 
 
@@ -43,8 +44,9 @@ export function collectErrors({
   path,
   errors,
   sort,
+  sync,
 }) {
-  return settled(validations).then((results) => {
+  return settled(validations, sync).then((results) => {
     const nestedErrors = results
       .filter(r => !r.fulfilled)
       .reduce((arr, { value: error }) => {
@@ -72,7 +74,9 @@ export function collectErrors({
 
 
 export default function runValidations({ abortEarly, ...options }) {
-  if (abortEarly) { return scopeToValue(options.validations, options.value); }
+  if (abortEarly) {
+    return scopeToValue(options);
+  }
 
   return collectErrors(options);
 }

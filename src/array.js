@@ -58,6 +58,7 @@ inherits(ArraySchema, MixedSchema, {
     const subType = this._subType;
     const abortEarly = this._option('abortEarly', options);
     const recursive = this._option('recursive', options);
+    const sync = this._option('sync', options);
 
     let originalValue = options.originalValue != null ?
       options.originalValue : _value;
@@ -95,6 +96,7 @@ inherits(ArraySchema, MixedSchema, {
           value,
           errors,
           abortEarly,
+          sync,
           validations,
         });
       });

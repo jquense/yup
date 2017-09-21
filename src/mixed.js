@@ -38,7 +38,7 @@ export default function SchemaType(options = {}) {
 
   this._deps = [];
   this._conditions = [];
-  this._options = { abortEarly: true, recursive: true };
+  this._options = { abortEarly: true, recursive: true, sync: false };
   this._exclusive = Object.create(null);
   this._whitelist = new Set();
   this._blacklist = new Set();
@@ -172,13 +172,27 @@ SchemaType.prototype = {
     return schema._validate(value, options);
   },
 
+  validateSync(value, options = {}) {
+    let result;
+    let error;
+    this.validate(value, { ...options, sync: true }).then((res) => {
+      result = res;
+    }).catch((err) => {
+      error = err;
+    });
+    if (error) {
+      throw error;
+    }
+    return result;
+  },
+
   _validate(_value, options = {}) {
     let value = _value;
-    const originalValue = options.originalValue != null ?
-      options.originalValue : _value;
+    const originalValue = options.originalValue != null ? options.originalValue : _value;
 
     const isStrict = this._option('strict', options);
     const abortEarly = this._option('abortEarly', options);
+    const sync = this._option('sync', options);
 
     const path = options.path;
     const label = this._label;
@@ -187,7 +201,7 @@ SchemaType.prototype = {
       value = this._cast(value, { assert: false, ...options });
     }
     // value is cast, we can check if it meets type requirements
-    const validationParams = { value, path, schema: this, options, label, originalValue };
+    const validationParams = { value, path, schema: this, options, sync, label, originalValue };
     const initialTests = [];
 
     if (this._typeError) { initialTests.push(this._typeError(validationParams)); }
@@ -196,11 +210,18 @@ SchemaType.prototype = {
 
     if (this._blacklistError) { initialTests.push(this._blacklistError(validationParams)); }
 
-    return runValidations({ validations: initialTests, abortEarly, value, path })
+    return runValidations({
+      validations: initialTests,
+      abortEarly,
+      sync,
+      value,
+      path,
+    })
       .then(val => runValidations({
         path,
         value: val,
         abortEarly,
+        sync,
         validations: this.tests.map(fn => fn(validationParams)),
       }));
   },
@@ -211,10 +232,25 @@ SchemaType.prototype = {
       .validate(value, options)
       .then(() => true)
       .catch((err) => {
-        if (err.name === 'ValidationError') { return false; }
+        if (err.name === 'ValidationError') {
+          return false;
+        }
 
         throw err;
       });
+  },
+
+  isValidSync(value, options) {
+    try {
+      this.validateSync(value, options);
+      return true;
+    } catch (err) {
+      if (err.name === 'ValidationError') {
+        return false;
+      }
+
+      throw err;
+    }
   },
 
   getDefault({ context, parent }) {
@@ -280,7 +316,9 @@ SchemaType.prototype = {
     const opts = extractTestParams(name, message, test);
     const next = this.clone();
 
-    const validate = createValidation(opts);
+    const sync = this._option('sync');
+
+    const validate = createValidation({ ...opts, sync });
 
     const isExclusive = (
       opts.exclusive ||

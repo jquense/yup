@@ -11,9 +11,14 @@ suite
       fixture.schema.validate(fixture.data);
     },
   })
+  .add('schema.validateSync', {
+    fn() {
+      fixture.schema.validateSync(fixture.data);
+    },
+  })
   .add('schema.cast', {
     fn() {
-      fixture.schema.cast(fixture.data);
+      fixture.schema.cast(fixture.data, { sync: true });
     },
   })
   .on('cycle', (event) => {

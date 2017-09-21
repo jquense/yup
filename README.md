@@ -35,7 +35,9 @@ json separate from validating it, via the `cast` method.
     - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
     - [`mixed.concat(schema: Schema)`](#mixedconcatschema-schema)
     - [`mixed.validate(value: any, options: ?object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
+    - [`mixed.validateSync(value: any, options: ?object): any, ValidationError`](#mixedvalidatesyncvalue-any-options-object-any-validationerror)
     - [`mixed.isValid(value: any, options: ?object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
+    - [`mixed.isValidSync(value: any, options: ?object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
     - [`mixed.cast(value: any): any`](#mixedcastvalue-any-any)
     - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
     - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
@@ -351,6 +353,7 @@ Options = {
   abortEarly: boolean = true;
   stripUnknown: boolean = false;
   recursive: boolean = true;
+  sync: boolean = false;
   context: ?object;
 }
 ```
@@ -360,6 +363,8 @@ than after all validations run.
 - `stripUnknown`: remove unspecified keys from objects.
 - `recursive`: when `false` validations will not descend into nested schema
 (relevant for objects or arrays).
+- `sync`: perform synchronous validation instead of asynchronous validation. You must take care on
+your own that all validation functions in the schema are in fact sync.
 - `context`: any context needed for validating schema conditions (see: `when()`)
 
 ```js
@@ -375,12 +380,20 @@ schema.validate({ name: 'jimmy', age: 'hi' })
   })
 ```
 
+#### `mixed.validateSync(value: any, options: ?object): any, ValidationError`
+
+Perform a sync validation. Returns either the validated value or throws a `ValidationError`.
+
 #### `mixed.isValid(value: any, options: ?object): Promise<boolean>`
 
 Returns `true` when the passed in value matches the schema. `isValid`
 is __asynchronous__ and returns a Promise object.
 
 Takes the same options as `validate()`.
+
+#### `mixed.isValidSync(value: any, options: ?object): boolean`
+
+The same as `isValid` but with synchronous validation.
 
 #### `mixed.cast(value: any): any`
 
