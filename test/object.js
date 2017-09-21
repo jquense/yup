@@ -196,7 +196,7 @@ describe('Object types', () => {
       prop: mixed(),
     });
 
-    inst.should.have.deep.property('fields.prop');
+    inst.should.have.nested.property('fields.prop');
   });
 
   describe('object defaults', () => {

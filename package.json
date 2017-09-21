@@ -44,9 +44,9 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-jason": "^3.1.0",
     "benchmark": "^2.0.0",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^5.3.0",
-    "dirty-chai": "^1.2.2",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "dirty-chai": "^2.0.1",
     "doctoc": "^1.0.0",
     "eslint": "^4.7.1",
     "eslint-config-airbnb": "^15.1.0",
@@ -57,8 +57,8 @@
     "mt-changelog": "^0.6.2",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^0.5.2",
-    "sinon": "^1.17.7",
-    "sinon-chai": "^2.10.0"
+    "sinon": "^3.3.0",
+    "sinon-chai": "^2.13.0"
   },
   "dependencies": {
     "case": "^1.2.1",
