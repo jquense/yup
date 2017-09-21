@@ -7,7 +7,7 @@ import { object, array, string, lazy, number } from '../src';
 describe('Yup', function(){
 
   it('should export', function(){
-    require('../lib') // eslint-disable-line global-require
+    require('../src') // eslint-disable-line global-require
   })
 
   it('cast should not assert on undefined', () => {
@@ -32,6 +32,7 @@ describe('Yup', function(){
     return Promise.all([
 
       settled([Promise.resolve('hi'), Promise.reject('error')])
+        .catch(err => console.log(err))
         .should.be.fulfilled()
         .then(function (results) {
           results.length.should.equal(2)

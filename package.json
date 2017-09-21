@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/jquense/yup",
   "jest": {
+    "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test-setup.js",
     "roots": [
       "test"
@@ -33,12 +34,16 @@
     "testRegex": "\\.js",
     "testPathIgnorePatterns": [
       "helpers\\.js"
-    ]
+    ],
+    "transform": {
+      "^.+\\.js$": "./transform-tests.js"
+    }
   },
   "devDependencies": {
-    "babel-jest": "^19.0.0",
     "babel-cli": "^6.6.5",
     "babel-eslint": "^6.0.2",
+    "babel-jest": "^20.0.3",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-polyfill": "^6.7.4",
     "babel-preset-jason": "^3.0.0",
     "benchmark": "^2.0.0",
@@ -50,7 +55,7 @@
     "eslint-config-jason": "^4.0.0",
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-react": "^6.2.0",
-    "jest": "^19.0.2",
+    "jest": "^20.0.3",
     "mt-changelog": "^0.6.2",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^0.5.2",
