@@ -56,7 +56,7 @@ inherits(ArraySchema, MixedSchema, {
     const errors = [];
     const path = options.path;
     const subType = this._subType;
-    const endEarly = this._option('abortEarly', options);
+    const abortEarly = this._option('abortEarly', options);
     const recursive = this._option('recursive', options);
 
     let originalValue = options.originalValue != null ?
@@ -64,7 +64,7 @@ inherits(ArraySchema, MixedSchema, {
 
     return MixedSchema.prototype._validate
       .call(this, _value, options)
-      .catch(propagateErrors(endEarly, errors))
+      .catch(propagateErrors(abortEarly, errors))
       .then((value) => {
         if (!recursive || !subType || !this._typeCheck(value)) {
           if (errors.length) throw errors[0];
@@ -94,7 +94,7 @@ inherits(ArraySchema, MixedSchema, {
           path,
           value,
           errors,
-          endEarly,
+          abortEarly,
           validations,
         });
       });

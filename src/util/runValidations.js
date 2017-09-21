@@ -21,8 +21,8 @@ function scopeToValue(promises, value) {
  * If not failing on the first error, catch the errors
  * and collect them in an array
  */
-export function propagateErrors(endEarly, errors) {
-  return endEarly ? null : (err) => {
+export function propagateErrors(abortEarly, errors) {
+  return abortEarly ? null : (err) => {
     errors.push(err);
     return err.value;
   };
@@ -71,8 +71,8 @@ export function collectErrors({
 }
 
 
-export default function runValidations({ endEarly, ...options }) {
-  if (endEarly) { return scopeToValue(options.validations, options.value); }
+export default function runValidations({ abortEarly, ...options }) {
+  if (abortEarly) { return scopeToValue(options.validations, options.value); }
 
   return collectErrors(options);
 }

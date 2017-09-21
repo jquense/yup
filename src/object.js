@@ -119,14 +119,14 @@ inherits(ObjectSchema, MixedSchema, {
     const errors = [];
     let originalValue = opts.originalValue != null ? opts.originalValue : _value;
 
-    const endEarly = this._option('abortEarly', opts);
+    const abortEarly = this._option('abortEarly', opts);
     const recursive = this._option('recursive', opts);
 
     opts = { ...opts, __validating: true, originalValue };
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
-      .catch(propagateErrors(endEarly, errors))
+      .catch(propagateErrors(abortEarly, errors))
       .then((value) => {
         if (!recursive || !isPlainObject(value)) { // only iterate though actual objects
           if (errors.length) throw errors[0];
@@ -162,7 +162,7 @@ inherits(ObjectSchema, MixedSchema, {
           validations,
           value,
           errors,
-          endEarly,
+          abortEarly,
           path: opts.path,
           sort: sortByKeyOrder(this.fields),
         });

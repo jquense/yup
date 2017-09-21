@@ -178,7 +178,7 @@ SchemaType.prototype = {
       options.originalValue : _value;
 
     const isStrict = this._option('strict', options);
-    const endEarly = this._option('abortEarly', options);
+    const abortEarly = this._option('abortEarly', options);
 
     const path = options.path;
     const label = this._label;
@@ -196,11 +196,11 @@ SchemaType.prototype = {
 
     if (this._blacklistError) { initialTests.push(this._blacklistError(validationParams)); }
 
-    return runValidations({ validations: initialTests, endEarly, value, path })
+    return runValidations({ validations: initialTests, abortEarly, value, path })
       .then(val => runValidations({
         path,
         value: val,
-        endEarly,
+        abortEarly,
         validations: this.tests.map(fn => fn(validationParams)),
       }));
   },
