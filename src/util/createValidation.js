@@ -1,7 +1,8 @@
 /* eslint-disable no-param-reassign */
 import mapValues from 'lodash/mapValues';
-import ValidationError from '../ValidationError';
+
 import Ref from '../Reference';
+import ValidationError from '../ValidationError';
 
 const formatError = ValidationError.formatError;
 
