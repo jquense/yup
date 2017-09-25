@@ -1,24 +1,10 @@
 {
   "presets": [
-    [
-      "jason",
-      {
-        "debug": false
-      }
-    ]
+    ["env", {
+      "targets": { "node": "current" }
+    }]
   ],
-  "env": {
-    "test": {
-      "presets": [
-        [
-          "jason",
-          {
-            "debug": false,
-            "target": "node",
-            "targets": { "node": "current" }
-          }
-        ]
-      ]
-    }
-  }
+  "plugins": [
+    "babel-plugin-transform-object-rest-spread"
+  ]
 }
