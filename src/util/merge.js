@@ -1,34 +1,39 @@
+/* eslint-disable no-param-reassign */
 import has from 'lodash/has';
+import isArray from 'lodash/isArray';
+import isPlainObject from 'lodash/isPlainObject';
+
 import isSchema from './isSchema';
 
-let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
+export default function merge(target, source) {
+  Object.keys(source).forEach((key) => {
+    if (!has(source, key)) {
+      return;
+    }
 
-export default function merge(target, source){
-  for (var key in source) if (has(source, key)) {
-    var targetVal = target[key]
-      , sourceVal = source[key];
+    const targetVal = target[key];
+    const sourceVal = source[key];
 
-    if ( sourceVal === undefined )
-      continue
+    if (sourceVal === undefined) {
+      return;
+    }
 
     if (isSchema(sourceVal)) {
-       target[key] = isSchema(targetVal)
+      target[key] = isSchema(targetVal)
         ? targetVal.concat(sourceVal)
-        : sourceVal
-    }
-    else if (isObject(sourceVal)) {
-      target[key] = isObject(targetVal)
+        : sourceVal;
+    } else if (isPlainObject(sourceVal)) {
+      target[key] = isPlainObject(targetVal)
         ? merge(targetVal, sourceVal)
-        : sourceVal
-    }
-    else if (Array.isArray(sourceVal)) {
-      target[key] = Array.isArray(targetVal)
+        : sourceVal;
+    } else if (isArray(sourceVal)) {
+      target[key] = isArray(targetVal)
         ? targetVal.concat(sourceVal)
-        : sourceVal
-    }
-    else
+        : sourceVal;
+    } else {
       target[key] = source[key];
-  }
+    }
+  });
 
   return target;
 }

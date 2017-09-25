@@ -1,4 +1,4 @@
-import { setLocale, getLocale } from '../src/customLocale'
+import { setLocale, getLocale } from '../src/customLocale';
 
 describe('Custom locale', () => {
   it('should set a new locale', () => {
@@ -6,15 +6,15 @@ describe('Custom locale', () => {
       string: {
         email: 'Invalid email',
       },
-    }
+    };
 
-    setLocale(dict)
+    setLocale(dict);
 
-    expect(getLocale()).to.deep.equal(dict)
-  })
+    expect(getLocale()).to.deep.equal(dict);
+  });
 
   it('should update the main locale', () => {
-    const locale = require('../src/locale').default
-    expect(locale.string).to.deep.include(getLocale().string)
-  })
-})
+    const locale = require('../src/locale').default; // eslint-disable-line global-require
+    expect(locale.string).to.deep.include(getLocale().string);
+  });
+});
