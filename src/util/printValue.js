@@ -21,11 +21,11 @@ function printFunction(val) {
   return `[Function ${val.name || 'anonymous'}]`;
 }
 
-function printSymbol(val: Symbol): string {
+function printSymbol(val) {
   return symbolToString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
 }
 
-function printError(val: Error): string {
+function printError(val) {
   return `[${errorToString.call(val)}]`;
 }
 
