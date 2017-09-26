@@ -1,18 +1,27 @@
-var Suite = require('benchmark').Suite
-var suite = new Suite;
+/* eslint-disable no-console, import/no-extraneous-dependencies */
+const { Suite } = require('benchmark');
 
-global.f = require('./fixture')
+const fixture = require('./fixture');
 
-suite.add('String#indexOf', {
-  fn: function() {
-    fixtures.schema.cast(fixtures.data)
-  },
-  setup: function() {
-    var fixtures = f
-  }
-})
-.on('complete', function() {
-  console.log('ops/sec', this[0].hz);
-})
-// run async
-.run({ 'async': true });
+const suite = new Suite();
+
+suite
+  .add('schema.validate', {
+    fn() {
+      fixture.schema.validate(fixture.data);
+    },
+  })
+  .add('schema.validateSync', {
+    fn() {
+      fixture.schema.validateSync(fixture.data);
+    },
+  })
+  .add('schema.cast', {
+    fn() {
+      fixture.schema.cast(fixture.data, { sync: true });
+    },
+  })
+  .on('cycle', (event) => {
+    console.log(String(event.target));
+  })
+  .run({ async: true });

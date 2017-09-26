@@ -10,25 +10,27 @@ const symbolToString = Symbol.prototype.toString;
 const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
 function printNumber(val) {
-  if (val != +val) return 'NaN';
+  if (val !== +val) {
+    return 'NaN';
+  }
   const isNegativeZero = val === 0 && 1 / val < 0;
-  return isNegativeZero ? '-0' : '' + val;
+  return isNegativeZero ? '-0' : `${val}`;
 }
 
 function printFunction(val) {
-  return '[Function ' + (val.name || 'anonymous') + ']';
+  return `[Function ${val.name || 'anonymous'}]`;
 }
 
-function printSymbol(val: Symbol): string {
+function printSymbol(val) {
   return symbolToString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
 }
 
-function printError(val: Error): string {
-  return '[' + errorToString.call(val) + ']';
+function printError(val) {
+  return `[${errorToString.call(val)}]`;
 }
 
 function printSimpleValue(val, quoteStrings = false) {
-  if (val === true || val === false) return '' + val;
+  if (val === true || val === false) return `${val}`;
   if (val === undefined) return 'undefined';
   if (val === null) return 'null';
 
@@ -48,12 +50,16 @@ function printSimpleValue(val, quoteStrings = false) {
 }
 
 export default function printValue(value, quoteStrings) {
-  let result = printSimpleValue(value, quoteStrings);
-  if (result !== null) return result;
+  const result = printSimpleValue(value, quoteStrings);
+  if (result !== null) {
+    return result;
+  }
 
-  return JSON.stringify(value, function (key, value) {
-    let result = printSimpleValue(this[key], quoteStrings);
-    if (result !== null) return result
-    return value
-  }, 2)
+  return JSON.stringify(value, function format(key, val) {
+    const formatted = printSimpleValue(this[key], quoteStrings);
+    if (formatted !== null) {
+      return formatted;
+    }
+    return val;
+  }, 2);
 }

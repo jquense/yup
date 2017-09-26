@@ -1,3 +1,4 @@
-
 parser: babel-eslint
-extends: jason
+extends: airbnb
+rules:
+  no-underscore-dangle: off

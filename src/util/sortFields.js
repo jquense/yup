@@ -5,31 +5,38 @@ import { split } from 'property-expr';
 import Ref from '../Reference';
 import isSchema from './isSchema';
 
-export default function sortFields(fields, excludes = []){
-  var edges = [], nodes = []
+export default function sortFields(fields, excludes = []) {
+  const edges = [];
+  const nodes = [];
 
   function addNode(depPath, key) {
-    var node = split(depPath)[0]
+    const node = split(depPath)[0];
 
-    if (!~nodes.indexOf(node))
-      nodes.push(node)
+    if (nodes.indexOf(node) === -1) {
+      nodes.push(node);
+    }
 
-    if (!~excludes.indexOf(`${key}-${node}`))
-      edges.push([key, node])
+    if (excludes.indexOf(`${key}-${node}`) === -1) {
+      edges.push([key, node]);
+    }
   }
 
-  for (var key in fields) if (has(fields, key)) {
-    let value = fields[key];
+  Object.keys(fields).forEach((key) => {
+    if (!has(fields, key)) {
+      return;
+    }
+    const value = fields[key];
 
-    if (!~nodes.indexOf(key))
-      nodes.push(key)
+    if (nodes.indexOf(key) === -1) {
+      nodes.push(key);
+    }
 
-    if (Ref.isRef(value) && !value.isContext)
-      addNode(value.path, key)
+    if (Ref.isRef(value) && !value.isContext) {
+      addNode(value.path, key);
+    } else if (isSchema(value) && value._deps) {
+      value._deps.forEach(path => addNode(path, key));
+    }
+  });
 
-    else if (isSchema(value) && value._deps)
-      value._deps.forEach(path => addNode(path, key))
-  }
-
-  return toposort.array(nodes, edges).reverse()
+  return toposort.array(nodes, edges).reverse();
 }

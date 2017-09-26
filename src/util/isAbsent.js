@@ -1,2 +1,2 @@
 
-export default value => value == null
+export default value => value == null;
