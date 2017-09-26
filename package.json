@@ -1,5 +1,5 @@
 {
-  "name": "yup",
+  "name": "jupp",
   "version": "0.22.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
@@ -19,14 +19,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jquense/yup.git"
+    "url": "https://github.com/ctavan/yup.git"
   },
   "author": "@monasticpanic Jason Quense",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jquense/yup/issues"
+    "url": "https://github.com/ctavan/yup/issues"
   },
-  "homepage": "https://github.com/jquense/yup",
+  "homepage": "https://github.com/ctavan/yup",
   "jest": {
     "setupTestFrameworkScriptFile": "./test-setup.js",
     "roots": [
