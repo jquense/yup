@@ -5,7 +5,9 @@ const toString = Object.prototype.toString;
 const toISOString = Date.prototype.toISOString;
 const errorToString = Error.prototype.toString;
 const regExpToString = RegExp.prototype.toString;
-const symbolToString = Symbol.prototype.toString;
+const symbolToString = typeof Symbol !== 'undefined' ? 
+  Symbol.prototype.toString : 
+  ()=> '';
 
 const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
