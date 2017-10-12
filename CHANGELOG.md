@@ -1,8 +1,13 @@
 v0.23.0 - Thu, 12 Oct 2017 17:08:47 GMT
 ---------------------------------------
 
+** Probably not breaking but we are being safe about it **
 
+- 🎉 Add Synchronous validation! [#94](https://github.com/jquense/yup/pull/94)
 
+** Features **
+
+- Custom locales without import order [#125](https://github.com/jquense/yup/pull/125)
 
 
 v0.22.1 - Thu, 12 Oct 2017 14:49:16 GMT
