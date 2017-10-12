@@ -28,6 +28,7 @@ describe('Yup', function(){
     return Promise.all([
 
       settled([Promise.resolve('hi'), Promise.reject('error')])
+        .catch(err => console.log(err))
         .should.be.fulfilled()
         .then(function (results) {
           results.length.should.equal(2)

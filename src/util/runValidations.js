@@ -1,19 +1,28 @@
+import { SynchronousPromise } from 'synchronous-promise';
 import ValidationError from '../ValidationError';
+
+let promise = sync => sync ? SynchronousPromise: Promise;
 
 let unwrapError = (errors = []) =>
   errors.inner && errors.inner.length
     ? errors.inner
     : [].concat(errors);
 
-function scopeToValue(promises, value) {
-  return Promise
-    .all(promises)
-    .catch(err => {
+function scopeToValue(promises, value, sync) {
+  //console.log('scopeToValue', promises, value)
+  let p = promise(sync).all(promises);
+
+  //console.log('scopeToValue B', p)
+
+  let b = p.catch(err => {
       if (err.name === 'ValidationError')
         err.value = value
       throw err
     })
-    .then(() => value)
+  //console.log('scopeToValue c', b)
+  let c = b.then(() => value);
+  //console.log('scopeToValue d', c)
+  return c
 }
 
 /**
@@ -27,12 +36,12 @@ export function propagateErrors(endEarly, errors) {
   }
 }
 
-export function settled(promises){
+export function settled(promises, sync) {
   let settle = promise => promise.then(
     value => ({ fulfilled: true, value }),
     value => ({ fulfilled: false, value }))
 
-  return Promise.all(promises.map(settle))
+  return promise(sync).all(promises.map(settle))
 }
 
 
@@ -40,10 +49,12 @@ export function collectErrors({
   validations,
   value,
   path,
-  errors = unwrapError(errors),
+  sync,
+  errors,
   sort
 }){
-  return settled(validations).then(results => {
+  errors = unwrapError(errors);
+  return settled(validations, sync).then(results => {
     let nestedErrors = results
       .filter(r => !r.fulfilled)
       .reduce((arr, { value: error }) => {
@@ -69,7 +80,7 @@ export function collectErrors({
 
 export default function runValidations({ endEarly, ...options }) {
   if (endEarly)
-    return scopeToValue(options.validations, options.value)
+    return scopeToValue(options.validations, options.value, options.sync)
 
   return collectErrors(options)
 }
