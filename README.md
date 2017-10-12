@@ -374,12 +374,48 @@ schema.validate({ name: 'jimmy', age: 'hi' })
   })
 ```
 
-#### `mixed.isValid(value: any, options: ?object: Promise<boolean>`
+#### `mixed.validateSync(value: any, options: ?object): any`
+
+Runs validatations synchronously _if possible_ and returns the resulting value,
+or throws a ValidationError. Accepts all the same options as `validate`.
+
+Synchronous validation only works if there are no configured async tests, e.g tests that return a Promise.
+For instance this will work:
+
+```js
+schema = number.test(
+  'is-42',
+  'this isn\'t the number i want',
+  value => value != 42
+)
+
+schema.validateSync(23) // throws ValidationError
+```
+
+however this will not:
+
+```js
+schema = number.test(
+  'is-42',
+  'this isn\'t the number i want',
+  value => Promise.resolve(value != 42)
+)
+
+schema.validateSync(42) // throws Error
+```
+
+#### `mixed.isValid(value: any, options: ?object): Promise<boolean>`
 
 Returns `true` when the passed in value matches the schema. `isValid`
 is __asynchronous__ and returns a Promise object.
 
 Takes the same options as `validate()`.
+
+#### `mixed.isValidSync(value: any, options: ?object): boolean`
+
+Synchronously returns `true` when the passed in value matches the schema.
+
+Takes the same options as `validateSync()` and has the same caveats around async tests.
 
 #### `mixed.cast(value: any): any`
 
@@ -566,7 +602,7 @@ inst.validate({ isBig: false, count: 4 })
 
 Adds a test function to the validation chain. Tests are run after any object is cast.
 Many types have some tests built in, but you can create custom ones easily.
-In order to allow asynchronous custom validations _all_ tests are run asynchronously.
+In order to allow asynchronous custom validations _all_ (or no) tests are run asynchronously.
 A consequence of this is that test execution order cannot be guaranteed.
 
 All tests must provide a `name`, an error `message` and a validation function that must return
