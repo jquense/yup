@@ -122,6 +122,7 @@ inherits(ObjectSchema, MixedSchema, {
 
   _validate(_value, opts = {}) {
     let endEarly, recursive;
+    let sync = opts.sync
     let errors = []
     let originalValue = opts.originalValue != null ?
       opts.originalValue : _value
@@ -167,6 +168,7 @@ inherits(ObjectSchema, MixedSchema, {
         })
 
         return runValidations({
+          sync,
           validations,
           value,
           errors,
@@ -189,12 +191,12 @@ inherits(ObjectSchema, MixedSchema, {
     var next = this.clone()
       , fields = Object.assign(next.fields, schema);
 
-    if (!Array.isArray(excludes[0]))
-      excludes = [excludes]
-
     next.fields = fields
 
     if (excludes.length) {
+      if (!Array.isArray(excludes[0]))
+        excludes = [excludes]
+
       let keys = excludes.map(([first, second]) => `${first}-${second}`);
 
       next._excludedEdges = next._excludedEdges.concat(keys)

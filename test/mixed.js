@@ -6,6 +6,39 @@ import reach from '../src/util/reach';
 
 let noop = () => {}
 
+function ensureSync(fn) {
+  let run = false;
+  let resolve = (t) => {
+    if (!run) return t
+    throw new Error('Did not execute synchonously')
+  }
+  let err = (t) => {
+    if (!run) throw t
+    throw new Error('Did not execute synchonously')
+  }
+
+  let result = fn().then(resolve, err)
+
+  run = true;
+  return result;
+}
+
+global.YUP_USE_SYNC &&
+  it('[internal] normal methods should be running in sync Mode', async () => {
+    let schema = number()
+
+    await ensureSync(() => Promise.resolve()).should.be.rejected()
+
+    await ensureSync(() => schema.isValid('john'))
+      .should.be.become(false)
+
+    let err = await ensureSync(() => schema.validate('john'))
+      .should.be.rejected()
+
+    expect(err.message)
+      .to.match(/the final value was: `NaN`.+cast from the value `"john"`/)
+  })
+
 describe('Mixed Types ', () => {
 
   it('should be immutable', () => {
@@ -72,6 +105,36 @@ describe('Mixed Types ', () => {
 
     err.errors[0].should.equal('this must be one of the following values: 5, hello')
   })
+
+  global.YUP_USE_SYNC &&
+    describe('synchronous methods', () => {
+      it('should validate synchronously', async () => {
+        let schema = number()
+
+        schema.isValidSync('john')
+          .should.equal(false)
+
+        expect(() => schema.validateSync('john')).to.throw(
+          /the final value was: `NaN`.+cast from the value `"john"`/
+        )
+      })
+
+      it('should isValid synchronously', async () => {
+        let schema = number()
+
+        schema.isValidSync('john')
+          .should.equal(false)
+      })
+
+      it('should throw on async test', async () => {
+        let schema = mixed().test('test', 'foo', () => Promise.resolve())
+
+        let err = await ensureSync(() => schema.validate('john'))
+          .should.be.rejected()
+
+        expect(err.message).to.match(/Validation test of type: "test"/)
+      })
+    })
 
   it('should ignore absent values', () => {
     return Promise.all([
@@ -312,9 +375,7 @@ describe('Mixed Types ', () => {
 
   it('should allow custom validation', async () => {
     let inst = string()
-      .test('name', 'test a', val =>
-        Promise.resolve(val === 'jim')
-      )
+      .test('name', 'test a', val => val === 'jim')
 
     return inst.validate('joe').should.be.rejected().then(e => {
       e.errors[0].should.equal('test a')
