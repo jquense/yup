@@ -4,7 +4,7 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run lint && npm run test-all",
+    "test": "npm run lint && npm run test-all -- --runInBand",
     "testonly": "jest",
     "test-all": "npm run testonly -- --projects ./jest-sync.config.js --projects ./package.json",
     "tdd": "jest --watch",
