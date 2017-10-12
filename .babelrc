@@ -13,7 +13,7 @@
         [
           "jason",
           {
-            "debug": false,
+            "debug": true,
             "target": "node",
             "targets": { "node": "current" }
           }
