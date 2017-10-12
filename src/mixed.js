@@ -14,9 +14,6 @@ import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
 
-const DEBUG_SYNC = true;
-
-
 function extractTestParams(name, message, test) {
   var opts = name;
 
@@ -216,13 +213,20 @@ SchemaType.prototype = {
 
   validate(value, options = {}) {
     let schema = this.resolve(options)
-    options.sync = DEBUG_SYNC
     return schema._validate(value, options)
   },
 
   validateSync(value, options = {}) {
     let schema = this.resolve(options)
-    return schema._validate(value, { ...options, sync: true })
+    let result, err;
+
+    schema
+      ._validate(value, { ...options, sync: true })
+      .then(r => result = r)
+      .catch(e => err = e);
+
+      if (err) throw err
+      return result;
   },
 
 
@@ -239,13 +243,14 @@ SchemaType.prototype = {
   },
 
   isValidSync(value, options) {
-    let result = true;
-    this.validateSync(value, { ...options }).catch(err => {
-      if (err.name === 'ValidationError') result = false
+    try {
+      this.validateSync(value, { ...options })
+      return true
+    }
+    catch (err) {
+      if (err.name === 'ValidationError') return false
       throw err
-    })
-
-    return result;
+    }
   },
 
   getDefault({ context, parent }) {
