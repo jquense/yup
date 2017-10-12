@@ -9,8 +9,5 @@
   "testRegex": "\\.js",
   "testPathIgnorePatterns": [
     "helpers\\.js"
-  ],
-  "transform": {
-    "^.+\\.js$": "./transform-tests.js"
-  }
+  ]
 }
