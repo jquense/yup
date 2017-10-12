@@ -1,9 +1,26 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError'
 import Ref from '../Reference'
-import ZalgoPromise from './ZalgoPromise'
+import { SynchronousPromise } from 'synchronous-promise';
+
 
 let formatError = ValidationError.formatError
+
+let thenable = p => p && typeof p.then === 'function' && typeof p.catch === 'function'
+
+function runTest(testFn, ctx, value, sync) {
+  let result = testFn.call(ctx, value)
+  if (!sync) return Promise.resolve(result)
+
+  if (thenable(result)) {
+    throw new Error(
+      `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
+      `This test will finish after the validate call has returned`
+    )
+  }
+  return SynchronousPromise.resolve(result)
+}
+
 
 function resolveParams(oldParams, newParams, resolve) {
   return mapValues({ ...oldParams, ...newParams }, resolve)
@@ -46,8 +63,7 @@ export default function createValidation(options) {
 
     var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
-    return ZalgoPromise
-      .resolve(test.call(ctx, value), sync)
+    return runTest(test, ctx, value, sync)
       .then(validOrError => {
         if (ValidationError.isError(validOrError))
           throw validOrError

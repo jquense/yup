@@ -1,5 +1,7 @@
+import { SynchronousPromise } from 'synchronous-promise';
 import ValidationError from '../ValidationError';
-import ZalgoPromise from './ZalgoPromise';
+
+let promise = sync => sync ? SynchronousPromise: Promise;
 
 let unwrapError = (errors = []) =>
   errors.inner && errors.inner.length
@@ -8,7 +10,7 @@ let unwrapError = (errors = []) =>
 
 function scopeToValue(promises, value, sync) {
   //console.log('scopeToValue', promises, value)
-  let p = ZalgoPromise.all(promises, sync);
+  let p = promise(sync).all(promises);
 
   //console.log('scopeToValue B', p)
 
@@ -34,12 +36,12 @@ export function propagateErrors(endEarly, errors) {
   }
 }
 
-export function settled(promises, sync){
+export function settled(promises, sync) {
   let settle = promise => promise.then(
     value => ({ fulfilled: true, value }),
     value => ({ fulfilled: false, value }))
 
-  return ZalgoPromise.all(promises.map(settle), sync)
+  return promise(sync).all(promises.map(settle))
 }
 
 

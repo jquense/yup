@@ -4,9 +4,11 @@
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm run lint && jest",
+    "test": "npm run lint && npm run test-all",
+    "testonly": "jest",
+    "test-all": "npm run testonly -- --projects ./jest-sync.config.js --projects ./package.json",
     "tdd": "jest --watch",
-    "lint": "eslint src test --fix",
+    "lint": "eslint src test",
     "clean": "rimaf ./lib/*",
     "toc": "doctoc README.md --github",
     "build": "babel src --out-dir lib && npm run toc",
@@ -28,7 +30,9 @@
   "jest": {
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test-setup.js",
-    "roots": ["test"],
+    "roots": [
+      "test"
+    ],
     "testRegex": "\\.js",
     "testPathIgnorePatterns": [
       "helpers\\.js"
@@ -38,12 +42,11 @@
     }
   },
   "devDependencies": {
-    "babel-jest": "^19.0.0",
     "babel-cli": "^6.6.5",
     "babel-eslint": "^6.0.2",
     "babel-jest": "^20.0.3",
     "babel-polyfill": "^6.7.4",
-    "babel-preset-jason": "^3.0.0",
+    "babel-preset-jason": "^3.1.0",
     "benchmark": "^2.0.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
@@ -61,11 +64,11 @@
     "sinon-chai": "^2.10.0"
   },
   "dependencies": {
-    "babel-preset-jason": "^3.0.0",
     "case": "^1.2.1",
     "fn-name": "~1.0.1",
     "lodash": "^4.17.0",
     "property-expr": "^1.2.0",
+    "synchronous-promise": "^1.0.18",
     "toposort": "^0.2.10",
     "type-name": "^2.0.1"
   },
