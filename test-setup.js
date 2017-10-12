@@ -32,3 +32,4 @@ if (global.YUP_USE_SYNC) {
   }
 }
 
+global.specify = global.it

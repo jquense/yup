@@ -1,21 +1,20 @@
 v0.22.1 - Thu, 12 Oct 2017 14:49:16 GMT
 ---------------------------------------
 
-
-
+- Fix bug in browsers without symbol [#132](https://github.com/jquense/yup/pull/132)
 
 
 v0.22.0 - Sat, 26 Aug 2017 14:48:57 GMT
 ---------------------------------------
 
 ** Breaking **
-- Use native Set and lodash CloneDeep: (#109)[https://github.com/jquense/yup/pull/109]
+- Use native Set and lodash CloneDeep: [#109](https://github.com/jquense/yup/pull/109)
 
 ** Fixes and Features
-- Better custom locale support: (#105)[https://github.com/jquense/yup/pull/105]
-- fix some messages: (#112)[https://github.com/jquense/yup/pull/112]
-- Clearer errors for common mistakes: (#108)[https://github.com/jquense/yup/pull/108]
-- New string validation length: (#67)[https://github.com/jquense/yup/pull/67]
+- Better custom locale support: [#105](https://github.com/jquense/yup/pull/105)
+- fix some messages: [#112](https://github.com/jquense/yup/pull/112)
+- Clearer errors for common mistakes: [#108](https://github.com/jquense/yup/pull/108)
+- New string validation length: [#67](https://github.com/jquense/yup/pull/67)
 
 v0.21.3 - Wed, 18 Jan 2017 15:39:25 GMT
 ---------------------------------------
