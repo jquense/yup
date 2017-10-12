@@ -36,10 +36,7 @@
     "testRegex": "\\.js",
     "testPathIgnorePatterns": [
       "helpers\\.js"
-    ],
-    "transform": {
-      "^.+\\.js$": "./transform-tests.js"
-    }
+    ]
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
