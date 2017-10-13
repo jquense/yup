@@ -1,21 +1,20 @@
 import inherits from './util/inherits';
 import MixedSchema from './mixed';
-import { number as locale} from './locale.js';
+import { number as locale } from './locale.js';
 import isAbsent from './util/isAbsent';
-
 
 let isNaN = value => value != +value
 
 let isInteger = val => isAbsent(val) || val === (val | 0)
 
 export default function NumberSchema() {
-  if ( !(this instanceof NumberSchema))
+  if (!(this instanceof NumberSchema))
     return new NumberSchema()
 
   MixedSchema.call(this, { type: 'number' })
 
   this.withMutation(() => {
-    this.transform(function(value) {
+    this.transform(function (value) {
       if (this.isType(value)) return value
 
       let parsed = parseFloat(value);
@@ -55,6 +54,42 @@ inherits(NumberSchema, MixedSchema, {
       message: msg || locale.max,
       test(value) {
         return isAbsent(value) || value <= this.resolve(max)
+      }
+    })
+  },
+
+  less(less, msg) {
+    return this.test({
+      name: 'less',
+      exclusive: true,
+      params: { less },
+      message: msg || locale.less,
+      test(value) {
+        return isAbsent(value) || value < this.resolve(less)
+      }
+    })
+  },
+
+  more(more, msg) {
+    return this.test({
+      name: 'more',
+      exclusive: true,
+      params: { more },
+      message: msg || locale.more,
+      test(value) {
+        return isAbsent(value) || value > this.resolve(more)
+      }
+    })
+  },
+
+  notEqual(notEqual, msg) {
+    return this.test({
+      name: 'notEqual',
+      exclusive: true,
+      params: { notEqual },
+      message: msg || locale.notEqual,
+      test(value) {
+        return isAbsent(value) || value !== this.resolve(notEqual)
       }
     })
   },
