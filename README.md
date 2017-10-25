@@ -737,7 +737,6 @@ Failed casts return the input value.
 #### `string.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
-To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
 #### `string.min(limit: number | Ref, message: ?string): Schema`
 
@@ -909,7 +908,6 @@ not validate its contents.
 #### `array.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
-To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
 #### `array.min(limit: number | Ref, message: ?string): Schema`
 
