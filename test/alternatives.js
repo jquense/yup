@@ -4,25 +4,29 @@ import number from '../src/number';
 
 describe('Alternative Types ', () => {
   it('should allow type if oneOfType', () => {
-      let inst = alternatives().oneOfType([number(), string().strict()])
+      let inst = alternatives().oneOfType([number(), string().strict()],{
+          shouldUseForCasting: (schema, value) => !(value && value.getTime && typeof value.getTime === 'function')
+      })
       inst.cast('10').should.equal(10)
       inst.cast('dedede').should.equal('dedede')
       expect(() => inst.cast(new Date())).to.throw(
           /The value of field could not be cast to a value that satisfies the schema type: "alternatives"/
       )
       inst.isValidSync(new Date()).should.equal(false);
-      inst.isValidSync(10).should.equal(true);
+      inst.isValidSync(10, {strict:true}).should.equal(true);
 
       return Promise.all([
           inst.isValid(6).should.eventually().equal(true),
           inst.isValid('hfhfh').should.eventually().equal(true),
 
           inst.isValid(new Date()).should.eventually().equal(false),
-          inst.isValid({}).should.eventually().equal(false),
-
-          inst.validate(new Date()).should.be.rejected().then(err => {
-              err.errors[0].should.equal('this must be one of the following types: NumberSchema, StringSchema')
-          }),
+          inst.isValid({},{strict:true}).should.eventually().equal(false),
+          // string schema  casts objects to string
+          inst.isValid({},{strict:false}).should.eventually().equal(true),
+//
+//          inst.validate(new Date()).should.be.rejected().then(err => {
+//              err.errors[0].should.equal('this must be one of the following types: NumberSchema, StringSchema')
+//          }),
       ])
   })
 })
