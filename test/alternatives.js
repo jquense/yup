@@ -7,6 +7,7 @@ describe('Alternative Types ', () => {
       let inst = alternatives().oneOfType([number(), string().strict()], {
           shouldUseForCasting: (schema, value) => !(value && value.getTime && typeof value.getTime === 'function')
       })
+      inst.validateSync('10', {strict:true}).should.equal('10');
       inst.cast('10').should.equal(10)
       inst.cast('dedede').should.equal('dedede')
       expect(() => inst.cast(new Date())).to.throw(
@@ -25,7 +26,7 @@ describe('Alternative Types ', () => {
           inst.isValid({}, {strict:false}).should.eventually().equal(true),
 
           inst.validate(new Date()).should.be.rejected().then(err => {
-              err.errors[0].should.equal('this must be one of the following types: NumberSchema, StringSchema')
+              err.errors[0].should.match(/this must be a `alternatives` type, but the final value was:/)
           }),
       ])
   })
