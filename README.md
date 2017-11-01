@@ -50,7 +50,6 @@ json separate from validating it, via the `cast` method.
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
     - [`mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
     - [`mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`](#mixednotoneofarrayofvalues-arrayany-string-message)
-    - [`mixed.oneOfType(arrayOfValues: Array<Schema>, options: ?object): Schema`](#mixedoneoftypearrayofvalues-arrayschema-options-object-schema)
     - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
     - [`mixed.test(name: string, message: string, test: function): Schema`](#mixedtestname-string-message-string-test-function-schema)
     - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
@@ -92,6 +91,8 @@ json separate from validating it, via the `cast` method.
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
+  - [alternatives](#alternatives)
+    - [`alternatives.oneOfType(arrayOfValues: Array<Schema>, string: ?message): Schema`](#alternativesoneoftypearrayofvalues-arrayschema-string-message-schema)
 - [Extending Schema Types](#extending-schema-types)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -535,20 +536,6 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
-#### `mixed.oneOfType(arrayOfValues: Array<Schema>, options: ?object): Schema`
-
-Allow a value to be one of a specified type. For casting `oneOfType` will use the 
-first specified type or the one specified in the optional `cast` option parameter.   
-*Note:* OneOfType will only run aSync.  
- 
-```js
-Options = {
-  // Error message to use, uses param values for types list
-  message: string,
-  // Schema used to cast, defaults to the first schema supplied to oneOfType
-  cast: schema,
-}
-```
 
 ```javascript
 var schema = yup.mixed().oneOfType([number(), string().strict()]);
@@ -1031,7 +1018,23 @@ Transforms all object keys to camelCase
 
 Transforms all object keys to CONSTANT_CASE.
 
+### alternatives
 
+Define an alternatives schema. Options passed into `isValid` are also passed to child schemas.
+Supports all the same methods as [`mixed`](#mixed).
+
+```javascript
+yup.object({
+    amount: yup.alternatives().oneOfType([yup.string(),yup.number()])
+})
+```
+
+Casting to the alternatives schema is not supported. 
+
+#### `alternatives.oneOfType(arrayOfValues: Array<Schema>, string: ?message): Schema`
+
+Allow a value to be one of a specified type. For casting `oneOfType` will lookup the 
+specified type using isValidSync.
 
 ## Extending Schema Types
 

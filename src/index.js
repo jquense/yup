@@ -35,7 +35,7 @@ export {
   boolean,
   date,
   object,
-  array, 
+  array,
   alternatives,
   ref,
   lazy,
