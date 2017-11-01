@@ -5,6 +5,7 @@ import number from './number';
 import date from './date';
 import object from './object';
 import array from './array';
+import alternatives from './alternatives';
 import Ref from './Reference';
 import Lazy from './Lazy';
 import ValidationError from './ValidationError';
@@ -34,7 +35,8 @@ export {
   boolean,
   date,
   object,
-  array,
+  array, 
+  alternatives,
   ref,
   lazy,
   reach,

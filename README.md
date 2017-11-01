@@ -50,6 +50,7 @@ json separate from validating it, via the `cast` method.
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
     - [`mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
     - [`mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`](#mixednotoneofarrayofvalues-arrayany-string-message)
+    - [`mixed.oneOfType(arrayOfValues: Array<Schema>, options: ?object): Schema`](#mixedoneoftypearrayofvalues-arrayschema-options-object-schema)
     - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
     - [`mixed.test(name: string, message: string, test: function): Schema`](#mixedtestname-string-message-string-test-function-schema)
     - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
@@ -534,6 +535,29 @@ schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
 ```
 
+#### `mixed.oneOfType(arrayOfValues: Array<Schema>, options: ?object): Schema`
+
+Allow a value to be one of a specified type. For casting `oneOfType` will use the 
+first specified type or the one specified in the optional `cast` option parameter.   
+*Note:* OneOfType will only run aSync.  
+ 
+```js
+Options = {
+  // Error message to use, uses param values for types list
+  message: string,
+  // Schema used to cast, defaults to the first schema supplied to oneOfType
+  cast: schema,
+}
+```
+
+```javascript
+var schema = yup.mixed().oneOfType([number(), string().strict()]);
+schema.isValid(42)       //=> true
+schema.isValid('yup')  //=> true
+schema.isValid(new Date) //=> false
+schema.cast('30') //=> 30
+```
+
 #### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object
@@ -737,7 +761,6 @@ Failed casts return the input value.
 #### `string.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
-To allow empty strings but fail on `undefined` values use: `string().required().min(0)`
 
 #### `string.min(limit: number | Ref, message: ?string): Schema`
 
@@ -909,7 +932,6 @@ not validate its contents.
 #### `array.required(message: ?string): Schema`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
-To allow empty arrays but fail on `undefined` values use: `array().required().min(0)`
 
 #### `array.min(limit: number | Ref, message: ?string): Schema`
 

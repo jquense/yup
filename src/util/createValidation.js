@@ -8,9 +8,12 @@ let formatError = ValidationError.formatError
 
 let thenable = p => p && typeof p.then === 'function' && typeof p.catch === 'function'
 
+let isSyncPromise = p => thenable(p) && typeof p.pause === 'function' && typeof p.resume === 'function'
+
 function runTest(testFn, ctx, value, sync) {
   let result = testFn.call(ctx, value)
   if (!sync) return Promise.resolve(result)
+  else if(isSyncPromise(result)) return result;
 
   if (thenable(result)) {
     throw new Error(

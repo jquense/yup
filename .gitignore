@@ -39,7 +39,8 @@ node_modules
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -76,3 +77,8 @@ $RECYCLE.BIN/
 
 # Ignore build files
 lib/
+
+# =========================
+# IDE
+# =========================
+.idea

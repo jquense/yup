@@ -19,6 +19,10 @@ export let mixed = {
   },
 }
 
+export let alternatives = {
+    oneOfType: '${path} must be one of the following types: ${values}',
+}
+
 export let string = {
   length:    '${path} must be exactly ${length} characters',
   min:       '${path} must be at least ${min} characters',
@@ -34,6 +38,9 @@ export let string = {
 export let number = {
   min:       '${path} must be greater than or equal to ${min}',
   max:       '${path} must be less than or equal to ${max}',
+  less:      '${path} must be less than ${less}',
+  more:      '${path} must be greater than ${more}',
+  notEqual:  '${path} must be not equal to ${notEqual}',
   positive:  '${path} must be a positive number',
   negative:  '${path} must be a negative number',
   integer:   '${path} must be an integer',
