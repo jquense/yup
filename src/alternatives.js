@@ -18,7 +18,7 @@ export default function AlternativesSchema() {
 
     MixedSchema.call(this, { type: 'alternatives' })
 }
-const defaultShouldUseForCasting = (schema, value, options ) => true;
+const defaultShouldUseForCasting = () => true;
 
 inherits(AlternativesSchema, MixedSchema, {
     _typeCheck(v){
@@ -71,7 +71,7 @@ inherits(AlternativesSchema, MixedSchema, {
                 // It's difficult to decide what type we want to use for casting
                 // the value. Ultimately, it's up to the developer so allow the developer
                 // to decide using `shouldUseForCasting` (defaults to for all types).
-                if(shouldUseForCasting(schema,value,options)){
+                if(shouldUseForCasting(schema, value, options)){
                     try {
                         value = schema.cast(rawValue, {
                             ...options,
