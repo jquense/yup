@@ -223,13 +223,15 @@ reach(schema, 'nested["arr"][1].num')
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
 ```js
+  var invalidDate = new Date('');
+  
   yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
 
     return this.transform(function(value, originalValue){
 
       if ( this.isType(value) ) return value
 
-      value = Moment(originalValue, formats, parseStrict)
+      date = Moment(originalValue, formats, parseStrict)
 
       return date.isValid() ? date.toDate() : invalidDate
     })
@@ -713,7 +715,7 @@ yup.date().transform(function(formats = 'MMM dd, yyyy'){
   if ( this.isType(value) ) return value
 
   //the default coercion failed so lets try it with Moment.js instead
-  value = Moment(originalValue, formats)
+  var date = Moment(originalValue, formats)
 
   //if its valid return the date object, otherwise return an `InvalidDate`
   return date.isValid() ? date.toDate() : new Date('')
@@ -1022,7 +1024,7 @@ The simplest way to extend an existing type is just to cache a configured schema
     .transform(function(value, originalValue){
         if ( this.isType(value) ) return value
         //the default coercion transform failed so lets try it with Moment instead
-        value = Moment(originalValue, parseFormats)
+        var date = Moment(originalValue, parseFormats)
         return date.isValid() ? date.toDate() : invalidDate
     })
 ```
@@ -1050,7 +1052,7 @@ function parseDateFromFormats(formats, parseStrict) {
     if (this.isType(value))
       return value
 
-    value = Moment(originalValue, formats, parseStrict)
+    var date = Moment(originalValue, formats, parseStrict)
 
     return date.isValid() ? date.toDate() : invalidDate
   })
