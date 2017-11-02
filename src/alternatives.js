@@ -4,7 +4,7 @@ import MixedSchema from './mixed';
 import { alternatives as locale } from './locale.js';
 import isSchema from './util/isSchema';
 import typeOf from 'type-name';
-import { SynchronousPromise } from 'synchronous-promise';
+import { SynchronousPromise } from './util/SynchronousPromise';
 
 let promise = sync => sync ? SynchronousPromise : Promise;
 const invalidMarker = {};
@@ -18,6 +18,9 @@ export default function AlternativesSchema() {
 }
 const defaultShouldUseForCasting = () => true;
 
+let thenable = p => p && typeof p.then === 'function' && typeof p.catch === 'function'
+const isPromiseOrType = (v, schema) => schema.isType(v) || thenable(v)// || isWrapper(v);
+
 inherits(AlternativesSchema, MixedSchema, {
     _typeCheck(v) {
         if (this._oneOfTypeOptions) {
@@ -25,6 +28,9 @@ inherits(AlternativesSchema, MixedSchema, {
                 schemas
             } = this._oneOfTypeOptions;
             return !!schemas.find(it => it.isType(v));
+        }
+        else if (this._subType) {
+            return isPromiseOrType(v, this._subType);
         }
         return false
     },
@@ -59,10 +65,43 @@ inherits(AlternativesSchema, MixedSchema, {
         if (value === undefined && has(this, '_default')) {
             value = this.default()
         }
-//        console.log("rawValue",rawValue,"value",value,"is of type",this.isType(value));
+        //console.log('rawValue', rawValue, 'value', value, 'is of type', this.isType(value));
         return value;
     },
+    promiseOrType(schema, {
+        allowPromiseValueInSync = false
+    } = {}) {
+        const next = this.clone();
+        next._subType = schema;
+        return next.test({
+            message:'A promise is not allowed in synchronous validation',
+            name: 'promiseOrType',
+            test(value, options) {
+                const { sync: isRunningSync } = this.options;
 
+                if (isRunningSync) {
+                    if (thenable(value) && !allowPromiseValueInSync) {
+                        return this.createError({})
+                    }
+                    return value;
+                }
+                const ctx = {
+                    path: this.path,
+                    ...options,
+                    ...this.options,
+                };
+
+                if (Promise.resolve(value) === value) {
+                    return value.then(realValue => {
+                        return schema.validate(realValue, ctx);
+                    })
+                }
+                else {
+                    return schema.validate(value, ctx);
+                }
+            }
+        });
+    },
     oneOfType(enums, {
         message = locale.oneOfType,
         shouldUseForCasting = defaultShouldUseForCasting
@@ -75,38 +114,36 @@ inherits(AlternativesSchema, MixedSchema, {
                 )
             return schema;
         });
-
-        return Object.assign(this.clone(), {
-            _oneOfTypeOptions: {
-                schemas: validTypes,
-                shouldUseForCasting
-            },
-            test: {
-                message,
-                name: 'oneOfType',
-                test(value) {
-                    const { options: { sync, ...options }, path } = this;
-                    return validTypes.reduce(
-                        (valid, schema) => {
-                            if (!schema.validate) return valid;
-                            return schema
-                            .validate(value, { ...options, sync, path })
-                            .then(validated => validated || valid)
-                            .catch(() => valid);
-                        },
-                        promise(sync).resolve(invalidMarker)
-                    )
-                     .then(result => {
-                         if (result === invalidMarker) {
-                             throw this.createError({
-                                 params: {
-                                     values: validTypes.map(subType => typeOf(subType)).join(', ')
-                                 }
-                             });
-                         }
-                         return result;
-                     });
-                }
+        let next = this.clone();
+        next._oneOfTypeOptions = {
+            schemas: validTypes,
+            shouldUseForCasting
+        };
+        return next.test({
+            message,
+            name: 'oneOfType',
+            test(value) {
+                const { options: { sync, ...options }, path } = this;
+                return validTypes.reduce(
+                    (valid, schema) => {
+                        if (!schema.validate) return valid;
+                        return schema
+                        .validate(value, { ...options, sync, path })
+                        .then(validated => validated || valid)
+                        .catch(() => valid);
+                    },
+                    promise(sync).resolve(invalidMarker)
+                )
+                                 .then(result => {
+                                     if (result === invalidMarker) {
+                                         throw this.createError({
+                                             params: {
+                                                 values: validTypes.map(subType => typeOf(subType)).join(', ')
+                                             }
+                                         });
+                                     }
+                                     return result;
+                                 });
             }
         });
     }

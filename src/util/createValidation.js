@@ -1,7 +1,7 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError'
 import Ref from '../Reference'
-import { SynchronousPromise } from 'synchronous-promise';
+import { SynchronousPromise } from './SynchronousPromise';
 
 
 let formatError = ValidationError.formatError
@@ -15,7 +15,7 @@ function runTest(testFn, ctx, value, sync) {
   if (!sync) return Promise.resolve(result)
   else if(isSyncPromise(result)) return result;
 
-  if (thenable(result)) {
+  if (thenable(result) && value!== result) {
     throw new Error(
       `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
       `This test will finish after the validate call has returned`

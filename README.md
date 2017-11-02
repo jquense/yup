@@ -1036,6 +1036,13 @@ Casting to the alternatives schema is not supported.
 Allow a value to be one of a specified type. For casting `oneOfType` will lookup the 
 specified type using isValidSync.
 
+
+#### `alternatives.promiseOrType(schema: Schema): Schema`
+
+Allow a value to be a promise which is resolved to the type specified. 
+Casting is not supported, it will return the promise instead of the actual value.
+   
+
 ## Extending Schema Types
 
 The simplest way to extend an existing type is just to cache a configured schema and use that through your application.

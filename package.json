@@ -65,7 +65,6 @@
     "fn-name": "~1.0.1",
     "lodash": "^4.17.0",
     "property-expr": "^1.2.0",
-    "synchronous-promise": "^1.0.18",
     "toposort": "^0.2.10",
     "type-name": "^2.0.1"
   },
