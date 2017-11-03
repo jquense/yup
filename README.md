@@ -352,6 +352,7 @@ Options = {
   abortEarly: boolean = true;
   stripUnknown: boolean = false;
   recursive: boolean = true;
+  transform: boolean = false;
   context: ?object;
 }
 ```
@@ -361,6 +362,8 @@ than after all validations run.
 - `stripUnknown`: remove unspecified keys from objects.
 - `recursive`: when `false` validations will not descend into nested schema
 (relevant for objects or arrays).
+- `transform`: this will make validate to return the results of the validations 
+  instead of the input values. 
 - `context`: any context needed for validating schema conditions (see: `when()`)
 
 ```js

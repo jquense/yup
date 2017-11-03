@@ -1,4 +1,4 @@
-import { SynchronousPromise } from 'synchronous-promise';
+import { SynchronousPromise } from './syncPromise';
 import ValidationError from '../ValidationError';
 
 let promise = sync => sync ? SynchronousPromise: Promise;
@@ -8,9 +8,13 @@ let unwrapError = (errors = []) =>
     ? errors.inner
     : [].concat(errors);
 
-function scopeToValue(promises, value, sync) {
+function scopeToValue(promises, value, sync, transform) {
+  if(promises.length === 0) return promise(sync).resolve(value);
+
   //console.log('scopeToValue', promises, value)
-  let p = promise(sync).all(promises);
+  let p = promises.length === 1 && !Array.isArray(value)?
+      promise(sync).resolve(promises[0]):
+      promise(sync).all(promises);
 
   //console.log('scopeToValue B', p)
 
@@ -20,7 +24,7 @@ function scopeToValue(promises, value, sync) {
       throw err
     })
   //console.log('scopeToValue c', b)
-  let c = b.then(() => value);
+  let c = b.then(r => transform? r : value);
   //console.log('scopeToValue d', c)
   return c
 }
@@ -80,7 +84,7 @@ export function collectErrors({
 
 export default function runValidations({ endEarly, ...options }) {
   if (endEarly)
-    return scopeToValue(options.validations, options.value, options.sync)
+    return scopeToValue(options.validations, options.value, options.sync, options.transform)
 
   return collectErrors(options)
 }

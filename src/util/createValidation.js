@@ -1,7 +1,7 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError'
 import Ref from '../Reference'
-import { SynchronousPromise } from 'synchronous-promise';
+import { SynchronousPromise } from './syncPromise';
 
 
 let formatError = ValidationError.formatError
@@ -70,6 +70,8 @@ export default function createValidation(options) {
 
         else if (!validOrError)
           throw createError()
+
+        return validOrError;
       })
   }
 

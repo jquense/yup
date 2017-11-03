@@ -100,7 +100,8 @@ inherits(ArraySchema, MixedSchema, {
           value,
           errors,
           endEarly,
-          validations
+          validations,
+          transform:options.transform
         })
       })
   },

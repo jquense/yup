@@ -180,6 +180,7 @@ SchemaType.prototype = {
 
     let isStrict = this._option('strict', options)
     let endEarly = this._option('abortEarly', options)
+    let transform = this._option('transform', options)
 
     let sync = options.sync
     let path = options.path
@@ -201,12 +202,13 @@ SchemaType.prototype = {
     if (this._blacklistError)
       initialTests.push(this._blacklistError(validationParams));
 
-    return runValidations({ validations: initialTests, endEarly, value, path, sync })
+    return runValidations({ validations: initialTests, endEarly, value, path, sync, transform:false })
       .then(value => runValidations({
         path,
         sync,
         value,
         endEarly,
+        transform,
         validations: this.tests.map(fn => fn(validationParams)),
       }))
   },

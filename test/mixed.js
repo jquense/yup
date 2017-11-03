@@ -3,6 +3,7 @@ import object from '../src/object';
 import string from '../src/string';
 import number from '../src/number';
 import reach from '../src/util/reach';
+import array from '../src/array';
 
 let noop = () => {}
 
@@ -576,3 +577,20 @@ describe('Mixed Types ', () => {
   })
 
 })
+
+describe('Validate transform', ()=>{
+    it('should return the validated value', ()=>{
+        const apiValidator = mixed().test('apivalidation', '', function(value){
+            // This is an api server call
+            return new Promise(r => {
+                setTimeout(()=> r(value+value), 1000)
+            });
+        });
+        return Promise.all([
+            apiValidator.validate(10, {transform:true}).should.eventually().equal(20),
+            array().of(apiValidator).validate([10, 20, 40], {transform:true}).should.become([20, 40, 80]),
+            array().of(apiValidator).validate([10, 20, 40], {transform:false}).should.become([10, 20, 40]),
+            array().of(apiValidator).validate([10, 20, 40]).should.become([10, 20, 40])
+        ])
+    })
+});
