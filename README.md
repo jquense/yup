@@ -91,6 +91,8 @@ json separate from validating it, via the `cast` method.
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
+  - [alternatives](#alternatives)
+    - [`alternatives.oneOfType(arrayOfValues: Array<Schema>, string: ?message): Schema`](#alternativesoneoftypearrayofvalues-arrayschema-string-message-schema)
 - [Extending Schema Types](#extending-schema-types)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -532,6 +534,15 @@ The `${values}` interpolation can be used in the `message` argument.
 var schema = yup.mixed().notOneOf(['jimmy', 42]);
 schema.isValid(42)       //=> false
 schema.isValid(new Date) //=> true
+```
+
+
+```javascript
+var schema = yup.mixed().oneOfType([number(), string().strict()]);
+schema.isValid(42)       //=> true
+schema.isValid('yup')  //=> true
+schema.isValid(new Date) //=> false
+schema.cast('30') //=> 30
 ```
 
 #### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
@@ -1007,7 +1018,24 @@ Transforms all object keys to camelCase
 
 Transforms all object keys to CONSTANT_CASE.
 
+### alternatives
 
+Define an alternatives schema. Options passed into `isValid` are also passed to child schemas.
+Supports all the same methods as [`mixed`](#mixed).
+
+```javascript
+yup.object({
+    amount: yup.alternatives().oneOfType([yup.string(),yup.number()])
+})
+```
+
+Casting to the alternatives schema is not supported. 
+
+#### `alternatives.oneOfType(arrayOfValues: Array<Schema>, string: ?message): Schema`
+
+Allow a value to be one of a specified type. For casting `oneOfType` will use the 
+first type that can cast the value. If no type can cast the value default will be returned. 
+  
 
 ## Extending Schema Types
 
