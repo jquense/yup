@@ -173,6 +173,7 @@ inherits(ObjectSchema, MixedSchema, {
           value,
           errors,
           endEarly,
+          transform: opts.transform,
           path: opts.path,
           sort: sortByKeyOrder(this.fields)
         })
