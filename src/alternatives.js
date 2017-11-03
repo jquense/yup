@@ -19,6 +19,7 @@ inherits(AlternativesSchema, MixedSchema, {
     oneOfType(schemas, message = locale.oneOfType){
         return Object.assign(this.test({
             message,
+            name:'oneOfType',
             test(value){
                 const { options: { sync, ...options }, path } = this;
                 const resultValidator = (result) => {
