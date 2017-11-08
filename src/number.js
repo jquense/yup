@@ -58,9 +58,9 @@ inherits(NumberSchema, MixedSchema, {
     })
   },
 
-  less(less, msg) {
+  lessThan(less, msg) {
     return this.test({
-      name: 'less',
+      name: 'max',
       exclusive: true,
       params: { less },
       message: msg || locale.less,
@@ -70,26 +70,14 @@ inherits(NumberSchema, MixedSchema, {
     })
   },
 
-  more(more, msg) {
+  moreThan(more, msg) {
     return this.test({
-      name: 'more',
+      name: 'min',
       exclusive: true,
       params: { more },
       message: msg || locale.more,
       test(value) {
         return isAbsent(value) || value > this.resolve(more)
-      }
-    })
-  },
-
-  notEqual(notEqual, msg) {
-    return this.test({
-      name: 'notEqual',
-      exclusive: true,
-      params: { notEqual },
-      message: msg || locale.notEqual,
-      test(value) {
-        return isAbsent(value) || value !== this.resolve(notEqual)
       }
     })
   },

@@ -137,8 +137,8 @@ describe('Number types', function() {
     })
   })
 
-  describe('less', () => {
-    var schema = number().less(5);
+  describe('lessThan', () => {
+    var schema = number().lessThan(5);
 
     TestHelpers.validateAll(schema, {
       valid: [
@@ -150,13 +150,13 @@ describe('Number types', function() {
         5,
         7,
         null,
-        [14, schema.less(10).less(14)]
+        [14, schema.lessThan(10).lessThan(14)]
       ]
     })
   })
 
   describe('more', () => {
-    var schema = number().more(5);
+    var schema = number().moreThan(5);
 
     TestHelpers.validateAll(schema, {
       valid: [
@@ -168,24 +168,7 @@ describe('Number types', function() {
         5,
         -10,
         null,
-        [64, schema.more(52).more(74)]
-      ]
-    })
-  })
-
-  describe('notEqual', () => {
-    var schema = number().notEqual(5);
-
-    TestHelpers.validateAll(schema, {
-      valid: [
-        6,
-        56445435,
-        [null, schema.nullable()]
-      ],
-      invalid: [
-        5,
-        null,
-        [52, schema.notEqual(52).notEqual(74)]
+        [64, schema.moreThan(52).moreThan(74)]
       ]
     })
   })

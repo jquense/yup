@@ -12,9 +12,9 @@ import reach from './util/reach';
 import isSchema from './util/isSchema';
 
 let boolean = bool;
-let ref =(key, options) => new Ref(key, options);
+let ref = (key, options) => new Ref(key, options);
 
-let lazy =(fn) => new Lazy(fn);
+let lazy = (fn) => new Lazy(fn);
 
 function addMethod(schemaType, name, fn) {
   if (!schemaType || !isSchema(schemaType.prototype))

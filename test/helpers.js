@@ -1,3 +1,4 @@
+import printValue from '../src/util/printValue';
 
 export let castAndShouldFail = (schema, value) => {
   (()=> schema.cast(value))
@@ -9,7 +10,7 @@ export let castAndShouldFail = (schema, value) => {
 
 export let castAll = (inst, { invalid = [], valid = [] }) => {
   valid.forEach(([value, result, schema = inst ]) => {
-    it(`should cast ${JSON.stringify(value)} to ${JSON.stringify(result)}`, () => {
+    it(`should cast ${printValue(value)} to ${printValue(result)}`, () => {
       expect(
         schema.cast(value)
       )
@@ -18,24 +19,29 @@ export let castAll = (inst, { invalid = [], valid = [] }) => {
   })
 
   invalid.forEach((value) => {
-    it(`should not cast ${JSON.stringify(value)}`, () => {
+    it(`should not cast ${printValue(value)}`, () => {
       castAndShouldFail(inst, value)
     })
   })
 }
 
 export let validateAll = (inst, { valid = [], invalid = [] }) => {
-  runValidations(valid, true)
-  runValidations(invalid, false)
+  describe('valid:', () => {
+    runValidations(valid, true)
+  })
+
+  describe('invalid:', () => {
+    runValidations(invalid, false)
+  })
 
   function runValidations(arr, isValid) {
     arr.forEach((config) => {
-      let value = config, schema = inst;
+      let message = '', value = config, schema = inst;
 
       if (Array.isArray(config))
-        [ value, schema ] = config;
+        [ value, schema, message = '' ] = config;
 
-      it(`${JSON.stringify(value)} should be ${isValid ? 'valid' : 'invalid'}`,
+      it(`${printValue(value)}${message && `  (${message})`}`,
         () => schema.isValid(value).should.become(isValid)
       )
     })

@@ -10,6 +10,10 @@ export default class Reference {
     return !!(value && (value.__isYupRef || value instanceof Reference))
   }
 
+  toString() {
+    return `Ref(${this.key})`
+  }
+
   constructor(key, mapFn, options = {}) {
     validateName(key)
     let prefix = options.contextPrefix || '$';

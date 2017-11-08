@@ -101,12 +101,13 @@ json separate from validating it, via the `cast` method.
 npm install -S yup
 ```
 
-Yup always relies on the `Promise` global object to handle asynchronous values as well `Set`.
+Yup always relies on the `Promise` global object to handle asynchronous values as well as `Set` and `Map`.
 For browsers that do not support these, you'll need to include a polyfill, such as core-js:
 
 ```js
 import 'core-js/es6/promise';
 import 'core-js/es6/set';
+import 'core-js/es6/map';
 ```
 
 ## Usage

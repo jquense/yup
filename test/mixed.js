@@ -1,9 +1,4 @@
-import mixed from '../src/mixed';
-import object from '../src/object';
-import string from '../src/string';
-import number from '../src/number';
-import reach from '../src/util/reach';
-
+import {mixed, string,  number, object, ref, reach } from '../src';
 let noop = () => {}
 
 function ensureSync(fn) {
@@ -136,48 +131,56 @@ describe('Mixed Types ', () => {
       })
     })
 
-  it('should ignore absent values', () => {
-    return Promise.all([
-      mixed()
-        .oneOf(['hello'])
-        .isValid(undefined)
-        .should.eventually().equal(true),
-      mixed()
-        .nullable()
-        .oneOf(['hello'])
-        .isValid(null)
-        .should.eventually().equal(false),
-      mixed()
-        .oneOf(['hello'])
-        .required()
-        .isValid(undefined)
-        .should.eventually().equal(false),
-      mixed()
-        .nullable()
-        .oneOf(['hello'])
-        .required()
-        .isValid(null)
-        .should.eventually().equal(false)
-    ])
+  describe('oneOf', () => {
+    let inst = mixed().oneOf(['hello'])
+
+    TestHelpers.validateAll(inst, {
+      valid: [
+        undefined,
+        'hello'
+      ],
+      invalid: [
+        'YOLO',
+        [undefined, inst.required(), 'required'],
+        [null, inst.nullable()],
+        [null, inst.nullable().required(), 'required'],
+      ]
+    })
+
+    it('should work with refs', async () => {
+      let inst = object({
+        foo: string(),
+        bar: string().oneOf([ref('foo'), 'b'])
+      })
+
+      await inst.validate({ foo: 'a', bar: 'a' }).should.be.fulfilled()
+
+      await inst.validate({ foo: 'foo', bar: 'bar' }).should.be.rejected()
+    })
   })
 
-  it('should exclude values', () => {
+  describe('should exclude values', () => {
     let inst = mixed().notOneOf([5, 'hello'])
 
-    return Promise.all([
-      inst.isValid(6).should.eventually().equal(true),
-      inst.isValid('hfhfh').should.eventually().equal(true),
+    TestHelpers.validateAll(inst, {
+      valid: [
+        6,
+        'hfhfh',
+        [5, inst.oneOf([5]), '`oneOf` called after'],
+        null,
+      ],
+      invalid: [
+        5,
+        [null, inst.required(), 'required schema']
+      ]
+    })
 
-      inst.isValid(5).should.eventually().equal(false),
+    it('should throw the correct error', async () => {
+      let err = await inst.validate(5).should.be.rejected()
 
-      inst.validate(5).should.be.rejected().then(err => {
-        err.errors[0].should.equal('this must not be one of the following values: 5, hello')
-      }),
-      inst.oneOf([5]).isValid(5).should.eventually().equal(true),
-
-      inst.isValid(null).should.eventually().equal(true),
-      inst.required().isValid(null).should.eventually().equal(false)
-    ])
+      err.errors[0].should
+        .equal('this must not be one of the following values: 5, hello')
+    })
   })
 
   it('should run subset of validations first', () => {
