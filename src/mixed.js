@@ -34,6 +34,29 @@ function extractTestParams(name, message, test) {
   return opts
 }
 
+const listToArray = list =>
+  toArray(list).concat(toArray(list.refs.values()))
+
+const removeFromList = (value, list) => {
+  Ref.isRef(value) ? list.refs.delete(value.key) : list.delete(value)
+}
+
+const addToList = (value, list) => {
+  Ref.isRef(value) ? list.refs.set(value.key, value) : list.add(value)
+}
+
+const hasInList = (value, resolve, list) => {
+  if (list.has(value)) return true;
+
+  let item; let values = list.refs.values()
+
+  while (item = values.next(), !item.done) {
+    if (resolve(item.value) === value)
+      return true;
+  }
+  return false
+}
+
 export default function SchemaType(options = {}){
   if ( !(this instanceof SchemaType))
     return new SchemaType()
@@ -42,8 +65,12 @@ export default function SchemaType(options = {}){
   this._conditions  = []
   this._options     = { abortEarly: true, recursive: true }
   this._exclusive   = Object.create(null)
+
   this._whitelist   = new Set()
+  this._whitelist.refs = new Map()
+
   this._blacklist   = new Set()
+  this._blacklist.refs = new Map()
   this.tests        = []
   this.transforms   = []
 
@@ -380,23 +407,22 @@ SchemaType.prototype = {
     var next = this.clone();
 
     enums.forEach(val => {
-      if (next._blacklist.has(val))
-        next._blacklist.delete(val)
-      next._whitelist.add(val)
+      addToList(val, next._whitelist)
+      removeFromList(val, next._blacklist)
     })
 
     next._whitelistError = createValidation({
       message,
       name: 'oneOf',
       test(value) {
+        if (value === undefined) return true
         let valids = this.schema._whitelist
-        if (valids.size && !(value === undefined || valids.has(value)))
-          return this.createError({
-            params: {
-              values: toArray(valids).join(', ')
-            }
-          })
-        return true
+
+        return hasInList(value, this.resolve, valids) ? true : this.createError({
+          params: {
+            values: listToArray(valids).join(', ')
+          }
+        })
       }
     })
 
@@ -405,10 +431,9 @@ SchemaType.prototype = {
 
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
-
-    enums.forEach( val => {
-      next._whitelist.delete(val)
-      next._blacklist.add(val)
+    enums.forEach(val => {
+      addToList(val, next._blacklist)
+      removeFromList(val, next._whitelist)
     })
 
     next._blacklistError = createValidation({
@@ -416,10 +441,10 @@ SchemaType.prototype = {
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist
-        if (invalids.size && invalids.has(value))
+        if (hasInList(value, this.resolve, invalids))
           return this.createError({
             params: {
-              values: toArray(invalids).join(', ')
+              values: listToArray(invalids).join(', ')
             }
           })
         return true

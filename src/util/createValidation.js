@@ -52,16 +52,16 @@ export default function createValidation(options) {
 
   function validate({ value, path, label, options, originalValue, sync, ...rest }) {
     let parent = options.parent;
-    var resolve = (value) => Ref.isRef(value)
+    let resolve = (value) => Ref.isRef(value)
       ? value.getValue(parent, options.context)
       : value
 
-    var createError = createErrorFactory({
+    let createError = createErrorFactory({
         message, path, value, originalValue, params
       , label, resolve, name
     })
 
-    var ctx = { path, parent, type: name, createError, resolve, options, ...rest }
+    let ctx = { path, parent, type: name, createError, resolve, options, ...rest }
 
     return runTest(test, ctx, value, sync)
       .then(validOrError => {
