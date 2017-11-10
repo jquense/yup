@@ -5,7 +5,7 @@ import isAbsent from './util/isAbsent';
 
 let isNaN = value => value != +value
 
-let isInteger = val => isAbsent(val) || val === (val | 0)
+let isInteger = val => isAbsent(val) || val === parseInt(val, 10)
 
 export default function NumberSchema() {
   if (!(this instanceof NumberSchema))
