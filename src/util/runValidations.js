@@ -1,4 +1,4 @@
-import { SynchronousPromise } from 'synchronous-promise';
+import { SynchronousPromise } from './syncPromise';
 import ValidationError from '../ValidationError';
 
 let promise = sync => sync ? SynchronousPromise: Promise;
