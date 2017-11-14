@@ -313,6 +313,23 @@ SchemaType.prototype = {
       notEmpty
     )
   },
+  requiredIf(requiredTest, msg) {
+    return this.test(
+        'requiredIf',
+        msg || locale.required,
+        function(value){
+            const {path, parent, options:{ancestors}} = this;
+            const isRequired = requiredTest.call(this, {
+                path,
+                parent,
+                ancestors,
+                options:this.options,
+                value
+            });
+            return isRequired? notEmpty(value): true;
+        }
+    )
+  },
 
   nullable(value) {
     var next = this.clone()

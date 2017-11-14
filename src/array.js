@@ -75,7 +75,7 @@ inherits(ArraySchema, MixedSchema, {
         }
 
         originalValue = originalValue || value
-
+        let ancestors = options.ancestors? [...options.ancestors, value]:[value];
         let validations = value.map((item, idx) => {
           var path  = makePath`${options.path}[${idx}]`
 
@@ -84,6 +84,7 @@ inherits(ArraySchema, MixedSchema, {
             ...options,
             path,
             strict: true,
+            ancestors,
             parent: value,
             originalValue: originalValue[idx]
           };

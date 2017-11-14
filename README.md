@@ -507,6 +507,17 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 
 Mark the schema as required. All field values apart from `undefined` meet this requirement.
 
+#### `mixed.requiredIf(requiredIfTest: Function, message: ?string): Schema`
+
+Marks the schema as required if a specific condition is met.
+The requiredIfTest receives an object with the following values: 
+- `path`: the string path of the current validation
+- `value`: the value to test.
+- `options`: the `options` object that validate() or isValid() was called with
+- `parent`:  in the case of nested schema, this is the value of the parent object
+- `ancestors`: array of all resolved parent values.
+
+
 #### `mixed.typeError(message: string): Schema`
 
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can

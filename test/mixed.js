@@ -577,5 +577,20 @@ describe('Mixed Types ', () => {
         }
       })
   })
-
+  it('should requiredif', ()=>{
+    const inst = object({
+        firstName: string(),
+        lastName: string(),
+        display: object({
+            name: string().requiredIf(options=> {
+                const {ancestors:[{firstName, lastName}]} = options;
+                return !firstName || !lastName
+            })
+        })
+    })
+    return Promise.all([
+        inst.isValid({firstName:'Dennie', lastName:'de Lange' }).should.eventually().equal(true),
+        inst.isValid({firstName:'Dennie'}).should.eventually().equal(false),
+    ])
+  })
 })

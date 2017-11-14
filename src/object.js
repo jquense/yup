@@ -142,6 +142,7 @@ inherits(ObjectSchema, MixedSchema, {
         }
 
         originalValue = originalValue || value
+        let ancestors = opts.ancestors? [...opts.ancestors, value]:[value];
 
         let validations = this._nodes.map(key => {
           let path  = makePath`${opts.path}.${key}`
@@ -150,6 +151,7 @@ inherits(ObjectSchema, MixedSchema, {
           let innerOptions = {
             ...opts,
             path,
+            ancestors,
             parent: value,
             originalValue: originalValue[key],
           };
