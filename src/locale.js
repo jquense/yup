@@ -56,7 +56,7 @@ export let object = {
 
 export let array = {
   min:       '${path} field must have at least ${min} items',
-  max:       '${path} field must have less than ${max} items',
+  max:       '${path} field must have less than or equal to ${max} items',
 }
 
 export default {
