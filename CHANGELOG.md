@@ -1,7 +1,7 @@
 v0.24.0 - Tue, 16 Jan 2018 14:44:32 GMT
 ---------------------------------------
 
-- [f2a0b75](../../commit/f2a0b75) [added] number methods less, more, notEqual
+- [f2a0b75](../../commit/f2a0b75), [061e590](../../commit/061e590) [added] number methods lessThan, moreThan
 
 
 
