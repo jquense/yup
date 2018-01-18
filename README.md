@@ -69,6 +69,8 @@ json separate from validating it, via the `cast` method.
   - [number](#number)
     - [`number.min(limit: number | Ref, message: ?string): Schema`](#numberminlimit-number--ref-message-string-schema)
     - [`number.max(limit: number | Ref, message: ?string): Schema`](#numbermaxlimit-number--ref-message-string-schema)
+    - [`number.lessThan(max: number | Ref, message: ?string): Schema`](#numberlessthanmax-number--ref-message-string-schema)
+    - [`number.moreThan(min: number | Ref, message: ?string): Schema`](#numbermorethanmin-number--ref-message-string-schema)
     - [`number.positive(message: ?string): Schema`](#numberpositivemessage-string-schema)
     - [`number.negative(message: ?string): Schema`](#numbernegativemessage-string-schema)
     - [`number.integer(message: ?string): Schema`](#numberintegermessage-string-schema)
@@ -816,6 +818,16 @@ Set the minimum value allowed. The `${min}` interpolation can be used in the
 #### `number.max(limit: number | Ref, message: ?string): Schema`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the
+`message` argument.
+
+#### `number.lessThan(max: number | Ref, message: ?string): Schema`
+
+Value must be less than `max`. The `${max}` interpolation can be used in the
+`message` argument.
+
+#### `number.moreThan(min: number | Ref, message: ?string): Schema`
+
+Value must be strictly greater than `min`. The `${min}` interpolation can be used in the
 `message` argument.
 
 #### `number.positive(message: ?string): Schema`
