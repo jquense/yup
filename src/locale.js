@@ -44,7 +44,7 @@ export let number = {
 
 export let date = {
   min:       '${path} field must be later than ${min}',
-  max:       '${path} field must be at earlier than ${max}',
+  max:       '${path} field must be earlier than ${max}',
 }
 
 export let boolean = {
