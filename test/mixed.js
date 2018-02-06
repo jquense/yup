@@ -101,6 +101,21 @@ describe('Mixed Types ', () => {
     err.errors[0].should.equal('this must be one of the following values: 5, hello')
   })
 
+  it('should not require field when notRequired was set', async () => {
+    let inst = mixed().required();
+
+    await inst.isValid('test').should.eventually().equal(true)
+    await inst.isValid(1).should.eventually.equal(true)
+
+    let err = await inst.validate().should.be.rejected()
+
+    err.errors[0].should.equal('this is a required field')
+
+    inst = inst.notRequired()
+
+    await inst.isValid().should.eventually.equal(true)
+  })
+
   global.YUP_USE_SYNC &&
     describe('synchronous methods', () => {
       it('should validate synchronously', async () => {
