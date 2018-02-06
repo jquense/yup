@@ -314,6 +314,12 @@ SchemaType.prototype = {
     )
   },
 
+  notRequired() {
+    var next = this.clone()
+    next.tests = next.tests.filter(test => test.TEST_NAME !== 'required')
+    return next
+  },
+
   nullable(value) {
     var next = this.clone()
     next._nullable = value === false ? false : true
