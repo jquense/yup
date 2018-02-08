@@ -48,7 +48,12 @@ const addToList = (value, list) => {
 const hasInList = (value, resolve, list) => {
   if (list.has(value)) return true;
 
-  let item; let values = list.refs.values()
+  let item;
+  let values = list.refs ? list.refs.values() : undefined;
+
+  if (!values) {
+    return false;
+  }
 
   while (item = values.next(), !item.done) {
     if (resolve(item.value) === value)
