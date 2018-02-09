@@ -38,27 +38,33 @@ function extractTestParams(name, message, test) {
   return opts;
 }
 
-const listToArray = list => toArray(list).concat(toArray(list.refs.values()));
-
-const removeFromList = (value, list) => {
-  Ref.isRef(value) ? list.refs.delete(value.key) : list.delete(value);
-};
-
-const addToList = (value, list) => {
-  Ref.isRef(value) ? list.refs.set(value.key, value) : list.add(value);
-};
-
-const hasInList = (value, resolve, list) => {
-  if (list.has(value)) return true;
-
-  let item;
-  let values = list.refs.values();
-
-  while (((item = values.next()), !item.done)) {
-    if (resolve(item.value) === value) return true;
+class RefSet {
+  constructor() {
+    this.list = new Set();
+    this.refs = new Map();
   }
-  return false;
-};
+  toArray() {
+    return toArray(this.list).concat(toArray(this.refs.values()));
+  }
+  add(value) {
+    Ref.isRef(value) ? this.refs.set(value.key, value) : this.list.add(value);
+  }
+  delete(value) {
+    Ref.isRef(value)
+      ? this.refs.delete(value.key, value)
+      : this.list.delete(value);
+  }
+  has(value, resolve) {
+    if (this.list.has(value)) return true;
+
+    let item,
+      values = this.refs.values();
+    while (((item = values.next()), !item.done))
+      if (resolve(item.value) === value) return true;
+
+    return false;
+  }
+}
 
 export default function SchemaType(options = {}) {
   if (!(this instanceof SchemaType)) return new SchemaType();
@@ -68,11 +74,9 @@ export default function SchemaType(options = {}) {
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
 
-  this._whitelist = new Set();
-  this._whitelist.refs = new Map();
+  this._whitelist = new RefSet();
+  this._blacklist = new RefSet();
 
-  this._blacklist = new Set();
-  this._blacklist.refs = new Map();
   this.tests = [];
   this.transforms = [];
 
@@ -425,8 +429,8 @@ SchemaType.prototype = {
     var next = this.clone();
 
     enums.forEach(val => {
-      addToList(val, next._whitelist);
-      removeFromList(val, next._blacklist);
+      next._whitelist.add(val);
+      next._blacklist.delete(val);
     });
 
     next._whitelistError = createValidation({
@@ -436,11 +440,11 @@ SchemaType.prototype = {
         if (value === undefined) return true;
         let valids = this.schema._whitelist;
 
-        return hasInList(value, this.resolve, valids)
+        return valids.has(value, this.resolve)
           ? true
           : this.createError({
               params: {
-                values: listToArray(valids).join(', '),
+                values: valids.toArray().join(', '),
               },
             });
       },
@@ -452,8 +456,8 @@ SchemaType.prototype = {
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
     enums.forEach(val => {
-      addToList(val, next._blacklist);
-      removeFromList(val, next._whitelist);
+      next._blacklist.add(val);
+      next._whitelist.delete(val);
     });
 
     next._blacklistError = createValidation({
@@ -461,10 +465,10 @@ SchemaType.prototype = {
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
-        if (hasInList(value, this.resolve, invalids))
+        if (invalids.has(value, this.resolve))
           return this.createError({
             params: {
-              values: listToArray(invalids).join(', '),
+              values: invalids.toArray().join(', '),
             },
           });
         return true;
