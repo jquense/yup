@@ -3,35 +3,32 @@ import MixedSchema from './mixed';
 import { number as locale } from './locale.js';
 import isAbsent from './util/isAbsent';
 
-let isNaN = value => value != +value
+let isNaN = value => value != +value;
 
-let isInteger = val => isAbsent(val) || val === (val | 0)
+let isInteger = val => isAbsent(val) || val === (val | 0);
 
 export default function NumberSchema() {
-  if (!(this instanceof NumberSchema))
-    return new NumberSchema()
+  if (!(this instanceof NumberSchema)) return new NumberSchema();
 
-  MixedSchema.call(this, { type: 'number' })
+  MixedSchema.call(this, { type: 'number' });
 
   this.withMutation(() => {
-    this.transform(function (value) {
-      if (this.isType(value)) return value
+    this.transform(function(value) {
+      if (this.isType(value)) return value;
 
       let parsed = parseFloat(value);
-      if (this.isType(parsed)) return parsed
+      if (this.isType(parsed)) return parsed;
 
       return NaN;
-    })
-  })
+    });
+  });
 }
 
 inherits(NumberSchema, MixedSchema, {
-
   _typeCheck(value) {
-    if (value instanceof Number)
-      value = value.valueOf();
+    if (value instanceof Number) value = value.valueOf();
 
-    return typeof value === 'number' && !isNaN(value)
+    return typeof value === 'number' && !isNaN(value);
   },
 
   min(min, msg) {
@@ -41,9 +38,9 @@ inherits(NumberSchema, MixedSchema, {
       params: { min },
       message: msg || locale.min,
       test(value) {
-        return isAbsent(value) || value >= this.resolve(min)
-      }
-    })
+        return isAbsent(value) || value >= this.resolve(min);
+      },
+    });
   },
 
   max(max, msg) {
@@ -53,9 +50,9 @@ inherits(NumberSchema, MixedSchema, {
       params: { max },
       message: msg || locale.max,
       test(value) {
-        return isAbsent(value) || value <= this.resolve(max)
-      }
-    })
+        return isAbsent(value) || value <= this.resolve(max);
+      },
+    });
   },
 
   lessThan(less, msg) {
@@ -65,9 +62,9 @@ inherits(NumberSchema, MixedSchema, {
       params: { less },
       message: msg || locale.less,
       test(value) {
-        return isAbsent(value) || value < this.resolve(less)
-      }
-    })
+        return isAbsent(value) || value < this.resolve(less);
+      },
+    });
   },
 
   moreThan(more, msg) {
@@ -77,41 +74,43 @@ inherits(NumberSchema, MixedSchema, {
       params: { more },
       message: msg || locale.more,
       test(value) {
-        return isAbsent(value) || value > this.resolve(more)
-      }
-    })
+        return isAbsent(value) || value > this.resolve(more);
+      },
+    });
   },
 
   positive(msg) {
-    return this.min(0, msg || locale.positive)
+    return this.min(0, msg || locale.positive);
   },
 
   negative(msg) {
-    return this.max(0, msg || locale.negative)
+    return this.max(0, msg || locale.negative);
   },
 
   integer(msg) {
     msg = msg || locale.integer;
 
-    return this.test('integer', msg, isInteger)
+    return this.test('integer', msg, isInteger);
   },
 
   truncate() {
-    return this.transform(value =>
-      !isAbsent(value) ? (value | 0) : value)
+    return this.transform(value => (!isAbsent(value) ? value | 0 : value));
   },
 
   round(method) {
-    var avail = ['ceil', 'floor', 'round', 'trunc']
-    method = (method && method.toLowerCase()) || 'round'
+    var avail = ['ceil', 'floor', 'round', 'trunc'];
+    method = (method && method.toLowerCase()) || 'round';
 
     // this exists for symemtry with the new Math.trunc
-    if (method === 'trunc')
-      return this.truncate()
+    if (method === 'trunc') return this.truncate();
 
     if (avail.indexOf(method.toLowerCase()) === -1)
-      throw new TypeError('Only valid options for round() are: ' + avail.join(', '))
+      throw new TypeError(
+        'Only valid options for round() are: ' + avail.join(', '),
+      );
 
-    return this.transform(value => !isAbsent(value) ? Math[method](value) : value)
-  }
-})
+    return this.transform(
+      value => (!isAbsent(value) ? Math[method](value) : value),
+    );
+  },
+});

@@ -14,16 +14,18 @@ import isSchema from './util/isSchema';
 let boolean = bool;
 let ref = (key, options) => new Ref(key, options);
 
-let lazy = (fn) => new Lazy(fn);
+let lazy = fn => new Lazy(fn);
 
 function addMethod(schemaType, name, fn) {
   if (!schemaType || !isSchema(schemaType.prototype))
-    throw new TypeError('You must provide a yup schema constructor function')
+    throw new TypeError('You must provide a yup schema constructor function');
 
-  if (typeof name !== 'string') throw new TypeError('A Method name must be provided')
-  if (typeof fn !== 'function') throw new TypeError('Method function must be provided')
+  if (typeof name !== 'string')
+    throw new TypeError('A Method name must be provided');
+  if (typeof fn !== 'function')
+    throw new TypeError('Method function must be provided');
 
-  schemaType.prototype[name] = fn
+  schemaType.prototype[name] = fn;
 }
 
 export {
@@ -41,7 +43,7 @@ export {
   isSchema,
   addMethod,
   ValidationError,
-}
+};
 
 export default {
   mixed,

@@ -6,17 +6,16 @@
   "scripts": {
     "test": "npm run lint && npm run test-all -- --runInBand",
     "testonly": "jest",
-    "test-all": "npm run testonly -- --projects ./jest-sync.config.js --projects ./package.json",
+    "test-all":
+      "npm run testonly -- --projects ./jest-sync.config.js --projects ./package.json",
     "tdd": "jest --watch",
     "lint": "eslint src test",
-    "clean": "rimaf ./lib/*",
+    "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
     "build": "babel src --out-dir lib && npm run toc",
     "release": "release"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "repository": {
     "type": "git",
     "url": "https://github.com/jquense/yup.git"
@@ -27,16 +26,19 @@
     "url": "https://github.com/jquense/yup/issues"
   },
   "homepage": "https://github.com/jquense/yup",
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "lint-staged": {
+    "*.{js,json,css,md}": ["prettier --write", "git add"]
+  },
   "jest": {
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test-setup.js",
-    "roots": [
-      "test"
-    ],
+    "roots": ["test"],
     "testRegex": "\\.js",
-    "testPathIgnorePatterns": [
-      "helpers\\.js"
-    ]
+    "testPathIgnorePatterns": ["helpers\\.js"]
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
@@ -53,8 +55,11 @@
     "eslint-config-jason": "^4.0.0",
     "eslint-plugin-import": "^1.14.0",
     "eslint-plugin-react": "^6.2.0",
+    "husky": "^0.14.3",
     "jest": "^20.0.3",
+    "lint-staged": "^6.1.0",
     "mt-changelog": "^0.6.2",
+    "prettier": "^1.10.2",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^0.5.2",
     "sinon": "^1.17.7",
