@@ -175,6 +175,7 @@ describe('Object types', () => {
           arrNested: [{ num: 5 }, { num: '2' }],
         });
       } catch (err) {
+        /* ignore */
       } finally {
         //eslint-disable-line
         mixed.prototype.clone = base;
