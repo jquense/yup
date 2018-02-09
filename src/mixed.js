@@ -18,87 +18,85 @@ function extractTestParams(name, message, test) {
   var opts = name;
 
   if (typeof message === 'function') {
-    test = message; message = locale.default; name = null;
+    test = message;
+    message = locale.default;
+    name = null;
   }
 
   if (typeof name === 'function') {
-    test = name; message = locale.default; name = null;
+    test = name;
+    message = locale.default;
+    name = null;
   }
 
   if (typeof name === 'string' || name === null)
-    opts = { name, test, message, exclusive: false }
+    opts = { name, test, message, exclusive: false };
 
   if (typeof opts.test !== 'function')
-    throw new TypeError('`test` is a required parameters')
+    throw new TypeError('`test` is a required parameters');
 
-  return opts
+  return opts;
 }
 
-const listToArray = list =>
-  toArray(list).concat(toArray(list.refs.values()))
+const listToArray = list => toArray(list).concat(toArray(list.refs.values()));
 
 const removeFromList = (value, list) => {
-  Ref.isRef(value) ? list.refs.delete(value.key) : list.delete(value)
-}
+  Ref.isRef(value) ? list.refs.delete(value.key) : list.delete(value);
+};
 
 const addToList = (value, list) => {
-  Ref.isRef(value) ? list.refs.set(value.key, value) : list.add(value)
-}
+  Ref.isRef(value) ? list.refs.set(value.key, value) : list.add(value);
+};
 
 const hasInList = (value, resolve, list) => {
   if (list.has(value)) return true;
 
-  let item; let values = list.refs.values()
+  let item;
+  let values = list.refs.values();
 
-  while (item = values.next(), !item.done) {
-    if (resolve(item.value) === value)
-      return true;
+  while (((item = values.next()), !item.done)) {
+    if (resolve(item.value) === value) return true;
   }
-  return false
-}
+  return false;
+};
 
-export default function SchemaType(options = {}){
-  if ( !(this instanceof SchemaType))
-    return new SchemaType()
+export default function SchemaType(options = {}) {
+  if (!(this instanceof SchemaType)) return new SchemaType();
 
-  this._deps        = []
-  this._conditions  = []
-  this._options     = { abortEarly: true, recursive: true }
-  this._exclusive   = Object.create(null)
+  this._deps = [];
+  this._conditions = [];
+  this._options = { abortEarly: true, recursive: true };
+  this._exclusive = Object.create(null);
 
-  this._whitelist   = new Set()
-  this._whitelist.refs = new Map()
+  this._whitelist = new Set();
+  this._whitelist.refs = new Map();
 
-  this._blacklist   = new Set()
-  this._blacklist.refs = new Map()
-  this.tests        = []
-  this.transforms   = []
+  this._blacklist = new Set();
+  this._blacklist.refs = new Map();
+  this.tests = [];
+  this.transforms = [];
 
   this.withMutation(() => {
-    this.typeError(locale.notType)
-  })
+    this.typeError(locale.notType);
+  });
 
-  if (has(options, 'default'))
-    this._defaultDefault = options.default
+  if (has(options, 'default')) this._defaultDefault = options.default;
 
-  this._type = options.type || 'mixed'
+  this._type = options.type || 'mixed';
 }
 
 SchemaType.prototype = {
-
   __isYupSchema__: true,
 
   constructor: SchemaType,
 
   clone() {
-    if (this._mutate)
-      return this;
+    if (this._mutate) return this;
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, (value) => {
-      if (isSchema(value) && value !== this)
-        return value
+    return cloneDeepWith(this, value => {
+      if (isSchema(value) && value !== this) return value;
     });
   },
 
@@ -109,64 +107,68 @@ SchemaType.prototype = {
   },
 
   meta(obj) {
-    if (arguments.length === 0)
-      return this._meta;
+    if (arguments.length === 0) return this._meta;
 
     var next = this.clone();
-    next._meta = Object.assign(next._meta || {}, obj)
+    next._meta = Object.assign(next._meta || {}, obj);
     return next;
   },
 
   withMutation(fn) {
-    this._mutate = true
-    let result = fn(this)
-    this._mutate = false
-    return result
+    this._mutate = true;
+    let result = fn(this);
+    this._mutate = false;
+    return result;
   },
 
-  concat(schema){
-    if (!schema)
-      return this
+  concat(schema) {
+    if (!schema) return this;
 
     if (schema._type !== this._type && this._type !== 'mixed')
-      throw new TypeError(`You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`)
-    var cloned = this.clone()
-    var next = merge(this.clone(), schema.clone())
+      throw new TypeError(
+        `You cannot \`concat()\` schema's of different types: ${
+          this._type
+        } and ${schema._type}`,
+      );
+    var cloned = this.clone();
+    var next = merge(this.clone(), schema.clone());
 
     // undefined isn't merged over, but is a valid value for default
-    if (has(schema, '_default'))
-      next._default = schema._default
+    if (has(schema, '_default')) next._default = schema._default;
 
     next.tests = cloned.tests;
     next._exclusive = cloned._exclusive;
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
-    schema.tests.forEach((fn) => {
-      next = next.test(fn.TEST)
+    schema.tests.forEach(fn => {
+      next = next.test(fn.TEST);
     });
 
     next._type = schema._type;
 
-    return next
+    return next;
   },
 
   isType(v) {
-    if( this._nullable && v === null) return true
-    return !this._typeCheck || this._typeCheck(v)
+    if (this._nullable && v === null) return true;
+    return !this._typeCheck || this._typeCheck(v);
   },
 
   resolve({ context, parent }) {
     if (this._conditions.length) {
-      return this._conditions.reduce((schema, match) =>
-        match.resolve(schema, match.getValue(parent, context)), this)
+      return this._conditions.reduce(
+        (schema, match) =>
+          match.resolve(schema, match.getValue(parent, context)),
+        this,
+      );
     }
 
-    return this
+    return this;
   },
 
   cast(value, options = {}) {
-    let resolvedSchema = this.resolve(options)
+    let resolvedSchema = this.resolve(options);
     let result = resolvedSchema._cast(value, options);
 
     if (
@@ -177,11 +179,13 @@ SchemaType.prototype = {
       let formattedValue = printValue(value);
       let formattedResult = printValue(result);
       throw new TypeError(
-        `The value of ${options.path || 'field'} could not be cast to a value ` +
-        `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
-        `attempted value: ${formattedValue} \n` +
-        ((formattedResult !== formattedValue)
-          ? `result of cast: ${formattedResult}` : '')
+        `The value of ${options.path ||
+          'field'} could not be cast to a value ` +
+          `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
+          `attempted value: ${formattedValue} \n` +
+          (formattedResult !== formattedValue
+            ? `result of cast: ${formattedResult}`
+            : ''),
       );
     }
 
@@ -189,38 +193,49 @@ SchemaType.prototype = {
   },
 
   _cast(rawValue) {
-    let value = rawValue === undefined ? rawValue
-      : this.transforms.reduce(
-          (value, fn) => fn.call(this, value, rawValue), rawValue)
+    let value =
+      rawValue === undefined
+        ? rawValue
+        : this.transforms.reduce(
+            (value, fn) => fn.call(this, value, rawValue),
+            rawValue,
+          );
 
     if (value === undefined && has(this, '_default')) {
-      value = this.default()
+      value = this.default();
     }
 
-    return value
+    return value;
   },
 
   _validate(_value, options = {}) {
-    let value  = _value;
-    let originalValue = options.originalValue != null ?
-      options.originalValue : _value
+    let value = _value;
+    let originalValue =
+      options.originalValue != null ? options.originalValue : _value;
 
-    let isStrict = this._option('strict', options)
-    let endEarly = this._option('abortEarly', options)
+    let isStrict = this._option('strict', options);
+    let endEarly = this._option('abortEarly', options);
 
-    let sync = options.sync
-    let path = options.path
-    let label = this._label
+    let sync = options.sync;
+    let path = options.path;
+    let label = this._label;
 
     if (!isStrict) {
-      value = this._cast(value, { assert: false, ...options })
+      value = this._cast(value, { assert: false, ...options });
     }
     // value is cast, we can check if it meets type requirements
-    let validationParams = { value, path, schema: this, options, label, originalValue, sync }
-    let initialTests = []
+    let validationParams = {
+      value,
+      path,
+      schema: this,
+      options,
+      label,
+      originalValue,
+      sync,
+    };
+    let initialTests = [];
 
-    if (this._typeError)
-      initialTests.push(this._typeError(validationParams));
+    if (this._typeError) initialTests.push(this._typeError(validationParams));
 
     if (this._whitelistError)
       initialTests.push(this._whitelistError(validationParams));
@@ -228,108 +243,107 @@ SchemaType.prototype = {
     if (this._blacklistError)
       initialTests.push(this._blacklistError(validationParams));
 
-    return runValidations({ validations: initialTests, endEarly, value, path, sync })
-      .then(value => runValidations({
+    return runValidations({
+      validations: initialTests,
+      endEarly,
+      value,
+      path,
+      sync,
+    }).then(value =>
+      runValidations({
         path,
         sync,
         value,
         endEarly,
         validations: this.tests.map(fn => fn(validationParams)),
-      }))
+      }),
+    );
   },
 
   validate(value, options = {}) {
-    let schema = this.resolve(options)
-    return schema._validate(value, options)
+    let schema = this.resolve(options);
+    return schema._validate(value, options);
   },
 
   validateSync(value, options = {}) {
-    let schema = this.resolve(options)
+    let schema = this.resolve(options);
     let result, err;
 
     schema
       ._validate(value, { ...options, sync: true })
-      .then(r => result = r)
-      .catch(e => err = e);
+      .then(r => (result = r))
+      .catch(e => (err = e));
 
-      if (err) throw err
-      return result;
+    if (err) throw err;
+    return result;
   },
 
-
   isValid(value, options) {
-    return this
-      .validate(value, options)
+    return this.validate(value, options)
       .then(() => true)
       .catch(err => {
-        if (err.name === 'ValidationError')
-          return false
+        if (err.name === 'ValidationError') return false;
 
-        throw err
-      })
+        throw err;
+      });
   },
 
   isValidSync(value, options) {
     try {
-      this.validateSync(value, { ...options })
-      return true
-    }
-    catch (err) {
-      if (err.name === 'ValidationError') return false
-      throw err
+      this.validateSync(value, { ...options });
+      return true;
+    } catch (err) {
+      if (err.name === 'ValidationError') return false;
+      throw err;
     }
   },
 
   getDefault({ context, parent }) {
-    return this._resolve(context, parent).default()
+    return this._resolve(context, parent).default();
   },
 
   default(def) {
     if (arguments.length === 0) {
       var defaultValue = has(this, '_default')
         ? this._default
-        : this._defaultDefault
+        : this._defaultDefault;
 
       return typeof defaultValue === 'function'
         ? defaultValue.call(this)
-        : cloneDeepWith(defaultValue)
+        : cloneDeepWith(defaultValue);
     }
 
-    var next = this.clone()
-    next._default = def
-    return next
+    var next = this.clone();
+    next._default = def;
+    return next;
   },
 
   strict() {
-    var next = this.clone()
-    next._options.strict = true
-    return next
+    var next = this.clone();
+    next._options.strict = true;
+    return next;
   },
 
   required(msg) {
-    return this.test(
-      'required',
-      msg || locale.required,
-      notEmpty
-    )
+    return this.test('required', msg || locale.required, notEmpty);
   },
 
   notRequired() {
-    var next = this.clone()
-    next.tests = next.tests.filter(test => test.TEST_NAME !== 'required')
-    return next
+    var next = this.clone();
+    next.tests = next.tests.filter(test => test.TEST_NAME !== 'required');
+    return next;
   },
 
   nullable(value) {
-    var next = this.clone()
-    next._nullable = value === false ? false : true
-    return next
+    var next = this.clone();
+    next._nullable = value === false ? false : true;
+    return next;
   },
 
   transform(fn) {
     var next = this.clone();
-    next.transforms.push(fn)
-    return next
+    next.transforms.push(fn);
+    return next;
   },
 
   /**
@@ -346,52 +360,50 @@ SchemaType.prototype = {
    * the previous tests are removed and further tests of the same name will replace each other.
    */
   test(name, message, test) {
-    let opts = extractTestParams(name, message, test)
-      , next = this.clone();
+    let opts = extractTestParams(name, message, test),
+      next = this.clone();
 
     let validate = createValidation(opts);
 
-    let isExclusive = (
-      opts.exclusive ||
-      (opts.name && next._exclusive[opts.name] === true)
-    )
+    let isExclusive =
+      opts.exclusive || (opts.name && next._exclusive[opts.name] === true);
 
     if (opts.exclusive && !opts.name) {
-      throw new TypeError('Exclusive tests must provide a unique `name` identifying the test')
+      throw new TypeError(
+        'Exclusive tests must provide a unique `name` identifying the test',
+      );
     }
 
-    next._exclusive[opts.name] = !!opts.exclusive
+    next._exclusive[opts.name] = !!opts.exclusive;
 
-    next.tests = next.tests
-      .filter(fn => {
-        if (fn.TEST_NAME === opts.name) {
-          if (isExclusive) return false
-          if (fn.TEST.test === validate.TEST.test) return false
-        }
-        return true
-      })
+    next.tests = next.tests.filter(fn => {
+      if (fn.TEST_NAME === opts.name) {
+        if (isExclusive) return false;
+        if (fn.TEST.test === validate.TEST.test) return false;
+      }
+      return true;
+    });
 
-    next.tests.push(validate)
+    next.tests.push(validate);
 
-    return next
+    return next;
   },
 
   when(keys, options) {
-    var next = this.clone()
-      , deps = [].concat(keys).map(key => new Ref(key));
+    var next = this.clone(),
+      deps = [].concat(keys).map(key => new Ref(key));
 
     deps.forEach(dep => {
-      if (!dep.isContext)
-        next._deps.push(dep.key)
-    })
+      if (!dep.isContext) next._deps.push(dep.key);
+    });
 
-    next._conditions.push(new Condition(deps, options))
+    next._conditions.push(new Condition(deps, options));
 
-    return next
+    return next;
   },
 
   typeError(message) {
-    var next = this.clone()
+    var next = this.clone();
 
     next._typeError = createValidation({
       name: 'typeError',
@@ -400,75 +412,76 @@ SchemaType.prototype = {
         if (value !== undefined && !this.schema.isType(value))
           return this.createError({
             params: {
-              type: this.schema._type
-            }
-          })
-        return true
-      }
-    })
-    return next
+              type: this.schema._type,
+            },
+          });
+        return true;
+      },
+    });
+    return next;
   },
 
   oneOf(enums, message = locale.oneOf) {
     var next = this.clone();
 
     enums.forEach(val => {
-      addToList(val, next._whitelist)
-      removeFromList(val, next._blacklist)
-    })
+      addToList(val, next._whitelist);
+      removeFromList(val, next._blacklist);
+    });
 
     next._whitelistError = createValidation({
       message,
       name: 'oneOf',
       test(value) {
-        if (value === undefined) return true
-        let valids = this.schema._whitelist
+        if (value === undefined) return true;
+        let valids = this.schema._whitelist;
 
-        return hasInList(value, this.resolve, valids) ? true : this.createError({
-          params: {
-            values: listToArray(valids).join(', ')
-          }
-        })
-      }
-    })
+        return hasInList(value, this.resolve, valids)
+          ? true
+          : this.createError({
+              params: {
+                values: listToArray(valids).join(', '),
+              },
+            });
+      },
+    });
 
-    return next
+    return next;
   },
 
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
     enums.forEach(val => {
-      addToList(val, next._blacklist)
-      removeFromList(val, next._whitelist)
-    })
+      addToList(val, next._blacklist);
+      removeFromList(val, next._whitelist);
+    });
 
     next._blacklistError = createValidation({
       message,
       name: 'notOneOf',
       test(value) {
-        let invalids = this.schema._blacklist
+        let invalids = this.schema._blacklist;
         if (hasInList(value, this.resolve, invalids))
           return this.createError({
             params: {
-              values: listToArray(invalids).join(', ')
-            }
-          })
-        return true
-      }
-    })
+              values: listToArray(invalids).join(', '),
+            },
+          });
+        return true;
+      },
+    });
 
-    return next
+    return next;
   },
 
   strip(strip = true) {
-    let next = this.clone()
-    next._strip = strip
-    return next
+    let next = this.clone();
+    next._strip = strip;
+    return next;
   },
 
   _option(key, overrides) {
-    return has(overrides, key)
-      ? overrides[key] : this._options[key]
+    return has(overrides, key) ? overrides[key] : this._options[key];
   },
 
   describe() {
@@ -478,19 +491,18 @@ SchemaType.prototype = {
       type: next._type,
       meta: next._meta,
       label: next._label,
-      tests: next.tests.map((fn) => fn.TEST_NAME, {})
-    }
-  }
-}
-
+      tests: next.tests.map(fn => fn.TEST_NAME, {}),
+    };
+  },
+};
 
 let aliases = {
   oneOf: ['equals', 'is'],
-  notOneOf: ['not', 'nope']
-}
+  notOneOf: ['not', 'nope'],
+};
 
 Object.keys(aliases).forEach(method => {
-  aliases[method].forEach(alias =>
-    SchemaType.prototype[alias] = SchemaType.prototype[method]
-  )
-})
+  aliases[method].forEach(
+    alias => (SchemaType.prototype[alias] = SchemaType.prototype[method]),
+  );
+});

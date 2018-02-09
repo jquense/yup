@@ -5,9 +5,8 @@ const toString = Object.prototype.toString;
 const toISOString = Date.prototype.toISOString;
 const errorToString = Error.prototype.toString;
 const regExpToString = RegExp.prototype.toString;
-const symbolToString = typeof Symbol !== 'undefined' ?
-  Symbol.prototype.toString :
-  ()=> '';
+const symbolToString =
+  typeof Symbol !== 'undefined' ? Symbol.prototype.toString : () => '';
 
 const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
@@ -42,7 +41,8 @@ function printSimpleValue(val, quoteStrings = false) {
   if (isSymbol(val)) return printSymbol(val);
 
   const tag = toString.call(val);
-  if (tag === '[object Date]') return isNaN(val.getTime()) ? String(val) : toISOString.call(val);
+  if (tag === '[object Date]')
+    return isNaN(val.getTime()) ? String(val) : toISOString.call(val);
   if (tag === '[object Error]' || val instanceof Error) return printError(val);
   if (tag === '[object RegExp]') return regExpToString.call(val);
 
@@ -53,9 +53,13 @@ export default function printValue(value, quoteStrings) {
   let result = printSimpleValue(value, quoteStrings);
   if (result !== null) return result;
 
-  return JSON.stringify(value, function (key, value) {
-    let result = printSimpleValue(this[key], quoteStrings);
-    if (result !== null) return result
-    return value
-  }, 2)
+  return JSON.stringify(
+    value,
+    function(key, value) {
+      let result = printSimpleValue(this[key], quoteStrings);
+      if (result !== null) return result;
+      return value;
+    },
+    2,
+  );
 }

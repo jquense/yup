@@ -5,41 +5,41 @@ import { date as locale } from './locale.js';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 
-let invalidDate = new Date('')
+let invalidDate = new Date('');
 
-let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]'
+let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]';
 
-export default DateSchema
+export default DateSchema;
 
-function DateSchema(){
-  if ( !(this instanceof DateSchema)) return new DateSchema()
+function DateSchema() {
+  if (!(this instanceof DateSchema)) return new DateSchema();
 
-  MixedSchema.call(this, { type: 'date'})
+  MixedSchema.call(this, { type: 'date' });
 
   this.withMutation(() => {
     this.transform(function(value) {
-      if (this.isType(value))
-        return isDate(value) ? new Date(value) : value
+      if (this.isType(value)) return isDate(value) ? new Date(value) : value;
 
-      value = isoParse(value)
-      return value ? new Date(value) : invalidDate
-    })
-  })
+      value = isoParse(value);
+      return value ? new Date(value) : invalidDate;
+    });
+  });
 }
 
 inherits(DateSchema, MixedSchema, {
-
   _typeCheck(v) {
-    return isDate(v) && !isNaN(v.getTime())
+    return isDate(v) && !isNaN(v.getTime());
   },
 
-  min(min, msg){
+  min(min, msg) {
     var limit = min;
 
     if (!Ref.isRef(limit)) {
-      limit = this.cast(min)
+      limit = this.cast(min);
       if (!this._typeCheck(limit))
-        throw new TypeError('`min` must be a Date or a value that can be `cast()` to a Date')
+        throw new TypeError(
+          '`min` must be a Date or a value that can be `cast()` to a Date',
+        );
     }
 
     return this.test({
@@ -48,18 +48,20 @@ inherits(DateSchema, MixedSchema, {
       message: msg || locale.min,
       params: { min },
       test(value) {
-        return isAbsent(value) || value >= this.resolve(limit)
-      }
-    })
+        return isAbsent(value) || value >= this.resolve(limit);
+      },
+    });
   },
 
-  max(max, msg){
+  max(max, msg) {
     var limit = max;
 
     if (!Ref.isRef(limit)) {
-      limit = this.cast(max)
+      limit = this.cast(max);
       if (!this._typeCheck(limit))
-        throw new TypeError('`max` must be a Date or a value that can be `cast()` to a Date')
+        throw new TypeError(
+          '`max` must be a Date or a value that can be `cast()` to a Date',
+        );
     }
 
     return this.test({
@@ -68,9 +70,8 @@ inherits(DateSchema, MixedSchema, {
       message: msg || locale.max,
       params: { max },
       test(value) {
-        return isAbsent(value) || value <= this.resolve(limit)
-      }
-    })
-  }
-
-})
+        return isAbsent(value) || value <= this.resolve(limit);
+      },
+    });
+  },
+});

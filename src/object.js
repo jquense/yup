@@ -17,70 +17,70 @@ import runValidations, { propagateErrors } from './util/runValidations';
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
 function unknown(ctx, value) {
-  var known = Object.keys(ctx.fields)
-  return Object.keys(value)
-    .filter(key => known.indexOf(key) === -1)
+  var known = Object.keys(ctx.fields);
+  return Object.keys(value).filter(key => known.indexOf(key) === -1);
 }
 
-
 export default function ObjectSchema(spec) {
-  if (!(this instanceof ObjectSchema))
-    return new ObjectSchema(spec)
+  if (!(this instanceof ObjectSchema)) return new ObjectSchema(spec);
 
-  MixedSchema.call(this, { type: 'object', default() {
-      var dft = transform(this._nodes, (obj, key) => {
-        obj[key] = this.fields[key].default
-          ? this.fields[key].default()
-          : undefined
-      }, {})
+  MixedSchema.call(this, {
+    type: 'object',
+    default() {
+      var dft = transform(
+        this._nodes,
+        (obj, key) => {
+          obj[key] = this.fields[key].default
+            ? this.fields[key].default()
+            : undefined;
+        },
+        {},
+      );
 
-      return Object.keys(dft).length === 0 ? undefined : dft
-    }
-  })
+      return Object.keys(dft).length === 0 ? undefined : dft;
+    },
+  });
 
-  this.fields = Object.create(null)
-  this._nodes = []
-  this._excludedEdges = []
+  this.fields = Object.create(null);
+  this._nodes = [];
+  this._excludedEdges = [];
 
   this.withMutation(() => {
     this.transform(function coerce(value) {
       if (typeof value === 'string') {
         try {
-          value = JSON.parse(value)
+          value = JSON.parse(value);
+        } catch (err) {
+          value = null;
         }
-        catch (err){ value = null }
       }
-      if (this.isType(value))
-        return value
-      return null
-    })
+      if (this.isType(value)) return value;
+      return null;
+    });
 
     if (spec) {
       this.shape(spec);
     }
-  })
+  });
 }
 
 inherits(ObjectSchema, MixedSchema, {
-
   _typeCheck(value) {
     return isObject(value) || typeof value === 'function';
   },
 
   _cast(_value, options = {}) {
-    var value = MixedSchema.prototype._cast.call(this, _value, options)
+    var value = MixedSchema.prototype._cast.call(this, _value, options);
 
     //should ignore nulls here
-    if (value === undefined)
-      return this.default();
+    if (value === undefined) return this.default();
 
-    if (!this._typeCheck(value))
-      return value;
+    if (!this._typeCheck(value)) return value;
 
-    let fields = this.fields
-      , strip  = this._option('stripUnknown', options) === true
-      , extra  = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1)
-      , props  = this._nodes.concat(extra);
+    let fields = this.fields,
+      strip = this._option('stripUnknown', options) === true,
+      extra = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1),
+      props = this._nodes.concat(extra);
 
     let innerOptions = {
       ...options,
@@ -88,47 +88,47 @@ inherits(ObjectSchema, MixedSchema, {
       __validating: false,
     };
 
-    value = transform(props, (obj, prop) => {
-      let field = fields[prop];
-      let exists = has(value, prop);
+    value = transform(
+      props,
+      (obj, prop) => {
+        let field = fields[prop];
+        let exists = has(value, prop);
 
-      if (field) {
-        let fieldValue;
-        let strict = field._options && field._options.strict;
+        if (field) {
+          let fieldValue;
+          let strict = field._options && field._options.strict;
 
-        // safe to mutate since this is fired in sequence
-        innerOptions.path = makePath`${options.path}.${prop}`;
-        innerOptions.value = value[prop];
+          // safe to mutate since this is fired in sequence
+          innerOptions.path = makePath`${options.path}.${prop}`;
+          innerOptions.value = value[prop];
 
-        field = field.resolve(innerOptions);
+          field = field.resolve(innerOptions);
 
-        if (field._strip === true)
-          return
+          if (field._strip === true) return;
 
-        fieldValue = !options.__validating || !strict
-          ? field.cast(value[prop], innerOptions)
-          : value[prop]
+          fieldValue =
+            !options.__validating || !strict
+              ? field.cast(value[prop], innerOptions)
+              : value[prop];
 
-        if (fieldValue !== undefined)
-          obj[prop] = fieldValue
-      }
-      else if (exists && !strip)
-        obj[prop] = value[prop]
+          if (fieldValue !== undefined) obj[prop] = fieldValue;
+        } else if (exists && !strip) obj[prop] = value[prop];
+      },
+      innerOptions.parent,
+    );
 
-    }, innerOptions.parent)
-
-    return value
+    return value;
   },
 
   _validate(_value, opts = {}) {
     let endEarly, recursive;
-    let sync = opts.sync
-    let errors = []
-    let originalValue = opts.originalValue != null ?
-      opts.originalValue : _value
+    let sync = opts.sync;
+    let errors = [];
+    let originalValue =
+      opts.originalValue != null ? opts.originalValue : _value;
 
-    endEarly = this._option('abortEarly', opts)
-    recursive = this._option('recursive', opts)
+    endEarly = this._option('abortEarly', opts);
+    recursive = this._option('recursive', opts);
 
     opts = { ...opts, __validating: true, originalValue };
 
@@ -136,16 +136,17 @@ inherits(ObjectSchema, MixedSchema, {
       .call(this, _value, opts)
       .catch(propagateErrors(endEarly, errors))
       .then(value => {
-        if (!recursive || !isObject(value)) { // only iterate though actual objects
-          if (errors.length) throw errors[0]
-          return value
+        if (!recursive || !isObject(value)) {
+          // only iterate though actual objects
+          if (errors.length) throw errors[0];
+          return value;
         }
 
-        originalValue = originalValue || value
+        originalValue = originalValue || value;
 
         let validations = this._nodes.map(key => {
-          let path  = makePath`${opts.path}.${key}`
-          let field = this.fields[key]
+          let path = makePath`${opts.path}.${key}`;
+          let field = this.fields[key];
 
           let innerOptions = {
             ...opts,
@@ -160,12 +161,11 @@ inherits(ObjectSchema, MixedSchema, {
             // 2. this is strict in which case the nested values weren't cast either
             innerOptions.strict = true;
 
-            if (field.validate)
-              return field.validate(value[key], innerOptions)
+            if (field.validate) return field.validate(value[key], innerOptions);
           }
 
-          return true
-        })
+          return true;
+        });
 
         return runValidations({
           sync,
@@ -174,37 +174,36 @@ inherits(ObjectSchema, MixedSchema, {
           errors,
           endEarly,
           path: opts.path,
-          sort: sortByKeyOrder(this.fields)
-        })
-      })
+          sort: sortByKeyOrder(this.fields),
+        });
+      });
   },
 
   concat(schema) {
-    var next = MixedSchema.prototype.concat.call(this, schema)
+    var next = MixedSchema.prototype.concat.call(this, schema);
 
-    next._nodes = sortFields(next.fields, next._excludedEdges)
+    next._nodes = sortFields(next.fields, next._excludedEdges);
 
-    return next
+    return next;
   },
 
   shape(schema, excludes = []) {
-    var next = this.clone()
-      , fields = Object.assign(next.fields, schema);
+    var next = this.clone(),
+      fields = Object.assign(next.fields, schema);
 
-    next.fields = fields
+    next.fields = fields;
 
     if (excludes.length) {
-      if (!Array.isArray(excludes[0]))
-        excludes = [excludes]
+      if (!Array.isArray(excludes[0])) excludes = [excludes];
 
       let keys = excludes.map(([first, second]) => `${first}-${second}`);
 
-      next._excludedEdges = next._excludedEdges.concat(keys)
+      next._excludedEdges = next._excludedEdges.concat(keys);
     }
 
-    next._nodes = sortFields(fields, next._excludedEdges)
+    next._nodes = sortFields(fields, next._excludedEdges);
 
-    return next
+    return next;
   },
 
   from(from, to, alias) {
@@ -213,16 +212,15 @@ inherits(ObjectSchema, MixedSchema, {
     return this.transform(obj => {
       var newObj = obj;
 
-      if (obj == null)
-        return obj
+      if (obj == null) return obj;
 
       if (has(obj, from)) {
         newObj = alias ? { ...obj } : omit(obj, from);
-        newObj[to] = fromGetter(obj)
+        newObj[to] = fromGetter(obj);
       }
 
-      return newObj
-    })
+      return newObj;
+    });
   },
 
   noUnknown(noAllow = true, message = locale.noUnknown) {
@@ -237,34 +235,29 @@ inherits(ObjectSchema, MixedSchema, {
       message: message,
       test(value) {
         return (
-          value == null ||
-          !noAllow ||
-          unknown(this.schema, value).length === 0
-        )
-      }
-    })
+          value == null || !noAllow || unknown(this.schema, value).length === 0
+        );
+      },
+    });
 
-    if (noAllow)
-      next._options.stripUnknown = true
+    if (noAllow) next._options.stripUnknown = true;
 
-    return next
+    return next;
   },
 
   transformKeys(fn) {
-    return this.transform(obj => obj &&
-      mapKeys(obj, (_, key) => fn(key))
-    )
+    return this.transform(obj => obj && mapKeys(obj, (_, key) => fn(key)));
   },
 
   camelCase() {
-    return this.transformKeys(camelCase)
+    return this.transformKeys(camelCase);
   },
 
   snakeCase() {
-    return this.transformKeys(snakeCase)
+    return this.transformKeys(snakeCase);
   },
 
   constantCase() {
-    return this.transformKeys(key => snakeCase(key).toUpperCase())
+    return this.transformKeys(key => snakeCase(key).toUpperCase());
   },
-})
+});
