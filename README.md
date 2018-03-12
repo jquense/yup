@@ -159,10 +159,10 @@ import { setLocale } from 'yup/lib/customLocale'
 
 setLocale({
   mixed: {
-    default: 'Não é válido',
+    default: 'Not a valid value',
   },
   number: {
-    min: 'Deve ser maior que ${min}',
+    min: 'It should be higher than ${min}',
   },
 })
 
