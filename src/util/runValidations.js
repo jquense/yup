@@ -28,7 +28,7 @@ function scopeToValue(promises, value, sync) {
  */
 export function propagateErrors(endEarly, errors) {
   return endEarly
-    ? null
+    ? err => { throw err; }
     : err => {
         errors.push(err);
         return err.value;
