@@ -62,8 +62,7 @@ export default function createValidation(options) {
     ...rest
   }) {
     let parent = options.parent;
-    let resolve = value =>
-      Ref.isRef(value) ? value.getValue(parent, options.context) : value;
+    let resolve = value => (Ref.isRef(value) ? value.getValue(options) : value);
 
     let createError = createErrorFactory({
       message,

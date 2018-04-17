@@ -159,11 +159,10 @@ SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v);
   },
 
-  resolve({ context, parent }) {
+  resolve(options) {
     if (this._conditions.length) {
       return this._conditions.reduce(
-        (schema, match) =>
-          match.resolve(schema, match.getValue(parent, context)),
+        (schema, match) => match.resolve(schema, match.getValue(options)),
         this,
       );
     }
@@ -172,6 +171,7 @@ SchemaType.prototype = {
   },
 
   cast(value, options = {}) {
+    options.value = options.value || value;
     let resolvedSchema = this.resolve(options);
     let result = resolvedSchema._cast(value, options);
 
@@ -265,11 +265,13 @@ SchemaType.prototype = {
   },
 
   validate(value, options = {}) {
+    options.value = options.value || value;
     let schema = this.resolve(options);
     return schema._validate(value, options);
   },
 
   validateSync(value, options = {}) {
+    options.value = options.value || value;
     let schema = this.resolve(options);
     let result, err;
 

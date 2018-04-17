@@ -82,6 +82,7 @@ inherits(ArraySchema, MixedSchema, {
             path,
             strict: true,
             parent: value,
+            fieldValue: value[idx],
             originalValue: originalValue[idx],
           };
 

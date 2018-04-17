@@ -100,7 +100,7 @@ inherits(ObjectSchema, MixedSchema, {
 
           // safe to mutate since this is fired in sequence
           innerOptions.path = makePath`${options.path}.${prop}`;
-          innerOptions.value = value[prop];
+          innerOptions.fieldValue = value[prop];
 
           field = field.resolve(innerOptions);
 

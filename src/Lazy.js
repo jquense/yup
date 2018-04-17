@@ -11,8 +11,8 @@ class Lazy {
     };
   }
 
-  resolve({ value, ...rest }) {
-    return this._resolve(value, rest);
+  resolve({ fieldValue, ...rest }) {
+    return this._resolve(fieldValue, rest);
   }
 
   cast(value, options) {
