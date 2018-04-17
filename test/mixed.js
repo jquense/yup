@@ -64,6 +64,19 @@ describe('Mixed Types ', () => {
     inst.cast(undefined).should.equal('hello');
   });
 
+  it('getDefault should return the default value', function() {
+    let inst = string().default('hi');
+    inst.getDefault({}).should.equal('hi');
+    inst.getDefault().should.equal('hi');
+  });
+  it('getDefault should return the default value', function() {
+    let inst = string().when('$foo', {
+      is: 'greet',
+      then: string().default('hi'),
+    });
+    inst.getDefault({ context: { foo: 'greet' } }).should.equal('hi');
+  });
+
   it('should warn about null types', async () => {
     let error = await string()
       .strict()
