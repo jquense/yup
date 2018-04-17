@@ -302,8 +302,9 @@ SchemaType.prototype = {
     }
   },
 
-  getDefault({ context, parent }) {
-    return this._resolve(context, parent).default();
+  getDefault(options = {}) {
+    let schema = this.resolve(options);
+    return schema.default();
   },
 
   default(def) {
