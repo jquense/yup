@@ -1,5 +1,5 @@
 import { getter } from 'property-expr';
-import { isRelativePath, default as makePath } from './util/makePath';
+import { isRelativePath, getRelativePath } from './util/makePath';
 
 let validateType = d => {
   if (typeof d !== 'string')
@@ -41,7 +41,7 @@ export default class Reference {
     const { context, parent, value } = options;
     let refValue;
     if (this.isRelativePath) {
-      this.path = makePath`${options.path}.${this.key}`;
+      this.path = getRelativePath(options.path, this.key);
       const _get = getter(this.path, true);
       refValue = _get(value);
     } else {
