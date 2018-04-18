@@ -32,7 +32,7 @@ describe('makePath utils ', () => {
         key = '../key';
       expect(getRelativePath(path, key)).to.equal('a.key');
     });
-    it('should work for deep relative paths with an array', () => {
+    it('should generate a path relative to the current key', () => {
       const path = 'a.b[0].c',
         key = 'key';
       expect(getRelativePath(path, key)).to.equal('a.b[0].key');
