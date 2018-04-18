@@ -1,4 +1,13 @@
-import { mixed, boolean, string, number, object, ref, reach } from '../src';
+import {
+  mixed,
+  boolean,
+  string,
+  number,
+  object,
+  array,
+  ref,
+  reach,
+} from '../src';
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -639,7 +648,7 @@ describe('Mixed Types ', () => {
   it('refs can access relative paths from inside an object', async function() {
     const prop = mixed().when('../relative', {
       is: true,
-      then: mixed().required('relative'),
+      then: mixed().required(),
     });
     const inst = object({
       relative: boolean(),
@@ -653,14 +662,45 @@ describe('Mixed Types ', () => {
         a: {},
       })
       .should.be.rejected();
-    // await inst
-    //   .validate({
-    //     relative:true,
-    //     // a:{
-    //     //   prop:1
-    //     // }
-    //   })
-    //   .should.be.fulfilled();
+    await inst
+      .validate({
+        relative: true,
+        a: {
+          prop: 1,
+        },
+      })
+      .should.be.fulfilled();
+  });
+
+  it('refs can access relative paths from inside an array', async function() {
+    const prop = mixed().when('../../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      relative: boolean(),
+      a: array(
+        object({
+          prop: prop,
+        }),
+      ),
+    });
+    await inst
+      .validate({
+        relative: true,
+        a: [{}],
+      })
+      .should.be.rejected();
+    await inst
+      .validate({
+        relative: true,
+        a: [
+          {
+            prop: 1,
+          },
+        ],
+      })
+      .should.be.fulfilled();
   });
 
   it('should not use context refs in object calculations', function() {

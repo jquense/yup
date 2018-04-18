@@ -1,25 +1,23 @@
 import { getter } from 'property-expr';
+import makePath from './util/makePath';
 
 let validateType = d => {
   if (typeof d !== 'string')
     throw new TypeError("ref's must be strings, got: " + d);
 };
 function getParentPath(path) {
-  const arrayIndex = path.lastIndexOf(']');
   const objectIndex = path.lastIndexOf('.');
-  let index = arrayIndex > objectIndex ? arrayIndex : objectIndex;
-  path = path.substring(0, index);
-  return path;
+  return path.substring(0, objectIndex);
 }
 function getRelativePath(key, path) {
   // remove '../' from the beginning of the key
   key = key.slice(3);
-  const isRelativePath = key.indexOf('../') === 0;
   path = getParentPath(path);
+  const isRelativePath = key.indexOf('../') === 0;
   if (isRelativePath) {
     return getRelativePath(key, path);
   }
-  return path.length ? path + '.' + key : key;
+  return makePath`${path}.${key}`;
 }
 export default class Reference {
   static isRef(value) {
@@ -37,7 +35,7 @@ export default class Reference {
     this.key = key.trim();
     this.prefix = prefix;
     this.isContext = this.key.indexOf(prefix) === 0;
-
+    this.isRelativePath = this.key.indexOf('../') === 0;
     this.path = this.isContext ? this.key.slice(this.prefix.length) : this.key;
     if (!this.isRelativePath) {
       this._get = getter(this.path, true);
@@ -51,9 +49,7 @@ export default class Reference {
   cast(value, options) {
     return this.getValue(options);
   }
-  get isRelativePath() {
-    return this.key.indexOf('../') === 0;
-  }
+
   getValue(options) {
     const { context, parent, value } = options;
     let refValue;
