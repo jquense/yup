@@ -6,6 +6,7 @@ function getParentPath(path) {
   return path.substring(0, objectIndex);
 }
 export function getRelativePath(path, key) {
+  if (!path) return key;
   //relative paths using '../' always start from the parent of the current path (the object the path is in)
   path = getParentPath(path);
   if (isRelativePath(key)) {

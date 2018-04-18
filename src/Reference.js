@@ -38,16 +38,17 @@ export default class Reference {
   }
 
   getValue(options) {
-    const { context, parent, value } = options;
+    const { context, parent, path, value = {} } = options;
     let refValue;
-    if (this.isRelativePath) {
-      this.path = getRelativePath(options.path, this.key);
-      const _get = getter(this.path, true);
-      refValue = _get(value);
+    if (this.isRelativePath && path) {
+      if (path) {
+        this.path = getRelativePath(path, this.key);
+        this._get = getter(this.path, true);
+      }
+      refValue = this._get(value);
     } else {
-      refValue = this._get(this.isContext ? context : parent || context || {});
+      refValue = this._get(this.isContext ? context : parent || value);
     }
-
     return this.map(refValue);
   }
 }

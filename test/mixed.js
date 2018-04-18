@@ -598,7 +598,7 @@ describe('Mixed Types ', () => {
       called = true;
     });
 
-    inst.cast({}, { context: { prop: 1, other: true } });
+    inst.cast({}, { value: { prop: 1, other: true } });
     called.should.equal(true);
 
     inst = mixed().when(['prop', 'other'], {
@@ -607,7 +607,7 @@ describe('Mixed Types ', () => {
     });
 
     return inst
-      .isValid(undefined, { context: { prop: 5, other: 5 } })
+      .isValid(undefined, { value: { prop: 5, other: 5 } })
       .should.eventually()
       .equal(false);
   });
