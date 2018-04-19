@@ -40,11 +40,9 @@ export default class Reference {
   getValue(options) {
     const { context, parent, path, value = {} } = options;
     let refValue;
-    if (this.isRelativePath && path) {
-      if (path) {
-        this.path = getRelativePath(path, this.key);
-        this._get = getter(this.path, true);
-      }
+    if (this.isRelativePath) {
+      this.path = getRelativePath(path, this.key);
+      this._get = getter(this.path, true);
       refValue = this._get(value);
     } else {
       refValue = this._get(this.isContext ? context : parent || value);

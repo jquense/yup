@@ -25,7 +25,9 @@ export default function sortFields(fields, excludes = []) {
 
       if (Ref.isRef(value) && !value.isContext) addNode(value.path, key);
       else if (isSchema(value) && value._deps)
-        value._deps.forEach(path => addNode(path, key));
+        value._deps.forEach(dep => {
+          addNode(dep.path, key);
+        });
     }
 
   return toposort.array(nodes, edges).reverse();

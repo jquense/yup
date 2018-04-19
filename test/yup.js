@@ -158,6 +158,31 @@ describe('Yup', function() {
       .validate(undefined, { value: { relative: false } })
       .should.be.fulfilled();
   });
+  it('can access a _nested_ relative path on the _full_ value when it is passed in to validate', async function() {
+    const prop = mixed().when('../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      a: object({
+        relative: boolean(),
+        b: object({
+          prop: prop,
+        }),
+      }),
+    });
+    // props is not required
+    await reach(inst, 'a.b')
+      .validate({ a: {} })
+      .should.be.fulfilled();
+    // prop is required
+    await reach(inst, 'a.b')
+      .validate({}, { value: { a: { relative: true } } })
+      .should.be.rejected();
+    await reach(inst, 'a.b')
+      .validate({}, { value: { a: { relative: false } } })
+      .should.be.fulfilled();
+  });
   it('can access a path on the _full_ value when it is passed in to validate', async function() {
     const inst = object({
       someKey: boolean(),
