@@ -159,11 +159,13 @@ SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v);
   },
 
-  resolve({ context, parent }) {
+  resolve(options) {
+    this._path = options.path || this._path;
+    options.path = this._path;
+
     if (this._conditions.length) {
       return this._conditions.reduce(
-        (schema, match) =>
-          match.resolve(schema, match.getValue(parent, context)),
+        (schema, match) => match.resolve(schema, match.getValue(options)),
         this,
       );
     }
@@ -172,6 +174,8 @@ SchemaType.prototype = {
   },
 
   cast(value, options = {}) {
+    options.value = options.value || value;
+    options.path = options.path || this._path;
     let resolvedSchema = this.resolve(options);
     let result = resolvedSchema._cast(value, options);
 
@@ -265,11 +269,13 @@ SchemaType.prototype = {
   },
 
   validate(value, options = {}) {
+    options.value = options.value || value;
     let schema = this.resolve(options);
     return schema._validate(value, options);
   },
 
   validateSync(value, options = {}) {
+    options.value = options.value || value;
     let schema = this.resolve(options);
     let result, err;
 
@@ -399,7 +405,7 @@ SchemaType.prototype = {
       deps = [].concat(keys).map(key => new Ref(key));
 
     deps.forEach(dep => {
-      if (!dep.isContext) next._deps.push(dep.key);
+      if (!dep.isContext) next._deps.push(dep);
     });
 
     next._conditions.push(new Condition(deps, options));

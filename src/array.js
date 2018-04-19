@@ -54,7 +54,7 @@ inherits(ArraySchema, MixedSchema, {
   _validate(_value, options = {}) {
     let errors = [];
     let sync = options.sync;
-    let path = options.path;
+    options.path = options.path || this._path;
     let subType = this._subType;
     let endEarly = this._option('abortEarly', options);
     let recursive = this._option('recursive', options);
@@ -82,6 +82,7 @@ inherits(ArraySchema, MixedSchema, {
             path,
             strict: true,
             parent: value,
+            fieldValue: value[idx],
             originalValue: originalValue[idx],
           };
 
@@ -92,7 +93,7 @@ inherits(ArraySchema, MixedSchema, {
 
         return runValidations({
           sync,
-          path,
+          path: options.path,
           value,
           errors,
           endEarly,

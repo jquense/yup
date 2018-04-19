@@ -1,4 +1,13 @@
-import { mixed, string, number, object, ref, reach } from '../src';
+import {
+  mixed,
+  boolean,
+  string,
+  number,
+  object,
+  array,
+  ref,
+  reach,
+} from '../src';
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -589,7 +598,7 @@ describe('Mixed Types ', () => {
       called = true;
     });
 
-    inst.cast({}, { context: { prop: 1, other: true } });
+    inst.cast({}, { value: { prop: 1, other: true } });
     called.should.equal(true);
 
     inst = mixed().when(['prop', 'other'], {
@@ -598,7 +607,7 @@ describe('Mixed Types ', () => {
     });
 
     return inst
-      .isValid(undefined, { context: { prop: 5, other: 5 } })
+      .isValid(undefined, { value: { prop: 5, other: 5 } })
       .should.eventually()
       .equal(false);
   });
@@ -634,6 +643,64 @@ describe('Mixed Types ', () => {
       .validate('hello', { context: { prop: 1 } })
       .should.be.fulfilled();
     await inst.validate('hel', { context: { prop: 1 } }).should.be.rejected();
+  });
+
+  it('refs can access relative paths from inside an object', async function() {
+    const prop = mixed().when('../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      relative: boolean(),
+      a: object({
+        prop: prop,
+      }),
+    });
+    await inst
+      .validate({
+        relative: true,
+        a: {},
+      })
+      .should.be.rejected();
+    await inst
+      .validate({
+        relative: true,
+        a: {
+          prop: 1,
+        },
+      })
+      .should.be.fulfilled();
+  });
+
+  it('refs can access relative paths from inside an array', async function() {
+    const prop = mixed().when('../../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      relative: boolean(),
+      a: array(
+        object({
+          prop: prop,
+        }),
+      ),
+    });
+    await inst
+      .validate({
+        relative: true,
+        a: [{}],
+      })
+      .should.be.rejected();
+    await inst
+      .validate({
+        relative: true,
+        a: [
+          {
+            prop: 1,
+          },
+        ],
+      })
+      .should.be.fulfilled();
   });
 
   it('should not use context refs in object calculations', function() {

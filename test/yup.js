@@ -2,7 +2,7 @@ import reach from '../src/util/reach';
 import merge from '../src/util/merge';
 import { settled } from '../src/util/runValidations';
 
-import { object, array, string, lazy, number } from '../src';
+import { mixed, boolean, object, array, string, lazy, number } from '../src';
 
 describe('Yup', function() {
   it('cast should not assert on undefined', () => {
@@ -134,5 +134,71 @@ describe('Yup', function() {
       })
       .should.be.rejected();
     err.message.should.match(/must be a `number` type/);
+  });
+  it('can access a relative path on the _full_ value when it is passed in to validate', async function() {
+    const prop = mixed().when('../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      relative: boolean(),
+      a: object({
+        prop: prop,
+      }),
+    });
+    // props is not required
+    await reach(inst, 'a')
+      .validate({})
+      .should.be.fulfilled();
+    // prop is required
+    await reach(inst, 'a.prop')
+      .validate(undefined, { value: { relative: true } })
+      .should.be.rejected();
+    await reach(inst, 'a.prop')
+      .validate(undefined, { value: { relative: false } })
+      .should.be.fulfilled();
+  });
+  it('can access a _nested_ relative path on the _full_ value when it is passed in to validate', async function() {
+    const prop = mixed().when('../relative', {
+      is: true,
+      then: mixed().required(),
+    });
+    const inst = object({
+      a: object({
+        relative: boolean(),
+        b: object({
+          prop: prop,
+        }),
+      }),
+    });
+    // props is not required
+    await reach(inst, 'a.b')
+      .validate({ a: {} })
+      .should.be.fulfilled();
+    // prop is required
+    await reach(inst, 'a.b')
+      .validate({}, { value: { a: { relative: true } } })
+      .should.be.rejected();
+    await reach(inst, 'a.b')
+      .validate({}, { value: { a: { relative: false } } })
+      .should.be.fulfilled();
+  });
+  it('can access a path on the _full_ value when it is passed in to validate', async function() {
+    const inst = object({
+      someKey: boolean(),
+      prop: string().when('someKey', {
+        is: true,
+        then: string().required(),
+      }),
+    });
+    await reach(inst, 'prop')
+      .validate()
+      .should.be.fulfilled();
+    await reach(inst, 'prop')
+      .validate(undefined, { value: { someKey: true } })
+      .should.be.rejected();
+    await reach(inst, 'prop')
+      .validate(undefined, { value: { someKey: false } })
+      .should.be.fulfilled();
   });
 });
