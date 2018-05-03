@@ -17,8 +17,7 @@ export default function NumberSchema() {
       if (this.isType(value)) return value;
 
       let parsed = parseFloat(value);
-      if (this.isType(parsed)) return parsed;
-
+      if (this.isType(parsed) && isFinite(value)) return parsed;
       return NaN;
     });
   });
