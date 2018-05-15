@@ -1,5 +1,9 @@
 ## v0.25.0 - Tue, 15 May 2018 21:43:54 GMT
 
+* remove default export, there are only named exports now!
+* fix message defaults for built-in tests, default is only used for `undefined` messages
+* fix the `describe()` method so it works with nested schemas
+
 ## v0.24.1 - Fri, 09 Feb 2018 19:09:02 GMT
 
 ## v0.24.0 - Tue, 16 Jan 2018 14:44:32 GMT
