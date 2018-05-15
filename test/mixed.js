@@ -1,4 +1,4 @@
-import { mixed, string, number, object, ref, reach } from '../src';
+import { array, mixed, string, number, object, ref, reach } from '../src';
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -96,14 +96,14 @@ describe('Mixed Types ', () => {
     );
   });
 
-  it.only('should allow function messages', async () => {
+  it('should allow function messages', async () => {
     let error = await string()
       .label('My string')
       .required(d => `${d.label} is required`)
       .validate()
       .should.be.rejected();
 
-    expect(error.message).to.match(/this is required/);
+    expect(error.message).to.match(/My string is required/);
   });
 
   it('should check types', async () => {
@@ -685,18 +685,41 @@ describe('Mixed Types ', () => {
   });
 
   it('should describe', () => {
-    string()
-      .max(2)
-      .meta({ input: 'foo' })
-      .label('str!')
-      .describe()
-      .should.eql({
-        type: 'string',
-        label: 'str!',
-        tests: ['max'],
-        meta: {
-          input: 'foo',
+    const desc = object({
+      foos: array(number().integer()).required(),
+      foo: string()
+        .max(2)
+        .meta({ input: 'foo' })
+        .label('str!'),
+    }).describe();
+
+    desc.should.eql({
+      type: 'object',
+      meta: undefined,
+      label: undefined,
+      tests: [],
+      fields: {
+        foos: {
+          type: 'array',
+          meta: undefined,
+          label: undefined,
+          tests: ['required'],
+          innerType: {
+            type: 'number',
+            meta: undefined,
+            label: undefined,
+            tests: ['integer'],
+          },
         },
-      });
+        foo: {
+          type: 'string',
+          label: 'str!',
+          tests: ['max'],
+          meta: {
+            input: 'foo',
+          },
+        },
+      },
+    });
   });
 });

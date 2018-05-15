@@ -63,17 +63,19 @@
     "prettier": "^1.12.1",
     "promises-aplus-tests": "^2.1.2",
     "release-script": "^1.0.2",
+    "rollup": "^0.59.0",
+    "rollup-plugin-babel": "^4.0.0-beta.4",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-size-snapshot": "^0.4.1",
     "sinon": "^5.0.7",
     "sinon-chai": "^3.0.0"
   },
   "dependencies": {
-    "case": "^1.5.5",
     "fn-name": "~2.0.1",
     "lodash": "^4.17.10",
     "property-expr": "^1.2.0",
     "synchronous-promise": "^2.0.4",
-    "toposort": "^2.0.2",
-    "type-name": "^2.0.1"
+    "toposort": "^2.0.2"
   },
   "release-script": {
     "defaultDryRun": "false"

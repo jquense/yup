@@ -342,8 +342,12 @@ SchemaType.prototype = {
    */
   test(...args) {
     let opts = args[0];
-    if (args.length >= 3) {
+    if (args.length > 1) {
       let [name, message, test] = args;
+      if (test == null) {
+        test = message;
+        message = locale.default;
+      }
       opts = { name, test, message, exclusive: false };
     }
 
@@ -479,7 +483,9 @@ SchemaType.prototype = {
       type: next._type,
       meta: next._meta,
       label: next._label,
-      tests: next.tests.map(fn => fn.TEST_NAME, {}),
+      tests: next.tests
+        .map(fn => fn.TEST_NAME, {})
+        .filter((n, idx, list) => list.indexOf(n) === idx),
     };
   },
 };

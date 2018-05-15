@@ -1,9 +1,8 @@
-import typeOf from 'type-name';
-
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import makePath from './util/makePath';
+import printValue from './util/printValue';
 import MixedSchema from './mixed';
 import { mixed, array as locale } from './locale.js';
 import runValidations, { propagateErrors } from './util/runValidations';
@@ -108,7 +107,7 @@ inherits(ArraySchema, MixedSchema, {
       throw new TypeError(
         '`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
           'not: ' +
-          typeOf(schema),
+          printValue(schema),
       );
 
     next._subType = schema;
@@ -165,5 +164,11 @@ inherits(ArraySchema, MixedSchema, {
     return this.transform(
       values => (values != null ? values.filter(reject) : values),
     );
+  },
+
+  describe() {
+    let base = MixedSchema.prototype.describe.call(this);
+    if (this._subType) base.innerType = this._subType.describe();
+    return base;
   },
 });

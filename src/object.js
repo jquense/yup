@@ -1,9 +1,8 @@
 import has from 'lodash/has';
-import omit from 'lodash/omit';
 import snakeCase from 'lodash/snakeCase';
 import camelCase from 'lodash/camelCase';
 import mapKeys from 'lodash/mapKeys';
-import transform from 'lodash/transform';
+import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
 import MixedSchema from './mixed';
@@ -27,17 +26,15 @@ export default function ObjectSchema(spec) {
   MixedSchema.call(this, {
     type: 'object',
     default() {
-      var dft = transform(
-        this._nodes,
-        (obj, key) => {
-          obj[key] = this.fields[key].default
-            ? this.fields[key].default()
-            : undefined;
-        },
-        {},
-      );
+      if (!this._nodes.length) return undefined;
 
-      return Object.keys(dft).length === 0 ? undefined : dft;
+      let dft = {};
+      this._nodes.forEach(key => {
+        dft[key] = this.fields[key].default
+          ? this.fields[key].default()
+          : undefined;
+      });
+      return dft;
     },
   });
 
@@ -77,47 +74,44 @@ inherits(ObjectSchema, MixedSchema, {
 
     if (!this._typeCheck(value)) return value;
 
-    let fields = this.fields,
-      strip = this._option('stripUnknown', options) === true,
-      extra = Object.keys(value).filter(v => this._nodes.indexOf(v) === -1),
-      props = this._nodes.concat(extra);
+    let fields = this.fields;
+    let strip = this._option('stripUnknown', options) === true;
+    let props = this._nodes.concat(
+      Object.keys(value).filter(v => this._nodes.indexOf(v) === -1),
+    );
 
+    let intermediateValue = {}; // is filled during the transform below
     let innerOptions = {
       ...options,
-      parent: {}, // is filled during the transform below
+      parent: intermediateValue,
       __validating: false,
     };
 
-    value = transform(
-      props,
-      (obj, prop) => {
-        let field = fields[prop];
-        let exists = has(value, prop);
+    props.forEach(prop => {
+      let field = fields[prop];
+      let exists = has(value, prop);
 
-        if (field) {
-          let fieldValue;
-          let strict = field._options && field._options.strict;
+      if (field) {
+        let fieldValue;
+        let strict = field._options && field._options.strict;
 
-          // safe to mutate since this is fired in sequence
-          innerOptions.path = makePath`${options.path}.${prop}`;
-          innerOptions.value = value[prop];
+        // safe to mutate since this is fired in sequence
+        innerOptions.path = makePath`${options.path}.${prop}`;
+        innerOptions.value = value[prop];
 
-          field = field.resolve(innerOptions);
+        field = field.resolve(innerOptions);
 
-          if (field._strip === true) return;
+        if (field._strip === true) return;
 
-          fieldValue =
-            !options.__validating || !strict
-              ? field.cast(value[prop], innerOptions)
-              : value[prop];
+        fieldValue =
+          !options.__validating || !strict
+            ? field.cast(value[prop], innerOptions)
+            : value[prop];
 
-          if (fieldValue !== undefined) obj[prop] = fieldValue;
-        } else if (exists && !strip) obj[prop] = value[prop];
-      },
-      innerOptions.parent,
-    );
-
-    return value;
+        if (fieldValue !== undefined) intermediateValue[prop] = fieldValue;
+      } else if (exists && !strip) intermediateValue[prop] = value[prop];
+    });
+    return intermediateValue;
   },
 
   _validate(_value, opts = {}) {
@@ -215,7 +209,9 @@ inherits(ObjectSchema, MixedSchema, {
       if (obj == null) return obj;
 
       if (has(obj, from)) {
-        newObj = alias ? { ...obj } : omit(obj, from);
+        newObj = { ...obj };
+        if (!alias) delete obj[from];
+
         newObj[to] = fromGetter(obj);
       }
 
@@ -259,5 +255,11 @@ inherits(ObjectSchema, MixedSchema, {
 
   constantCase() {
     return this.transformKeys(key => snakeCase(key).toUpperCase());
+  },
+
+  describe() {
+    let base = MixedSchema.prototype.describe.call(this);
+    base.fields = mapValues(this.fields, value => value.describe());
+    return base;
   },
 });
