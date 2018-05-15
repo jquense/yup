@@ -44,20 +44,3 @@ export {
   addMethod,
   ValidationError,
 };
-
-export default {
-  mixed,
-  string,
-  number,
-  bool,
-  boolean,
-  date,
-  object,
-  array,
-  ref,
-  lazy,
-  reach,
-  isSchema,
-  addMethod,
-  ValidationError,
-};

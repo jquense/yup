@@ -203,12 +203,12 @@ describe('Object types', () => {
       });
   });
 
-  it('should call shape with constructed with an arg', () => {
+  it.only('should call shape with constructed with an arg', () => {
     let inst = object({
       prop: mixed(),
     });
 
-    inst.should.have.deep.property('fields.prop');
+    expect(inst.fields.prop).to.exist();
   });
 
   describe('object defaults', () => {
@@ -661,7 +661,7 @@ describe('Object types', () => {
           if (v == null) return this.required();
         }),
       });
-    }.should.throw('Cyclic dependency: "location"'));
+    }.should.throw('Cyclic dependency, node was:"location"'));
     (function() {
       object().shape(
         {

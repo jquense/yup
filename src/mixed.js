@@ -14,30 +14,6 @@ import Ref from './Reference';
 
 let notEmpty = value => !isAbsent(value);
 
-function extractTestParams(name, message, test) {
-  var opts = name;
-
-  if (typeof message === 'function') {
-    test = message;
-    message = locale.default;
-    name = null;
-  }
-
-  if (typeof name === 'function') {
-    test = name;
-    message = locale.default;
-    name = null;
-  }
-
-  if (typeof name === 'string' || name === null)
-    opts = { name, test, message, exclusive: false };
-
-  if (typeof opts.test !== 'function')
-    throw new TypeError('`test` is a required parameters');
-
-  return opts;
-}
-
 class RefSet {
   constructor() {
     this.list = new Set();
@@ -287,7 +263,6 @@ SchemaType.prototype = {
       .then(() => true)
       .catch(err => {
         if (err.name === 'ValidationError') return false;
-
         throw err;
       });
   },
@@ -329,8 +304,8 @@ SchemaType.prototype = {
     return next;
   },
 
-  required(msg) {
-    return this.test('required', msg || locale.required, notEmpty);
+  required(message = locale.required) {
+    return this.test({ message, name: 'required', test: notEmpty });
   },
 
   notRequired() {
@@ -364,10 +339,21 @@ SchemaType.prototype = {
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(name, message, test) {
-    let opts = extractTestParams(name, message, test),
-      next = this.clone();
+  test(...args) {
+    let opts = args[0];
+    if (args.length > 1) {
+      let [name, message, test] = args;
+      if (test == null) {
+        test = message;
+        message = locale.default;
+      }
+      opts = { name, test, message, exclusive: false };
+    }
 
+    if (typeof opts.test !== 'function')
+      throw new TypeError('`test` is a required parameters');
+
+    let next = this.clone();
     let validate = createValidation(opts);
 
     let isExclusive =
@@ -411,8 +397,8 @@ SchemaType.prototype = {
     var next = this.clone();
 
     next._typeError = createValidation({
-      name: 'typeError',
       message,
+      name: 'typeError',
       test(value) {
         if (value !== undefined && !this.schema.isType(value))
           return this.createError({
@@ -496,7 +482,9 @@ SchemaType.prototype = {
       type: next._type,
       meta: next._meta,
       label: next._label,
-      tests: next.tests.map(fn => fn.TEST_NAME, {}),
+      tests: next.tests
+        .map(fn => fn.TEST_NAME, {})
+        .filter((n, idx, list) => list.indexOf(n) === idx),
     };
   },
 };

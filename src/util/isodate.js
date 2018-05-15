@@ -1,9 +1,12 @@
+/* eslint-disable */
 /**
+ *
  * Date.parse with progressive enhancement for ISO 8601 <https://github.com/csnover/js-iso8601>
  * NON-CONFORMANT EDITION.
  * © 2011 Colin Snover <http://zetafleet.com>
  * Released under MIT license.
  */
+
 //              1 YYYY                 2 MM        3 DD              4 HH     5 mm        6 ss            7 msec         8 Z 9 ±    10 tzHH    11 tzmm
 var isoReg = /^(\d{4}|[+\-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,\.](\d{1,}))?)?(?:(Z)|([+\-])(\d{2})(?::?(\d{2}))?)?)?$/;
 
