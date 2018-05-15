@@ -6085,9 +6085,9 @@ symbol-tree@^3.2.2:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.2.tgz#ae27db38f660a7ae2e1c3b7d1bc290819b8519e6"
 
-synchronous-promise@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/synchronous-promise/-/synchronous-promise-2.0.4.tgz#09a370f8ebcb505684834ab5075fe5fa91d1190a"
+synchronous-promise@^1.0.18:
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/synchronous-promise/-/synchronous-promise-1.0.18.tgz#936e8763e6554088cdcf78dc64f7473b972fcefc"
 
 table@4.0.2:
   version "4.0.2"

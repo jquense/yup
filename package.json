@@ -7,7 +7,7 @@
     "test": "npm run lint && npm run test-all -- --runInBand",
     "testonly": "jest",
     "test-all":
-      "npm run testonly -- --projects ./jest-sync.config.js --projects ./package.json",
+      "npm run testonly -- --projects ./jest-sync.config.json --projects ./package.json",
     "tdd": "jest --watch",
     "lint": "eslint src test",
     "precommit": "lint-staged",
@@ -34,6 +34,9 @@
     "*.{js,json,css,md}": ["prettier --write", "git add"]
   },
   "jest": {
+    "globals": {
+      "YUP_USE_SYNC": true
+    },
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test-setup.js",
     "roots": ["test"],
@@ -74,7 +77,7 @@
     "fn-name": "~2.0.1",
     "lodash": "^4.17.10",
     "property-expr": "^1.2.0",
-    "synchronous-promise": "^2.0.4",
+    "synchronous-promise": "^1.0.18",
     "toposort": "^2.0.2"
   },
   "release-script": {

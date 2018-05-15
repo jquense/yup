@@ -263,7 +263,6 @@ SchemaType.prototype = {
       .then(() => true)
       .catch(err => {
         if (err.name === 'ValidationError') return false;
-
         throw err;
       });
   },
