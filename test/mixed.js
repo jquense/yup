@@ -96,6 +96,16 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it.only('should allow function messages', async () => {
+    let error = await string()
+      .label('My string')
+      .required(d => `${d.label} is required`)
+      .validate()
+      .should.be.rejected();
+
+    expect(error.message).to.match(/this is required/);
+  });
+
   it('should check types', async () => {
     let inst = string()
       .strict()

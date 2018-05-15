@@ -31,66 +31,64 @@ inherits(NumberSchema, MixedSchema, {
     return typeof value === 'number' && !isNaN(value);
   },
 
-  min(min, msg) {
+  min(min, message = locale.min) {
     return this.test({
+      message,
       name: 'min',
       exclusive: true,
       params: { min },
-      message: msg || locale.min,
       test(value) {
         return isAbsent(value) || value >= this.resolve(min);
       },
     });
   },
 
-  max(max, msg) {
+  max(max, message = locale.max) {
     return this.test({
+      message,
       name: 'max',
       exclusive: true,
       params: { max },
-      message: msg || locale.max,
       test(value) {
         return isAbsent(value) || value <= this.resolve(max);
       },
     });
   },
 
-  lessThan(less, msg) {
+  lessThan(less, message = locale.less) {
     return this.test({
+      message,
       name: 'max',
       exclusive: true,
       params: { less },
-      message: msg || locale.less,
       test(value) {
         return isAbsent(value) || value < this.resolve(less);
       },
     });
   },
 
-  moreThan(more, msg) {
+  moreThan(more, message = locale.more) {
     return this.test({
+      message,
       name: 'min',
       exclusive: true,
       params: { more },
-      message: msg || locale.more,
       test(value) {
         return isAbsent(value) || value > this.resolve(more);
       },
     });
   },
 
-  positive(msg) {
-    return this.min(0, msg || locale.positive);
+  positive(msg = locale.positive) {
+    return this.min(0, msg);
   },
 
-  negative(msg) {
-    return this.max(0, msg || locale.negative);
+  negative(msg = locale.negative) {
+    return this.max(0, msg);
   },
 
-  integer(msg) {
-    msg = msg || locale.integer;
-
-    return this.test('integer', msg, isInteger);
+  integer(message = locale.integer) {
+    return this.test({ name: 'integer', message, test: isInteger });
   },
 
   truncate() {

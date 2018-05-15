@@ -116,10 +116,14 @@ inherits(ArraySchema, MixedSchema, {
     return next;
   },
 
-  required(msg) {
-    var next = MixedSchema.prototype.required.call(this, msg || mixed.required);
+  required(message = mixed.required) {
+    var next = MixedSchema.prototype.required.call(this, message);
 
-    return next.test('required', msg || mixed.required, hasLength);
+    return next.test({
+      message,
+      name: 'required',
+      test: hasLength,
+    });
   },
 
   min(min, message) {

@@ -39,8 +39,8 @@ ValidationError.isError = function(err) {
 ValidationError.formatError = function(message, params) {
   if (typeof message === 'string') message = replace(message);
 
-  let fn = ({ path, label, ...params }) => {
-    params.path = label || path || 'this';
+  let fn = params => {
+    params.path = params.label || params.path || 'this';
     return typeof message === 'function' ? message(params) : message;
   };
 
