@@ -1,3 +1,5 @@
+## v0.25.1 - Wed, 16 May 2018 23:59:14 GMT
+
 ## v0.25.0 - Tue, 15 May 2018 21:43:54 GMT
 
 * remove default export, there are only named exports now!
