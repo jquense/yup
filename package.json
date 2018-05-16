@@ -74,6 +74,7 @@
     "sinon-chai": "^3.0.0"
   },
   "dependencies": {
+    "@babel/runtime": "^7.0.0-beta.47",
     "fn-name": "~2.0.1",
     "lodash": "^4.17.10",
     "property-expr": "^1.2.0",
