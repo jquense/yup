@@ -73,13 +73,15 @@ inherits(StringSchema, MixedSchema, {
     });
   },
 
-  matches(regex, options = {}) {
+  matches(regex, options) {
     let excludeEmptyString = false;
     let message;
 
-    if (options.message || options.hasOwnProperty('excludeEmptyString')) {
-      ({ excludeEmptyString, message } = options);
-    } else message = options;
+    if (options) {
+      if (options.message || options.hasOwnProperty('excludeEmptyString')) {
+        ({ excludeEmptyString, message } = options);
+      } else message = options;
+    }
 
     return this.test({
       message: message || locale.matches,
