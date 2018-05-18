@@ -119,6 +119,11 @@ You define and create schema objects. Schema objects are immutable, so each call
 
 __try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup__
 
+NOTE: If you are usign ES6 imports, import yup this way [issue #214](https://github.com/jquense/yup/issues/214): 
+```js
+import * as yup from 'yup'
+```
+
 ```js
 var yup = require('yup')
 
