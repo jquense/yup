@@ -119,6 +119,13 @@ You define and create schema objects. Schema objects are immutable, so each call
 
 __try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup__
 
+When using es module syntax, yup exports everything as a named export
+```js
+import * as yup from 'yup' // for everything
+// or only what you need
+import { string, object } from 'yup'
+```
+
 ```js
 var yup = require('yup')
 
