@@ -160,14 +160,28 @@ describe('Number types', function() {
       valid: [4, -10, [null, schema.nullable()]],
       invalid: [5, 7, null, [14, schema.lessThan(10).lessThan(14)]],
     });
+
+    it('should return default message', () => {
+      return schema
+        .validate(6)
+        .should.be.rejected.and.eventually.have.property('errors')
+        .that.contain('this must be less than 5');
+    });
   });
 
-  describe('more', () => {
+  describe('moreThan', () => {
     var schema = number().moreThan(5);
 
     TestHelpers.validateAll(schema, {
       valid: [6, 56445435, [null, schema.nullable()]],
       invalid: [5, -10, null, [64, schema.moreThan(52).moreThan(74)]],
+    });
+
+    it('should return default message', () => {
+      return schema
+        .validate(4)
+        .should.be.rejected.and.eventually.have.property('errors')
+        .that.contain('this must be greater than 5');
     });
   });
 
