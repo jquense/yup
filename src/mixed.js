@@ -2,7 +2,7 @@ import has from 'lodash/has';
 import cloneDeepWith from 'lodash/cloneDeepWith';
 import toArray from 'lodash/toArray';
 
-import { mixed as locale } from './locale';
+import locale from './locale';
 import Condition from './Condition';
 import runValidations from './util/runValidations';
 import merge from './util/merge';
@@ -57,7 +57,7 @@ export default function SchemaType(options = {}) {
   this.transforms = [];
 
   this.withMutation(() => {
-    this.typeError(locale.notType);
+    this.typeError();
   });
 
   if (has(options, 'default')) this._defaultDefault = options.default;
@@ -304,8 +304,13 @@ SchemaType.prototype = {
     return next;
   },
 
-  required(message = locale.required) {
-    return this.test({ message, name: 'required', test: notEmpty });
+  required(message = null) {
+    return this.test({
+      message,
+      localePath: 'mixed.required',
+      name: 'required',
+      test: notEmpty,
+    });
   },
 
   notRequired() {
@@ -341,13 +346,15 @@ SchemaType.prototype = {
    */
   test(...args) {
     let opts = args[0];
+
+    // TODO: search all method calls and use hash as the argument
     if (args.length > 1) {
-      let [name, message, test] = args;
+      let [name, message, test, localePath] = args;
       if (test == null) {
         test = message;
         message = locale.default;
       }
-      opts = { name, test, message, exclusive: false };
+      opts = { name, test, message, localePath, exclusive: false };
     }
 
     if (typeof opts.test !== 'function')
@@ -398,6 +405,7 @@ SchemaType.prototype = {
 
     next._typeError = createValidation({
       message,
+      localePath: 'mixed.notType',
       name: 'typeError',
       test(value) {
         if (value !== undefined && !this.schema.isType(value))
@@ -412,7 +420,7 @@ SchemaType.prototype = {
     return next;
   },
 
-  oneOf(enums, message = locale.oneOf) {
+  oneOf(enums, message = null) {
     var next = this.clone();
 
     enums.forEach(val => {
@@ -423,6 +431,7 @@ SchemaType.prototype = {
     next._whitelistError = createValidation({
       message,
       name: 'oneOf',
+      localePath: 'mixed.oneOf',
       test(value) {
         if (value === undefined) return true;
         let valids = this.schema._whitelist;
@@ -440,7 +449,7 @@ SchemaType.prototype = {
     return next;
   },
 
-  notOneOf(enums, message = locale.notOneOf) {
+  notOneOf(enums, message = null) {
     var next = this.clone();
     enums.forEach(val => {
       next._blacklist.add(val);
@@ -450,6 +459,7 @@ SchemaType.prototype = {
     next._blacklistError = createValidation({
       message,
       name: 'notOneOf',
+      localePath: 'mixed.notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
         if (invalids.has(value, this.resolve))

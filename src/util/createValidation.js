@@ -2,6 +2,8 @@ import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
 import { SynchronousPromise } from 'synchronous-promise';
+import get from 'lodash/get';
+import locale from '../locale';
 
 let formatError = ValidationError.formatError;
 
@@ -31,6 +33,7 @@ function createErrorFactory({ value, label, resolve, originalValue, ...opts }) {
   return function createError({
     path = opts.path,
     message = opts.message,
+    localePath = opts.localePath,
     type = opts.name,
     params,
   } = {}) {
@@ -42,15 +45,22 @@ function createErrorFactory({ value, label, resolve, originalValue, ...opts }) {
       ...resolveParams(opts.params, params, resolve),
     };
 
+    const resolvedMessage =
+      message || get(locale, localePath, locale.mixed.default);
     return Object.assign(
-      new ValidationError(formatError(message, params), value, path, type),
+      new ValidationError(
+        formatError(resolvedMessage, params),
+        value,
+        path,
+        type,
+      ),
       { params },
     );
   };
 }
 
 export default function createValidation(options) {
-  let { name, message, test, params } = options;
+  let { name, message, localePath, test, params } = options;
 
   function validate({
     value,
@@ -67,6 +77,7 @@ export default function createValidation(options) {
 
     let createError = createErrorFactory({
       message,
+      localePath,
       path,
       value,
       originalValue,
