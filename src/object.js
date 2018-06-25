@@ -219,7 +219,7 @@ inherits(ObjectSchema, MixedSchema, {
     });
   },
 
-  noUnknown(noAllow = true, message = locale.noUnknown) {
+  noUnknown(noAllow = true, message = null) {
     if (typeof noAllow === 'string') {
       message = noAllow;
       noAllow = true;
@@ -229,6 +229,7 @@ inherits(ObjectSchema, MixedSchema, {
       name: 'noUnknown',
       exclusive: true,
       message: message,
+      localePath: 'object.noUnknown',
       test(value) {
         return (
           value == null || !noAllow || unknown(this.schema, value).length === 0

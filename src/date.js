@@ -31,7 +31,7 @@ inherits(DateSchema, MixedSchema, {
     return isDate(v) && !isNaN(v.getTime());
   },
 
-  min(min, message = locale.min) {
+  min(min, message = null) {
     var limit = min;
 
     if (!Ref.isRef(limit)) {
@@ -44,6 +44,7 @@ inherits(DateSchema, MixedSchema, {
 
     return this.test({
       message,
+      localePath: 'date.min',
       name: 'min',
       exclusive: true,
       params: { min },
@@ -53,7 +54,7 @@ inherits(DateSchema, MixedSchema, {
     });
   },
 
-  max(max, message = locale.max) {
+  max(max, message = null) {
     var limit = max;
 
     if (!Ref.isRef(limit)) {
@@ -66,6 +67,7 @@ inherits(DateSchema, MixedSchema, {
 
     return this.test({
       message,
+      localePath: 'date.max',
       name: 'max',
       exclusive: true,
       params: { max },

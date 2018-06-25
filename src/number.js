@@ -31,9 +31,10 @@ inherits(NumberSchema, MixedSchema, {
     return typeof value === 'number' && !isNaN(value);
   },
 
-  min(min, message = locale.min) {
+  min(min, message = null, localePath = null) {
     return this.test({
       message,
+      localePath: localePath || 'number.min',
       name: 'min',
       exclusive: true,
       params: { min },
@@ -43,9 +44,10 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  max(max, message = locale.max) {
+  max(max, message = null, localePath = null) {
     return this.test({
       message,
+      localePath: localePath || 'number.max',
       name: 'max',
       exclusive: true,
       params: { max },
@@ -55,9 +57,10 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  lessThan(less, message = locale.less) {
+  lessThan(less, message = null) {
     return this.test({
       message,
+      localePath: 'number.less',
       name: 'max',
       exclusive: true,
       params: { less },
@@ -67,9 +70,10 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  moreThan(more, message = locale.more) {
+  moreThan(more, message = null) {
     return this.test({
       message,
+      localePath: 'number.more',
       name: 'min',
       exclusive: true,
       params: { more },
@@ -79,16 +83,21 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  positive(msg = locale.positive) {
-    return this.min(0, msg);
+  positive(msg = null) {
+    return this.min(0, msg, 'number.positive');
   },
 
-  negative(msg = locale.negative) {
-    return this.max(0, msg);
+  negative(msg = null) {
+    return this.max(0, msg, 'number.negative');
   },
 
-  integer(message = locale.integer) {
-    return this.test({ name: 'integer', message, test: isInteger });
+  integer(message = null) {
+    return this.test({
+      name: 'integer',
+      message,
+      localePath: 'number.integer',
+      test: isInteger,
+    });
   },
 
   truncate() {

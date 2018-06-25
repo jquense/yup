@@ -287,11 +287,12 @@ describe('Mixed Types ', () => {
   });
 
   it('should overload test()', () => {
-    let inst = mixed().test('test', noop);
+    let inst = mixed().test('test', '', noop, 'mixed.default');
 
     inst.tests.length.should.equal(1);
     inst.tests[0].TEST.test.should.equal(noop);
-    inst.tests[0].TEST.message.should.equal('${path} is invalid');
+    inst.tests[0].TEST.message.should.equal('');
+    inst.tests[0].TEST.localePath.should.equal('mixed.default');
   });
 
   it('should allow non string messages', async () => {
@@ -304,6 +305,29 @@ describe('Mixed Types ', () => {
     let error = await inst.validate('foo').should.be.rejected();
 
     error.message.should.equal(message);
+  });
+
+  it('should fallback to mixed.default locale message when not specified', async () => {
+    let inst = mixed()
+      .test('test', null, () => false)
+      .label('field');
+
+    let error = await inst.validate('foo').should.be.rejected();
+
+    error.message.should.equal('field is invalid');
+  });
+
+  it('should ignore localePath when message is specified', async () => {
+    let inst = mixed().test(
+      'test',
+      'my custom message',
+      () => false,
+      'mixed.default',
+    );
+
+    let error = await inst.validate('foo').should.be.rejected();
+
+    error.message.should.equal('my custom message');
   });
 
   it('should dedupe tests with the same test function', () => {
