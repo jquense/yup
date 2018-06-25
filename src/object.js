@@ -6,7 +6,6 @@ import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
 import MixedSchema from './mixed';
-import { object as locale } from './locale.js';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';

@@ -1,6 +1,5 @@
 import inherits from './util/inherits';
 import MixedSchema from './mixed';
-import { mixed, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 
 // eslint-disable-next-line
