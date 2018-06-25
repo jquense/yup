@@ -173,7 +173,6 @@ setLocale({
   },
 })
 
-// Now use Yup schemas AFTER you defined your custom dictionary
 const schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
