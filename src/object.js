@@ -3,7 +3,7 @@ import snakeCase from 'lodash/snakeCase';
 import camelCase from 'lodash/camelCase';
 import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
-import { getter } from 'property-expr';
+import { getter } from 'property-expr-csp';
 
 import MixedSchema from './mixed';
 import { object as locale } from './locale.js';

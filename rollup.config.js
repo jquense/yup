@@ -22,7 +22,7 @@ const base = {
     'toposort',
     'fn-name',
     'synchronous-promise',
-    'property-expr',
+    'property-expr-csp',
   ],
 };
 

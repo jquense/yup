@@ -1,4 +1,4 @@
-import { forEach } from 'property-expr';
+import { forEach } from 'property-expr-csp';
 import has from 'lodash/has';
 
 let trim = part => part.substr(0, part.length - 1).substr(1);
