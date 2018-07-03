@@ -1,6 +1,6 @@
 import has from 'lodash/has';
 import toposort from 'toposort';
-import { split } from 'property-expr';
+import { split } from 'property-expr-csp';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';

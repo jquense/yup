@@ -1,4 +1,4 @@
-import { getter } from 'property-expr';
+import { getter } from 'property-expr-csp';
 
 let validateName = d => {
   if (typeof d !== 'string')
