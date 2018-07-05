@@ -55,7 +55,7 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  lessThan(less, message = locale.less) {
+  lessThan(less, message = locale.lessThan) {
     return this.test({
       message,
       name: 'max',
@@ -67,7 +67,7 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  moreThan(more, message = locale.more) {
+  moreThan(more, message = locale.moreThan) {
     return this.test({
       message,
       name: 'min',
