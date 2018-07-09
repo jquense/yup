@@ -1,4 +1,4 @@
-import { getter } from 'property-expr';
+import get from 'lodash/get';
 
 let validateName = d => {
   if (typeof d !== 'string')
@@ -28,7 +28,7 @@ export default class Reference {
     this.isSelf = this.key === '.';
 
     this.path = this.isContext ? this.key.slice(this.prefix.length) : this.key;
-    this._get = getter(this.path, true);
+    this._get = obj => get(obj, this.path);
     this.map = mapFn || (value => value);
   }
   resolve() {
