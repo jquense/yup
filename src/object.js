@@ -3,7 +3,7 @@ import snakeCase from 'lodash/snakeCase';
 import camelCase from 'lodash/camelCase';
 import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
-import { getter } from 'property-expr';
+import get from 'lodash/get';
 
 import MixedSchema from './mixed';
 import { object as locale } from './locale.js';
@@ -201,8 +201,6 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   from(from, to, alias) {
-    let fromGetter = getter(from, true);
-
     return this.transform(obj => {
       var newObj = obj;
 
@@ -212,7 +210,7 @@ inherits(ObjectSchema, MixedSchema, {
         newObj = { ...obj };
         if (!alias) delete obj[from];
 
-        newObj[to] = fromGetter(obj);
+        newObj[to] = get(obj, from);
       }
 
       return newObj;
