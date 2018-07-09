@@ -52,7 +52,7 @@ json separate from validating it, via the `cast` method.
     - [`mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
     - [`mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`](#mixednotoneofarrayofvalues-arrayany-string-message)
     - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
-    - [`mixed.test(name: string, message: string, test: function): Schema`](#mixedtestname-string-message-string-test-function-schema)
+    - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string-test-function-schema)
     - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
     - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
   - [string](#string)
@@ -615,7 +615,7 @@ inst.validate({ isBig: false, count: 4 })
 ```
 
 
-#### `mixed.test(name: string, message: string, test: function): Schema`
+#### `mixed.test(name: string, message: string | function, test: function): Schema`
 
 Adds a test function to the validation chain. Tests are run after any object is cast.
 Many types have some tests built in, but you can create custom ones easily.
