@@ -116,6 +116,10 @@ describe('Number types', function() {
         .should.eventually()
         .equal(true),
       number()
+        .isValid(' ')
+        .should.eventually()
+        .equal(false),
+      number()
         .isValid('12abc')
         .should.eventually()
         .equal(false),

@@ -6,7 +6,6 @@ import isAbsent from './util/isAbsent';
 let isNaN = value => value != +value;
 
 let isInteger = val => isAbsent(val) || val === (val | 0);
-// let isInfinite = val => Math.abs(val) === Number.POSITIVE_INFINITY;
 
 export default function NumberSchema() {
   if (!(this instanceof NumberSchema)) return new NumberSchema();
@@ -17,11 +16,10 @@ export default function NumberSchema() {
     this.transform(function(value) {
       if (this.isType(value)) return value;
 
-      let parsed = parseFloat(value);
-      if (this.isType(parsed) && isFinite(value)) return parsed;
-
-      if (typeof value === 'string' && value !== '' && this.isType(+value))
-        return +value;
+      if (typeof value === 'string') {
+        let stripped = value.replace(/\s/g, '');
+        if (stripped !== '' && this.isType(+stripped)) return +stripped;
+      }
 
       return NaN;
     });
