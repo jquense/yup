@@ -11,6 +11,7 @@ import isAbsent from './util/isAbsent';
 import createValidation from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
+import { getIn } from './util/reach';
 
 let notEmpty = value => !isAbsent(value);
 
@@ -65,7 +66,7 @@ export default function SchemaType(options = {}) {
   this._type = options.type || 'mixed';
 }
 
-SchemaType.prototype = {
+const proto = (SchemaType.prototype = {
   __isYupSchema__: true,
 
   constructor: SchemaType,
@@ -487,15 +488,23 @@ SchemaType.prototype = {
         .filter((n, idx, list) => list.indexOf(n) === idx),
     };
   },
-};
-
-let aliases = {
-  oneOf: ['equals', 'is'],
-  notOneOf: ['not', 'nope'],
-};
-
-Object.keys(aliases).forEach(method => {
-  aliases[method].forEach(
-    alias => (SchemaType.prototype[alias] = SchemaType.prototype[method]),
-  );
 });
+
+for (const method of ['validate', 'validateSync'])
+  proto[`${method}At`] = function(path, value, options = {}) {
+    const { parent, parentPath, schema } = getIn(
+      this,
+      path,
+      value,
+      options.context,
+    );
+
+    return schema[method](parent[parentPath], {
+      ...options,
+      parent,
+      path: parentPath,
+    });
+  };
+
+for (const alias of ['equals', 'is']) proto[alias] = proto.oneOf;
+for (const alias of ['not', 'nope']) proto[alias] = proto.notOneOf;

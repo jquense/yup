@@ -10,6 +10,7 @@ import Lazy from './Lazy';
 import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
+import setLocale from './setLocale';
 
 let boolean = bool;
 let ref = (key, options) => new Ref(key, options);
@@ -42,5 +43,6 @@ export {
   reach,
   isSchema,
   addMethod,
+  setLocale,
   ValidationError,
 };

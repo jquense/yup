@@ -1,7 +1,7 @@
 import MixedSchema from './mixed';
 import inherits from './util/inherits';
 import isoParse from './util/isodate';
-import { date as locale } from './locale.js';
+import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 

@@ -1,4 +1,4 @@
-import { array, mixed, string, number, object, ref, reach } from '../src';
+import { array, mixed, string, number, object, ref, reach, bool } from '../src';
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -69,6 +69,7 @@ describe('Mixed Types ', () => {
     inst.getDefault({}).should.equal('hi');
     inst.getDefault().should.equal('hi');
   });
+
   it('getDefault should return the default value', function() {
     let inst = string().when('$foo', {
       is: 'greet',
@@ -84,6 +85,49 @@ describe('Mixed Types ', () => {
       .should.be.rejected();
 
     expect(error.message).to.match(/If "null" is intended/);
+  });
+
+  it('should validateAt', async () => {
+    const schema = object({
+      foo: array().of(
+        object({
+          loose: bool(),
+          bar: string().when('loose', {
+            is: true,
+            otherwise: s => s.strict(),
+          }),
+        }),
+      ),
+    });
+    const value = {
+      foo: [{ bar: 1 }, { bar: 1, loose: true }],
+    };
+
+    await schema.validateAt('foo[1].bar', value).should.be.fulfilled();
+
+    const err = await schema
+      .validateAt('foo[0].bar', value)
+      .should.be.rejected();
+
+    expect(err.message).to.match(/bar must be a `string` type/);
+  });
+
+  xit('should castAt', async () => {
+    const schema = object({
+      foo: array().of(
+        object({
+          loose: bool().default(true),
+          bar: string(),
+        }),
+      ),
+    });
+    const value = {
+      foo: [{ bar: 1 }, { bar: 1, loose: true }],
+    };
+
+    schema.castAt('foo[1].bar', value).should.equal('1');
+
+    schema.castAt('foo[0].loose', value).should.equal(true);
   });
 
   it('should print the original value', async () => {

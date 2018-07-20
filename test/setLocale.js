@@ -1,4 +1,4 @@
-import { setLocale } from '../src/customLocale';
+import { setLocale } from '../src';
 
 describe('Custom locale', () => {
   it('should get default locale', () => {

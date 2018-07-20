@@ -1,6 +1,6 @@
 const nodeResolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
-const { sizeSnapshot } = require('rollup-plugin-size-snapshot');
+const filesize = require('rollup-plugin-filesize');
 
 const base = {
   input: './src/index.js',
@@ -29,17 +29,16 @@ const base = {
 module.exports = [
   {
     ...base,
-    output: {
-      file: 'dist/yup.js',
-      format: 'cjs',
-    },
-    plugins: [...base.plugins, sizeSnapshot()],
-  },
-  {
-    ...base,
-    output: {
-      file: 'dist/yup.esm.js',
-      format: 'es',
-    },
+    output: [
+      {
+        file: 'dist/yup.js',
+        format: 'cjs',
+      },
+      {
+        file: 'dist/yup.esm.js',
+        format: 'es',
+      },
+    ],
+    plugins: [...base.plugins, filesize()],
   },
 ];

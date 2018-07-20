@@ -1,6 +1,6 @@
 import inherits from './util/inherits';
 import MixedSchema from './mixed';
-import { number as locale } from './locale.js';
+import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
 
 let isNaN = value => value != +value;

@@ -4,7 +4,7 @@ import isSchema from './util/isSchema';
 import makePath from './util/makePath';
 import printValue from './util/printValue';
 import MixedSchema from './mixed';
-import { mixed, array as locale } from './locale.js';
+import { mixed, array as locale } from './locale';
 import runValidations, { propagateErrors } from './util/runValidations';
 
 let hasLength = value => !isAbsent(value) && value.length > 0;

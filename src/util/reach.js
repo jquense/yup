@@ -3,8 +3,8 @@ import has from 'lodash/has';
 
 let trim = part => part.substr(0, part.length - 1).substr(1);
 
-export default function reach(obj, path, value, context) {
-  let parent, lastPart;
+export function getIn(schema, path, value, context) {
+  let parent, lastPart, lastPartDebug;
 
   // if only one "value" arg then use it for both
   context = context || value;
@@ -12,11 +12,11 @@ export default function reach(obj, path, value, context) {
   forEach(path, (_part, isBracket, isArray) => {
     let part = isBracket ? trim(_part) : _part;
 
-    if (isArray || has(obj, '_subType')) {
+    if (isArray || has(schema, '_subType')) {
       // we skipped an array: foo[].bar
       let idx = isArray ? parseInt(part, 10) : 0;
 
-      obj = obj.resolve({ context, parent, value })._subType;
+      schema = schema.resolve({ context, parent, value })._subType;
 
       if (value) {
         if (isArray && idx >= value.length) {
@@ -31,25 +31,31 @@ export default function reach(obj, path, value, context) {
     }
 
     if (!isArray) {
-      obj = obj.resolve({ context, parent, value });
+      schema = schema.resolve({ context, parent, value });
 
-      if (!has(obj, 'fields') || !has(obj.fields, part))
+      if (!has(schema, 'fields') || !has(schema.fields, part))
         throw new Error(
           `The schema does not contain the path: ${path}. ` +
-            `(failed at: ${lastPart} which is a type: "${obj._type}") `,
+            `(failed at: ${lastPartDebug} which is a type: "${schema._type}") `,
         );
 
-      obj = obj.fields[part];
+      schema = schema.fields[part];
 
       parent = value;
       value = value && value[part];
-      lastPart = isBracket ? '[' + _part + ']' : '.' + _part;
+      lastPart = _part;
+      lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
     }
   });
 
-  if (obj) {
-    obj = obj.resolve({ context, parent, value });
+  if (schema) {
+    schema = schema.resolve({ context, parent, value });
   }
 
-  return obj;
+  return { schema, parent, parentPath: lastPart };
 }
+
+const reach = (obj, path, value, context) =>
+  getIn(obj, path, value, context).schema;
+
+export default reach;
