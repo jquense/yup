@@ -1,4 +1,5 @@
 import { array, mixed, string, number, object, ref, reach, bool } from '../src';
+
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -233,6 +234,37 @@ describe('Mixed Types ', () => {
         expect(err.message).to.match(/Validation test of type: "test"/);
       });
     });
+
+  describe('sequence', () => {
+    it('only calls validation on sequenced schemas when the previous validations have passed', async () => {
+      let secondSpy, thirdSpy;
+      let inst = object({
+        foo: string().sequence(string => {
+          const firstSchema = string.min(4);
+          const secondSchema = string.max(8);
+          const thirdSchema = string.matches(/a{6}/);
+          secondSpy = jest.spyOn(secondSchema, '_validate');
+          thirdSpy = jest.spyOn(thirdSchema, '_validate');
+          return [firstSchema, secondSchema, thirdSchema];
+        }),
+      });
+
+      await inst.validate({ foo: 'abc' }).should.be.rejected();
+      await inst.validate({ foo: '12345' }).should.be.rejected();
+      await inst.validate({ foo: '1234567890' }).should.be.rejected();
+      await inst.validate({ foo: 'aaaaaa' }).should.be.fulfilled();
+
+      expect(secondSpy.mock.calls.map(args => args[0])).to.deep.equal([
+        '12345',
+        '1234567890',
+        'aaaaaa',
+      ]);
+      expect(thirdSpy.mock.calls.map(args => args[0])).to.deep.equal([
+        '12345',
+        'aaaaaa',
+      ]);
+    });
+  });
 
   describe('oneOf', () => {
     let inst = mixed().oneOf(['hello']);

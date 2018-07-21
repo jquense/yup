@@ -51,6 +51,8 @@ export default function SchemaType(options = {}) {
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
 
+  this._sequence = null;
+
   this._whitelist = new RefSet();
   this._blacklist = new RefSet();
 
@@ -190,6 +192,16 @@ const proto = (SchemaType.prototype = {
   },
 
   _validate(_value, options = {}) {
+    if (this._sequence) {
+      return this._sequence.reduce(
+        (promise, schema) =>
+          promise.then(result =>
+            schema._validate(_value, options).then([].concat.bind(result)),
+          ),
+        Promise.resolve([]),
+      );
+    }
+
     let value = _value;
     let originalValue =
       options.originalValue != null ? options.originalValue : _value;
@@ -312,6 +324,12 @@ const proto = (SchemaType.prototype = {
   notRequired() {
     var next = this.clone();
     next.tests = next.tests.filter(test => test.TEST_NAME !== 'required');
+    return next;
+  },
+
+  sequence(callback) {
+    var next = this.clone();
+    next._sequence = callback(this);
     return next;
   },
 

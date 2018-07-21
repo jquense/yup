@@ -5,3 +5,4 @@ globals:
   TestHelpers: true
   expect: true
   sinon: true
+  jest: true
