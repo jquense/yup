@@ -2,7 +2,7 @@ import reach from '../src/util/reach';
 import merge from '../src/util/merge';
 import { settled } from '../src/util/runValidations';
 
-import { object, array, string, lazy, number } from '../src';
+import { object, array, string, lazy, number, isSchema } from '../src';
 
 describe('Yup', function() {
   it('cast should not assert on undefined', () => {
@@ -134,5 +134,13 @@ describe('Yup', function() {
       })
       .should.be.rejected();
     err.message.should.match(/must be a `number` type/);
+  });
+
+  it('should return boolean for isSchema', async () => {
+    isSchema(string()).should.equal(true);
+    isSchema({}).should.equal(false);
+    isSchema(undefined).should.equal(false);
+    isSchema(null).should.equal(false);
+    isSchema('').should.equal(false);
   });
 });
