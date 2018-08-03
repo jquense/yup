@@ -937,7 +937,7 @@ will apply to the elements as well. Options passed into `isValid` are passed als
 Supports all the same methods as [`mixed`](#mixed).
 
 ```javascript
-var schema = yup.array().of(number().min(2));
+var schema = yup.array().of(yup.number().min(2));
 schema.isValid([2, 3]); //=> true
 schema.isValid([1, -24]); //=> false
 
@@ -947,9 +947,9 @@ schema.cast(['2', '3']); //=> [2, 3]
 You can also pass a subtype schema to the array constructor as a convenience.
 
 ```js
-array().of(number());
+array().of(yup.number());
 //or
-array(number());
+array(yup.number());
 ```
 
 The default `cast` behavior for `array` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
