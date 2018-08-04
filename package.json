@@ -52,8 +52,8 @@
     ]
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.47",
-    "@babel/core": "^7.0.0-beta.47",
+    "@babel/cli": "^7.0.0-beta.56",
+    "@babel/core": "^7.0.0-beta.56",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^8.2.6",
     "babel-jest": "^22.4.3",
@@ -83,7 +83,7 @@
     "sinon-chai": "^3.2.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.47",
+    "@babel/runtime": "^7.0.0-beta.56",
     "fn-name": "~2.0.1",
     "lodash": "^4.17.10",
     "property-expr": "^1.5.0",
