@@ -1081,7 +1081,7 @@ module.exports = yup.date().transform(function(value, originalValue) {
   if (this.isType(value)) return value;
   //the default coercion transform failed so lets try it with Moment instead
   value = Moment(originalValue, parseFormats);
-  return date.isValid() ? date.toDate() : invalidDate;
+  return value.isValid() ? value.toDate() : invalidDate;
 });
 ```
 
@@ -1109,7 +1109,7 @@ function parseDateFromFormats(formats, parseStrict) {
 
     value = Moment(originalValue, formats, parseStrict);
 
-    return date.isValid() ? date.toDate() : invalidDate;
+    return value.isValid() ? value.toDate() : invalidDate;
   });
 }
 
