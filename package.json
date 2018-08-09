@@ -42,6 +42,7 @@
       "YUP_USE_SYNC": true
     },
     "testEnvironment": "node",
+    "testURL": "https://localhost",
     "setupTestFrameworkScriptFile": "./test-setup.js",
     "roots": [
       "test"
@@ -52,12 +53,12 @@
     ]
   },
   "devDependencies": {
-    "@babel/cli": "7.0.0-beta.47",
-    "@babel/core": "7.0.0-beta.47",
+    "@babel/cli": "7.0.0-rc.1",
+    "@babel/core": "7.0.0-rc.1",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^8.2.6",
     "babel-jest": "^22.4.3",
-    "babel-preset-jason": "^4.2.0",
+    "babel-preset-jason": "^5.0.0",
     "benchmark": "^2.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
@@ -83,7 +84,7 @@
     "sinon-chai": "^3.2.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.0.0-beta.47",
+    "@babel/runtime": "7.0.0-rc.1",
     "fn-name": "~2.0.1",
     "lodash": "^4.17.10",
     "property-expr": "^1.5.0",

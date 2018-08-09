@@ -2,12 +2,9 @@
   "globals": {
     "YUP_USE_SYNC": true
   },
+  "testEnvironment": "node",
   "setupTestFrameworkScriptFile": "./test-setup.js",
-  "roots": [
-    "test"
-  ],
+  "roots": ["test"],
   "testRegex": "\\.js",
-  "testPathIgnorePatterns": [
-    "helpers\\.js"
-  ]
+  "testPathIgnorePatterns": ["helpers\\.js"]
 }

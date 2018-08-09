@@ -435,15 +435,12 @@ const schema = object({
 });
 
 const rootValue = {
-  foo: [
-    { bar: 1 },
-    { bar: 1, loose: true }
-  ],
+  foo: [{ bar: 1 }, { bar: 1, loose: true }],
 };
 
-await schema.validateAt('foo[0].bar', rootValue) // -> '1';
+await schema.validateAt('foo[0].bar', rootValue); // -> '1';
 
-await schema.validateAt('foo[1].bar', rootValue) // -> ValidationError. must be a string;
+await schema.validateAt('foo[1].bar', rootValue); // -> ValidationError. must be a string;
 ```
 
 #### `mixed.validateSyncAt(path: string, value: any, context?: object): Promise<any, ValidationError>`
