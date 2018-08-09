@@ -655,17 +655,17 @@ var trim = function trim(part) {
   return part.substr(0, part.length - 1).substr(1);
 };
 
-function reach(obj, path, value, context) {
-  var parent, lastPart; // if only one "value" arg then use it for both
+function getIn(schema, path, value, context) {
+  var parent, lastPart, lastPartDebug; // if only one "value" arg then use it for both
 
   context = context || value;
   propertyExpr.forEach(path, function(_part, isBracket, isArray) {
     var part = isBracket ? trim(_part) : _part;
 
-    if (isArray || has(obj, '_subType')) {
+    if (isArray || has(schema, '_subType')) {
       // we skipped an array: foo[].bar
       var idx = isArray ? parseInt(part, 10) : 0;
-      obj = obj.resolve({
+      schema = schema.resolve({
         context: context,
         parent: parent,
         value: value,
@@ -688,39 +688,48 @@ function reach(obj, path, value, context) {
     }
 
     if (!isArray) {
-      obj = obj.resolve({
+      schema = schema.resolve({
         context: context,
         parent: parent,
         value: value,
       });
-      if (!has(obj, 'fields') || !has(obj.fields, part))
+      if (!has(schema, 'fields') || !has(schema.fields, part))
         throw new Error(
           'The schema does not contain the path: ' +
             path +
             '. ' +
             ('(failed at: ' +
-              lastPart +
+              lastPartDebug +
               ' which is a type: "' +
-              obj._type +
+              schema._type +
               '") '),
         );
-      obj = obj.fields[part];
+      schema = schema.fields[part];
       parent = value;
       value = value && value[part];
-      lastPart = isBracket ? '[' + _part + ']' : '.' + _part;
+      lastPart = _part;
+      lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
     }
   });
 
-  if (obj) {
-    obj = obj.resolve({
+  if (schema) {
+    schema = schema.resolve({
       context: context,
       parent: parent,
       value: value,
     });
   }
 
-  return obj;
+  return {
+    schema: schema,
+    parent: parent,
+    parentPath: lastPart,
+  };
 }
+
+var reach = function reach(obj, path, value, context) {
+  return getIn(obj, path, value, context).schema;
+};
 
 var notEmpty = function notEmpty(value) {
   return !isAbsent(value);
@@ -792,12 +801,9 @@ function SchemaType(options) {
   if (has(options, 'default')) this._defaultDefault = options.default;
   this._type = options.type || 'mixed';
 }
-SchemaType.prototype = {
+var proto = (SchemaType.prototype = {
   __isYupSchema__: true,
   constructor: SchemaType,
-  reach: function reach$$1(path, value, context) {
-    return reach(this, path, value, context);
-  },
   clone: function clone() {
     var _this2 = this;
 
@@ -1263,16 +1269,49 @@ SchemaType.prototype = {
         }),
     };
   },
-};
-var aliases = {
-  oneOf: ['equals', 'is'],
-  notOneOf: ['not', 'nope'],
-};
-Object.keys(aliases).forEach(function(method) {
-  aliases[method].forEach(function(alias) {
-    return (SchemaType.prototype[alias] = SchemaType.prototype[method]);
-  });
 });
+var _arr = ['validate', 'validateSync'];
+
+var _loop = function _loop() {
+  var method = _arr[_i];
+
+  proto[method + 'At'] = function(path, value, options) {
+    if (options === void 0) {
+      options = {};
+    }
+
+    var _getIn = getIn(this, path, value, options.context),
+      parent = _getIn.parent,
+      parentPath = _getIn.parentPath,
+      schema = _getIn.schema;
+
+    return schema[method](
+      parent[parentPath],
+      _extends({}, options, {
+        parent: parent,
+        path: parentPath,
+      }),
+    );
+  };
+};
+
+for (var _i = 0; _i < _arr.length; _i++) {
+  _loop();
+}
+
+var _arr2 = ['equals', 'is'];
+
+for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+  var alias = _arr2[_i2];
+  proto[alias] = proto.oneOf;
+}
+
+var _arr3 = ['not', 'nope'];
+
+for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
+  var _alias = _arr3[_i3];
+  proto[_alias] = proto.notOneOf;
+}
 
 function inherits(ctor, superCtor, spec) {
   ctor.prototype = Object.create(superCtor.prototype, {
