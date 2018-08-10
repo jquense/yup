@@ -1035,6 +1035,25 @@ Failed casts return: `null`;
 
 Define the keys of the object and the schemas for said keys.
 
+Note that you can chain `shape` method, which acts like object extends, for example:
+```javascript
+object({
+  a: string(),
+  b: number(),
+}).shape({
+  b: string(),
+  c: number(),
+});
+```
+would be exactly the same as:
+```javascript
+object({
+  a: string(),
+  b: string(),
+  c: number(),
+});
+```
+
 #### `object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
