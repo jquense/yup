@@ -626,7 +626,7 @@ inst.validate({
 })
 ```
 
-Alternatively you can provide a function the returns a schema
+Alternatively you can provide a function that returns a schema
 (called with the value of the key and the current schema).
 
 ```js
