@@ -1,12 +1,5 @@
 {
-  "presets": [
-    [
-      "jason",
-      {
-        "debug": false
-      }
-    ]
-  ],
+  "presets": [["jason", { "debug": true, "ignoreBrowserslistConfig": true }]],
   "env": {
     "test": {
       "sourceMaps": "inline",

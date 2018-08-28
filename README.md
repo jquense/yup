@@ -1036,6 +1036,7 @@ Failed casts return: `null`;
 Define the keys of the object and the schemas for said keys.
 
 Note that you can chain `shape` method, which acts like object extends, for example:
+
 ```javascript
 object({
   a: string(),
@@ -1045,7 +1046,9 @@ object({
   c: number(),
 });
 ```
+
 would be exactly the same as:
+
 ```javascript
 object({
   a: string(),
