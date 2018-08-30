@@ -168,7 +168,7 @@ Allows you to customize the default messages used by Yup, when no message is pro
 If any message is missing in the custom dictionary the error message will default to Yup's one.
 
 ```js
-import { setLocale } from 'yup/lib/customLocale';
+import { setLocale } from 'yup';
 
 setLocale({
   mixed: {
