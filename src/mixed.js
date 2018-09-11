@@ -499,7 +499,7 @@ for (const method of ['validate', 'validateSync'])
       options.context,
     );
 
-    return schema[method](parent[parentPath], {
+    return schema[method](parent && parent[parentPath], {
       ...options,
       parent,
       path: parentPath,
