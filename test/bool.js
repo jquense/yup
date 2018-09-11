@@ -47,7 +47,7 @@ describe('Boolean types', () => {
       .should.equal(true);
   });
 
-  it.only('bool should VALIDATE correctly', () => {
+  it('bool should VALIDATE correctly', () => {
     let inst = bool().required();
 
     return Promise.all([

@@ -16,7 +16,7 @@ import runValidations, { propagateErrors } from './util/runValidations';
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
 function unknown(ctx, value) {
-  var known = Object.keys(ctx.fields);
+  let known = Object.keys(ctx.fields);
   return Object.keys(value).filter(key => known.indexOf(key) === -1);
 }
 
@@ -67,7 +67,7 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   _cast(_value, options = {}) {
-    var value = MixedSchema.prototype._cast.call(this, _value, options);
+    let value = MixedSchema.prototype._cast.call(this, _value, options);
 
     //should ignore nulls here
     if (value === undefined) return this.default();
@@ -75,6 +75,7 @@ inherits(ObjectSchema, MixedSchema, {
     if (!this._typeCheck(value)) return value;
 
     let fields = this.fields;
+
     let strip = this._option('stripUnknown', options) === true;
     let props = this._nodes.concat(
       Object.keys(value).filter(v => this._nodes.indexOf(v) === -1),
@@ -182,8 +183,8 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   shape(schema, excludes = []) {
-    var next = this.clone(),
-      fields = Object.assign(next.fields, schema);
+    let next = this.clone();
+    let fields = Object.assign(next.fields, schema);
 
     next.fields = fields;
 
@@ -204,13 +205,11 @@ inherits(ObjectSchema, MixedSchema, {
     let fromGetter = getter(from, true);
 
     return this.transform(obj => {
-      var newObj = obj;
-
       if (obj == null) return obj;
-
+      let newObj = obj;
       if (has(obj, from)) {
         newObj = { ...obj };
-        if (!alias) delete obj[from];
+        if (!alias) delete newObj[from];
 
         newObj[to] = fromGetter(obj);
       }
@@ -225,7 +224,7 @@ inherits(ObjectSchema, MixedSchema, {
       noAllow = true;
     }
 
-    var next = this.test({
+    let next = this.test({
       name: 'noUnknown',
       exclusive: true,
       message: message,

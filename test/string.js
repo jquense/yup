@@ -48,7 +48,8 @@ describe('String types', () => {
         .cast('HellO JohN')
         .should.equal('hello john');
     });
-    it('should transform to lowercase', () => {
+
+    it('should transform to uppercase', () => {
       schema
         .uppercase()
         .cast('HellO JohN')

@@ -70,7 +70,7 @@ describe('Mixed Types ', () => {
     inst.getDefault().should.equal('hi');
   });
 
-  it('getDefault should return the default value', function() {
+  it('getDefault should return the default value using context', function() {
     let inst = string().when('$foo', {
       is: 'greet',
       then: string().default('hi'),

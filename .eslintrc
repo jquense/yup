@@ -1,3 +1,26 @@
-
-parser: babel-eslint
-extends: jason
+{
+  "parser": "babel-eslint",
+  "extends": ["jason", "prettier"],
+  "overrides": [
+    {
+      "files": ["test/**"],
+      "plugins": ["jest"],
+      "env": {
+        "jest/globals": true
+      },
+      "globals": {
+        "TestHelpers": false,
+        "sinon": true
+      },
+      "rules": {
+        "global-require": "off",
+        "no-await-in-loop": "off",
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "off"
+      }
+    }
+  ]
+}

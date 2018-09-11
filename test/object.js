@@ -203,7 +203,7 @@ describe('Object types', () => {
       });
   });
 
-  it.only('should call shape with constructed with an arg', () => {
+  it('should call shape with constructed with an arg', () => {
     let inst = object({
       prop: mixed(),
     });
@@ -567,18 +567,6 @@ describe('Object types', () => {
       .should.eql({ myProp: 5, other: 6, Other: 6 });
   });
 
-  it('should move nested keys', () => {
-    let inst = object({
-      foo: object({
-        bar: string(),
-      }),
-    }).from('foo.bar', 'foobar');
-
-    inst
-      .cast({ foo: { bar: 'quz', foof: 5 } })
-      .should.eql({ foobar: 'quz', foo: { foof: 5 } });
-  });
-
   it('should alias nested keys', () => {
     let inst = object({
       foo: object({
@@ -775,5 +763,15 @@ describe('Object types', () => {
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 });
 
     expect(inst.nullable().cast(null)).to.equal(null);
+  });
+
+  xit('should handle invalid shapes better', async () => {
+    var schema = object().shape({
+      permissions: undefined,
+    });
+
+    expect(
+      await schema.isValid({ permissions: [] }, { abortEarly: false }),
+    ).to.equal(true);
   });
 });
