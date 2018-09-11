@@ -65,6 +65,8 @@ describe('Yup', function() {
         }),
       });
 
+    reach(inst, '').should.equal(inst);
+
     reach(inst, 'nested.arr.num').should.equal(num);
     reach(inst, 'nested.arr[].num').should.equal(num);
     reach(inst, 'nested.arr[1].num').should.equal(num);

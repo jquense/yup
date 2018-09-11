@@ -9,6 +9,13 @@ export function getIn(schema, path, value, context) {
   // if only one "value" arg then use it for both
   context = context || value;
 
+  if (!path)
+    return {
+      parent,
+      parentPath: path,
+      schema: schema.resolve({ context, parent, value }),
+    };
+
   forEach(path, (_part, isBracket, isArray) => {
     let part = isBracket ? trim(_part) : _part;
 
