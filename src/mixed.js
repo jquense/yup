@@ -502,7 +502,7 @@ for (const method of ['validate', 'validateSync'])
     return schema[method](parent && parent[parentPath], {
       ...options,
       parent,
-      path: parentPath,
+      path,
     });
   };
 

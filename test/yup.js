@@ -1,4 +1,4 @@
-import reach from '../src/util/reach';
+import reach, { getIn } from '../src/util/reach';
 import merge from '../src/util/merge';
 import { settled } from '../src/util/runValidations';
 
@@ -52,6 +52,28 @@ describe('Yup', function() {
       f: { c: 5 },
       g: null,
     });
+  });
+
+  it('should getIn correctly', async () => {
+    var num = number(),
+      inst = object().shape({
+        num: number().max(4),
+
+        nested: object().shape({
+          arr: array().of(object().shape({ num: num })),
+        }),
+      });
+
+    const value = { nested: { arr: [{}, { num: 2 }] } };
+    const { schema, parent, parentPath } = getIn(
+      inst,
+      'nested.arr[1].num',
+      value,
+    );
+
+    expect(schema).to.equal(num);
+    expect(parentPath).to.equal('num');
+    expect(parent).to.equal(value.nested.arr[1]);
   });
 
   it('should REACH correctly', async () => {

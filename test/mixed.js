@@ -112,23 +112,23 @@ describe('Mixed Types ', () => {
     expect(err.message).to.match(/bar must be a `string` type/);
   });
 
-  xit('should castAt', async () => {
-    const schema = object({
-      foo: array().of(
-        object({
-          loose: bool().default(true),
-          bar: string(),
-        }),
-      ),
-    });
-    const value = {
-      foo: [{ bar: 1 }, { bar: 1, loose: true }],
-    };
+  // xit('should castAt', async () => {
+  //   const schema = object({
+  //     foo: array().of(
+  //       object({
+  //         loose: bool().default(true),
+  //         bar: string(),
+  //       }),
+  //     ),
+  //   });
+  //   const value = {
+  //     foo: [{ bar: 1 }, { bar: 1, loose: true }],
+  //   };
 
-    schema.castAt('foo[1].bar', value).should.equal('1');
+  //   schema.castAt('foo[1].bar', value).should.equal('1');
 
-    schema.castAt('foo[0].loose', value).should.equal(true);
-  });
+  //   schema.castAt('foo[0].loose', value).should.equal(true);
+  // });
 
   it('should print the original value', async () => {
     let error = await number()
