@@ -1011,7 +1011,7 @@ yup.object().shape({
   name:      string().required(),
   age:       number().required().positive().integer(),
   email:     string().email(),
-  website    string().url(),
+  website:    string().url(),
 })
 ```
 
