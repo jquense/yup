@@ -290,6 +290,25 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check url correctly', function() {
+    var v = string().url();
+
+    return Promise.all([
+      v
+        .isValid('//www.github.com/')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('https://www.github.com/')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('this is not a url')
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
   it('should validate transforms', function() {
     return Promise.all([
       string()
