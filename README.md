@@ -348,7 +348,7 @@ SchemaDescription {
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
-#### `mixed.validate(value: any, options: ?object): Promise<any, ValidationError>`
+#### `mixed.validate(value: any, options?: object): Promise<any, ValidationError>`
 
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise.
 This method is **asynchronous** and returns a Promise object, that is fulfilled with the value, or rejected
@@ -386,7 +386,7 @@ schema.validate({ name: 'jimmy', age: 'hi' }).catch(function(err) {
 });
 ```
 
-#### `mixed.validateSync(value: any, options: ?object): any`
+#### `mixed.validateSync(value: any, options?: object): any`
 
 Runs validatations synchronously _if possible_ and returns the resulting value,
 or throws a ValidationError. Accepts all the same options as `validate`.
@@ -414,7 +414,7 @@ schema = number.test('is-42', "this isn't the number i want", value =>
 schema.validateSync(42); // throws Error
 ```
 
-#### `mixed.validateAt(path: string, value: any, context?: object): Promise<any, ValidationError>`
+#### `mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`
 
 Validate a deeply nested path within the schema. Similar to how `reach` works,
 but uses the resulting schema as the subject for validation.
@@ -443,7 +443,7 @@ await schema.validateAt('foo[0].bar', rootValue); // -> '1';
 await schema.validateAt('foo[1].bar', rootValue); // -> ValidationError. must be a string;
 ```
 
-#### `mixed.validateSyncAt(path: string, value: any, context?: object): Promise<any, ValidationError>`
+#### `mixed.validateSyncAt(path: string, value: any, options?: object): any`
 
 Same as `validateAt` but synchronous.
 
@@ -1008,11 +1008,14 @@ Supports all the same methods as [`mixed`](#mixed).
 
 ```javascript
 yup.object().shape({
-  name:      string().required(),
-  age:       number().required().positive().integer(),
-  email:     string().email(),
-  website:    string().url(),
-})
+  name: string().required(),
+  age: number()
+    .required()
+    .positive()
+    .integer(),
+  email: string().email(),
+  website: string().url(),
+});
 ```
 
 You can also pass a shape to the object constructor as a convenience.
