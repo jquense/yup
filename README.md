@@ -609,7 +609,7 @@ You can also specify more than one dependent key, in which case each value will 
 
 ```javascript
 var inst = yup.object({
-      isSpecial: yup.bool()
+      isSpecial: yup.bool(),
       isBig: yup.bool(),
       count: yup.number()
         .when(['isBig', 'isSpecial'], {
