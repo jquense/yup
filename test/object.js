@@ -13,6 +13,19 @@ import {
 
 describe('Object types', () => {
   describe('casting', () => {
+    let inst;
+
+    beforeEach(() => {
+      inst = object({
+        num: number(),
+        str: string(),
+        arr: array().of(number()),
+        dte: date(),
+        nested: object().shape({ str: string() }),
+        arrNested: array().of(object().shape({ num: number() })),
+      });
+    });
+
     it('should parse json strings', () => {
       object({ hello: number() })
         .cast('{ "hello": "5" }')
@@ -35,23 +48,31 @@ describe('Object types', () => {
         arrNested: [{ num: 5 }, { num: '5' }],
       };
 
-      object({
-        num: number(),
-        str: string(),
-        arr: array().of(number()),
-        dte: date(),
-        nested: object().shape({ str: string() }),
-        arrNested: array().of(object().shape({ num: number() })),
-      })
-        .cast(obj)
-        .should.eql({
-          num: 5,
-          str: 'hello',
-          arr: [4, 5],
-          dte: new Date(1411500325000),
-          nested: { str: '5' },
-          arrNested: [{ num: 5 }, { num: 5 }],
-        });
+      const cast = inst.cast(obj);
+
+      cast.should.eql({
+        num: 5,
+        str: 'hello',
+        arr: [4, 5],
+        dte: new Date(1411500325000),
+        nested: { str: '5' },
+        arrNested: [{ num: 5 }, { num: 5 }],
+      });
+
+      cast.arrNested[0].should.equal(obj.arrNested[0], 'should be kept as is');
+    });
+
+    it('should return the same object if all props are already cast', () => {
+      let obj = {
+        num: 5,
+        str: 'hello',
+        arr: [4, 5],
+        dte: new Date(1411500325000),
+        nested: { str: '5' },
+        arrNested: [{ num: 5 }, { num: 5 }],
+      };
+
+      inst.cast(obj).should.equal(obj);
     });
   });
 

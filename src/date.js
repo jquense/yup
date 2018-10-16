@@ -18,7 +18,7 @@ function DateSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      if (this.isType(value)) return isDate(value) ? new Date(value) : value;
+      if (this.isType(value)) return value;
 
       value = isoParse(value);
       return value ? new Date(value) : invalidDate;
