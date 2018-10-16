@@ -42,12 +42,22 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _cast(_value, _opts) {
-    var value = MixedSchema.prototype._cast.call(this, _value, _opts);
+    const value = MixedSchema.prototype._cast.call(this, _value, _opts);
 
     //should ignore nulls here
     if (!this._typeCheck(value) || !this._subType) return value;
 
-    return value.map(v => this._subType.cast(v, _opts));
+    let isChanged = false;
+    const castArray = value.map(v => {
+      const castElement = this._subType.cast(v, _opts);
+      if (castElement !== v) {
+        isChanged = true;
+      }
+
+      return castElement;
+    });
+
+    return isChanged ? castArray : value;
   },
 
   _validate(_value, options = {}) {

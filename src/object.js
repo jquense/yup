@@ -88,6 +88,7 @@ inherits(ObjectSchema, MixedSchema, {
       __validating: false,
     };
 
+    let isChanged = false;
     props.forEach(prop => {
       let field = fields[prop];
       let exists = has(value, prop);
@@ -102,7 +103,10 @@ inherits(ObjectSchema, MixedSchema, {
 
         field = field.resolve(innerOptions);
 
-        if (field._strip === true) return;
+        if (field._strip === true) {
+          isChanged = true;
+          return;
+        }
 
         fieldValue =
           !options.__validating || !strict
@@ -111,8 +115,10 @@ inherits(ObjectSchema, MixedSchema, {
 
         if (fieldValue !== undefined) intermediateValue[prop] = fieldValue;
       } else if (exists && !strip) intermediateValue[prop] = value[prop];
+
+      if (intermediateValue[prop] !== value[prop]) isChanged = true;
     });
-    return intermediateValue;
+    return isChanged ? intermediateValue : value;
   },
 
   _validate(_value, opts = {}) {
