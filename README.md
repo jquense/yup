@@ -675,7 +675,7 @@ schema.isValid('john').then(...) //=> false
 schema.errors // => [ 'this is not Jimmy!']
 ```
 
-test functions are called with a special context, or `this` value, that exposes some useful metadata and functions.
+test functions are called with a special context, or `this` value, that exposes some useful metadata and functions. Note that to use the `this` context the test function must be a function expression (`function test(value) {}`), not an arrow function, since arrow functions have lexical context.
 
 - `this.path`: the string path of the current validation
 - `this.schema`: the resolved schema object that the test is running against.
