@@ -1134,7 +1134,7 @@ function parseDateFromFormats(formats, parseStrict) {
 }
 
 // `addMethod` doesn't do anything special it's
-// equivalent to: yup.date.protoype.format = parseDateFromFormats
+// equivalent to: yup.date.prototype.format = parseDateFromFormats
 yup.addMethod(yup.date, 'format', parseDateFromFormats);
 ```
 
