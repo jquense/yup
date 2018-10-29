@@ -269,7 +269,7 @@ inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
 
 #### `yup.lazy((value: any) => Schema): Lazy`
 
-creates a schema that is evaluated at validation/cast time. Useful for creating
+Creates a schema that is evaluated at validation/cast time. Useful for creating
 recursive schema like Trees, for polymophic fields and arrays.
 
 **CAUTION!** When defining parent-child recursive object schema, you want to reset the `default()`
