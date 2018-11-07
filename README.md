@@ -2,7 +2,7 @@
 
 Yup is a JavaScript object schema validator and object parser. The API and style is ~~stolen~~ heavily inspired
 by [Joi](https://github.com/hapijs/joi), which is an amazing library but is generally too large and difficult
-to package for use in a browser. Yup is a leaner in the same spirit without some of the fancy features.
+to package for use in a browser. Yup is leaner: in the same spirit, without some of the fancy features.
 You can use it on the server as well, but in that case you might as well just use Joi.
 
 Yup is also a good bit less opinionated than joi, allowing for custom transformations and async validation.
