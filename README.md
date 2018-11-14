@@ -23,7 +23,7 @@ json separate from validating it, via the `cast` method.
     - [`yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
     - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
     - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
-    - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
+    - [`yup.lazy((value: any, context: ?object) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
     - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
   - [mixed](#mixed)
     - [`mixed.clone(): Schema`](#mixedclone-schema)
@@ -267,7 +267,7 @@ inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
 // { baz: 'boom',  x: 5, { foo: { bar: 'boom' } }, }
 ```
 
-#### `yup.lazy((value: any) => Schema): Lazy`
+#### `yup.lazy((value: any, context: ?object) => Schema): Lazy`
 
 Creates a schema that is evaluated at validation/cast time. Useful for creating
 recursive schema like Trees, for polymophic fields and arrays.
@@ -609,21 +609,20 @@ You can also specify more than one dependent key, in which case each value will 
 
 ```javascript
 var inst = yup.object({
-      isSpecial: yup.bool(),
-      isBig: yup.bool(),
-      count: yup.number()
-        .when(['isBig', 'isSpecial'], {
-          is: true,  // alternatively: (isBig, isSpecial) => isBig && isSpecial
-          then:      yup.number().min(5),
-          otherwise: yup.number().min(0)
-        })
-    })
+  isSpecial: yup.bool(),
+  isBig: yup.bool(),
+  count: yup.number().when(['isBig', 'isSpecial'], {
+    is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
+    then: yup.number().min(5),
+    otherwise: yup.number().min(0),
+  }),
+});
 
 inst.validate({
   isBig: true,
   isSpecial: true,
-  count: 10
-})
+  count: 10,
+});
 ```
 
 Alternatively you can provide a function that returns a schema
