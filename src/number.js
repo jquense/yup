@@ -16,10 +16,14 @@ export default function NumberSchema() {
     this.transform(function(value) {
       if (this.isType(value)) return value;
 
-      if (typeof value === 'string') {
-        let stripped = value.replace(/\s/g, '');
-        if (stripped !== '' && this.isType(+stripped)) return +stripped;
+      let parsed = value
+      if (typeof parsed === 'string') {
+        parsed = parsed.replace(/\s/g, '');
+        if (parsed === '') return NaN;
       }
+
+      parsed = +parsed;
+      if (this.isType(parsed)) return parsed;
 
       return NaN;
     });
