@@ -14,12 +14,18 @@ export default function NumberSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      if (this.isType(value)) return value;
+      let parsed = value
+      
+      if (typeof parsed === 'string') {
+        parsed = parsed.replace(/\s/g, '');
+        if (parsed === '') return NaN;
+        // don't use parseFloat to avoid positives on alpha-numeric strings
+        parsed = +parsed;
+      }
 
-      let parsed = parseFloat(value);
       if (this.isType(parsed)) return parsed;
 
-      return NaN;
+      return parseFloat(parsed);
     });
   });
 }
