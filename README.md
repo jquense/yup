@@ -543,7 +543,7 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 
 #### `mixed.required(message: ?string): Schema`
 
-Mark the schema as required. All field values apart from `undefined` meet this requirement.
+Mark the schema as required. All field values apart from `undefined` and `null` meet this requirement.
 
 #### `mixed.notRequired(): Schema`
 
