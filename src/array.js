@@ -164,7 +164,10 @@ inherits(ArraySchema, MixedSchema, {
 
   ensure() {
     return this.default(() => []).transform(
-      val => (val === null ? [] : [].concat(val)),
+      // We transform the original value to allow a single element to
+      // get wrapped in an array. The transform added in the Array schema’s
+      // constructor turns non-array, non-JSON-string values into null.
+      (val, orig) => (orig === null ? [] : [].concat(orig)),
     );
   },
 

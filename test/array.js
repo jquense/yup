@@ -173,5 +173,7 @@ describe('Array types', () => {
     inst.cast([1, 4]).should.eql([1, 4]);
 
     inst.cast(null).should.eql([]);
+
+    inst.cast(1).should.eql([1]);
   });
 });
