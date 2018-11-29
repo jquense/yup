@@ -728,12 +728,12 @@ default transforms for each type coerce values to the specific type (as verified
 transforms are run before validations and only applied when `strict` is `true`. Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
-not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
+not to mutate the passed in value.** Transforms are run sequentially so each `currentValue` represents the
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```javascript
 var schema = yup.string().transform(function(currentValue, originalvalue) {
-  return this.isType(value) && value !== null ? value.toUpperCase() : value;
+  return this.isType(currentValue) && currentValue !== null ? currentValue.toUpperCase() : currentValue;
 });
 
 schema.cast('jimmy'); //=> 'JIMMY'
