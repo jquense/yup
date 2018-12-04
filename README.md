@@ -20,7 +20,7 @@ json separate from validating it, via the `cast` method.
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
 - [API](#api)
   - [`yup`](#yup)
-    - [`yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
+    - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
     - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
     - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
     - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
@@ -31,12 +31,12 @@ json separate from validating it, via the `cast` method.
     - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
     - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
     - [`mixed.concat(schema: Schema)`](#mixedconcatschema-schema)
-    - [`mixed.validate(value: any, options: ?object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
-    - [`mixed.validateSync(value: any, options: ?object): any`](#mixedvalidatesyncvalue-any-options-object-any)
+    - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
+    - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
     - [`mixed.validateAt(path: string, value: any, context?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-context-object-promiseany-validationerror)
     - [`mixed.validateSyncAt(path: string, value: any, context?: object): Promise<any, ValidationError>`](#mixedvalidatesyncatpath-string-value-any-context-object-promiseany-validationerror)
-    - [`mixed.isValid(value: any, options: ?object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
-    - [`mixed.isValidSync(value: any, options: ?object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
+    - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
+    - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
     - [`mixed.cast(value: any): any`](#mixedcastvalue-any-any)
     - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
     - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
@@ -45,52 +45,52 @@ json separate from validating it, via the `cast` method.
     - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
     - [`mixed.default(): Any`](#mixeddefault-any)
     - [`mixed.nullable(isNullable: boolean = false): Schema`](#mixednullableisnullable-boolean--false-schema)
-    - [`mixed.required(message: ?string): Schema`](#mixedrequiredmessage-string-schema)
+    - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string-schema)
     - [`mixed.notRequired(): Schema`](#mixednotrequired-schema)
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
-    - [`mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
-    - [`mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`](#mixednotoneofarrayofvalues-arrayany-string-message)
+    - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
+    - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-string-message)
     - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
     - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
     - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
     - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
   - [string](#string)
-    - [`string.required(message: ?string): Schema`](#stringrequiredmessage-string-schema)
-    - [`string.min(limit: number | Ref, message: ?string): Schema`](#stringminlimit-number--ref-message-string-schema)
-    - [`string.max(limit: number | Ref, message: ?string): Schema`](#stringmaxlimit-number--ref-message-string-schema)
-    - [`string.matches(regex: Regex, message: ?string): Schema`](#stringmatchesregex-regex-message-string-schema)
+    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string-schema)
+    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string-schema)
+    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string-schema)
+    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string-schema)
     - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
-    - [`string.email(message: ?string): Schema`](#stringemailmessage-string-schema)
-    - [`string.url(message: ?string): Schema`](#stringurlmessage-string-schema)
+    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string-schema)
+    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
-    - [`string.trim(message: ?string): Schema`](#stringtrimmessage-string-schema)
-    - [`string.lowercase(message: ?string): Schema`](#stringlowercasemessage-string-schema)
-    - [`string.uppercase(message: ?string): Schema`](#stringuppercasemessage-string-schema)
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string-schema)
+    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string-schema)
+    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string-schema)
   - [number](#number)
-    - [`number.min(limit: number | Ref, message: ?string): Schema`](#numberminlimit-number--ref-message-string-schema)
-    - [`number.max(limit: number | Ref, message: ?string): Schema`](#numbermaxlimit-number--ref-message-string-schema)
-    - [`number.lessThan(max: number | Ref, message: ?string): Schema`](#numberlessthanmax-number--ref-message-string-schema)
-    - [`number.moreThan(min: number | Ref, message: ?string): Schema`](#numbermorethanmin-number--ref-message-string-schema)
-    - [`number.positive(message: ?string): Schema`](#numberpositivemessage-string-schema)
-    - [`number.negative(message: ?string): Schema`](#numbernegativemessage-string-schema)
-    - [`number.integer(message: ?string): Schema`](#numberintegermessage-string-schema)
+    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string-schema)
+    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string-schema)
+    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string-schema)
+    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string-schema)
+    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string-schema)
+    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string-schema)
+    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string-schema)
     - [`number.truncate(): Schema`](#numbertruncate-schema)
     - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
   - [boolean](#boolean)
   - [date](#date)
-    - [`date.min(limit: Date | string | Ref, message: ?string): Schema`](#dateminlimit-date--string--ref-message-string-schema)
-    - [`date.max(limit: Date | string | Ref, message: ?string): Schema`](#datemaxlimit-date--string--ref-message-string-schema)
+    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string-schema)
+    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string-schema)
   - [array](#array)
     - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
-    - [`array.required(message: ?string): Schema`](#arrayrequiredmessage-string-schema)
-    - [`array.min(limit: number | Ref, message: ?string): Schema`](#arrayminlimit-number--ref-message-string-schema)
-    - [`array.max(limit: number | Ref, message: ?string): Schema`](#arraymaxlimit-number--ref-message-string-schema)
+    - [`array.required(message?: string | function): Schema`](#arrayrequiredmessage-string-schema)
+    - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string-schema)
+    - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string-schema)
     - [`array.ensure(): Schema`](#arrayensure-schema)
     - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
   - [object](#object)
-    - [`object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
-    - [`object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
@@ -212,7 +212,7 @@ yup.addMethod;
 yup.ValidationError;
 ```
 
-#### `yup.reach(schema: Schema, path: string, value: ?object, context: ?object): Schema`
+#### `yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`
 
 For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
 
@@ -363,7 +363,7 @@ Options = {
   abortEarly: boolean = true;
   stripUnknown: boolean = false;
   recursive: boolean = true;
-  context: ?object;
+  context?: object;
 }
 ```
 
@@ -447,14 +447,14 @@ await schema.validateAt('foo[1].bar', rootValue); // -> ValidationError. must be
 
 Same as `validateAt` but synchronous.
 
-#### `mixed.isValid(value: any, options: ?object): Promise<boolean>`
+#### `mixed.isValid(value: any, options?: object): Promise<boolean>`
 
 Returns `true` when the passed in value matches the schema. `isValid`
 is **asynchronous** and returns a Promise object.
 
 Takes the same options as `validate()`.
 
-#### `mixed.isValidSync(value: any, options: ?object): boolean`
+#### `mixed.isValidSync(value: any, options?: object): boolean`
 
 Synchronously returns `true` when the passed in value matches the schema.
 
@@ -541,7 +541,7 @@ Calling `default` with no arguments will return the current default value
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `isType()` checks.
 
-#### `mixed.required(message: ?string): Schema`
+#### `mixed.required(message?: string | function): Schema`
 
 Mark the schema as required. All field values apart from `undefined` and `null` meet this requirement.
 
@@ -554,7 +554,7 @@ Mark the schema as not required. Passing `undefined` as value will not fail vali
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
 be used in the `message` argument.
 
-#### `mixed.oneOf(arrayOfValues: Array<any>, string: ?message): Schema` Alias: `equals`
+#### `mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
@@ -566,7 +566,7 @@ schema.isValid('jimmy'); //=> true
 schema.isValid(new Date()); //=> false
 ```
 
-#### `mixed.notOneOf(arrayOfValues: Array<any>, string: ?message)`
+#### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
@@ -770,19 +770,19 @@ empty values are not coerced (use `ensure()` to coerce empty values to empty str
 
 Failed casts return the input value.
 
-#### `string.required(message: ?string): Schema`
+#### `string.required(message?: string | function): Schema`
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
 
-#### `string.min(limit: number | Ref, message: ?string): Schema`
+#### `string.min(limit: number | Ref, message?: string | function): Schema`
 
 Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
-#### `string.max(limit: number | Ref, message: ?string): Schema`
+#### `string.max(limit: number | Ref, message?: string | function): Schema`
 
 Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
-#### `string.matches(regex: Regex, message: ?string): Schema`
+#### `string.matches(regex: Regex, message?: string | function): Schema`
 
 Provide an arbitrary `regex` to match the value against.
 
@@ -808,11 +808,11 @@ v.isValid('')
   .equal(false);
 ```
 
-#### `string.email(message: ?string): Schema`
+#### `string.email(message?: string | function): Schema`
 
 Validates the value as an email address via a regex.
 
-#### `string.url(message: ?string): Schema`
+#### `string.url(message?: string | function): Schema`
 
 Validates the value as a valid URL via a regex.
 
@@ -821,17 +821,17 @@ Validates the value as a valid URL via a regex.
 Transforms `undefined` and `null` values to an empty string along with
 setting the `default` to an empty string.
 
-#### `string.trim(message: ?string): Schema`
+#### `string.trim(message?: string | function): Schema`
 
 Transforms string values by removing leading and trailing whitespace. If
 `strict()` is set it will only validate that the value is trimmed.
 
-#### `string.lowercase(message: ?string): Schema`
+#### `string.lowercase(message?: string | function): Schema`
 
 Transforms the string value to lowercase. If `strict()` is set it
 will only validate that the value is lowercase.
 
-#### `string.uppercase(message: ?string): Schema`
+#### `string.uppercase(message?: string | function): Schema`
 
 Transforms the string value to uppercase. If `strict()` is set it
 will only validate that the value is uppercase.
@@ -849,35 +849,35 @@ The default `cast` logic of `number` is: [`parseFloat`](https://developer.mozill
 
 Failed casts return `NaN`.
 
-#### `number.min(limit: number | Ref, message: ?string): Schema`
+#### `number.min(limit: number | Ref, message?: string | function): Schema`
 
 Set the minimum value allowed. The `${min}` interpolation can be used in the
 `message` argument.
 
-#### `number.max(limit: number | Ref, message: ?string): Schema`
+#### `number.max(limit: number | Ref, message?: string | function): Schema`
 
 Set the maximum value allowed. The `${max}` interpolation can be used in the
 `message` argument.
 
-#### `number.lessThan(max: number | Ref, message: ?string): Schema`
+#### `number.lessThan(max: number | Ref, message?: string | function): Schema`
 
 Value must be less than `max`. The `${max}` interpolation can be used in the
 `message` argument.
 
-#### `number.moreThan(min: number | Ref, message: ?string): Schema`
+#### `number.moreThan(min: number | Ref, message?: string | function): Schema`
 
 Value must be strictly greater than `min`. The `${min}` interpolation can be used in the
 `message` argument.
 
-#### `number.positive(message: ?string): Schema`
+#### `number.positive(message?: string | function): Schema`
 
 Value must be a positive number.
 
-#### `number.negative(message: ?string): Schema`
+#### `number.negative(message?: string | function): Schema`
 
 Value must be a negative number.
 
-#### `number.integer(message: ?string): Schema`
+#### `number.integer(message?: string | function): Schema`
 
 Validates that a number is an integer.
 
@@ -915,12 +915,12 @@ to parse the date as an ISO date string.
 
 Failed casts return an invalid Date.
 
-#### `date.min(limit: Date | string | Ref, message: ?string): Schema`
+#### `date.min(limit: Date | string | Ref, message?: string | function): Schema`
 
 Set the minimum date allowed. When a string is provided it will attempt to cast to a date first
 and use the result as the limit.
 
-#### `date.max(limit: Date | string | Ref, message: ?string): Schema`
+#### `date.max(limit: Date | string | Ref, message?: string | function): Schema`
 
 Set the maximum date allowed, When a string is provided it will attempt to cast to a date first
 and use the result as the limit.
@@ -956,15 +956,15 @@ Failed casts return: `null`;
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
 
-#### `array.required(message: ?string): Schema`
+#### `array.required(message?: string | function): Schema`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
 
-#### `array.min(limit: number | Ref, message: ?string): Schema`
+#### `array.min(limit: number | Ref, message?: string | function): Schema`
 
 Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(limit: number | Ref, message: ?string): Schema`
+#### `array.max(limit: number | Ref, message?: string | function): Schema`
 
 Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
@@ -1034,7 +1034,7 @@ The default `cast` behavior for `object` is: [`JSON.parse`](https://developer.mo
 
 Failed casts return: `null`;
 
-#### `object.shape(fields: object, noSortEdges: ?Array<[string, string]>): Schema`
+#### `object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`
 
 Define the keys of the object and the schemas for said keys.
 
@@ -1075,7 +1075,7 @@ var schema = object({
 inst.cast({ prop: 5, other: 6 }); // => { myProp: 5, other: 6, Other: 6 }
 ```
 
-#### `object.noUnknown(onlyKnownKeys: boolean = true, message: ?string): Schema`
+#### `object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`
 
 Validate that the object value only contains keys specified in `shape`, pass `false` as the first
 argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
