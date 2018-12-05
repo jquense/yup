@@ -170,7 +170,8 @@ describe('Array types', () => {
   it('should ensure arrays', () => {
     var inst = array().ensure();
 
-    inst.cast([1, 4]).should.eql([1, 4]);
+    const a = [1, 4];
+    inst.cast(a).should.equal(a);
 
     inst.cast(null).should.eql([]);
   });

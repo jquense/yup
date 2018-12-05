@@ -163,9 +163,10 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   ensure() {
-    return this.default(() => []).transform(
-      val => (val === null ? [] : [].concat(val)),
-    );
+    return this.default(() => []).transform(val => {
+      if (this.isType(val)) return val;
+      return val === null ? [] : [].concat(val);
+    });
   },
 
   compact(rejector) {
