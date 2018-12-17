@@ -1,4 +1,4 @@
-import has from 'lodash/has';
+import has from 'lodash.has';
 import isSchema from './isSchema';
 
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';

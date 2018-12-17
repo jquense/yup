@@ -1,4 +1,4 @@
-import mapValues from 'lodash/mapValues';
+import mapValues from 'lodash.mapvalues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
 import { SynchronousPromise } from 'synchronous-promise';

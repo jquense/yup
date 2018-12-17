@@ -1,8 +1,8 @@
-import has from 'lodash/has';
-import snakeCase from 'lodash/snakeCase';
-import camelCase from 'lodash/camelCase';
-import mapKeys from 'lodash/mapKeys';
-import mapValues from 'lodash/mapValues';
+import has from 'lodash.has';
+import snakeCase from 'lodash.snakecase';
+import camelCase from 'lodash.camelcase';
+import mapKeys from 'lodash.mapkeys';
+import mapValues from 'lodash.mapvalues';
 import { getter } from 'property-expr';
 
 import MixedSchema from './mixed';

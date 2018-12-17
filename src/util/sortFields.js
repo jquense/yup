@@ -1,4 +1,4 @@
-import has from 'lodash/has';
+import has from 'lodash.has';
 import toposort from 'toposort';
 import { split } from 'property-expr';
 

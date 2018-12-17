@@ -86,7 +86,13 @@
   "dependencies": {
     "@babel/runtime": "7.0.0",
     "fn-name": "~2.0.1",
-    "lodash": "^4.17.10",
+    "lodash.camelcase": "^4.3.0",
+    "lodash.clonedeepwith": "^4.5.0",
+    "lodash.has": "^4.5.2",
+    "lodash.mapkeys": "^4.6.0",
+    "lodash.mapvalues": "^4.6.0",
+    "lodash.snakecase": "^4.1.1",
+    "lodash.toarray": "^4.4.0",
     "property-expr": "^1.5.0",
     "synchronous-promise": "^2.0.5",
     "toposort": "^2.0.2"

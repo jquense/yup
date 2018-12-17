@@ -1,4 +1,4 @@
-import has from 'lodash/has';
+import has from 'lodash.has';
 import isSchema from './util/isSchema';
 
 function callOrConcat(schema) {

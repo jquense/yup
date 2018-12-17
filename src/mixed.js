@@ -1,6 +1,6 @@
-import has from 'lodash/has';
-import cloneDeepWith from 'lodash/cloneDeepWith';
-import toArray from 'lodash/toArray';
+import has from 'lodash.has';
+import cloneDeepWith from 'lodash.clonedeepwith';
+import toArray from 'lodash.toarray';
 
 import { mixed as locale } from './locale';
 import Condition from './Condition';
