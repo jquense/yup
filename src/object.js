@@ -104,7 +104,7 @@ inherits(ObjectSchema, MixedSchema, {
         field = field.resolve(innerOptions);
 
         if (field._strip === true) {
-          isChanged = true;
+          isChanged = isChanged || prop in value;
           return;
         }
 
