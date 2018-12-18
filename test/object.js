@@ -23,6 +23,7 @@ describe('Object types', () => {
         dte: date(),
         nested: object().shape({ str: string() }),
         arrNested: array().of(object().shape({ num: number() })),
+        stripped: string().strip(),
       });
     });
 
