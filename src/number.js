@@ -5,8 +5,6 @@ import isAbsent from './util/isAbsent';
 
 let isNaN = value => value != +value;
 
-let isInteger = val => isAbsent(val) || val === (val | 0);
-
 export default function NumberSchema() {
   if (!(this instanceof NumberSchema)) return new NumberSchema();
 
@@ -14,8 +12,8 @@ export default function NumberSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      let parsed = value
-      
+      let parsed = value;
+
       if (typeof parsed === 'string') {
         parsed = parsed.replace(/\s/g, '');
         if (parsed === '') return NaN;
@@ -94,7 +92,11 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   integer(message = locale.integer) {
-    return this.test({ name: 'integer', message, test: isInteger });
+    return this.test({
+      name: 'integer',
+      message,
+      test: val => isAbsent(val) || Number.isInteger(val),
+    });
   },
 
   truncate() {
