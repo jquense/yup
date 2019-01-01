@@ -163,6 +163,7 @@ inherits(ObjectSchema, MixedSchema, {
             innerOptions.strict = true;
 
             if (field.validate) return field.validate(value[key], innerOptions);
+            return Promise.resolve(true);
           }
 
           return true;

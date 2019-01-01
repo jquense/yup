@@ -382,6 +382,24 @@ describe('Object types', () => {
     });
   });
 
+  it('should allow refs with abortEarly false', async () => {
+    let schema = object().shape({
+      field: string(),
+      dupField: ref('field'),
+    });
+
+    let actual = await schema
+      .validate(
+        {
+          field: 'test',
+        },
+        { abortEarly: false },
+      )
+      .should.not.be.rejected();
+
+    actual.should.eql({ field: 'test', dupField: 'test' });
+  });
+
   describe('lazy evaluation', () => {
     let types = {
       string: string(),
