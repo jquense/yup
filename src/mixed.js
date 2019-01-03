@@ -477,15 +477,19 @@ const proto = (SchemaType.prototype = {
   },
 
   describe() {
-    let next = this.clone();
+    const next = this.clone();
 
     return {
       type: next._type,
       meta: next._meta,
       label: next._label,
       tests: next.tests
-        .map(fn => fn.TEST_NAME, {})
+        .map(fn => fn.TEST_NAME)
         .filter((n, idx, list) => list.indexOf(n) === idx),
+      testsParams: next.tests.reduce(
+        (p, c) => ({ ...p, [c.TEST_NAME]: c.TEST_PARAMS }),
+        {},
+      ),
     };
   },
 });

@@ -93,6 +93,7 @@ export default function createValidation(options) {
   }
 
   validate.TEST_NAME = name;
+  validate.TEST_PARAMS = params;
   validate.TEST_FN = test;
   validate.TEST = options;
 

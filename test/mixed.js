@@ -742,23 +742,27 @@ describe('Mixed Types ', () => {
       meta: undefined,
       label: undefined,
       tests: [],
+      testsParams: {},
       fields: {
         foos: {
           type: 'array',
           meta: undefined,
           label: undefined,
           tests: ['required'],
+          testsParams: { required: undefined },
           innerType: {
             type: 'number',
             meta: undefined,
             label: undefined,
             tests: ['integer'],
+            testsParams: { integer: undefined },
           },
         },
         foo: {
           type: 'string',
           label: 'str!',
           tests: ['max'],
+          testsParams: { max: { max: 2 } },
           meta: {
             input: 'foo',
           },
