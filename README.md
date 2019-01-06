@@ -861,12 +861,12 @@ Set the maximum value allowed. The `${max}` interpolation can be used in the
 
 #### `number.lessThan(max: number | Ref, message?: string | function): Schema`
 
-Value must be less than `max`. The `${max}` interpolation can be used in the
+Value must be less than `max`. The `${less}` interpolation can be used in the
 `message` argument.
 
 #### `number.moreThan(min: number | Ref, message?: string | function): Schema`
 
-Value must be strictly greater than `min`. The `${min}` interpolation can be used in the
+Value must be strictly greater than `min`. The `${more}` interpolation can be used in the
 `message` argument.
 
 #### `number.positive(message?: string | function): Schema`
