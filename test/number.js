@@ -200,32 +200,19 @@ describe('Number types', function() {
   });
 
   describe('integer', () => {
-    TestHelpers.validateAll(number().integer(), {
+    var schema = number().integer();
+
+    TestHelpers.validateAll(schema, {
       valid: [4, -5222],
       invalid: [10.53, 0.1 * 0.2, -34512535.626, 3.12312e51, new Date()],
     });
-  });
-  it('should check integer', function() {
-    var v = number().positive();
 
-    return Promise.all([
-      v
-        .isValid(7)
-        .should.eventually()
-        .equal(true),
-
-      v
-        .isValid(0)
-        .should.eventually()
-        .equal(true),
-
-      v
-        .validate(-4)
-        .should.be.rejected()
-        .then(null, function(err) {
-          err.errors[0].should.contain('this must be a positive number');
-        }),
-    ]);
+    it('should return default message', () => {
+      return schema
+        .validate(10.53)
+        .should.be.rejected.and.eventually.have.property('errors')
+        .that.contain('this must be an integer');
+    });
   });
 
   it('should check POSITIVE correctly', function() {
@@ -240,10 +227,10 @@ describe('Number types', function() {
       v
         .isValid(0)
         .should.eventually()
-        .equal(true),
+        .equal(false),
 
       v
-        .validate(-4)
+        .validate(0)
         .should.be.rejected()
         .then(null, function(err) {
           err.errors[0].should.contain('this must be a positive number');
@@ -263,7 +250,7 @@ describe('Number types', function() {
       v
         .isValid(0)
         .should.eventually()
-        .equal(true),
+        .equal(false),
 
       v
         .validate(10)
