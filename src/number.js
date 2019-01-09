@@ -44,7 +44,7 @@ inherits(NumberSchema, MixedSchema, {
       exclusive: true,
       params: { min },
       test(value) {
-        return isAbsent(value) || value >= this.resolve(min);
+        return isAbsent(value) || value > this.resolve(min);
       },
     });
   },
@@ -56,7 +56,7 @@ inherits(NumberSchema, MixedSchema, {
       exclusive: true,
       params: { max },
       test(value) {
-        return isAbsent(value) || value <= this.resolve(max);
+        return isAbsent(value) || value < this.resolve(max);
       },
     });
   },
