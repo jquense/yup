@@ -86,11 +86,11 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   positive(msg = locale.positive) {
-    return this.min(0, msg);
+    return this.moreThan(0, msg);
   },
 
   negative(msg = locale.negative) {
-    return this.max(0, msg);
+    return this.lessThan(0, msg);
   },
 
   integer(message = locale.integer) {
