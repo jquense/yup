@@ -216,8 +216,10 @@ describe('Number types', function() {
 
       v
         .isValid(0)
-        .should.eventually()
-        .equal(true),
+        .should.be.rejected()
+        .then(null, function(err) {
+          err.errors[0].should.contain('this must be a positive number');
+        }),
 
       v
         .validate(-4)
@@ -239,8 +241,10 @@ describe('Number types', function() {
 
       v
         .isValid(0)
-        .should.eventually()
-        .equal(true),
+        .should.be.rejected()
+        .then(null, function(err) {
+          err.errors[0].should.contain('this must be a positive number');
+        }),
 
       v
         .validate(-4)
@@ -262,8 +266,10 @@ describe('Number types', function() {
 
       v
         .isValid(0)
-        .should.eventually()
-        .equal(true),
+        .should.be.rejected()
+        .then(null, function(err) {
+          err.errors[0].should.contain('this must be a positive number');
+        }),
 
       v
         .validate(10)
