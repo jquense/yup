@@ -60,19 +60,19 @@ describe('Yup', function() {
         num: number().max(4),
 
         nested: object().shape({
-          arr: array().of(object().shape({ num: num })),
+          arr: array().of(object().shape({ 'num-1': num })),
         }),
       });
 
-    const value = { nested: { arr: [{}, { num: 2 }] } };
+    const value = { nested: { arr: [{}, { 'num-1': 2 }] } };
     const { schema, parent, parentPath } = getIn(
       inst,
-      'nested.arr[1].num',
+      'nested.arr[1].num-1',
       value,
     );
 
     expect(schema).to.equal(num);
-    expect(parentPath).to.equal('num');
+    expect(parentPath).to.equal('num-1');
     expect(parent).to.equal(value.nested.arr[1]);
   });
 

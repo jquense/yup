@@ -50,7 +50,7 @@ export function getIn(schema, path, value, context) {
 
       parent = value;
       value = value && value[part];
-      lastPart = _part;
+      lastPart = part;
       lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
     }
   });
