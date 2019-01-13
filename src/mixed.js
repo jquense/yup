@@ -123,7 +123,7 @@ const proto = (SchemaType.prototype = {
     // manually add the new tests to ensure
     // the deduping logic is consistent
     schema.tests.forEach(fn => {
-      next = next.test(fn.TEST);
+      next = next.test(fn.OPTIONS);
     });
 
     next._type = schema._type;
@@ -311,7 +311,7 @@ const proto = (SchemaType.prototype = {
 
   notRequired() {
     var next = this.clone();
-    next.tests = next.tests.filter(test => test.TEST_NAME !== 'required');
+    next.tests = next.tests.filter(test => test.OPTIONS.name !== 'required');
     return next;
   },
 
@@ -369,9 +369,9 @@ const proto = (SchemaType.prototype = {
     next._exclusive[opts.name] = !!opts.exclusive;
 
     next.tests = next.tests.filter(fn => {
-      if (fn.TEST_NAME === opts.name) {
+      if (fn.OPTIONS.name === opts.name) {
         if (isExclusive) return false;
-        if (fn.TEST.test === validate.TEST.test) return false;
+        if (fn.OPTIONS.test === validate.OPTIONS.test) return false;
       }
       return true;
     });
@@ -484,12 +484,10 @@ const proto = (SchemaType.prototype = {
       meta: next._meta,
       label: next._label,
       tests: next.tests
-        .map(fn => fn.TEST_NAME)
-        .filter((n, idx, list) => list.indexOf(n) === idx),
-      testsParams: next.tests.reduce(
-        (p, c) => ({ ...p, [c.TEST_NAME]: c.TEST_PARAMS }),
-        {},
-      ),
+        .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
+        .filter(
+          (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
+        ),
     };
   },
 });
