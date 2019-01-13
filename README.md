@@ -332,7 +332,7 @@ the cast object itself.
 
 #### `mixed.describe(): SchemaDescription`
 
-Collects schema details (like meta, labels and active tests) into a serializable
+Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
 
 ```
