@@ -334,8 +334,8 @@ describe('Mixed Types ', () => {
     let inst = mixed().test('test', noop);
 
     inst.tests.length.should.equal(1);
-    inst.tests[0].TEST.test.should.equal(noop);
-    inst.tests[0].TEST.message.should.equal('${path} is invalid');
+    inst.tests[0].OPTIONS.test.should.equal(noop);
+    inst.tests[0].OPTIONS.message.should.equal('${path} is invalid');
   });
 
   it('should allow non string messages', async () => {
@@ -343,7 +343,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().test('test', message, () => false);
 
     inst.tests.length.should.equal(1);
-    inst.tests[0].TEST.message.should.equal(message);
+    inst.tests[0].OPTIONS.message.should.equal(message);
 
     let error = await inst.validate('foo').should.be.rejected();
 
@@ -356,7 +356,7 @@ describe('Mixed Types ', () => {
       .test('test', 'asdasd', noop);
 
     inst.tests.length.should.equal(1);
-    inst.tests[0].TEST.message.should.equal('asdasd');
+    inst.tests[0].OPTIONS.message.should.equal('asdasd');
   });
 
   it('should not dedupe tests with the same test function and different type', () => {
@@ -538,7 +538,7 @@ describe('Mixed Types ', () => {
     });
 
     it('should have the tests in the correct order', () => {
-      reach(next, 'str').tests[0].TEST_NAME.should.equal('required');
+      reach(next, 'str').tests[0].OPTIONS.name.should.equal('required');
     });
 
     it('should validate correctly', async () => {
@@ -730,8 +730,8 @@ describe('Mixed Types ', () => {
 
   it('should describe', () => {
     const desc = object({
-      foos: array(number().integer()).required(),
-      foo: string()
+      foo: array(number().integer()).required(),
+      bar: string()
         .max(2)
         .meta({ input: 'foo' })
         .label('str!'),
@@ -743,22 +743,32 @@ describe('Mixed Types ', () => {
       label: undefined,
       tests: [],
       fields: {
-        foos: {
+        foo: {
           type: 'array',
           meta: undefined,
           label: undefined,
-          tests: ['required'],
+          tests: [
+            {
+              name: 'required',
+              params: undefined,
+            },
+          ],
           innerType: {
             type: 'number',
             meta: undefined,
             label: undefined,
-            tests: ['integer'],
+            tests: [
+              {
+                name: 'integer',
+                params: undefined,
+              },
+            ],
           },
         },
-        foo: {
+        bar: {
           type: 'string',
           label: 'str!',
-          tests: ['max'],
+          tests: [{ name: 'max', params: { max: 2 } }],
           meta: {
             input: 'foo',
           },

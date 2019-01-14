@@ -340,7 +340,7 @@ SchemaDescription {
   type: string,
   label: string,
   meta: object,
-  tests: Array<string>
+  tests: Array<{ name: string, params: object }>
 }
 ```
 
@@ -609,21 +609,20 @@ You can also specify more than one dependent key, in which case each value will 
 
 ```javascript
 var inst = yup.object({
-      isSpecial: yup.bool(),
-      isBig: yup.bool(),
-      count: yup.number()
-        .when(['isBig', 'isSpecial'], {
-          is: true,  // alternatively: (isBig, isSpecial) => isBig && isSpecial
-          then:      yup.number().min(5),
-          otherwise: yup.number().min(0)
-        })
-    })
+  isSpecial: yup.bool(),
+  isBig: yup.bool(),
+  count: yup.number().when(['isBig', 'isSpecial'], {
+    is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
+    then: yup.number().min(5),
+    otherwise: yup.number().min(0),
+  }),
+});
 
 inst.validate({
   isBig: true,
   isSpecial: true,
-  count: 10
-})
+  count: 10,
+});
 ```
 
 Alternatively you can provide a function that returns a schema
@@ -712,6 +711,7 @@ If an exclusive test is added to a schema with non-exclusive tests of the same n
 the previous tests are removed and further tests of the same name will replace each other.
 
 ```javascript
+var max = 64;
 var schema = yup.mixed().test({
   name: 'max',
   exclusive: true,
