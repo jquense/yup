@@ -27,7 +27,13 @@ function resolveParams(oldParams, newParams, resolve) {
   return mapValues({ ...oldParams, ...newParams }, resolve);
 }
 
-function createErrorFactory({ value, label, resolve, originalValue, ...opts }) {
+export function createErrorFactory({
+  value,
+  label,
+  resolve,
+  originalValue,
+  ...opts
+}) {
   return function createError({
     path = opts.path,
     message = opts.message,
@@ -98,5 +104,3 @@ export default function createValidation(options) {
 
   return validate;
 }
-
-module.exports.createErrorFactory = createErrorFactory;
