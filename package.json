@@ -3,7 +3,7 @@
   "version": "0.26.7",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
-  "module": "src/index.js",
+  "module": "dist/yup.esm.js",
   "runkitExampleFilename": "./runkit-example.js",
   "scripts": {
     "test": "npm run lint && npm run test-all -- --runInBand",
@@ -13,12 +13,13 @@
     "lint": "eslint src test",
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
-    "build": "babel src --out-dir lib --delete-dir-on-start && npm run toc",
+    "build:esm": "rollup -c rollup.config.js",
+    "build": "babel src --out-dir lib --delete-dir-on-start && npm run build:esm && npm run toc",
     "prepublishOnly": "npm run build"
   },
   "files": [
     "lib",
-    "src"
+    "dist/yup.esm.js"
   ],
   "repository": {
     "type": "git",
