@@ -37,7 +37,7 @@ json separate from validating it, via the `cast` method.
     - [`mixed.validateSyncAt(path: string, value: any, context?: object): Promise<any, ValidationError>`](#mixedvalidatesyncatpath-string-value-any-context-object-promiseany-validationerror)
     - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
     - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
-    - [`mixed.cast(value: any): any`](#mixedcastvalue-any-any)
+    - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-any)
     - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
     - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
     - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
@@ -460,11 +460,14 @@ Synchronously returns `true` when the passed in value matches the schema.
 
 Takes the same options as `validateSync()` and has the same caveats around async tests.
 
-#### `mixed.cast(value: any): any`
+#### `mixed.cast(value: any, options = {}): any`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will
 cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also
 return results like `NaN` and unexpected strings.
+
+`options` parameter can be an object containing `context`. (For more info on `context` see `mixed.validate`)
+
 
 #### `mixed.isType(value: any): boolean`
 
