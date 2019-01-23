@@ -10,17 +10,17 @@ class Lazy {
       return schema;
     };
   }
-
   resolve({ value, ...rest }) {
     return this._resolve(value, rest);
   }
-
   cast(value, options) {
     return this._resolve(value, options).cast(value, options);
   }
-
   validate(value, options) {
     return this._resolve(value, options).validate(value, options);
+  }
+  validateAt(path, value, options) {
+    this._resolve(value, options).validateAt(path, value, options);
   }
 }
 
