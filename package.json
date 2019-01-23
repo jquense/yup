@@ -12,6 +12,7 @@
     "lint": "eslint src test",
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
+    "release": "rollout",
     "build": "babel src --out-dir lib --delete-dir-on-start && npm run toc",
     "prepublishOnly": "npm run build"
   },
@@ -28,6 +29,9 @@
     "url": "https://github.com/jquense/yup/issues"
   },
   "homepage": "https://github.com/jquense/yup",
+  "release": {
+    "conventional-commits": true
+  },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "all"
