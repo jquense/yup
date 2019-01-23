@@ -63,7 +63,7 @@ json separate from validating it, via the `cast` method.
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
-    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string-schema)
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string-schema)
     - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string-schema)
   - [number](#number)
