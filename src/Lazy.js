@@ -19,8 +19,14 @@ class Lazy {
   validate(value, options) {
     return this._resolve(value, options).validate(value, options);
   }
+  validateSync(value, options) {
+    return this._resolve(value, options).validateSync(value, options);
+  }
   validateAt(path, value, options) {
-    this._resolve(value, options).validateAt(path, value, options);
+    return this._resolve(value, options).validateAt(path, value, options);
+  }
+  validateSyncAt(path, value, options) {
+    return this._resolve(value, options).validateSyncAt(path, value, options);
   }
 }
 
