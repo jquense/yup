@@ -162,6 +162,8 @@ schema.cast({
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
+> If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
+
 ### Using a custom locale dictionary
 
 Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
