@@ -44,7 +44,7 @@ json separate from validating it, via the `cast` method.
     - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
     - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
     - [`mixed.default(): Any`](#mixeddefault-any)
-    - [`mixed.nullable(isNullable: boolean = false): Schema`](#mixednullableisnullable-boolean--false-schema)
+    - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
     - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
     - [`mixed.notRequired(): Schema`](#mixednotrequired-schema)
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
@@ -540,7 +540,7 @@ yup.date.default(() => new Date()); //also helpful for defaults that change over
 
 Calling `default` with no arguments will return the current default value
 
-#### `mixed.nullable(isNullable: boolean = false): Schema`
+#### `mixed.nullable(isNullable: boolean = true): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `isType()` checks.
