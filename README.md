@@ -809,7 +809,7 @@ short circuits the regex test when the value is an empty string
 var v = string().matches(/(hi|bye)/, { excludeEmptyString: true });
 v.isValid('')
   .should.eventually()
-  .equal(false);
+  .equal(true);
 ```
 
 #### `string.email(message?: string | function): Schema`
