@@ -735,6 +735,35 @@ describe('Mixed Types ', () => {
     await inst.validate(-1).should.be.fulfilled();
   });
 
+  it('should support conditional first argument as `is` shortcut', async function() {
+    let inst = number().when(value => value > 0, {
+      then: number().min(5),
+    });
+
+    await inst
+      .validate(4)
+      .should.be.rejectedWith(ValidationError, /must be greater/);
+
+    await inst.validate(5).should.be.fulfilled();
+
+    await inst.validate(-1).should.be.fulfilled();
+  });
+
+  it('should support conditional signle argument as options shortcut', async function() {
+    let inst = number().when({
+      is: value => value > 0,
+      then: number().min(5),
+    });
+
+    await inst
+      .validate(4)
+      .should.be.rejectedWith(ValidationError, /must be greater/);
+
+    await inst.validate(5).should.be.fulfilled();
+
+    await inst.validate(-1).should.be.fulfilled();
+  });
+
   it('should use label in error message', async function() {
     let label = 'Label';
     let inst = object({

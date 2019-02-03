@@ -380,6 +380,14 @@ const proto = (SchemaType.prototype = {
   },
 
   when(keys, options) {
+    if (arguments.length === 1) {
+      options = keys;
+      keys = '.';
+    } else if (isSchema(keys) || typeof keys === 'function') {
+      options = { ...options, is: keys };
+      keys = '.';
+    }
+
     var next = this.clone(),
       deps = [].concat(keys).map(key => new Ref(key));
 
