@@ -40,8 +40,8 @@ class Conditional {
     }
   }
 
-  getValue(parent, context) {
-    let values = this.refs.map(r => r.getValue(parent, context));
+  getValue(value, parent, context) {
+    let values = this.refs.map(r => r.getValue(value, parent, context));
 
     return values;
   }

@@ -720,6 +720,21 @@ describe('Mixed Types ', () => {
     inst.default().should.eql({ prop: undefined });
   });
 
+  it('should support self references in conditions', async function() {
+    let inst = number().when('.', {
+      is: value => value > 0,
+      then: number().min(5),
+    });
+
+    await inst
+      .validate(4)
+      .should.be.rejectedWith(ValidationError, /must be greater/);
+
+    await inst.validate(5).should.be.fulfilled();
+
+    await inst.validate(-1).should.be.fulfilled();
+  });
+
   it('should use label in error message', async function() {
     let label = 'Label';
     let inst = object({
