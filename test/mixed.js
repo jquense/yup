@@ -1,4 +1,15 @@
-import { array, mixed, string, number, object, ref, reach, bool } from '../src';
+import {
+  array,
+  mixed,
+  string,
+  number,
+  object,
+  ref,
+  reach,
+  bool,
+  ValidationError,
+} from '../src';
+
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -583,6 +594,14 @@ describe('Mixed Types ', () => {
     (function() {
       inst.concat(string())._type.should.equal('string');
     }.should.not.throw(TypeError));
+  });
+
+  it('concat should validate with mixed and other type', async function() {
+    let inst = mixed().concat(number());
+
+    await inst
+      .validate([])
+      .should.be.rejected(ValidationError, /should be a `number`/);
   });
 
   it('concat should maintain undefined defaults', function() {

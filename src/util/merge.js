@@ -4,27 +4,21 @@ import isSchema from './isSchema';
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
 export default function merge(target, source) {
-  for (var key in source)
-    if (has(source, key)) {
+  for (var key in target)
+    if (has(target, key)) {
       var targetVal = target[key],
         sourceVal = source[key];
 
-      if (sourceVal === undefined) continue;
-
-      if (isSchema(sourceVal)) {
-        target[key] = isSchema(targetVal)
-          ? targetVal.concat(sourceVal)
-          : sourceVal;
+      if (sourceVal === undefined) {
+        source[key] = targetVal;
+      } else if (isSchema(sourceVal)) {
+        if (isSchema(targetVal)) source[key] = targetVal.concat(sourceVal);
       } else if (isObject(sourceVal)) {
-        target[key] = isObject(targetVal)
-          ? merge(targetVal, sourceVal)
-          : sourceVal;
+        if (isObject(targetVal)) source[key] = merge(targetVal, sourceVal);
       } else if (Array.isArray(sourceVal)) {
-        target[key] = Array.isArray(targetVal)
-          ? targetVal.concat(sourceVal)
-          : sourceVal;
-      } else target[key] = source[key];
+        if (Array.isArray(targetVal)) source[key] = targetVal.concat(sourceVal);
+      }
     }
 
-  return target;
+  return source;
 }

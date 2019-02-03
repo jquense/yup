@@ -126,8 +126,6 @@ const proto = (SchemaType.prototype = {
       next = next.test(fn.OPTIONS);
     });
 
-    next._type = schema._type;
-
     return next;
   },
 
