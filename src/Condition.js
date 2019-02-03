@@ -7,6 +7,10 @@ function callOrConcat(schema) {
   return base => base.concat(schema);
 }
 
+function makeIsFn(refs, predicate) {
+  return refs.length < 2 ? predicate : (...values) => values.every(predicate);
+}
+
 class Conditional {
   constructor(refs, options) {
     let { is, then, otherwise } = options;
@@ -26,10 +30,15 @@ class Conditional {
           'either `then:` or `otherwise:` is required for `when()` conditions',
         );
 
-      let isFn =
-        typeof is === 'function'
-          ? is
-          : (...values) => values.every(value => value === is);
+      let isFn;
+
+      if (typeof is === 'function') {
+        isFn = is;
+      } else if (isSchema(is)) {
+        isFn = makeIsFn(this.refs, value => is.isValidSync(value));
+      } else {
+        isFn = makeIsFn(this.refs, value => value === is);
+      }
 
       this.fn = function(...values) {
         let currentSchema = values.pop();

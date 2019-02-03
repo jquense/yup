@@ -750,6 +750,22 @@ describe('Mixed Types ', () => {
     await inst.validate(-1).should.be.fulfilled();
   });
 
+  it('should handle conditionals with schema as condition', async function() {
+    let inst = object({
+      flag: mixed(),
+      prop: number().when('flag', {
+        is: bool(),
+        then: number().min(5),
+      }),
+    });
+
+    await inst.validate({ flag: 'hello', prop: 4 }).should.be.fulfilled();
+
+    await inst
+      .validate({ flag: true, prop: 4 })
+      .should.be.rejectedWith(ValidationError, /must be greater than/);
+  });
+
   it('should use label in error message', async function() {
     let label = 'Label';
     let inst = object({
