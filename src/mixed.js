@@ -5,7 +5,7 @@ import toArray from 'lodash/toArray';
 import { mixed as locale } from './locale';
 import Condition from './Condition';
 import runValidations from './util/runValidations';
-import merge from './util/merge';
+import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
 import isAbsent from './util/isAbsent';
 import createValidation from './util/createValidation';
@@ -103,7 +103,7 @@ const proto = (SchemaType.prototype = {
   },
 
   concat(schema) {
-    if (!schema) return this;
+    if (!schema || schema === this) return this;
 
     if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(
@@ -111,14 +111,14 @@ const proto = (SchemaType.prototype = {
           this._type
         } and ${schema._type}`,
       );
-    var cloned = this.clone();
-    var next = merge(this.clone(), schema.clone());
 
-    // undefined isn't merged over, but is a valid value for default
+    var next = prependDeep(schema.clone(), this);
+
+    // new undefined default is overriden by old non-undefined one, revert
     if (has(schema, '_default')) next._default = schema._default;
 
-    next.tests = cloned.tests;
-    next._exclusive = cloned._exclusive;
+    next.tests = this.tests;
+    next._exclusive = this._exclusive;
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
