@@ -523,7 +523,7 @@ object()
 Sets a default value to use when the value is `undefined`.
 Defaults are created after transformations are executed, but before validations, to help ensure that safe
 defaults are specified. The default value will be cloned on each use, which can incur performance penalty
-for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+for objects and arrays. To avoid this overhead you can also pass a function that returns a new default.
 Note that `null` is considered a separate non-empty value.
 
 ```js
@@ -778,13 +778,17 @@ Failed casts return the input value.
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
 
+#### `string.length(limit: number | Ref, message?: string | function): Schema`
+
+Set a required length for the string value. The `${length}` interpolation can be used in the `message` argument
+
 #### `string.min(limit: number | Ref, message?: string | function): Schema`
 
-Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
+Set a minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
 #### `string.max(limit: number | Ref, message?: string | function): Schema`
 
-Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
+Set a maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
 #### `string.matches(regex: Regex, message?: string | function): Schema`
 
@@ -966,11 +970,11 @@ The same as the `mixed()` schema required, except that empty arrays are also con
 
 #### `array.min(limit: number | Ref, message?: string | function): Schema`
 
-Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
+Set a minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
 #### `array.max(limit: number | Ref, message?: string | function): Schema`
 
-Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
+Set a maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
 #### `array.ensure(): Schema`
 
