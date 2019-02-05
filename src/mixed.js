@@ -134,11 +134,10 @@ const proto = (SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v);
   },
 
-  resolve({ value, parent, context }) {
+  resolve(options) {
     if (this._conditions.length) {
       return this._conditions.reduce(
-        (schema, match) =>
-          match.resolve(schema, match.getValue(value, parent, context)),
+        (schema, condition) => condition.resolve(schema, options),
         this,
       );
     }
@@ -382,9 +381,6 @@ const proto = (SchemaType.prototype = {
   when(keys, options) {
     if (arguments.length === 1) {
       options = keys;
-      keys = '.';
-    } else if (isSchema(keys) || typeof keys === 'function') {
-      options = { ...options, is: keys };
       keys = '.';
     }
 

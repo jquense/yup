@@ -40,13 +40,9 @@ class Conditional {
     }
   }
 
-  getValue(value, parent, context) {
-    let values = this.refs.map(r => r.getValue(value, parent, context));
+  resolve(ctx, options) {
+    let values = this.refs.map(ref => ref.getValue(options));
 
-    return values;
-  }
-
-  resolve(ctx, values) {
     let schema = this.fn.apply(ctx, values.concat(ctx));
 
     if (schema !== undefined && !isSchema(schema))

@@ -1,54 +1,69 @@
 import { getter } from 'property-expr';
 
-let validateName = d => {
-  if (typeof d !== 'string')
-    throw new TypeError("ref's must be strings, got: " + d);
+const prefixes = {
+  context: '$',
+  value: '.',
 };
 
 export default class Reference {
-  static isRef(value) {
-    return !!(value && (value.__isYupRef || value instanceof Reference));
+  constructor(key, options = {}) {
+    if (typeof key !== 'string')
+      throw new TypeError('ref must be a string, got: ' + key);
+
+    this.key = key.trim();
+
+    if (key === '') throw new TypeError('ref must be a non-empty string');
+
+    this.isContext = this.key[0] === prefixes.context;
+    this.isValue = this.key[0] === prefixes.value;
+    this.isSibling = !this.isContext && !this.isValue;
+
+    let prefix = this.isContext
+      ? prefixes.context
+      : this.isValue
+        ? prefixes.value
+        : '';
+
+    this.path = this.key.slice(prefix.length);
+    this.getter = this.path && getter(this.path, true);
+    this.map = options.map;
+  }
+
+  getValue(options) {
+    let result = this.isContext
+      ? options.context
+      : this.isValue
+        ? options.value
+        : options.parent;
+
+    if (this.getter) result = this.getter(result || {});
+
+    if (this.map) result = this.map(result);
+
+    return result;
+  }
+
+  cast(value, options) {
+    return this.getValue({ ...options, value });
+  }
+
+  resolve() {
+    return this;
+  }
+
+  describe() {
+    return {
+      type: 'ref',
+      key: this.key,
+    };
   }
 
   toString() {
     return `Ref(${this.key})`;
   }
 
-  constructor(key, mapFn, options = {}) {
-    validateName(key);
-    let prefix = options.contextPrefix || '$';
-
-    this.key = key.trim();
-    this.prefix = prefix;
-
-    this.isContext = this.key.indexOf(prefix) === 0;
-    this.isParent = this.key === '';
-    this.isSelf = this.key === '.';
-    this.isSibling = !this.isContext && !this.isParent && !this.isSelf;
-
-    if (!this.isSelf) {
-      this.path = this.isContext
-        ? this.key.slice(this.prefix.length)
-        : this.key;
-      this._get = getter(this.path, true);
-    }
-
-    this.map = mapFn || (value => value);
-  }
-  resolve() {
-    return this;
-  }
-
-  cast(value, { parent, context }) {
-    return this.getValue(value, parent, context);
-  }
-
-  getValue(value, parent, context) {
-    if (!this.isSelf) {
-      value = this._get(this.isContext ? context : parent || context || {});
-    }
-
-    return this.map(value);
+  static isRef(value) {
+    return value && value.__isYupRef;
   }
 }
 

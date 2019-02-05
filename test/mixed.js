@@ -656,7 +656,7 @@ describe('Mixed Types ', () => {
 
   it('should handle multiple conditionals', function() {
     let called = false;
-    let inst = mixed().when(['prop', 'other'], function(prop, other) {
+    let inst = mixed().when(['$prop', '$other'], function(prop, other) {
       other.should.equal(true);
       prop.should.equal(1);
       called = true;
@@ -665,7 +665,7 @@ describe('Mixed Types ', () => {
     inst.cast({}, { context: { prop: 1, other: true } });
     called.should.equal(true);
 
-    inst = mixed().when(['prop', 'other'], {
+    inst = mixed().when(['$prop', '$other'], {
       is: 5,
       then: mixed().required(),
     });
@@ -735,21 +735,7 @@ describe('Mixed Types ', () => {
     await inst.validate(-1).should.be.fulfilled();
   });
 
-  it('should support conditional first argument as `is` shortcut', async function() {
-    let inst = number().when(value => value > 0, {
-      then: number().min(5),
-    });
-
-    await inst
-      .validate(4)
-      .should.be.rejectedWith(ValidationError, /must be greater/);
-
-    await inst.validate(5).should.be.fulfilled();
-
-    await inst.validate(-1).should.be.fulfilled();
-  });
-
-  it('should support conditional signle argument as options shortcut', async function() {
+  it('should support conditional single argument as options shortcut', async function() {
     let inst = number().when({
       is: value => value > 0,
       then: number().min(5),
