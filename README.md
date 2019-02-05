@@ -780,7 +780,7 @@ The same as the `mixed()` schema required, except that empty strings are also co
 
 #### `string.length(limit: number | Ref, message?: string | function): Schema`
 
-Set a required length for the string value. The `${min}` interpolation can be used in the `message` argument
+Set a required length for the string value. The `${length}` interpolation can be used in the `message` argument
 
 #### `string.min(limit: number | Ref, message?: string | function): Schema`
 
