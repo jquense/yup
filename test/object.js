@@ -448,8 +448,12 @@ describe('Object types', () => {
         }),
       });
 
-      reach(inst, 'nested').should.equal(inst);
-      reach(inst, 'x.y').should.equal(inst);
+      reach(inst, 'nested')
+        .resolve({})
+        .should.equal(inst);
+      reach(inst, 'x.y')
+        .resolve({})
+        .should.equal(inst);
     });
 
     it('should be passed the value', done => {

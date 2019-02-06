@@ -3,8 +3,8 @@ import isSchema from './util/isSchema';
 
 function callOrConcat(schema) {
   if (typeof schema === 'function') return schema;
-
-  return base => base.concat(schema);
+  if (!schema) return base => base;
+  return (base, options) => base.concat(schema.resolve(options));
 }
 
 class Conditional {
@@ -32,10 +32,11 @@ class Conditional {
           : (...values) => values.every(value => value === is);
 
       this.fn = function(...values) {
-        let currentSchema = values.pop();
+        let options = values.pop();
+        let schema = values.pop();
         let option = isFn(...values) ? then : otherwise;
 
-        return option(currentSchema);
+        return option(schema, options);
       };
     }
   }
@@ -43,12 +44,14 @@ class Conditional {
   resolve(ctx, options) {
     let values = this.refs.map(ref => ref.getValue(options));
 
-    let schema = this.fn.apply(ctx, values.concat(ctx));
+    let schema = this.fn.apply(ctx, values.concat(ctx, options));
 
-    if (schema !== undefined && !isSchema(schema))
+    if (schema === undefined) return ctx;
+
+    if (!isSchema(schema))
       throw new TypeError('conditions must return a schema object');
 
-    return schema || ctx;
+    return schema.resolve(options);
   }
 }
 

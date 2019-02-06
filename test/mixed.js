@@ -7,6 +7,7 @@ import {
   ref,
   reach,
   bool,
+  lazy,
   ValidationError,
 } from '../src';
 
@@ -748,6 +749,28 @@ describe('Mixed Types ', () => {
     await inst.validate(5).should.be.fulfilled();
 
     await inst.validate(-1).should.be.fulfilled();
+  });
+
+  it('should allow nested conditions and lazies', async function() {
+    let inst = string().when('$check', {
+      is: value => typeof value === 'string',
+      then: string().when('$check', {
+        is: value => /hello/.test(value),
+        then: lazy(() => string().min(6)),
+      }),
+    });
+
+    await inst
+      .validate('pass', { context: { check: false } })
+      .should.be.fulfilled();
+
+    await inst
+      .validate('pass', { context: { check: 'hello' } })
+      .should.be.rejectedWith(ValidationError, /must be at least/);
+
+    await inst
+      .validate('passes', { context: { check: 'hello' } })
+      .should.be.fulfilled();
   });
 
   it('should use label in error message', async function() {
