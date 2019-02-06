@@ -1,5 +1,5 @@
 import reach, { getIn } from '../src/util/reach';
-import merge from '../src/util/merge';
+import prependDeep from '../src/util/prependDeep';
 import { settled } from '../src/util/runValidations';
 
 import { object, array, string, lazy, number } from '../src';
@@ -36,11 +36,11 @@ describe('Yup', function() {
     ]);
   });
 
-  it('should merge', function() {
-    var a = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
-    var b = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
+  it('should prepend deeply', function() {
+    var a = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
+    var b = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
 
-    merge(a, b).should.deep.eql({
+    prependDeep(a, b).should.deep.eql({
       a: 4,
       b: 'hello',
       c: [1, 2, 3, 4, 5, 3],
@@ -52,6 +52,17 @@ describe('Yup', function() {
       f: { c: 5 },
       g: null,
     });
+  });
+
+  it('should not prepend needlesly', function() {
+    var schema = string();
+    var spy = sinon.spy(schema, 'concat');
+    var a = { schema };
+    var b = { schema };
+    var c = prependDeep(a, b);
+
+    c.schema.should.equal(schema);
+    spy.should.not.have.been.called();
   });
 
   it('should getIn correctly', async () => {
