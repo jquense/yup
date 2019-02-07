@@ -240,7 +240,7 @@ inherits(ObjectSchema, MixedSchema, {
       },
     });
 
-    if (noAllow) next._options.stripUnknown = true;
+    next._options.stripUnknown = noAllow;
 
     return next;
   },

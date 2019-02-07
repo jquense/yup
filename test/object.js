@@ -329,6 +329,17 @@ describe('Object types', () => {
     ]);
   });
 
+  it('should work with noUnknown override', async () => {
+    let inst = object()
+      .shape({
+        prop: mixed(),
+      })
+      .noUnknown()
+      .noUnknown(false);
+
+    await inst.validate({ extra: 'field' }).should.become({ extra: 'field' });
+  });
+
   it('should strip specific fields', () => {
     let inst = object().shape({
       prop: mixed().strip(false),
