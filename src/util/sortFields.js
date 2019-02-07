@@ -23,7 +23,7 @@ export default function sortFields(fields, excludes = []) {
 
       if (!~nodes.indexOf(key)) nodes.push(key);
 
-      if (Ref.isRef(value) && !value.isContext) addNode(value.path, key);
+      if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
       else if (isSchema(value) && value._deps)
         value._deps.forEach(path => addNode(path, key));
     }

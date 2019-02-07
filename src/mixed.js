@@ -134,11 +134,10 @@ const proto = (SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v);
   },
 
-  resolve({ context, parent }) {
+  resolve(options) {
     if (this._conditions.length) {
       return this._conditions.reduce(
-        (schema, match) =>
-          match.resolve(schema, match.getValue(parent, context)),
+        (schema, condition) => condition.resolve(schema, options),
         this,
       );
     }
@@ -147,7 +146,7 @@ const proto = (SchemaType.prototype = {
   },
 
   cast(value, options = {}) {
-    let resolvedSchema = this.resolve(options);
+    let resolvedSchema = this.resolve({ ...options, value });
     let result = resolvedSchema._cast(value, options);
 
     if (
@@ -240,12 +239,12 @@ const proto = (SchemaType.prototype = {
   },
 
   validate(value, options = {}) {
-    let schema = this.resolve(options);
+    let schema = this.resolve({ ...options, value });
     return schema._validate(value, options);
   },
 
   validateSync(value, options = {}) {
-    let schema = this.resolve(options);
+    let schema = this.resolve({ ...options, value });
     let result, err;
 
     schema
@@ -268,7 +267,7 @@ const proto = (SchemaType.prototype = {
 
   isValidSync(value, options) {
     try {
-      this.validateSync(value, { ...options });
+      this.validateSync(value, options);
       return true;
     } catch (err) {
       if (err.name === 'ValidationError') return false;
@@ -380,11 +379,16 @@ const proto = (SchemaType.prototype = {
   },
 
   when(keys, options) {
+    if (arguments.length === 1) {
+      options = keys;
+      keys = '.';
+    }
+
     var next = this.clone(),
       deps = [].concat(keys).map(key => new Ref(key));
 
     deps.forEach(dep => {
-      if (!dep.isContext) next._deps.push(dep.key);
+      if (dep.isSibling) next._deps.push(dep.key);
     });
 
     next._conditions.push(new Condition(deps, options));
