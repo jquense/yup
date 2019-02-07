@@ -338,15 +338,21 @@ const proto = (SchemaType.prototype = {
    * the previous tests are removed and further tests of the same name will replace each other.
    */
   test(...args) {
-    let opts = args[0];
-    if (args.length > 1) {
-      let [name, message, test] = args;
-      if (test == null) {
-        test = message;
-        message = locale.default;
+    let opts;
+
+    if (args.length === 1) {
+      if (typeof args[0] === 'function') {
+        opts = { test: args[0] };
+      } else {
+        opts = args[0];
       }
-      opts = { name, test, message, exclusive: false };
+    } else if (args.length === 2) {
+      opts = { name: args[0], test: args[1] };
+    } else {
+      opts = { name: args[0], message: args[1], test: args[2] };
     }
+
+    if (opts.message === undefined) opts.message = locale.default;
 
     if (typeof opts.test !== 'function')
       throw new TypeError('`test` is a required parameters');

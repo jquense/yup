@@ -349,6 +349,14 @@ describe('Mixed Types ', () => {
     inst.tests[0].OPTIONS.message.should.equal('${path} is invalid');
   });
 
+  it('should fallback to default message', async () => {
+    let inst = mixed().test(() => false);
+
+    await inst
+      .validate('foo')
+      .should.be.rejectedWith(ValidationError, 'this is invalid');
+  });
+
   it('should allow non string messages', async () => {
     let message = { key: 'foo' };
     let inst = mixed().test('test', message, () => false);
