@@ -296,9 +296,9 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  strict() {
+  strict(isStrict = true) {
     var next = this.clone();
-    next._options.strict = true;
+    next._options.strict = isStrict;
     return next;
   },
 
@@ -312,9 +312,9 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  nullable(value) {
+  nullable(isNullable = true) {
     var next = this.clone();
-    next._nullable = value === false ? false : true;
+    next._nullable = isNullable;
     return next;
   },
 
