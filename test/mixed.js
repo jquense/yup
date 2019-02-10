@@ -521,6 +521,55 @@ describe('Mixed Types ', () => {
       });
   });
 
+  describe('withMutation', () => {
+    it('should pass the same instance to a provided function', () => {
+      let inst = mixed();
+      let func = sinon.spy();
+
+      inst.withMutation(func);
+
+      func.should.have.been.calledOnceWithExactly(inst);
+    });
+
+    it('should temporarily make mutable', () => {
+      let inst = mixed();
+
+      let update = () => {
+        inst.withMutation(inst => {
+          inst.test('a', () => true);
+        });
+      };
+
+      update.should.increase(() => inst.tests.length).by(1);
+    });
+
+    it('should return immutability', () => {
+      let inst = mixed();
+      inst.withMutation(() => {});
+
+      let update = () => {
+        inst.test('a', () => true);
+      };
+
+      update.should.not.increase(() => inst.tests.length);
+    });
+
+    it('should work with nesting', () => {
+      let inst = mixed();
+
+      let update = () => {
+        inst.withMutation(inst => {
+          inst.withMutation(inst => {
+            inst.test('a', () => true);
+          });
+          inst.test('b', () => true);
+        });
+      };
+
+      update.should.increase(() => inst.tests.length).by(2);
+    });
+  });
+
   describe('concat', () => {
     let next;
     let inst = object({
