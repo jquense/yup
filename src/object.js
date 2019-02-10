@@ -245,6 +245,10 @@ inherits(ObjectSchema, MixedSchema, {
     return next;
   },
 
+  unknown(allow = true, message = locale.noUnknown) {
+    return this.noUnknown(!allow, message);
+  },
+
   transformKeys(fn) {
     return this.transform(obj => obj && mapKeys(obj, (_, key) => fn(key)));
   },

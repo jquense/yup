@@ -512,3 +512,4 @@ for (const method of ['validate', 'validateSync'])
 
 for (const alias of ['equals', 'is']) proto[alias] = proto.oneOf;
 for (const alias of ['not', 'nope']) proto[alias] = proto.notOneOf;
+proto.optional = proto.notRequired;
