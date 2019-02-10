@@ -480,13 +480,11 @@ const proto = (SchemaType.prototype = {
   },
 
   describe() {
-    const next = this.clone();
-
     return {
-      type: next._type,
-      meta: next._meta,
-      label: next._label,
-      tests: next.tests
+      type: this._type,
+      meta: this._meta,
+      label: this._label,
+      tests: this.tests
         .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
         .filter(
           (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
