@@ -13,8 +13,6 @@ import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
 
-let notEmpty = value => !isAbsent(value);
-
 class RefSet {
   constructor() {
     this.list = new Set();
@@ -302,8 +300,19 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
+  _isFilled(_) {
+    return true;
+  },
+
   required(message = locale.required) {
-    return this.test({ message, name: 'required', test: notEmpty });
+    return this.test({
+      message,
+      name: 'required',
+      exclusive: true,
+      test(value) {
+        return !isAbsent(value) && this.schema._isFilled(value);
+      },
+    });
   },
 
   notRequired() {
