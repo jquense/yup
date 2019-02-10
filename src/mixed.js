@@ -96,9 +96,10 @@ const proto = (SchemaType.prototype = {
   },
 
   withMutation(fn) {
+    let before = this._mutate;
     this._mutate = true;
     let result = fn(this);
-    this._mutate = false;
+    this._mutate = before;
     return result;
   },
 
