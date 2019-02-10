@@ -5,8 +5,6 @@ import isAbsent from './util/isAbsent';
 
 let isNaN = value => value != +value;
 
-let isInteger = val => isAbsent(val) || val === (val | 0);
-
 export default function NumberSchema() {
   if (!(this instanceof NumberSchema)) return new NumberSchema();
 
@@ -14,8 +12,8 @@ export default function NumberSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      let parsed = value
-      
+      let parsed = value;
+
       if (typeof parsed === 'string') {
         parsed = parsed.replace(/\s/g, '');
         if (parsed === '') return NaN;
@@ -43,8 +41,9 @@ inherits(NumberSchema, MixedSchema, {
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value >= this.resolve(min);
+        return value >= this.resolve(min);
       },
     });
   },
@@ -55,8 +54,9 @@ inherits(NumberSchema, MixedSchema, {
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value <= this.resolve(max);
+        return value <= this.resolve(max);
       },
     });
   },
@@ -67,8 +67,9 @@ inherits(NumberSchema, MixedSchema, {
       name: 'max',
       exclusive: true,
       params: { less },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value < this.resolve(less);
+        return value < this.resolve(less);
       },
     });
   },
@@ -79,8 +80,9 @@ inherits(NumberSchema, MixedSchema, {
       name: 'min',
       exclusive: true,
       params: { more },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value > this.resolve(more);
+        return value > this.resolve(more);
       },
     });
   },
@@ -94,7 +96,13 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   integer(message = locale.integer) {
-    return this.test({ name: 'integer', message, test: isInteger });
+    return this.test({
+      message,
+      name: 'integer',
+      exclusive: true,
+      skipAbsent: true,
+      test: value => value === (value | 0),
+    });
   },
 
   truncate() {

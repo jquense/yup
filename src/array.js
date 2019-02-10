@@ -1,17 +1,12 @@
 import inherits from './util/inherits';
-import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import makePath from './util/makePath';
 import printValue from './util/printValue';
 import MixedSchema from './mixed';
-import { mixed, array as locale } from './locale';
+import { array as locale } from './locale';
 import runValidations, { propagateErrors } from './util/runValidations';
 
-let hasLength = value => !isAbsent(value) && value.length > 0;
-
-export default ArraySchema;
-
-function ArraySchema(type) {
+export default function ArraySchema(type) {
   if (!(this instanceof ArraySchema)) return new ArraySchema(type);
 
   MixedSchema.call(this, { type: 'array' });
@@ -94,9 +89,7 @@ inherits(ArraySchema, MixedSchema, {
             originalValue: originalValue[idx],
           };
 
-          if (subType.validate) return subType.validate(item, innerOptions);
-
-          return true;
+          return subType.validate(item, innerOptions);
         });
 
         return runValidations({
@@ -110,9 +103,11 @@ inherits(ArraySchema, MixedSchema, {
       });
   },
 
-  of(schema) {
-    var next = this.clone();
+  _isFilled(value) {
+    return value.length > 0;
+  },
 
+  of(schema) {
     if (schema !== false && !isSchema(schema))
       throw new TypeError(
         '`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
@@ -120,52 +115,44 @@ inherits(ArraySchema, MixedSchema, {
           printValue(schema),
       );
 
-    next._subType = schema;
-
-    return next;
-  },
-
-  required(message = mixed.required) {
-    var next = MixedSchema.prototype.required.call(this, message);
-
-    return next.test({
-      message,
-      name: 'required',
-      test: hasLength,
+    return this.clone(next => {
+      next._subType = schema;
     });
   },
 
-  min(min, message) {
-    message = message || locale.min;
-
+  min(min, message = locale.min) {
     return this.test({
       message,
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value.length >= this.resolve(min);
+        return value.length >= this.resolve(min);
       },
     });
   },
 
-  max(max, message) {
-    message = message || locale.max;
+  max(max, message = locale.max) {
     return this.test({
       message,
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value.length <= this.resolve(max);
+        return value.length <= this.resolve(max);
       },
     });
   },
 
   ensure() {
-    return this.default(() => []).transform(val => {
-      if (this.isType(val)) return val;
-      return val === null ? [] : [].concat(val);
+    return this.clone(next => {
+      next.default(() => []);
+      next.transform(val => {
+        if (this.isType(val)) return val;
+        return val === null ? [] : [].concat(val);
+      });
     });
   },
 

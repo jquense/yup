@@ -13,8 +13,6 @@ import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
 
-let notEmpty = value => !isAbsent(value);
-
 class RefSet {
   constructor() {
     this.list = new Set();
@@ -49,7 +47,6 @@ export default function SchemaType(options = {}) {
   this._deps = [];
   this._conditions = [];
   this._options = { abortEarly: true, recursive: true };
-  this._exclusive = Object.create(null);
 
   this._whitelist = new RefSet();
   this._blacklist = new RefSet();
@@ -71,14 +68,16 @@ const proto = (SchemaType.prototype = {
 
   constructor: SchemaType,
 
-  clone() {
-    if (this._mutate) return this;
+  clone(fn) {
+    let next = this._mutate
+      ? this
+      : cloneDeepWith(this, value => {
+          if (isSchema(value) && value !== this) return value;
+        });
 
-    // if the nested value is a schema we can skip cloning, since
-    // they are already immutable
-    return cloneDeepWith(this, value => {
-      if (isSchema(value) && value !== this) return value;
-    });
+    if (fn) next.withMutation(fn);
+
+    return next;
   },
 
   label(label) {
@@ -96,9 +95,10 @@ const proto = (SchemaType.prototype = {
   },
 
   withMutation(fn) {
+    let before = this._mutate;
     this._mutate = true;
     let result = fn(this);
-    this._mutate = false;
+    this._mutate = before;
     return result;
   },
 
@@ -118,7 +118,6 @@ const proto = (SchemaType.prototype = {
     if (has(schema, '_default')) next._default = schema._default;
 
     next.tests = this.tests;
-    next._exclusive = this._exclusive;
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
@@ -227,15 +226,20 @@ const proto = (SchemaType.prototype = {
       value,
       path,
       sync,
-    }).then(value =>
-      runValidations({
+    }).then(value => {
+      let tests = this.tests.filter(test => !test.OPTIONS.skip);
+
+      if (isAbsent(value))
+        tests = tests.filter(test => !test.OPTIONS.skipAbsent);
+
+      return runValidations({
         path,
         sync,
         value,
         endEarly,
-        validations: this.tests.map(fn => fn(validationParams)),
-      }),
-    );
+        validations: tests.map(test => test(validationParams)),
+      });
+    });
   },
 
   validate(value, options = {}) {
@@ -302,14 +306,23 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
+  _isFilled(_) {
+    return true;
+  },
+
   required(message = locale.required) {
-    return this.test({ message, name: 'required', test: notEmpty });
+    return this.test({
+      message,
+      name: 'required',
+      exclusive: true,
+      test(value) {
+        return !isAbsent(value) && this.schema._isFilled(value);
+      },
+    });
   },
 
   notRequired() {
-    var next = this.clone();
-    next.tests = next.tests.filter(test => test.OPTIONS.name !== 'required');
-    return next;
+    return this.skip('required');
   },
 
   nullable(value) {
@@ -348,34 +361,38 @@ const proto = (SchemaType.prototype = {
       opts = { name, test, message, exclusive: false };
     }
 
-    if (typeof opts.test !== 'function')
+    if (typeof opts.test !== 'function' && !opts.skip)
       throw new TypeError('`test` is a required parameters');
 
-    let next = this.clone();
-    let validate = createValidation(opts);
-
-    let isExclusive =
-      opts.exclusive || (opts.name && next._exclusive[opts.name] === true);
-
-    if (opts.exclusive && !opts.name) {
+    if (opts.exclusive && !opts.name)
       throw new TypeError(
         'Exclusive tests must provide a unique `name` identifying the test',
       );
-    }
 
-    next._exclusive[opts.name] = !!opts.exclusive;
+    let next = this.clone();
 
-    next.tests = next.tests.filter(fn => {
-      if (fn.OPTIONS.name === opts.name) {
-        if (isExclusive) return false;
-        if (fn.OPTIONS.test === validate.OPTIONS.test) return false;
+    next.tests = next.tests.filter(test => {
+      let other = test.OPTIONS;
+
+      if (opts.name === other.name) {
+        if (opts.test === other.test) return false;
+        if (opts.exclusive || other.exclusive) return false;
       }
+
       return true;
     });
 
-    next.tests.push(validate);
+    next.tests.push(createValidation(opts));
 
     return next;
+  },
+
+  skip(name) {
+    return this.test({
+      name,
+      exclusive: true,
+      skip: true,
+    });
   },
 
   when(keys, options) {
@@ -428,6 +445,7 @@ const proto = (SchemaType.prototype = {
       name: 'oneOf',
       test(value) {
         if (value === undefined) return true;
+
         let valids = this.schema._whitelist;
 
         return valids.has(value, this.resolve)
@@ -445,6 +463,7 @@ const proto = (SchemaType.prototype = {
 
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
+
     enums.forEach(val => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
@@ -455,13 +474,14 @@ const proto = (SchemaType.prototype = {
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
-        if (invalids.has(value, this.resolve))
-          return this.createError({
-            params: {
-              values: invalids.toArray().join(', '),
-            },
-          });
-        return true;
+
+        return invalids.has(value, this.resolve)
+          ? this.createError({
+              params: {
+                values: invalids.toArray().join(', '),
+              },
+            })
+          : true;
       },
     });
 
@@ -485,11 +505,10 @@ const proto = (SchemaType.prototype = {
       type: next._type,
       meta: next._meta,
       label: next._label,
-      tests: next.tests
-        .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
-        .filter(
-          (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
-        ),
+      tests: next.tests.filter(test => !test.OPTIONS.skip).map(fn => ({
+        name: fn.OPTIONS.name,
+        params: fn.OPTIONS.params,
+      })),
     };
   },
 });

@@ -2,16 +2,13 @@ import MixedSchema from './mixed';
 import inherits from './util/inherits';
 import isoParse from './util/isodate';
 import { date as locale } from './locale';
-import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 
 let invalidDate = new Date('');
 
 let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]';
 
-export default DateSchema;
-
-function DateSchema() {
+export default function DateSchema() {
   if (!(this instanceof DateSchema)) return new DateSchema();
 
   MixedSchema.call(this, { type: 'date' });
@@ -47,8 +44,9 @@ inherits(DateSchema, MixedSchema, {
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value >= this.resolve(limit);
+        return value >= this.resolve(limit);
       },
     });
   },
@@ -69,8 +67,9 @@ inherits(DateSchema, MixedSchema, {
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value <= this.resolve(limit);
+        return value <= this.resolve(limit);
       },
     });
   },

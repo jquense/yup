@@ -15,11 +15,6 @@ import runValidations, { propagateErrors } from './util/runValidations';
 
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
 
-function unknown(ctx, value) {
-  let known = Object.keys(ctx.fields);
-  return Object.keys(value).filter(key => known.indexOf(key) === -1);
-}
-
 export default function ObjectSchema(spec) {
   if (!(this instanceof ObjectSchema)) return new ObjectSchema(spec);
 
@@ -224,18 +219,20 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   noUnknown(noAllow = true, message = locale.noUnknown) {
-    if (typeof noAllow === 'string') {
+    if (typeof noAllow === 'string' || typeof noAllow === 'function') {
       message = noAllow;
       noAllow = true;
     }
 
     let next = this.test({
+      message,
       name: 'noUnknown',
       exclusive: true,
-      message: message,
+      skip: !noAllow,
+      skipAbsent: true,
       test(value) {
-        return (
-          value == null || !noAllow || unknown(this.schema, value).length === 0
+        return Object.keys(value).every(key =>
+          this.schema.fields.hasOwnProperty(key),
         );
       },
     });
