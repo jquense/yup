@@ -123,8 +123,10 @@ const proto = (SchemaType.prototype = {
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
-    schema.tests.forEach(fn => {
-      next = next.test(fn.OPTIONS);
+    next.withMutation(next => {
+      schema.tests.forEach(fn => {
+        next.test(fn.OPTIONS);
+      });
     });
 
     return next;
