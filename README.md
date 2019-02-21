@@ -880,11 +880,11 @@ Value must be strictly greater than `min`. The `${more}` interpolation can be us
 
 #### `number.positive(message?: string | function): Schema`
 
-Value must be a positive number.
+Value must be a positive number (zero inclusive).
 
 #### `number.negative(message?: string | function): Schema`
 
-Value must be a negative number.
+Value must be a negative number (zero inclusive).
 
 #### `number.integer(message?: string | function): Schema`
 
