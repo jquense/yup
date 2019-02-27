@@ -14,8 +14,8 @@ export default function NumberSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      let parsed = value
-      
+      let parsed = value;
+
       if (typeof parsed === 'string') {
         parsed = parsed.replace(/\s/g, '');
         if (parsed === '') return NaN;
@@ -113,8 +113,29 @@ inherits(NumberSchema, MixedSchema, {
         'Only valid options for round() are: ' + avail.join(', '),
       );
 
-    return this.transform(
-      value => (!isAbsent(value) ? Math[method](value) : value),
+    return this.transform(value =>
+      !isAbsent(value) ? Math[method](value) : value,
     );
+  },
+
+  precision(decimalPlaces, decimalSeparator = '.', message = locale.precision) {
+    return this.test({
+      message,
+      name: 'precision',
+      params: { decimalPlaces },
+      test(value) {
+        value = value.toString();
+        const decimalIndex = value.indexOf(decimalSeparator);
+        const decimalValue =
+          decimalIndex > -1
+            ? value.substring(decimalIndex + 1, value.length)
+            : '';
+
+        return (
+          decimalPlaces >= 0 &&
+          decimalValue.length <= this.resolve(decimalPlaces)
+        );
+      },
+    });
   },
 });

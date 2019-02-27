@@ -215,6 +215,29 @@ describe('Number types', function() {
     });
   });
 
+  describe('precision', () => {
+    let schema = number().precision(0);
+
+    TestHelpers.validateAll(schema, {
+      valid: [6, 7],
+      invalid: [6.222, 7.499, 6.1, 6.22],
+    });
+
+    schema = number().precision(2);
+
+    TestHelpers.validateAll(schema, {
+      valid: [6, 6.1, 6.22, 7.42],
+      invalid: [6.222, 7.599],
+    });
+
+    it('should return default message', () => {
+      return schema
+        .validate(6.222)
+        .should.be.rejected.and.eventually.have.property('errors')
+        .that.contain('this must have no more than 2 decimal places');
+    });
+  });
+
   it('should check POSITIVE correctly', function() {
     var v = number().positive();
 

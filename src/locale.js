@@ -43,6 +43,7 @@ export let number = {
   positive: '${path} must be a positive number',
   negative: '${path} must be a negative number',
   integer: '${path} must be an integer',
+  precision: '${path} must have no more than ${decimalPlaces} decimal places',
 };
 
 export let date = {
