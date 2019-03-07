@@ -27,6 +27,9 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
+# IntelliJ and friends config
+.idea/
+
 # =========================
 # Operating System Files
 # =========================
@@ -39,7 +42,8 @@ node_modules
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
