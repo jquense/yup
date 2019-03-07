@@ -27,9 +27,7 @@ class RefSet {
     Ref.isRef(value) ? this.refs.set(value.key, value) : this.list.add(value);
   }
   delete(value) {
-    Ref.isRef(value)
-      ? this.refs.delete(value.key, value)
-      : this.list.delete(value);
+    Ref.isRef(value) ? this.refs.delete(value.key) : this.list.delete(value);
   }
   has(value, resolve) {
     if (this.list.has(value)) return true;
@@ -40,6 +38,24 @@ class RefSet {
       if (resolve(item.value) === value) return true;
 
     return false;
+  }
+  clone() {
+    const next = new RefSet();
+    next.list = new Set(this.list);
+    next.refs = new Map(this.refs);
+    return next;
+  }
+  union(other) {
+    const next = this.clone();
+    other.list.forEach(value => next.add(value));
+    other.refs.forEach(value => next.add(value));
+    return next;
+  }
+  setminus(other) {
+    const next = this.clone();
+    other.list.forEach(value => next.delete(value));
+    other.refs.forEach(value => next.delete(value));
+    return next;
   }
 }
 
@@ -115,11 +131,20 @@ const proto = (SchemaType.prototype = {
 
     var next = prependDeep(schema.clone(), this);
 
-    // new undefined default is overriden by old non-undefined one, revert
+    // new undefined default is overridden by old non-undefined one, revert
     if (has(schema, '_default')) next._default = schema._default;
 
     next.tests = this.tests;
     next._exclusive = this._exclusive;
+
+    // manually merge the blacklist/whitelist (the other `schema` takes
+    // precedence in case of conflicts)
+    next._whitelist = this._whitelist
+      .union(schema._whitelist)
+      .setminus(schema._blacklist);
+    next._blacklist = this._blacklist
+      .union(schema._blacklist)
+      .setminus(schema._whitelist);
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
