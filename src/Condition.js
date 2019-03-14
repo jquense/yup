@@ -1,55 +1,64 @@
 import has from 'lodash/has';
 import isSchema from './util/isSchema';
 
-function callOrConcat(schema) {
-  if (typeof schema === 'function') return schema;
-
-  return base => base.concat(schema);
+function wrapCusomFn(fn) {
+  return function(...args) {
+    args.pop();
+    return fn.apply(this, args);
+  };
 }
 
-class Conditional {
-  constructor(refs, options) {
-    let { is, then, otherwise } = options;
+function makeFn(options) {
+  if (typeof options === 'function') return wrapCusomFn(options);
 
-    this.refs = [].concat(refs);
+  if (!has(options, 'is'))
+    throw new TypeError('`is:` is required for `when()` conditions');
 
-    then = callOrConcat(then);
-    otherwise = callOrConcat(otherwise);
+  if (!options.then && !options.otherwise)
+    throw new TypeError(
+      'either `then:` or `otherwise:` is required for `when()` conditions',
+    );
 
-    if (typeof options === 'function') this.fn = options;
-    else {
-      if (!has(options, 'is'))
-        throw new TypeError('`is:` is required for `when()` conditions');
+  let { is, then, otherwise } = options;
 
-      if (!options.then && !options.otherwise)
-        throw new TypeError(
-          'either `then:` or `otherwise:` is required for `when()` conditions',
-        );
-
-      let isFn =
-        typeof is === 'function'
-          ? is
-          : (...values) => values.every(value => value === is);
-
-      this.fn = function(...values) {
-        let currentSchema = values.pop();
-        let option = isFn(...values) ? then : otherwise;
-
-        return option(currentSchema);
-      };
-    }
+  let check;
+  if (typeof is === 'function') {
+    check = is;
+  } else {
+    check = (...values) => values.every(value => value === is);
   }
 
-  resolve(ctx, options) {
+  let fn = function(...args) {
+    let options = args.pop();
+    let schema = args.pop();
+    let branch = check(...args) ? then : otherwise;
+
+    if (!branch) return undefined;
+    if (typeof branch === 'function') return branch(schema);
+    return schema.concat(branch.resolve(options));
+  };
+
+  return fn;
+}
+
+class Condition {
+  constructor(refs, options) {
+    this.refs = refs;
+    this.fn = makeFn(options);
+  }
+
+  resolve(base, options) {
     let values = this.refs.map(ref => ref.getValue(options));
 
-    let schema = this.fn.apply(ctx, values.concat(ctx));
+    let schema = this.fn.apply(base, values.concat(base, options));
 
-    if (schema !== undefined && !isSchema(schema))
+    if (schema === undefined || schema === base) return base;
+
+    if (!isSchema(schema))
       throw new TypeError('conditions must return a schema object');
 
-    return schema || ctx;
+    return schema.resolve(options);
   }
 }
 
-export default Conditional;
+export default Condition;

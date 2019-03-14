@@ -136,14 +136,22 @@ const proto = (SchemaType.prototype = {
   },
 
   resolve(options) {
-    if (this._conditions.length) {
-      return this._conditions.reduce(
+    let schema = this;
+
+    if (schema._conditions.length) {
+      let conditions = schema._conditions;
+
+      schema = schema.clone();
+      schema._conditions = [];
+      schema = conditions.reduce(
         (schema, condition) => condition.resolve(schema, options),
-        this,
+        schema,
       );
+
+      schema = schema.resolve(options);
     }
 
-    return this;
+    return schema;
   },
 
   cast(value, options = {}) {
