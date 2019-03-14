@@ -2,6 +2,7 @@ import string from '../src/string';
 import number from '../src/number';
 import object from '../src/object';
 import array from '../src/array';
+import boolean from '../src/boolean';
 
 describe('Array types', () => {
   describe('casting', () => {
@@ -174,5 +175,43 @@ describe('Array types', () => {
     inst.cast(a).should.equal(a);
 
     inst.cast(null).should.eql([]);
+  });
+
+  it('should handle nested when', async () => {
+    const schema = object().shape({
+      first: boolean(),
+      second: boolean(),
+      value: array().when('first', {
+        is: first => first === true,
+        then: array().when('second', {
+          is: second => second === true,
+          then: array().min(2),
+          otherwise: array().min(3),
+        }),
+        otherwise: array().min(4),
+      }),
+    });
+
+    const values = {
+      first: true,
+      second: false,
+      value: [],
+    };
+
+    // TODO - figure it out how to test this out
+    try {
+      const result = await schema.validate(values, {
+        abortEarly: false,
+        recursive: true,
+      });
+
+      expect(result.toBe(null));
+      console.log('result: ', result);
+    } catch (err) {
+      console.log('err: ', err);
+      expect(err).should.eql(null);
+    }
+
+    expect(1).should.eql(2);
   });
 });
