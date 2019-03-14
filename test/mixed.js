@@ -1,4 +1,16 @@
-import { array, mixed, string, number, object, ref, reach, bool } from '../src';
+import {
+  array,
+  mixed,
+  string,
+  number,
+  object,
+  ref,
+  reach,
+  bool,
+  lazy,
+  ValidationError,
+} from '../src';
+
 let noop = () => {};
 
 function ensureSync(fn) {
@@ -338,6 +350,14 @@ describe('Mixed Types ', () => {
     inst.tests[0].OPTIONS.message.should.equal('${path} is invalid');
   });
 
+  it('should fallback to default message', async () => {
+    let inst = mixed().test(() => false);
+
+    await inst
+      .validate('foo')
+      .should.be.rejectedWith(ValidationError, 'this is invalid');
+  });
+
   it('should allow non string messages', async () => {
     let message = { key: 'foo' };
     let inst = mixed().test('test', message, () => false);
@@ -510,6 +530,55 @@ describe('Mixed Types ', () => {
       });
   });
 
+  describe('withMutation', () => {
+    it('should pass the same instance to a provided function', () => {
+      let inst = mixed();
+      let func = sinon.spy();
+
+      inst.withMutation(func);
+
+      func.should.have.been.calledOnceWithExactly(inst);
+    });
+
+    it('should temporarily make mutable', () => {
+      let inst = mixed();
+
+      let update = () => {
+        inst.withMutation(inst => {
+          inst.test('a', () => true);
+        });
+      };
+
+      update.should.increase(() => inst.tests.length).by(1);
+    });
+
+    it('should return immutability', () => {
+      let inst = mixed();
+      inst.withMutation(() => {});
+
+      let update = () => {
+        inst.test('a', () => true);
+      };
+
+      update.should.not.increase(() => inst.tests.length);
+    });
+
+    it('should work with nesting', () => {
+      let inst = mixed();
+
+      let update = () => {
+        inst.withMutation(inst => {
+          inst.withMutation(inst => {
+            inst.test('a', () => true);
+          });
+          inst.test('b', () => true);
+        });
+      };
+
+      update.should.increase(() => inst.tests.length).by(2);
+    });
+  });
+
   describe('concat', () => {
     let next;
     let inst = object({
@@ -534,7 +603,7 @@ describe('Mixed Types ', () => {
     });
 
     it('should have the correct number of tests', () => {
-      reach(next, 'str').tests.length.should.equal(3); // presence, alt presence, and trim
+      reach(next, 'str').tests.length.should.equal(2);
     });
 
     it('should have the tests in the correct order', () => {
@@ -583,6 +652,14 @@ describe('Mixed Types ', () => {
     (function() {
       inst.concat(string())._type.should.equal('string');
     }.should.not.throw(TypeError));
+  });
+
+  it('concat should validate with mixed and other type', async function() {
+    let inst = mixed().concat(number());
+
+    await inst
+      .validate([])
+      .should.be.rejected(ValidationError, /should be a `number`/);
   });
 
   it('concat should maintain undefined defaults', function() {
@@ -637,7 +714,7 @@ describe('Mixed Types ', () => {
 
   it('should handle multiple conditionals', function() {
     let called = false;
-    let inst = mixed().when(['prop', 'other'], function(prop, other) {
+    let inst = mixed().when(['$prop', '$other'], function(prop, other) {
       other.should.equal(true);
       prop.should.equal(1);
       called = true;
@@ -646,7 +723,7 @@ describe('Mixed Types ', () => {
     inst.cast({}, { context: { prop: 1, other: true } });
     called.should.equal(true);
 
-    inst = mixed().when(['prop', 'other'], {
+    inst = mixed().when(['$prop', '$other'], {
       is: 5,
       then: mixed().required(),
     });
@@ -699,6 +776,58 @@ describe('Mixed Types ', () => {
     });
 
     inst.default().should.eql({ prop: undefined });
+  });
+
+  it('should support self references in conditions', async function() {
+    let inst = number().when('.', {
+      is: value => value > 0,
+      then: number().min(5),
+    });
+
+    await inst
+      .validate(4)
+      .should.be.rejectedWith(ValidationError, /must be greater/);
+
+    await inst.validate(5).should.be.fulfilled();
+
+    await inst.validate(-1).should.be.fulfilled();
+  });
+
+  it('should support conditional single argument as options shortcut', async function() {
+    let inst = number().when({
+      is: value => value > 0,
+      then: number().min(5),
+    });
+
+    await inst
+      .validate(4)
+      .should.be.rejectedWith(ValidationError, /must be greater/);
+
+    await inst.validate(5).should.be.fulfilled();
+
+    await inst.validate(-1).should.be.fulfilled();
+  });
+
+  it('should allow nested conditions and lazies', async function() {
+    let inst = string().when('$check', {
+      is: value => typeof value === 'string',
+      then: string().when('$check', {
+        is: value => /hello/.test(value),
+        then: lazy(() => string().min(6)),
+      }),
+    });
+
+    await inst
+      .validate('pass', { context: { check: false } })
+      .should.be.fulfilled();
+
+    await inst
+      .validate('pass', { context: { check: 'hello' } })
+      .should.be.rejectedWith(ValidationError, /must be at least/);
+
+    await inst
+      .validate('passes', { context: { check: 'hello' } })
+      .should.be.fulfilled();
   });
 
   it('should use label in error message', async function() {

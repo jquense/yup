@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.26.7",
+  "version": "0.26.10",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "module": "dist/yup.esm.js",
@@ -15,6 +15,7 @@
     "toc": "doctoc README.md --github",
     "build:esm": "rollup -c rollup.config.js",
     "build": "babel src --out-dir lib --delete-dir-on-start && npm run build:esm && npm run toc",
+    "release": "rollout",
     "prepublishOnly": "npm run build"
   },
   "files": [
@@ -31,6 +32,9 @@
     "url": "https://github.com/jquense/yup/issues"
   },
   "homepage": "https://github.com/jquense/yup",
+  "release": {
+    "conventional-commits": true
+  },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "all"

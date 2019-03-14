@@ -2,7 +2,7 @@
 
 Yup is a JavaScript object schema validator and object parser. The API and style is ~~stolen~~ heavily inspired
 by [Joi](https://github.com/hapijs/joi), which is an amazing library but is generally too large and difficult
-to package for use in a browser. Yup is a leaner in the same spirit without some of the fancy features.
+to package for use in a browser. Yup is leaner: in the same spirit, without some of the fancy features.
 You can use it on the server as well, but in that case you might as well just use Joi.
 
 Yup is also a good bit less opinionated than joi, allowing for custom transformations and async validation.
@@ -33,64 +33,65 @@ json separate from validating it, via the `cast` method.
     - [`mixed.concat(schema: Schema)`](#mixedconcatschema-schema)
     - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
     - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
-    - [`mixed.validateAt(path: string, value: any, context?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-context-object-promiseany-validationerror)
-    - [`mixed.validateSyncAt(path: string, value: any, context?: object): Promise<any, ValidationError>`](#mixedvalidatesyncatpath-string-value-any-context-object-promiseany-validationerror)
+    - [`mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-options-object-promiseany-validationerror)
+    - [`mixed.validateSyncAt(path: string, value: any, options?: object): any`](#mixedvalidatesyncatpath-string-value-any-options-object-any)
     - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
     - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
-    - [`mixed.cast(value: any): any`](#mixedcastvalue-any-any)
+    - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-options---any)
     - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
     - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
     - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
     - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
     - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
     - [`mixed.default(): Any`](#mixeddefault-any)
-    - [`mixed.nullable(isNullable: boolean = false): Schema`](#mixednullableisnullable-boolean--false-schema)
-    - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string-schema)
+    - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
+    - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
     - [`mixed.notRequired(): Schema`](#mixednotrequired-schema)
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
-    - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-string-message-schema-alias-equals)
-    - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-string-message)
+    - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
+    - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-message-string--function)
     - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
     - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
     - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
     - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
   - [string](#string)
-    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string-schema)
-    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string-schema)
-    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string-schema)
-    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string-schema)
+    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
+    - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
+    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
+    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
+    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
     - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
-    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string-schema)
-    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string-schema)
+    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
+    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
-    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string-schema)
-    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string-schema)
-    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string-schema)
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
+    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
+    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
   - [number](#number)
-    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string-schema)
-    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string-schema)
-    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string-schema)
-    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string-schema)
-    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string-schema)
-    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string-schema)
-    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string-schema)
+    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
+    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
+    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
+    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
+    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
+    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
+    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
     - [`number.truncate(): Schema`](#numbertruncate-schema)
     - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
   - [boolean](#boolean)
   - [date](#date)
-    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string-schema)
-    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string-schema)
+    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
+    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
   - [array](#array)
     - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
-    - [`array.required(message?: string | function): Schema`](#arrayrequiredmessage-string-schema)
-    - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string-schema)
-    - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string-schema)
+    - [`array.required(message?: string | function): Schema`](#arrayrequiredmessage-string--function-schema)
+    - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
+    - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
     - [`array.ensure(): Schema`](#arrayensure-schema)
     - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
   - [object](#object)
     - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
-    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string-schema)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
@@ -122,14 +123,14 @@ When using es module syntax, yup exports everything as a named export
 
 ```js
 import * as yup from 'yup'; // for everything
-// or only what you need
-import { string, object } from 'yup';
+// or
+import { string, object } from 'yup'; // for only what you need
 ```
 
 ```js
-var yup = require('yup');
+let yup = require('yup');
 
-var schema = yup.object().shape({
+let schema = yup.object().shape({
   name: yup.string().required(),
   age: yup
     .number()
@@ -143,7 +144,7 @@ var schema = yup.object().shape({
   }),
 });
 
-//check validity
+// check validity
 schema
   .isValid({
     name: 'jimmy',
@@ -153,7 +154,7 @@ schema
     valid; // => true
   });
 
-//you can try and type cast objects to the defined schema
+// you can try and type cast objects to the defined schema
 schema.cast({
   name: 'jimmy',
   age: '24',
@@ -161,6 +162,8 @@ schema.cast({
 });
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
+
+> If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
 
 ### Using a custom locale dictionary
 
@@ -179,13 +182,14 @@ setLocale({
   },
 });
 
-// Now use Yup schemas AFTER you defined your custom dictionary
-const schema = yup.object().shape({
+// now use Yup schemas AFTER you defined your custom dictionary
+let schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
 });
+
 schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
-  err.name; // 'ValidationError'
+  err.name; // => 'ValidationError'
   err.errors; // => ['Deve ser maior que 18']
 });
 ```
@@ -197,7 +201,7 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
 The module export.
 
 ```js
-var yup = require('yup');
+let yup = require('yup');
 
 yup.mixed;
 yup.string;
@@ -209,6 +213,9 @@ yup.array;
 
 yup.reach;
 yup.addMethod;
+yup.ref;
+yup.lazy;
+yup.setLocale;
 yup.ValidationError;
 ```
 
@@ -220,7 +227,7 @@ For nested schema that need to resolve dynamically, you can provide a `value` an
 a `context` object.
 
 ```js
-var schema = object().shape({
+let schema = object().shape({
   nested: object().shape({
     arr: array().of(object().shape({ num: number().max(4) })),
   }),
@@ -255,16 +262,16 @@ at _validation/cast time_ and supported where specified. Ref's are evaluated in 
 the ref value is resolved before the field using the ref (be careful of circular dependencies!).
 
 ```js
-var schema = object({
+let schema = object({
   baz: ref('foo.bar'),
   foo: object({
-    bar: string()
-  })
-  x: ref('$x')
-})
+    bar: string(),
+  }),
+  x: ref('$x'),
+});
 
-inst.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } })
-// { baz: 'boom',  x: 5, { foo: { bar: 'boom' } }, }
+schema.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } });
+// => { baz: 'boom',  x: 5, foo: { bar: 'boom' } }
 ```
 
 #### `yup.lazy((value: any) => Schema): Lazy`
@@ -276,7 +283,7 @@ recursive schema like Trees, for polymophic fields and arrays.
 to `undefined` on the child otherwise the object will infinitely nest itself when you cast it!.
 
 ```js
-var node = object({
+let node = object({
   id: number(),
   child: yup.lazy(() => node.default(undefined)),
 });
@@ -310,10 +317,11 @@ Thrown on failed validations, with the following properties
 
 Creates a schema that matches all types. All types inherit from this base type
 
-```javascript
-var schema = yup.mixed();
+```js
+let schema = yup.mixed();
+
 schema.isValid(undefined, function(valid) {
-  valid; //=> true
+  valid; // => true
 });
 ```
 
@@ -381,7 +389,7 @@ schema.validate({ name: 'jimmy', age: 24 }).then(function(value) {
 });
 
 schema.validate({ name: 'jimmy', age: 'hi' }).catch(function(err) {
-  err.name; // 'ValidationError'
+  err.name; // => 'ValidationError'
   err.errors; // => ['age must be a number']
 });
 ```
@@ -395,7 +403,7 @@ Synchronous validation only works if there are no configured async tests, e.g te
 For instance this will work:
 
 ```js
-schema = number.test(
+let schema = number().test(
   'is-42',
   "this isn't the number i want",
   value => value != 42,
@@ -407,7 +415,7 @@ schema.validateSync(23); // throws ValidationError
 however this will not:
 
 ```js
-schema = number.test('is-42', "this isn't the number i want", value =>
+let schema = number().test('is-42', "this isn't the number i want", value =>
   Promise.resolve(value != 42),
 );
 
@@ -422,10 +430,10 @@ but uses the resulting schema as the subject for validation.
 > Note! The `value` here is the _root_ value relative to the starting schema, not the value at the nested path.
 
 ```js
-const schema = object({
+let schema = object({
   foo: array().of(
     object({
-      loose: bool(),
+      loose: boolean(),
       bar: string().when('loose', {
         is: true,
         otherwise: s => s.strict(),
@@ -434,13 +442,13 @@ const schema = object({
   ),
 });
 
-const rootValue = {
+let rootValue = {
   foo: [{ bar: 1 }, { bar: 1, loose: true }],
 };
 
-await schema.validateAt('foo[0].bar', rootValue); // -> '1';
+await schema.validateAt('foo[0].bar', rootValue); // => ValidationError: must be a string
 
-await schema.validateAt('foo[1].bar', rootValue); // -> ValidationError. must be a string;
+await schema.validateAt('foo[1].bar', rootValue); // => '1'
 ```
 
 #### `mixed.validateSyncAt(path: string, value: any, options?: object): any`
@@ -460,11 +468,13 @@ Synchronously returns `true` when the passed in value matches the schema.
 
 Takes the same options as `validateSync()` and has the same caveats around async tests.
 
-#### `mixed.cast(value: any): any`
+#### `mixed.cast(value: any, options = {}): any`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will
 cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also
 return results like `NaN` and unexpected strings.
+
+`options` parameter can be an object containing `context`. (For more info on `context` see `mixed.validate`)
 
 #### `mixed.isType(value: any): boolean`
 
@@ -487,7 +497,7 @@ let schema = object({
   notThis: string().strip(),
 });
 
-schema.cast({ notThis: 'foo', useThis: 4 }); // { useThis: 4 }
+schema.cast({ notThis: 'foo', useThis: 4 }); // => { useThis: 4 }
 ```
 
 #### `mixed.withMutation(builder: (current: Schema) => void): void`
@@ -519,7 +529,7 @@ object()
 Sets a default value to use when the value is `undefined`.
 Defaults are created after transformations are executed, but before validations, to help ensure that safe
 defaults are specified. The default value will be cloned on each use, which can incur performance penalty
-for objects and arrays. To avoid this overhead you can also pass a function that returns an new default.
+for objects and arrays. To avoid this overhead you can also pass a function that returns a new default.
 Note that `null` is considered a separate non-empty value.
 
 ```js
@@ -529,14 +539,14 @@ yup.object.default({ number: 5 }); // object will be cloned every time a default
 
 yup.object.default(() => ({ number: 5 })); // this is cheaper
 
-yup.date.default(() => new Date()); //also helpful for defaults that change over time
+yup.date.default(() => new Date()); // also helpful for defaults that change over time
 ```
 
 #### `mixed.default(): Any`
 
 Calling `default` with no arguments will return the current default value
 
-#### `mixed.nullable(isNullable: boolean = false): Schema`
+#### `mixed.nullable(isNullable: boolean = true): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `isType()` checks.
@@ -559,11 +569,12 @@ be used in the `message` argument.
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
 
-```javascript
-var schema = yup.mixed().oneOf(['jimmy', 42]);
-schema.isValid(42); //=> true
-schema.isValid('jimmy'); //=> true
-schema.isValid(new Date()); //=> false
+```js
+let schema = yup.mixed().oneOf(['jimmy', 42]);
+
+await schema.isValid(42); // => true
+await schema.isValid('jimmy'); // => true
+await schema.isValid(new Date()); // => false
 ```
 
 #### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
@@ -571,10 +582,11 @@ schema.isValid(new Date()); //=> false
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
 
-```javascript
-var schema = yup.mixed().notOneOf(['jimmy', 42]);
-schema.isValid(42); //=> false
-schema.isValid(new Date()); //=> true
+```js
+let schema = yup.mixed().notOneOf(['jimmy', 42]);
+
+await schema.isValid(42); // => false
+await schema.isValid(new Date()); // => true
 ```
 
 #### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
@@ -589,11 +601,10 @@ can provide a function like: `is: (value) => value == true`.
 Like joi you can also prefix properties with `$` to specify a property that is dependent
 on `context` passed in by `validate()` or `isValid`. `when` conditions are additive.
 
-```javascript
-var inst = yup.object({
-  isBig: yup.boolean(),
-  count: yup
-    .number()
+```js
+let schema = object({
+  isBig: boolean(),
+  count: number()
     .when('isBig', {
       is: true, // alternatively: (val) => val == true
       then: yup.number().min(5),
@@ -602,23 +613,23 @@ var inst = yup.object({
     .when('$other', (other, schema) => (other === 4 ? schema.max(6) : schema)),
 });
 
-inst.validate(value, { context: { other: 4 } });
+await schema.validate(value, { context: { other: 4 } });
 ```
 
 You can also specify more than one dependent key, in which case each value will be spread as an argument.
 
-```javascript
-var inst = yup.object({
-  isSpecial: yup.bool(),
-  isBig: yup.bool(),
-  count: yup.number().when(['isBig', 'isSpecial'], {
+```js
+let schema = object({
+  isSpecial: boolean(),
+  isBig: boolean(),
+  count: number().when(['isBig', 'isSpecial'], {
     is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
     then: yup.number().min(5),
     otherwise: yup.number().min(0),
   }),
 });
 
-inst.validate({
+await schema.validate({
   isBig: true,
   isSpecial: true,
   count: 10,
@@ -629,14 +640,14 @@ Alternatively you can provide a function that returns a schema
 (called with the value of the key and the current schema).
 
 ```js
-var inst = yup.object({
+let schema = yup.object({
   isBig: yup.boolean(),
   count: yup.number().when('isBig', (isBig, schema) => {
     return isBig ? schema.min(5) : schema.min(0);
   }),
 });
 
-inst.validate({ isBig: false, count: 4 });
+await schema.validate({ isBig: false, count: 4 });
 ```
 
 #### `mixed.test(name: string, message: string | function, test: function): Schema`
@@ -658,20 +669,21 @@ the `test` function is called with the current `value`. For more advanced valida
 use the alternate signature to provide more options (see below):
 
 ```js
-var jimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', value => value === 'jimmy');
+let jimmySchema = string().test(
+  'is-jimmy',
+  '${path} is not Jimmy',
+  value => value === 'jimmy',
+);
 
 // or make it async by returning a promise
-var asyncJimmySchema = yup.string()
-  .test('is-jimmy', '${path} is not Jimmy', function (value){
-    return fetch('/is-jimmy/' + value)
-      .then(response => response.responseText === 'true')
-  });
+let asyncJimmySchema = string().test(
+  'is-jimmy',
+  '${path} is not Jimmy',
+  async (value) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+});
 
-schema.isValid('jimmy').then(...) //=> true
-
-schema.isValid('john').then(...) //=> false
-schema.errors // => [ 'this is not Jimmy!']
+await schema.isValid('jimmy'); // => true
+await schema.isValid('john'); // => false
 ```
 
 test functions are called with a special context, or `this` value, that exposes some useful metadata and functions. Note that to use the `this` context the test function must be a function expression (`function test(value) {}`), not an arrow function, since arrow functions have lexical context.
@@ -690,11 +702,11 @@ Alternative `test(..)` signature. `options` is an object containing some of the 
 
 ```js
 Options = {
-  // Unique name identifying the test
+  // unique name identifying the test
   name: string;
   // test function, determines schema validity
   test: (value: any) => boolean;
-  // The validation error message
+  // the validation error message
   message: string;
   // values passed to message for interpolation
   params: ?object;
@@ -710,9 +722,9 @@ the exclusive test is removed and further tests of the same name will be stacked
 If an exclusive test is added to a schema with non-exclusive tests of the same name
 the previous tests are removed and further tests of the same name will replace each other.
 
-```javascript
-var max = 64;
-var schema = yup.mixed().test({
+```js
+let max = 64;
+let schema = yup.mixed().test({
   name: 'max',
   exclusive: true,
   params: { max },
@@ -731,12 +743,12 @@ Transformations are useful for arbitrarily altering how the object is cast, **ho
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
-```javascript
-var schema = yup.string().transform(function(currentValue, originalvalue) {
+```js
+let schema = string().transform(function(value, originalvalue) {
   return this.isType(value) && value !== null ? value.toUpperCase() : value;
 });
 
-schema.cast('jimmy'); //=> 'JIMMY'
+schema.cast('jimmy'); // => 'JIMMY'
 ```
 
 Each types will handle basic coercion of values to the proper type for you, but occasionally
@@ -744,25 +756,28 @@ you may want to adjust or refine the default behavior. For example, if you wante
 date parsing strategy than the default one you could do that with a transform.
 
 ```js
-yup.date().transform(function(formats = 'MMM dd, yyyy') {
-  //check to see if the previous transform already parsed the date
-  if (this.isType(value)) return value;
+module.exports = function(formats = 'MMM dd, yyyy') {
+  return date().transform(function(value, originalvalue) {
+    // check to see if the previous transform already parsed the date
+    if (this.isType(value)) return value;
 
-  //the default coercion failed so lets try it with Moment.js instead
-  value = Moment(originalValue, formats);
+    // the default coercion failed so lets try it with Moment.js instead
+    value = Moment(originalValue, formats);
 
-  //if its valid return the date object, otherwise return an `InvalidDate`
-  return date.isValid() ? date.toDate() : new Date('');
-});
+    // if its valid return the date object, otherwise return an `InvalidDate`
+    return value.isValid() ? value.toDate() : new Date('');
+  });
+};
 ```
 
 ### string
 
 Define a string schema. Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
-var schema = yup.string();
-schema.isValid('hello'); //=> true
+```js
+let schema = yup.string();
+
+await schema.isValid('hello'); // => true
 ```
 
 By default, the `cast` logic of `string` is to call `toString` on the value if it exists.
@@ -774,26 +789,27 @@ Failed casts return the input value.
 
 The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
 
+#### `string.length(limit: number | Ref, message?: string | function): Schema`
+
+Set a required length for the string value. The `${length}` interpolation can be used in the `message` argument
+
 #### `string.min(limit: number | Ref, message?: string | function): Schema`
 
-Set an minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
+Set a minimum length limit for the string value. The `${min}` interpolation can be used in the `message` argument
 
 #### `string.max(limit: number | Ref, message?: string | function): Schema`
 
-Set an maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
+Set a maximum length limit for the string value. The `${max}` interpolation can be used in the `message` argument
 
 #### `string.matches(regex: Regex, message?: string | function): Schema`
 
 Provide an arbitrary `regex` to match the value against.
 
-```javascript
-var v = string().matches(/(hi|bye)/);
-v.isValid('hi')
-  .should.eventually()
-  .equal(true);
-v.isValid('nope')
-  .should.eventually()
-  .equal(false);
+```js
+let schema = string().matches(/(hi|bye)/);
+
+await schema.isValid('hi'); // => true
+await schema.isValid('nope'); // => false
 ```
 
 #### `string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`
@@ -801,11 +817,10 @@ v.isValid('nope')
 An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true,
 short circuits the regex test when the value is an empty string
 
-```javascript
-var v = string().matches(/(hi|bye)/, { excludeEmptyString: true });
-v.isValid('')
-  .should.eventually()
-  .equal(false);
+```js
+let schema = string().matches(/(hi|bye)/, { excludeEmptyString: true });
+
+await schema.isValid(''); // => true
 ```
 
 #### `string.email(message?: string | function): Schema`
@@ -840,9 +855,10 @@ will only validate that the value is uppercase.
 
 Define a number schema. Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
-var schema = yup.number();
-schema.isValid(10); //=> true
+```js
+let schema = yup.number();
+
+await schema.isValid(10); // => true
 ```
 
 The default `cast` logic of `number` is: [`parseFloat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat).
@@ -894,9 +910,10 @@ Adjusts the value via the specified method of `Math` (defaults to 'round').
 
 Define a boolean schema. Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
-var schema = yup.boolean();
-schema.isValid(true); //=> true
+```js
+let schema = yup.boolean();
+
+await schema.isValid(true); // => true
 ```
 
 ### date
@@ -905,9 +922,10 @@ Define a Date schema. By default ISO date strings will parse correctly,
 for more robust parsing options see the extending schema types at the end of the readme.
 Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
-var schema = yup.date();
-schema.isValid(new Date()); //=> true
+```js
+let schema = yup.date();
+
+await schema.isValid(new Date()); // => true
 ```
 
 The default `cast` logic of `date` is pass the value to the `Date` constructor, failing that, it will attempt
@@ -931,19 +949,20 @@ Define an array schema. Arrays can be typed or not, When specifying the element 
 will apply to the elements as well. Options passed into `isValid` are passed also passed to child schemas.
 Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
-var schema = yup.array().of(yup.number().min(2));
-schema.isValid([2, 3]); //=> true
-schema.isValid([1, -24]); //=> false
+```js
+let schema = yup.array().of(yup.number().min(2));
 
-schema.cast(['2', '3']); //=> [2, 3]
+await schema.isValid([2, 3]); // => true
+await schema.isValid([1, -24]); // => false
+
+schema.cast(['2', '3']); // => [2, 3]
 ```
 
 You can also pass a subtype schema to the array constructor as a convenience.
 
 ```js
 array().of(yup.number());
-//or
+// or
 array(yup.number());
 ```
 
@@ -962,11 +981,11 @@ The same as the `mixed()` schema required, except that empty arrays are also con
 
 #### `array.min(limit: number | Ref, message?: string | function): Schema`
 
-Set an minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
+Set a minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
 #### `array.max(limit: number | Ref, message?: string | function): Schema`
 
-Set an maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
+Set a maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
 #### `array.ensure(): Schema`
 
@@ -976,29 +995,29 @@ values to an empty array as well. Any non-empty, non-array value will be wrapped
 ```js
 array()
   .ensure()
-  .cast(null); // -> []
+  .cast(null); // => []
 array()
   .ensure()
-  .cast(1); // -> [1]
+  .cast(1); // => [1]
 array()
   .ensure()
-  .cast([1]); // -> [1]
+  .cast([1]); // => [1]
 ```
 
 #### `array.compact(rejector: (value) => boolean): Schema`
 
 Removes falsey values from the array. Providing a rejecter function lets you specify the rejection criteria yourself.
 
-```javascript
+```js
 array()
   .compact()
-  .cast(['', 1, 0, 4, false, null]); // => [1,4]
+  .cast(['', 1, 0, 4, false, null]); // => [1, 4]
 
 array()
   .compact(function(v) {
     return v == null;
   })
-  .cast(['', 1, 0, 4, false, null]); // => ['',1, 0, 4, false]
+  .cast(['', 1, 0, 4, false, null]); // => ['', 1, 0, 4, false]
 ```
 
 ### object
@@ -1006,7 +1025,7 @@ array()
 Define an object schema. Options passed into `isValid` are also passed to child schemas.
 Supports all the same methods as [`mixed`](#mixed).
 
-```javascript
+```js
 yup.object().shape({
   name: string().required(),
   age: number()
@@ -1024,7 +1043,7 @@ You can also pass a shape to the object constructor as a convenience.
 object().shape({
   num: number(),
 });
-//or
+// or
 object({
   num: number(),
 });
@@ -1040,7 +1059,7 @@ Define the keys of the object and the schemas for said keys.
 
 Note that you can chain `shape` method, which acts like object extends, for example:
 
-```javascript
+```js
 object({
   a: string(),
   b: number(),
@@ -1052,7 +1071,7 @@ object({
 
 would be exactly the same as:
 
-```javascript
+```js
 object({
   a: string(),
   b: string(),
@@ -1064,15 +1083,15 @@ object({
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
-```javascript
-var schema = object({
+```js
+let schema = object({
   myProp: mixed(),
   Other: mixed(),
 })
   .from('prop', 'myProp')
   .from('other', 'Other', true);
 
-inst.cast({ prop: 5, other: 6 }); // => { myProp: 5, other: 6, Other: 6 }
+schema.cast({ prop: 5, other: 6 }); // => { myProp: 5, other: 6, Other: 6 }
 ```
 
 #### `object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`
@@ -1093,13 +1112,13 @@ Transforms all object keys to CONSTANT_CASE.
 The simplest way to extend an existing type is just to cache a configured schema and use that through your application.
 
 ```js
-var yup = require('yup');
-var parseFormats = ['MMM dd, yyy'];
-var invalidDate = new Date('');
+let yup = require('yup');
+let parseFormats = ['MMM dd, yyy'];
+let invalidDate = new Date('');
 
 module.exports = yup.date().transform(function(value, originalValue) {
   if (this.isType(value)) return value;
-  //the default coercion transform failed so lets try it with Moment instead
+  // the default coercion transform failed so lets try it with Moment instead
   value = Moment(originalValue, parseFormats);
   return value.isValid() ? value.toDate() : invalidDate;
 });
@@ -1121,7 +1140,7 @@ You should keep in mind some basic guidelines when extending schemas
 **Adjust core Types**
 
 ```js
-var invalidDate = new Date('');
+let invalidDate = new Date('');
 
 function parseDateFromFormats(formats, parseStrict) {
   return this.transform(function(value, originalValue) {
@@ -1145,8 +1164,8 @@ utility or pattern that works with that pattern. The below demonstrates using th
 syntax since its less verbose, but you absolutely aren't required to use it.
 
 ```js
-var DateSchema = yup.date;
-var invalidDate = new Date(''); // our failed to coerce value
+let DateSchema = yup.date;
+let invalidDate = new Date(''); // our failed to coerce value
 
 class MomentDateSchemaType extends DateSchema {
   constructor() {
@@ -1176,7 +1195,7 @@ class MomentDateSchemaType extends DateSchema {
   }
 }
 
-var schema = new MomentDateSchemaType();
+let schema = new MomentDateSchemaType();
 
-schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
+schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
 ```

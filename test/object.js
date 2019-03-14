@@ -329,6 +329,17 @@ describe('Object types', () => {
     ]);
   });
 
+  it('should work with noUnknown override', async () => {
+    let inst = object()
+      .shape({
+        prop: mixed(),
+      })
+      .noUnknown()
+      .noUnknown(false);
+
+    await inst.validate({ extra: 'field' }).should.become({ extra: 'field' });
+  });
+
   it('should strip specific fields', () => {
     let inst = object().shape({
       prop: mixed().strip(false),
@@ -437,8 +448,12 @@ describe('Object types', () => {
         }),
       });
 
-      reach(inst, 'nested').should.equal(inst);
-      reach(inst, 'x.y').should.equal(inst);
+      reach(inst, 'nested')
+        .resolve({})
+        .should.equal(inst);
+      reach(inst, 'x.y')
+        .resolve({})
+        .should.equal(inst);
     });
 
     it('should be passed the value', done => {

@@ -4,10 +4,8 @@ import isSchema from './util/isSchema';
 import makePath from './util/makePath';
 import printValue from './util/printValue';
 import MixedSchema from './mixed';
-import { mixed, array as locale } from './locale';
+import { array as locale } from './locale';
 import runValidations, { propagateErrors } from './util/runValidations';
-
-let hasLength = value => !isAbsent(value) && value.length > 0;
 
 export default ArraySchema;
 
@@ -110,6 +108,10 @@ inherits(ArraySchema, MixedSchema, {
       });
   },
 
+  _isFilled(value) {
+    return value.length > 0;
+  },
+
   of(schema) {
     var next = this.clone();
 
@@ -123,16 +125,6 @@ inherits(ArraySchema, MixedSchema, {
     next._subType = schema;
 
     return next;
-  },
-
-  required(message = mixed.required) {
-    var next = MixedSchema.prototype.required.call(this, message);
-
-    return next.test({
-      message,
-      name: 'required',
-      test: hasLength,
-    });
   },
 
   min(min, message) {

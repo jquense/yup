@@ -156,17 +156,15 @@ inherits(ObjectSchema, MixedSchema, {
             originalValue: originalValue[key],
           };
 
-          if (field) {
+          if (field && field.validate) {
             // inner fields are always strict:
             // 1. this isn't strict so the casting will also have cast inner values
             // 2. this is strict in which case the nested values weren't cast either
             innerOptions.strict = true;
-
-            if (field.validate) return field.validate(value[key], innerOptions);
-            return Promise.resolve(true);
+            return field.validate(value[key], innerOptions);
           }
 
-          return true;
+          return Promise.resolve(true);
         });
 
         return runValidations({
@@ -242,9 +240,13 @@ inherits(ObjectSchema, MixedSchema, {
       },
     });
 
-    if (noAllow) next._options.stripUnknown = true;
+    next._options.stripUnknown = noAllow;
 
     return next;
+  },
+
+  unknown(allow = true, message = locale.noUnknown) {
+    return this.noUnknown(!allow, message);
   },
 
   transformKeys(fn) {

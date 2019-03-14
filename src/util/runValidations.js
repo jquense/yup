@@ -36,13 +36,16 @@ export function propagateErrors(endEarly, errors) {
 }
 
 export function settled(promises, sync) {
-  let settle = promise =>
-    promise.then(
-      value => ({ fulfilled: true, value }),
-      value => ({ fulfilled: false, value }),
-    );
+  const Promise = promise(sync);
 
-  return promise(sync).all(promises.map(settle));
+  return Promise.all(
+    promises.map(p =>
+      Promise.resolve(p).then(
+        value => ({ fulfilled: true, value }),
+        value => ({ fulfilled: false, value }),
+      ),
+    ),
+  );
 }
 
 export function collectErrors({

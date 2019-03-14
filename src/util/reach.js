@@ -13,7 +13,7 @@ export function getIn(schema, path, value, context) {
     return {
       parent,
       parentPath: path,
-      schema: schema.resolve({ context, parent, value }),
+      schema,
     };
 
   forEach(path, (_part, isBracket, isArray) => {
@@ -54,10 +54,6 @@ export function getIn(schema, path, value, context) {
       lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
     }
   });
-
-  if (schema) {
-    schema = schema.resolve({ context, parent, value });
-  }
 
   return { schema, parent, parentPath: lastPart };
 }
