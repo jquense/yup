@@ -57,24 +57,24 @@
     ]
   },
   "devDependencies": {
-    "@4c/rollout": "^1.1.0",
-    "@babel/cli": "7.0.0",
-    "@babel/core": "7.0.0",
+    "@4c/rollout": "^1.3.3",
+    "@babel/cli": "7.2.3",
+    "@babel/core": "7.3.4",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^9.0.0",
     "babel-jest": "^22.4.3",
     "babel-preset-jason": "^6.0.1",
     "benchmark": "^2.0.0",
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dirty-chai": "^2.0.1",
-    "doctoc": "^1.3.1",
+    "doctoc": "^1.4.0",
     "eslint": "^4.19.1",
     "eslint-config-jason": "^4.0.1",
     "eslint-config-prettier": "^3.0.1",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jest": "^21.22.0",
-    "eslint-plugin-react": "^7.11.1",
+    "eslint-plugin-react": "^7.12.4",
     "husky": "^0.14.3",
     "jest": "^22.4.3",
     "lint-staged": "^7.2.2",
@@ -85,14 +85,14 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-size-snapshot": "^0.6.1",
     "sinon": "^6.1.5",
-    "sinon-chai": "^3.2.0"
+    "sinon-chai": "^3.3.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
     "fn-name": "~2.0.1",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "property-expr": "^1.5.0",
-    "synchronous-promise": "^2.0.5",
+    "synchronous-promise": "^2.0.6",
     "toposort": "^2.0.2"
   }
 }
