@@ -594,7 +594,7 @@ describe('Mixed Types ', () => {
     });
 
     it('should have the correct number of tests', () => {
-      reach(next, 'str').tests.length.should.equal(3); // presence, alt presence, and trim
+      reach(next, 'str').tests.length.should.equal(2);
     });
 
     it('should have the tests in the correct order', () => {
