@@ -1,3 +1,35 @@
+# [0.27.0](https://github.com/jquense/yup/compare/v0.26.10...v0.27.0) (2019-03-14)
+
+
+### Bug Fixes
+
+* change @babel/runtime version to be a range ([#488](https://github.com/jquense/yup/issues/488)) ([1c9b362](https://github.com/jquense/yup/commit/1c9b362)), closes [#486](https://github.com/jquense/yup/issues/486)
+* concat of mixed and subtype ([#444](https://github.com/jquense/yup/issues/444)) ([7705972](https://github.com/jquense/yup/commit/7705972))
+* default message for test with object ([#453](https://github.com/jquense/yup/issues/453)) ([f1be37f](https://github.com/jquense/yup/commit/f1be37f))
+* noUnknown() overriding ([#452](https://github.com/jquense/yup/issues/452)) ([3047b33](https://github.com/jquense/yup/commit/3047b33))
+* typo README  (about excludeEmptyString) ([#441](https://github.com/jquense/yup/issues/441)) ([d02ff5e](https://github.com/jquense/yup/commit/d02ff5e))
+
+
+### Features
+
+* add _isFilled as overrideable `mixed` method to control required behavior ([#459](https://github.com/jquense/yup/issues/459)) ([5b01f18](https://github.com/jquense/yup/commit/5b01f18))
+* aliases `optional()` and `unknown()` ([#460](https://github.com/jquense/yup/issues/460)) ([51e8661](https://github.com/jquense/yup/commit/51e8661))
+* allow toggling strict() ([#457](https://github.com/jquense/yup/issues/457)) ([851d421](https://github.com/jquense/yup/commit/851d421))
+* allow withMutation() nesting ([#456](https://github.com/jquense/yup/issues/456)) ([e53ea8c](https://github.com/jquense/yup/commit/e53ea8c))
+* do concat in mutation mode ([#461](https://github.com/jquense/yup/issues/461)) ([02be4ca](https://github.com/jquense/yup/commit/02be4ca))
+* finalize resolve() ([#447](https://github.com/jquense/yup/issues/447)) ([afc5119](https://github.com/jquense/yup/commit/afc5119))
+* support self references ([#443](https://github.com/jquense/yup/issues/443)) ([1cac515](https://github.com/jquense/yup/commit/1cac515)), closes [/github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js#L3](https://github.com//github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js/issues/L3)
+
+
+### BREAKING CHANGES
+
+* reach() no longer resolves the returned schema meaning it's conditions have not been processed yet; prefer validateAt/castAt where it makes sense
+* required no longer shows up twice in describe() output for array and strings, which also no longer override required
+
+
+
+
+
 ## v0.26.3 - Tue, 28 Aug 2018 15:00:04 GMT
 
 ## v0.26.0 - Fri, 20 Jul 2018 15:39:03 GMT
