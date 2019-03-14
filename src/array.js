@@ -108,8 +108,8 @@ inherits(ArraySchema, MixedSchema, {
       });
   },
 
-  _isFilled(value) {
-    return value.length > 0;
+  _isPresent(value) {
+    return MixedSchema.prototype._cast.call(this, value) && value.length > 0;
   },
 
   of(schema) {

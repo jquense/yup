@@ -7,7 +7,6 @@ import Condition from './Condition';
 import runValidations from './util/runValidations';
 import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
-import isAbsent from './util/isAbsent';
 import createValidation from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
@@ -311,8 +310,8 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  _isFilled(_) {
-    return true;
+  _isPresent(value) {
+    return value != null;
   },
 
   required(message = locale.required) {
@@ -321,7 +320,7 @@ const proto = (SchemaType.prototype = {
       name: 'required',
       exclusive: true,
       test(value) {
-        return !isAbsent(value) && this.schema._isFilled(value);
+        return this.schema._isPresent(value);
       },
     });
   },
