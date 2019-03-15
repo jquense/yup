@@ -203,8 +203,8 @@ describe('Number types', function() {
     var schema = number().integer();
 
     TestHelpers.validateAll(schema, {
-      valid: [4, -5222],
-      invalid: [10.53, 0.1 * 0.2, -34512535.626, 3.12312e51, new Date()],
+      valid: [4, -5222, 3.12312e51],
+      invalid: [10.53, 0.1 * 0.2, -34512535.626, new Date()],
     });
 
     it('should return default message', () => {
