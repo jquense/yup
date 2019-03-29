@@ -176,6 +176,47 @@ describe('String types', () => {
       .equal(true);
   });
 
+  it('EMAIL is valid for the valid wikipedia examples', () => {
+    let v = string().email();
+
+    // https://en.wikipedia.org/wiki/Email_address#Examples
+    [
+      'simple@example.com',
+      'very.common@example.com',
+      'disposable.style.email.with+symbol@example.com',
+      'other.email-with-hyphen@example.com',
+      'fully-qualified-domain@example.com',
+      'user.name+tag+sorting@example.com',
+      'x@example.com',
+      'example-indeed@strange-example.com',
+      'admin@mailserver1',
+      'example@s.example',
+    ].map(email =>
+      v
+        .isValid(email)
+        .should.eventually()
+        .equal(true),
+    );
+  });
+
+  it("EMAIL shouldn't allow two consecutive dots in the domain", () => {
+    let v = string().email();
+
+    return v
+      .isValid('local-part@domain..com')
+      .should.eventually()
+      .equal(false);
+  });
+
+  it("EMAIL shouldn't allow two consecutive dots in the local-part", () => {
+    let v = string().email();
+
+    return v
+      .isValid('local..part@domain.com')
+      .should.eventually()
+      .equal(false);
+  });
+
   it('should check MIN correctly', function() {
     var v = string().min(5);
     var obj = object({
