@@ -48,7 +48,8 @@ describe('String types', () => {
         .cast('HellO JohN')
         .should.equal('hello john');
     });
-    it('should transform to lowercase', () => {
+
+    it('should transform to uppercase', () => {
       schema
         .uppercase()
         .cast('HellO JohN')
@@ -143,6 +144,21 @@ describe('String types', () => {
         .equal(false),
       v
         .isValid('bye')
+        .should.eventually()
+        .equal(true),
+    ]);
+  });
+
+  it('should check MATCHES correctly with global and sticky flags', function() {
+    var v = string().matches(/hi/gy);
+
+    return Promise.all([
+      v
+        .isValid('hi')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('hi')
         .should.eventually()
         .equal(true),
     ]);
@@ -284,6 +300,25 @@ describe('String types', () => {
 
       obj
         .isValid({ len: 5, name: 'foo' })
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
+  it('should check url correctly', function() {
+    var v = string().url();
+
+    return Promise.all([
+      v
+        .isValid('//www.github.com/')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('https://www.github.com/')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('this is not a url')
         .should.eventually()
         .equal(false),
     ]);

@@ -1,7 +1,0 @@
-
-parser: babel-eslint
-extends: jason/mocha
-globals:
-  TestHelpers: true
-  expect: true
-  sinon: true

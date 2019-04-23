@@ -1,8 +1,8 @@
-import reach from '../src/util/reach';
-import merge from '../src/util/merge';
+import reach, { getIn } from '../src/util/reach';
+import prependDeep from '../src/util/prependDeep';
 import { settled } from '../src/util/runValidations';
 
-import { object, array, string, lazy, number, isSchema } from '../src';
+import { object, array, string, lazy, number, isSchema, ValidationError } from '../src';
 
 describe('Yup', function() {
   it('cast should not assert on undefined', () => {
@@ -25,7 +25,6 @@ describe('Yup', function() {
   it('should do settled', function() {
     return Promise.all([
       settled([Promise.resolve('hi'), Promise.reject('error')])
-        .catch(err => console.log(err))
         .should.be.fulfilled()
         .then(function(results) {
           results.length.should.equal(2);
@@ -37,11 +36,11 @@ describe('Yup', function() {
     ]);
   });
 
-  it('should merge', function() {
-    var a = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
-    var b = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
+  it('should prepend deeply', function() {
+    var a = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
+    var b = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
 
-    merge(a, b).should.deep.eql({
+    prependDeep(a, b).should.deep.eql({
       a: 4,
       b: 'hello',
       c: [1, 2, 3, 4, 5, 3],
@@ -55,6 +54,39 @@ describe('Yup', function() {
     });
   });
 
+  it('should not prepend needlesly', function() {
+    var schema = string();
+    var spy = sinon.spy(schema, 'concat');
+    var a = { schema };
+    var b = { schema };
+    var c = prependDeep(a, b);
+
+    c.schema.should.equal(schema);
+    spy.should.not.have.been.called();
+  });
+
+  it('should getIn correctly', async () => {
+    var num = number(),
+      inst = object().shape({
+        num: number().max(4),
+
+        nested: object().shape({
+          arr: array().of(object().shape({ 'num-1': num })),
+        }),
+      });
+
+    const value = { nested: { arr: [{}, { 'num-1': 2 }] } };
+    const { schema, parent, parentPath } = getIn(
+      inst,
+      'nested.arr[1].num-1',
+      value,
+    );
+
+    expect(schema).to.equal(num);
+    expect(parentPath).to.equal('num-1');
+    expect(parent).to.equal(value.nested.arr[1]);
+  });
+
   it('should REACH correctly', async () => {
     var num = number(),
       inst = object().shape({
@@ -65,6 +97,8 @@ describe('Yup', function() {
         }),
       });
 
+    reach(inst, '').should.equal(inst);
+
     reach(inst, 'nested.arr.num').should.equal(num);
     reach(inst, 'nested.arr[].num').should.equal(num);
     reach(inst, 'nested.arr[1].num').should.equal(num);
@@ -74,8 +108,8 @@ describe('Yup', function() {
     valid.should.equal(true);
   });
 
-  it('should REACH conditionally correctly', function() {
-    var num = number(),
+  it('should REACH conditionally correctly', async function() {
+    var num = number().oneOf([4]),
       inst = object().shape({
         num: number().max(4),
         nested: object().shape({
@@ -102,21 +136,42 @@ describe('Yup', function() {
       },
     };
 
-    reach(inst, 'nested.arr.num', value).should.equal(num);
-    reach(inst, 'nested.arr[].num', value).should.equal(num);
+    let options = {};
+    options.parent = value.nested.arr[0];
+    options.value = options.parent.num;
+    reach(inst, 'nested.arr.num', value)
+      .resolve(options)
+      .should.equal(num);
+    reach(inst, 'nested.arr[].num', value)
+      .resolve(options)
+      .should.equal(num);
 
-    reach(inst, 'nested.arr.num', value, context).should.equal(num);
-    reach(inst, 'nested.arr[].num', value, context).should.equal(num);
-    reach(inst, 'nested.arr[0].num', value, context).should.equal(num);
+    options.context = context;
+    reach(inst, 'nested.arr.num', value, context)
+      .resolve(options)
+      .should.equal(num);
+    reach(inst, 'nested.arr[].num', value, context)
+      .resolve(options)
+      .should.equal(num);
+    reach(inst, 'nested.arr[0].num', value, context)
+      .resolve(options)
+      .should.equal(num);
 
-    // should fail b/c item[1] is used to resolve the schema
-    reach(inst, 'nested["arr"][1].num', value, context).should.not.equal(num);
+    // // should fail b/c item[1] is used to resolve the schema
+    options.parent = value.nested.arr[1];
+    options.value = options.parent.num;
+    reach(inst, 'nested["arr"][1].num', value, context)
+      .resolve(options)
+      .should.not.equal(num);
 
-    return reach(inst, 'nested.arr[].num', value, context)
-      .isValid(5)
-      .then(valid => {
-        valid.should.equal(true);
-      });
+    let reached = reach(inst, 'nested.arr[].num', value, context);
+
+    await reached.validate(5, { context, parent: { foo: 4 } }).should.be
+      .fulfilled;
+
+    await reached
+      .validate(5, { context, parent: { foo: 5 } })
+      .should.be.rejectedWith(ValidationError, /one of the following/);
   });
 
   it('should reach through lazy', async () => {

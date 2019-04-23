@@ -5,8 +5,6 @@ import isAbsent from './util/isAbsent';
 
 let isNaN = value => value != +value;
 
-let isInteger = val => isAbsent(val) || val === (val | 0);
-
 export default function NumberSchema() {
   if (!(this instanceof NumberSchema)) return new NumberSchema();
 
@@ -14,12 +12,18 @@ export default function NumberSchema() {
 
   this.withMutation(() => {
     this.transform(function(value) {
-      if (this.isType(value)) return value;
+      let parsed = value;
 
-      let parsed = parseFloat(value);
+      if (typeof parsed === 'string') {
+        parsed = parsed.replace(/\s/g, '');
+        if (parsed === '') return NaN;
+        // don't use parseFloat to avoid positives on alpha-numeric strings
+        parsed = +parsed;
+      }
+
       if (this.isType(parsed)) return parsed;
 
-      return NaN;
+      return parseFloat(parsed);
     });
   });
 }
@@ -80,15 +84,19 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   positive(msg = locale.positive) {
-    return this.min(0, msg);
+    return this.moreThan(0, msg);
   },
 
   negative(msg = locale.negative) {
-    return this.max(0, msg);
+    return this.lessThan(0, msg);
   },
 
   integer(message = locale.integer) {
-    return this.test({ name: 'integer', message, test: isInteger });
+    return this.test({
+      name: 'integer',
+      message,
+      test: val => isAbsent(val) || Number.isInteger(val),
+    });
   },
 
   truncate() {

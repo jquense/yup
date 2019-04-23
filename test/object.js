@@ -13,6 +13,20 @@ import {
 
 describe('Object types', () => {
   describe('casting', () => {
+    let inst;
+
+    beforeEach(() => {
+      inst = object({
+        num: number(),
+        str: string(),
+        arr: array().of(number()),
+        dte: date(),
+        nested: object().shape({ str: string() }),
+        arrNested: array().of(object().shape({ num: number() })),
+        stripped: string().strip(),
+      });
+    });
+
     it('should parse json strings', () => {
       object({ hello: number() })
         .cast('{ "hello": "5" }')
@@ -35,23 +49,31 @@ describe('Object types', () => {
         arrNested: [{ num: 5 }, { num: '5' }],
       };
 
-      object({
-        num: number(),
-        str: string(),
-        arr: array().of(number()),
-        dte: date(),
-        nested: object().shape({ str: string() }),
-        arrNested: array().of(object().shape({ num: number() })),
-      })
-        .cast(obj)
-        .should.eql({
-          num: 5,
-          str: 'hello',
-          arr: [4, 5],
-          dte: new Date(1411500325000),
-          nested: { str: '5' },
-          arrNested: [{ num: 5 }, { num: 5 }],
-        });
+      const cast = inst.cast(obj);
+
+      cast.should.eql({
+        num: 5,
+        str: 'hello',
+        arr: [4, 5],
+        dte: new Date(1411500325000),
+        nested: { str: '5' },
+        arrNested: [{ num: 5 }, { num: 5 }],
+      });
+
+      cast.arrNested[0].should.equal(obj.arrNested[0], 'should be kept as is');
+    });
+
+    it('should return the same object if all props are already cast', () => {
+      let obj = {
+        num: 5,
+        str: 'hello',
+        arr: [4, 5],
+        dte: new Date(1411500325000),
+        nested: { str: '5' },
+        arrNested: [{ num: 5 }, { num: 5 }],
+      };
+
+      inst.cast(obj).should.equal(obj);
     });
   });
 
@@ -203,7 +225,7 @@ describe('Object types', () => {
       });
   });
 
-  it.only('should call shape with constructed with an arg', () => {
+  it('should call shape with constructed with an arg', () => {
     let inst = object({
       prop: mixed(),
     });
@@ -307,6 +329,17 @@ describe('Object types', () => {
     ]);
   });
 
+  it('should work with noUnknown override', async () => {
+    let inst = object()
+      .shape({
+        prop: mixed(),
+      })
+      .noUnknown()
+      .noUnknown(false);
+
+    await inst.validate({ extra: 'field' }).should.become({ extra: 'field' });
+  });
+
   it('should strip specific fields', () => {
     let inst = object().shape({
       prop: mixed().strip(false),
@@ -360,6 +393,24 @@ describe('Object types', () => {
     });
   });
 
+  it('should allow refs with abortEarly false', async () => {
+    let schema = object().shape({
+      field: string(),
+      dupField: ref('field'),
+    });
+
+    let actual = await schema
+      .validate(
+        {
+          field: 'test',
+        },
+        { abortEarly: false },
+      )
+      .should.not.be.rejected();
+
+    actual.should.eql({ field: 'test', dupField: 'test' });
+  });
+
   describe('lazy evaluation', () => {
     let types = {
       string: string(),
@@ -397,8 +448,12 @@ describe('Object types', () => {
         }),
       });
 
-      reach(inst, 'nested').should.equal(inst);
-      reach(inst, 'x.y').should.equal(inst);
+      reach(inst, 'nested')
+        .resolve({})
+        .should.equal(inst);
+      reach(inst, 'x.y')
+        .resolve({})
+        .should.equal(inst);
     });
 
     it('should be passed the value', done => {
@@ -565,18 +620,6 @@ describe('Object types', () => {
     inst
       .cast({ prop: 5, other: 6 })
       .should.eql({ myProp: 5, other: 6, Other: 6 });
-  });
-
-  it('should move nested keys', () => {
-    let inst = object({
-      foo: object({
-        bar: string(),
-      }),
-    }).from('foo.bar', 'foobar');
-
-    inst
-      .cast({ foo: { bar: 'quz', foof: 5 } })
-      .should.eql({ foobar: 'quz', foo: { foof: 5 } });
   });
 
   it('should alias nested keys', () => {
@@ -775,5 +818,15 @@ describe('Object types', () => {
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 });
 
     expect(inst.nullable().cast(null)).to.equal(null);
+  });
+
+  xit('should handle invalid shapes better', async () => {
+    var schema = object().shape({
+      permissions: undefined,
+    });
+
+    expect(
+      await schema.isValid({ permissions: [] }, { abortEarly: false }),
+    ).to.equal(true);
   });
 });

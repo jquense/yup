@@ -4,10 +4,8 @@ import isSchema from './util/isSchema';
 import makePath from './util/makePath';
 import printValue from './util/printValue';
 import MixedSchema from './mixed';
-import { mixed, array as locale } from './locale';
+import { array as locale } from './locale';
 import runValidations, { propagateErrors } from './util/runValidations';
-
-let hasLength = value => !isAbsent(value) && value.length > 0;
 
 export default ArraySchema;
 
@@ -42,12 +40,22 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _cast(_value, _opts) {
-    var value = MixedSchema.prototype._cast.call(this, _value, _opts);
+    const value = MixedSchema.prototype._cast.call(this, _value, _opts);
 
     //should ignore nulls here
     if (!this._typeCheck(value) || !this._subType) return value;
 
-    return value.map(v => this._subType.cast(v, _opts));
+    let isChanged = false;
+    const castArray = value.map(v => {
+      const castElement = this._subType.cast(v, _opts);
+      if (castElement !== v) {
+        isChanged = true;
+      }
+
+      return castElement;
+    });
+
+    return isChanged ? castArray : value;
   },
 
   _validate(_value, options = {}) {
@@ -100,6 +108,10 @@ inherits(ArraySchema, MixedSchema, {
       });
   },
 
+  _isPresent(value) {
+    return MixedSchema.prototype._cast.call(this, value) && value.length > 0;
+  },
+
   of(schema) {
     var next = this.clone();
 
@@ -113,16 +125,6 @@ inherits(ArraySchema, MixedSchema, {
     next._subType = schema;
 
     return next;
-  },
-
-  required(message = mixed.required) {
-    var next = MixedSchema.prototype.required.call(this, message);
-
-    return next.test({
-      message,
-      name: 'required',
-      test: hasLength,
-    });
   },
 
   min(min, message) {
@@ -153,9 +155,10 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   ensure() {
-    return this.default(() => []).transform(
-      val => (val === null ? [] : [].concat(val)),
-    );
+    return this.default(() => []).transform(val => {
+      if (this.isType(val)) return val;
+      return val === null ? [] : [].concat(val);
+    });
   },
 
   compact(rejector) {

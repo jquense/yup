@@ -5,15 +5,12 @@ import toArray from 'lodash/toArray';
 import { mixed as locale } from './locale';
 import Condition from './Condition';
 import runValidations from './util/runValidations';
-import merge from './util/merge';
+import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
-import isAbsent from './util/isAbsent';
 import createValidation from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
-
-let notEmpty = value => !isAbsent(value);
 
 class RefSet {
   constructor() {
@@ -96,14 +93,15 @@ const proto = (SchemaType.prototype = {
   },
 
   withMutation(fn) {
+    let before = this._mutate;
     this._mutate = true;
     let result = fn(this);
-    this._mutate = false;
+    this._mutate = before;
     return result;
   },
 
   concat(schema) {
-    if (!schema) return this;
+    if (!schema || schema === this) return this;
 
     if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(
@@ -111,22 +109,22 @@ const proto = (SchemaType.prototype = {
           this._type
         } and ${schema._type}`,
       );
-    var cloned = this.clone();
-    var next = merge(this.clone(), schema.clone());
 
-    // undefined isn't merged over, but is a valid value for default
+    var next = prependDeep(schema.clone(), this);
+
+    // new undefined default is overriden by old non-undefined one, revert
     if (has(schema, '_default')) next._default = schema._default;
 
-    next.tests = cloned.tests;
-    next._exclusive = cloned._exclusive;
+    next.tests = this.tests;
+    next._exclusive = this._exclusive;
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
-    schema.tests.forEach(fn => {
-      next = next.test(fn.TEST);
+    next.withMutation(next => {
+      schema.tests.forEach(fn => {
+        next.test(fn.OPTIONS);
+      });
     });
-
-    next._type = schema._type;
 
     return next;
   },
@@ -136,20 +134,27 @@ const proto = (SchemaType.prototype = {
     return !this._typeCheck || this._typeCheck(v);
   },
 
-  resolve({ context, parent }) {
-    if (this._conditions.length) {
-      return this._conditions.reduce(
-        (schema, match) =>
-          match.resolve(schema, match.getValue(parent, context)),
-        this,
+  resolve(options) {
+    let schema = this;
+
+    if (schema._conditions.length) {
+      let conditions = schema._conditions;
+
+      schema = schema.clone();
+      schema._conditions = [];
+      schema = conditions.reduce(
+        (schema, condition) => condition.resolve(schema, options),
+        schema,
       );
+
+      schema = schema.resolve(options);
     }
 
-    return this;
+    return schema;
   },
 
   cast(value, options = {}) {
-    let resolvedSchema = this.resolve(options);
+    let resolvedSchema = this.resolve({ ...options, value });
     let result = resolvedSchema._cast(value, options);
 
     if (
@@ -242,12 +247,12 @@ const proto = (SchemaType.prototype = {
   },
 
   validate(value, options = {}) {
-    let schema = this.resolve(options);
+    let schema = this.resolve({ ...options, value });
     return schema._validate(value, options);
   },
 
   validateSync(value, options = {}) {
-    let schema = this.resolve(options);
+    let schema = this.resolve({ ...options, value });
     let result, err;
 
     schema
@@ -270,7 +275,7 @@ const proto = (SchemaType.prototype = {
 
   isValidSync(value, options) {
     try {
-      this.validateSync(value, { ...options });
+      this.validateSync(value, options);
       return true;
     } catch (err) {
       if (err.name === 'ValidationError') return false;
@@ -299,25 +304,36 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  strict() {
+  strict(isStrict = true) {
     var next = this.clone();
-    next._options.strict = true;
+    next._options.strict = isStrict;
     return next;
   },
 
+  _isPresent(value) {
+    return value != null;
+  },
+
   required(message = locale.required) {
-    return this.test({ message, name: 'required', test: notEmpty });
+    return this.test({
+      message,
+      name: 'required',
+      exclusive: true,
+      test(value) {
+        return this.schema._isPresent(value);
+      },
+    });
   },
 
   notRequired() {
     var next = this.clone();
-    next.tests = next.tests.filter(test => test.TEST_NAME !== 'required');
+    next.tests = next.tests.filter(test => test.OPTIONS.name !== 'required');
     return next;
   },
 
-  nullable(value) {
+  nullable(isNullable = true) {
     var next = this.clone();
-    next._nullable = value === false ? false : true;
+    next._nullable = isNullable;
     return next;
   },
 
@@ -341,15 +357,21 @@ const proto = (SchemaType.prototype = {
    * the previous tests are removed and further tests of the same name will replace each other.
    */
   test(...args) {
-    let opts = args[0];
-    if (args.length > 1) {
-      let [name, message, test] = args;
-      if (test == null) {
-        test = message;
-        message = locale.default;
+    let opts;
+
+    if (args.length === 1) {
+      if (typeof args[0] === 'function') {
+        opts = { test: args[0] };
+      } else {
+        opts = args[0];
       }
-      opts = { name, test, message, exclusive: false };
+    } else if (args.length === 2) {
+      opts = { name: args[0], test: args[1] };
+    } else {
+      opts = { name: args[0], message: args[1], test: args[2] };
     }
+
+    if (opts.message === undefined) opts.message = locale.default;
 
     if (typeof opts.test !== 'function')
       throw new TypeError('`test` is a required parameters');
@@ -369,9 +391,9 @@ const proto = (SchemaType.prototype = {
     next._exclusive[opts.name] = !!opts.exclusive;
 
     next.tests = next.tests.filter(fn => {
-      if (fn.TEST_NAME === opts.name) {
+      if (fn.OPTIONS.name === opts.name) {
         if (isExclusive) return false;
-        if (fn.TEST.test === validate.TEST.test) return false;
+        if (fn.OPTIONS.test === validate.OPTIONS.test) return false;
       }
       return true;
     });
@@ -382,11 +404,16 @@ const proto = (SchemaType.prototype = {
   },
 
   when(keys, options) {
+    if (arguments.length === 1) {
+      options = keys;
+      keys = '.';
+    }
+
     var next = this.clone(),
       deps = [].concat(keys).map(key => new Ref(key));
 
     deps.forEach(dep => {
-      if (!dep.isContext) next._deps.push(dep.key);
+      if (dep.isSibling) next._deps.push(dep.key);
     });
 
     next._conditions.push(new Condition(deps, options));
@@ -477,15 +504,17 @@ const proto = (SchemaType.prototype = {
   },
 
   describe() {
-    let next = this.clone();
+    const next = this.clone();
 
     return {
       type: next._type,
       meta: next._meta,
       label: next._label,
       tests: next.tests
-        .map(fn => fn.TEST_NAME, {})
-        .filter((n, idx, list) => list.indexOf(n) === idx),
+        .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
+        .filter(
+          (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
+        ),
     };
   },
 });
@@ -499,12 +528,13 @@ for (const method of ['validate', 'validateSync'])
       options.context,
     );
 
-    return schema[method](parent[parentPath], {
+    return schema[method](parent && parent[parentPath], {
       ...options,
       parent,
-      path: parentPath,
+      path,
     });
   };
 
 for (const alias of ['equals', 'is']) proto[alias] = proto.oneOf;
 for (const alias of ['not', 'nope']) proto[alias] = proto.notOneOf;
+proto.optional = proto.notRequired;

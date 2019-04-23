@@ -27,7 +27,13 @@ function resolveParams(oldParams, newParams, resolve) {
   return mapValues({ ...oldParams, ...newParams }, resolve);
 }
 
-function createErrorFactory({ value, label, resolve, originalValue, ...opts }) {
+export function createErrorFactory({
+  value,
+  label,
+  resolve,
+  originalValue,
+  ...opts
+}) {
   return function createError({
     path = opts.path,
     message = opts.message,
@@ -62,8 +68,10 @@ export default function createValidation(options) {
     ...rest
   }) {
     let parent = options.parent;
-    let resolve = value =>
-      Ref.isRef(value) ? value.getValue(parent, options.context) : value;
+    let resolve = item =>
+      Ref.isRef(item)
+        ? item.getValue({ value, parent, context: options.context })
+        : item;
 
     let createError = createErrorFactory({
       message,
@@ -92,11 +100,7 @@ export default function createValidation(options) {
     });
   }
 
-  validate.TEST_NAME = name;
-  validate.TEST_FN = test;
-  validate.TEST = options;
+  validate.OPTIONS = options;
 
   return validate;
 }
-
-module.exports.createErrorFactory = createErrorFactory;
