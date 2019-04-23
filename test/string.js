@@ -149,6 +149,21 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check MATCHES correctly with global and sticky flags', function() {
+    var v = string().matches(/hi/gy);
+
+    return Promise.all([
+      v
+        .isValid('hi')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('hi')
+        .should.eventually()
+        .equal(true),
+    ]);
+  });
+
   it('MATCHES should include empty strings', () => {
     let v = string().matches(/(hi|bye)/);
 

@@ -86,7 +86,7 @@ inherits(StringSchema, MixedSchema, {
       test: value =>
         isAbsent(value) ||
         (value === '' && excludeEmptyString) ||
-        regex.test(value),
+        value.search(regex) !== -1,
     });
   },
 
