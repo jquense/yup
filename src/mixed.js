@@ -45,16 +45,12 @@ class RefSet {
     next.refs = new Map(this.refs);
     return next;
   }
-  union(other) {
+  merge(newItems, removeItems) {
     const next = this.clone();
-    other.list.forEach(value => next.add(value));
-    other.refs.forEach(value => next.add(value));
-    return next;
-  }
-  setminus(other) {
-    const next = this.clone();
-    other.list.forEach(value => next.delete(value));
-    other.refs.forEach(value => next.delete(value));
+    newItems.list.forEach(value => next.add(value));
+    newItems.refs.forEach(value => next.add(value));
+    removeItems.list.forEach(value => next.delete(value));
+    removeItems.refs.forEach(value => next.delete(value));
     return next;
   }
 }
@@ -139,12 +135,14 @@ const proto = (SchemaType.prototype = {
 
     // manually merge the blacklist/whitelist (the other `schema` takes
     // precedence in case of conflicts)
-    next._whitelist = this._whitelist
-      .union(schema._whitelist)
-      .setminus(schema._blacklist);
-    next._blacklist = this._blacklist
-      .union(schema._blacklist)
-      .setminus(schema._whitelist);
+    next._whitelist = this._whitelist.merge(
+      schema._whitelist,
+      schema._blacklist,
+    );
+    next._blacklist = this._blacklist.merge(
+      schema._blacklist,
+      schema._whitelist,
+    );
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
