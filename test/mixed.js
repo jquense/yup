@@ -670,6 +670,47 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('concat should preserve oneOf', async function() {
+    let inst = string()
+      .oneOf(['a'])
+      .concat(string().default('hi'));
+
+    await inst.isValid('a').should.become(true);
+  });
+
+  it('gives whitelist precedence to second in concat', async function() {
+    let inst = string()
+      .oneOf(['a', 'b', 'c'])
+      .concat(string().notOneOf(['b']));
+
+    await inst.isValid('a').should.become(true);
+    await inst.isValid('b').should.become(false);
+    await inst.isValid('c').should.become(true);
+  });
+
+  it('gives blacklist precedence to second in concat', async function() {
+    let inst = string()
+      .notOneOf(['a', 'b', 'c'])
+      .concat(string().oneOf(['b', 'c']));
+
+    await inst.isValid('a').should.become(false);
+    await inst.isValid('b').should.become(true);
+    await inst.isValid('c').should.become(true);
+  });
+
+  it('concats whitelist with refs', async function() {
+    let inst = object({
+      x: string().required(),
+      y: string()
+        .oneOf([ref('$x'), 'b', 'c'])
+        .concat(string().notOneOf(['c', ref('$x')])),
+    });
+
+    await inst.isValid({ x: 'a', y: 'a' }).should.become(false);
+    await inst.isValid({ x: 'a', y: 'b' }).should.become(true);
+    await inst.isValid({ x: 'a', y: 'c' }).should.become(false);
+  });
+
   it('defaults should be validated but not transformed', function() {
     let inst = string()
       .trim()
