@@ -34,6 +34,10 @@
 
 ## v0.26.0 - Fri, 20 Jul 2018 15:39:03 GMT
 
+### BREAKING CHANGES
+
+* locale `number` config properties `less` and `more` are now `lessThan` and `moreThan`
+
 ## v0.25.1 - Wed, 16 May 2018 23:59:14 GMT
 
 ## v0.25.0 - Tue, 15 May 2018 21:43:54 GMT
