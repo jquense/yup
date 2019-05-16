@@ -16,7 +16,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function(value) {
+    this.transform(function (value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -73,14 +73,20 @@ inherits(StringSchema, MixedSchema, {
   matches(regex, options) {
     let excludeEmptyString = false;
     let message;
+    let name;
 
     if (options) {
-      if (options.message || options.hasOwnProperty('excludeEmptyString')) {
-        ({ excludeEmptyString, message } = options);
+      if (
+        options.message ||
+        options.hasOwnProperty('excludeEmptyString') ||
+        options.name
+      ) {
+        ({ excludeEmptyString, message, name } = options);
       } else message = options;
     }
 
     return this.test({
+      name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
       test: value =>
@@ -92,6 +98,7 @@ inherits(StringSchema, MixedSchema, {
 
   email(message = locale.email) {
     return this.matches(rEmail, {
+      name: 'email',
       message,
       excludeEmptyString: true,
     });
@@ -99,6 +106,7 @@ inherits(StringSchema, MixedSchema, {
 
   url(message = locale.url) {
     return this.matches(rUrl, {
+      name: 'url',
       message,
       excludeEmptyString: true,
     });
