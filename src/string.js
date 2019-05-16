@@ -17,7 +17,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function(value) {
+    this.transform(function (value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -89,7 +89,7 @@ inherits(StringSchema, MixedSchema, {
     }
 
     return this.test({
-      name: name || 'matches'
+      name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
       test: value =>
