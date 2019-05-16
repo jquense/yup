@@ -89,7 +89,7 @@ inherits(StringSchema, MixedSchema, {
     }
 
     return this.test({
-      name,
+      name: name || 'matches'
       message: message || locale.matches,
       params: { regex },
       test: value =>
