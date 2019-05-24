@@ -504,6 +504,27 @@ describe('Object types', () => {
       }
     });
 
+    it('should set the correct path with dotted keys', async () => {
+      let inst = object({
+        'dotted.str': string()
+          .required()
+          .nullable(),
+        nested: lazy(() => inst.default(undefined)),
+      });
+
+      let value = {
+        nested: { 'dotted.str': null },
+        'dotted.str': 'foo',
+      };
+
+      try {
+        await inst.validate(value, { strict: true });
+      } catch (err) {
+        err.path.should.equal('nested["dotted.str"]');
+        err.message.should.match(/required/);
+      }
+    });
+
     it('should resolve array sub types', async () => {
       let inst = object({
         str: string()
