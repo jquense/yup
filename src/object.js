@@ -146,7 +146,10 @@ inherits(ObjectSchema, MixedSchema, {
         originalValue = originalValue || value;
 
         let validations = this._nodes.map(key => {
-          let path = makePath`${opts.path}.${key}`;
+          let path =
+            key.indexOf('.') === -1
+              ? makePath`${opts.path}.${key}`
+              : makePath`${opts.path}["${key}"]`;
           let field = this.fields[key];
 
           let innerOptions = {
