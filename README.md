@@ -757,7 +757,7 @@ date parsing strategy than the default one you could do that with a transform.
 
 ```js
 module.exports = function(formats = 'MMM dd, yyyy') {
-  return date().transform(function(value, originalvalue) {
+  return date().transform(function(value, originalValue) {
     // check to see if the previous transform already parsed the date
     if (this.isType(value)) return value;
 
