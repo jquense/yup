@@ -131,7 +131,7 @@ inherits(ObjectSchema, MixedSchema, {
     endEarly = this._option('abortEarly', opts);
     recursive = this._option('recursive', opts);
 
-    opts = { ...opts, __validating: true, originalValue };
+    opts = { ...opts, __validating: true, originalValue, parentSchema: this };
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
@@ -156,6 +156,7 @@ inherits(ObjectSchema, MixedSchema, {
             ...opts,
             path,
             parent: value,
+            parentSchema: this,
             originalValue: originalValue[key],
           };
 

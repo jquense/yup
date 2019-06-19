@@ -461,11 +461,12 @@ describe('Mixed Types ', () => {
     let called = false;
     let inst = object({
       other: mixed(),
-      test: mixed().test({
+      test: string().test({
         message: 'invalid',
         exclusive: true,
         name: 'max',
         test() {
+          this.parentSchema.should.equal(inst);
           this.path.should.equal('test');
           this.parent.should.eql({ other: 5, test: 'hi' });
           this.options.context.should.eql({ user: 'jason' });

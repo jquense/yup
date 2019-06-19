@@ -242,6 +242,11 @@ const proto = (SchemaType.prototype = {
       originalValue,
       sync,
     };
+
+    if (options.parentSchema) {
+      validationParams.parentSchema = options.parentSchema;
+    }
+
     let initialTests = [];
 
     if (this._typeError) initialTests.push(this._typeError(validationParams));
@@ -264,7 +269,9 @@ const proto = (SchemaType.prototype = {
         sync,
         value,
         endEarly,
-        validations: this.tests.map(fn => fn(validationParams)),
+        validations: this.tests.map(fn => {
+          return fn(validationParams);
+        }),
       }),
     );
   },
@@ -550,7 +557,6 @@ for (const method of ['validate', 'validateSync'])
       value,
       options.context,
     );
-
     return schema[method](parent && parent[parentPath], {
       ...options,
       parent,
