@@ -269,9 +269,7 @@ const proto = (SchemaType.prototype = {
         sync,
         value,
         endEarly,
-        validations: this.tests.map(fn => {
-          return fn(validationParams);
-        }),
+        validations: this.tests.map(fn => fn(validationParams)),
       }),
     );
   },
