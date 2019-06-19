@@ -461,7 +461,7 @@ describe('Mixed Types ', () => {
     let called = false;
     let inst = object({
       other: mixed(),
-      test: string().test({
+      test: object().test({
         message: 'invalid',
         exclusive: true,
         name: 'max',
