@@ -555,6 +555,7 @@ for (const method of ['validate', 'validateSync'])
       ...options,
       parent,
       path,
+      parentSchema:schema.clone()
     });
   };
 
