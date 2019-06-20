@@ -466,7 +466,6 @@ describe('Mixed Types ', () => {
         exclusive: true,
         name: 'max',
         test() {
-          this.parentSchema.should.equal(inst);
           this.path.should.equal('test');
           this.parent.should.eql({ other: 5, test: 'hi' });
           this.options.context.should.eql({ user: 'jason' });
@@ -484,11 +483,43 @@ describe('Mixed Types ', () => {
     called.should.equal(true);
   });
 
-  it('tests should be called with the correct parentSchema', async () => {
+  it('tests should be able to access nested parent', async () => {
+    let calledFirst = false;
+    let calledSecond = false;
+    let calledThird = false;
+    let testFixture = {
+      firstField: 'test',
+      second: {
+        secondField: 'test2',
+        third: {
+          thirdField: 'test3',
+        },
+      },
+    };
+
     let third = object({
       thirdField: mixed().test({
         test() {
-          this.parentSchema.should.equal(third);
+          calledThird = true;
+          this.from().schema.should.equal(third);
+          this.from().value.should.equal(testFixture.second.third);
+
+          this.from()
+            .from()
+            .schema.should.equal(second);
+          this.from()
+            .from()
+            .value.should.equal(testFixture.second);
+
+          this.from()
+            .from()
+            .from()
+            .schema.should.equal(first);
+          this.from()
+            .from()
+            .from()
+            .value.should.equal(testFixture);
+
           return true;
         },
       }),
@@ -497,7 +528,16 @@ describe('Mixed Types ', () => {
     let second = object({
       secondField: mixed().test({
         test() {
-          this.parentSchema.should.equal(second);
+          calledSecond = true;
+          this.from().schema.should.equal(second);
+          this.from().value.should.equal(testFixture.second);
+
+          this.from()
+            .from()
+            .schema.should.equal(first);
+          this.from()
+            .from()
+            .value.should.equal(testFixture);
           return true;
         },
       }),
@@ -507,14 +547,19 @@ describe('Mixed Types ', () => {
     let first = object({
       firstField: mixed().test({
         test() {
-          this.parentSchema.should.equal(first);
+          calledFirst = true;
+          this.from().schema.should.equal(first);
+          this.from().value.should.equal(testFixture);
           return true;
         },
       }),
       second,
     });
 
-    await first.validate({});
+    await first.validate(testFixture);
+    calledFirst.should.equal(true);
+    calledSecond.should.equal(true);
+    calledThird.should.equal(true);
   });
 
   it('tests can return an error', () => {

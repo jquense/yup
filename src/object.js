@@ -128,10 +128,16 @@ inherits(ObjectSchema, MixedSchema, {
     let originalValue =
       opts.originalValue != null ? opts.originalValue : _value;
 
+    let fromClosure = (scope, from) => () => {
+      return { value: originalValue, schema: scope, from };
+    };
+
+    let from = fromClosure(this, opts.from);
+
     endEarly = this._option('abortEarly', opts);
     recursive = this._option('recursive', opts);
 
-    opts = { ...opts, __validating: true, originalValue, parentSchema: this };
+    opts = { ...opts, __validating: true, originalValue, from };
 
     return MixedSchema.prototype._validate
       .call(this, _value, opts)
@@ -155,8 +161,8 @@ inherits(ObjectSchema, MixedSchema, {
           let innerOptions = {
             ...opts,
             path,
+            from,
             parent: value,
-            parentSchema: this,
             originalValue: originalValue[key],
           };
 

@@ -243,8 +243,8 @@ const proto = (SchemaType.prototype = {
       sync,
     };
 
-    if (options.parentSchema) {
-      validationParams.parentSchema = options.parentSchema;
+    if (options.from) {
+      validationParams.from = options.from;
     }
 
     let initialTests = [];
