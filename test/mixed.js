@@ -487,6 +487,7 @@ describe('Mixed Types ', () => {
     let calledFirst = false;
     let calledSecond = false;
     let calledThird = false;
+
     let testFixture = {
       firstField: 'test',
       second: {
@@ -501,24 +502,14 @@ describe('Mixed Types ', () => {
       thirdField: mixed().test({
         test() {
           calledThird = true;
-          this.from().schema.should.equal(third);
-          this.from().value.should.equal(testFixture.second.third);
+          this.from[0].value.should.equal(testFixture.second.third);
+          this.from[0].schema.should.equal(third);
 
-          this.from()
-            .from()
-            .schema.should.equal(second);
-          this.from()
-            .from()
-            .value.should.equal(testFixture.second);
+          this.from[1].value.should.equal(testFixture.second);
+          this.from[1].schema.should.equal(second);
 
-          this.from()
-            .from()
-            .from()
-            .schema.should.equal(first);
-          this.from()
-            .from()
-            .from()
-            .value.should.equal(testFixture);
+          this.from[2].value.should.equal(testFixture);
+          this.from[2].schema.should.equal(first);
 
           return true;
         },
@@ -529,15 +520,11 @@ describe('Mixed Types ', () => {
       secondField: mixed().test({
         test() {
           calledSecond = true;
-          this.from().schema.should.equal(second);
-          this.from().value.should.equal(testFixture.second);
+          this.from[0].value.should.equal(testFixture.second);
+          this.from[0].schema.should.equal(second);
 
-          this.from()
-            .from()
-            .schema.should.equal(first);
-          this.from()
-            .from()
-            .value.should.equal(testFixture);
+          this.from[1].value.should.equal(testFixture);
+          this.from[1].schema.should.equal(first);
           return true;
         },
       }),
@@ -548,8 +535,8 @@ describe('Mixed Types ', () => {
       firstField: mixed().test({
         test() {
           calledFirst = true;
-          this.from().schema.should.equal(first);
-          this.from().value.should.equal(testFixture);
+          this.from[0].value.should.equal(testFixture);
+          this.from[0].schema.should.equal(first);
           return true;
         },
       }),

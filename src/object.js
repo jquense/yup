@@ -128,11 +128,7 @@ inherits(ObjectSchema, MixedSchema, {
     let originalValue =
       opts.originalValue != null ? opts.originalValue : _value;
 
-    let fromClosure = (scope, from) => () => {
-      return { value: originalValue, schema: scope, from };
-    };
-
-    let from = fromClosure(this, opts.from);
+    let from = [{ schema: this, value: originalValue }, ...(opts.from || [])];
 
     endEarly = this._option('abortEarly', opts);
     recursive = this._option('recursive', opts);
@@ -149,6 +145,9 @@ inherits(ObjectSchema, MixedSchema, {
           return value;
         }
 
+        from = originalValue
+          ? from
+          : [...from].splice(0, 1, { schema: this, value: originalValue });
         originalValue = originalValue || value;
 
         let validations = this._nodes.map(key => {
