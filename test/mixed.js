@@ -484,6 +484,39 @@ describe('Mixed Types ', () => {
     called.should.equal(true);
   });
 
+  it('tests should be called with the correct parentSchema', async () => {
+    let third = object({
+      thirdField: mixed().test({
+        test() {
+          this.parentSchema.should.equal(third);
+          return true;
+        },
+      }),
+    });
+
+    let second = object({
+      secondField: mixed().test({
+        test() {
+          this.parentSchema.should.equal(second);
+          return true;
+        },
+      }),
+      third,
+    });
+
+    let first = object({
+      firstField: mixed().test({
+        test() {
+          this.parentSchema.should.equal(first);
+          return true;
+        },
+      }),
+      second,
+    });
+
+    await first.validate({});
+  });
+
   it('tests can return an error', () => {
     let inst = mixed().test({
       message: 'invalid ${path}',
