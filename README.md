@@ -95,6 +95,7 @@ json separate from validating it, via the `cast` method.
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
+- [TypeScript Support](#typescript-support)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -111,6 +112,12 @@ For browsers that do not support these, you'll need to include a polyfill, such 
 import 'core-js/es6/promise';
 import 'core-js/es6/set';
 import 'core-js/es6/map';
+```
+
+If you are using TypeScript installing the Yup typings is recommended
+
+```sh
+npm install -D @types/yup
 ```
 
 ## Usage
@@ -1198,4 +1205,69 @@ class MomentDateSchemaType extends DateSchema {
 let schema = new MomentDateSchemaType();
 
 schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
+```
+
+## TypeScript Support
+
+If you are using TypeScript installing the Yup typings is recommended
+
+```sh
+npm install -D @types/yup
+```
+
+You can now infer a TypeScript type alias using the exported `InferType`. Given the following Yup schema:
+
+```TypeScript
+import * as yup from 'yup';
+
+const personSchema = yup.object({
+  firstName: yup
+    .string(),
+  nickName: yup
+    .string()
+    .nullable()
+  email: yup
+    .string()
+    .nullable()
+    .notRequired()
+    .email(),
+  birthDate: yup
+    .date()
+    .nullable()
+    .notRequired()
+    .min(new Date(1900, 0, 1)),
+});
+```
+
+You can derive the TypeScript type as follows:
+
+```TypeScript
+type Person = yup.InferType<typeof personSchema>;
+```
+
+Which is equivalent to the following TypeScript type alias:
+
+```TypeScript
+type Person = {
+  firstName: string;
+  nickName: string | null;
+  email?: string | null | undefined;
+  birthDate?: Date | null | undefined;
+}
+```
+
+Making the following objects valid both for TypeScript and Yup validation:
+
+```TypeScript
+const minimalPerson: Person = {
+    firstName: "Matt",
+    nickName: null
+};
+
+const fullPerson: Person = {
+    firstName: "Matt",
+    nickName: "The Hammer",
+    email: "matt@the-hammer.com",
+    birthDate: new Date(1976, 9, 5)
+};
 ```
