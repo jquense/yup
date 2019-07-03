@@ -485,51 +485,44 @@ describe('Mixed Types ', () => {
 
   it('tests should be able to access nested parent', async () => {
     let calledFirst = false;
-    let calledSecond = false;
     let calledThird = false;
 
     let testFixture = {
       firstField: 'test',
-      second: {
-        secondField: 'test2',
-        third: {
+      second: [
+        {
           thirdField: 'test3',
         },
-      },
+        {
+          thirdField: 'test4',
+        },
+      ],
     };
 
     let third = object({
       thirdField: mixed().test({
         test() {
           calledThird = true;
-          this.from[0].value.should.equal(testFixture.second.third);
+
+          // I want to do something like this,
+          // this.resolve(ref(this.path),this.from[1].value);
+          // OR probably preferably
+          // this.from[1].resolve(ref(this.path))
+          // but I can't get it working :( ...help?
+
+          // so I added an "index" option to array test options to make this test make sense
+          this.from[0].value.should.eql(testFixture.second[this.options.index]);
           this.from[0].schema.should.equal(third);
-
-          this.from[1].value.should.equal(testFixture.second);
-          this.from[1].schema.should.equal(second);
-
-          this.from[2].value.should.equal(testFixture);
-          this.from[2].schema.should.equal(first);
-
-          return true;
-        },
-      }),
-    });
-
-    let second = object({
-      secondField: mixed().test({
-        test() {
-          calledSecond = true;
-          this.from[0].value.should.equal(testFixture.second);
-          this.from[0].schema.should.equal(second);
 
           this.from[1].value.should.equal(testFixture);
           this.from[1].schema.should.equal(first);
+
           return true;
         },
       }),
-      third,
     });
+
+    let second = array().of(third);
 
     let first = object({
       firstField: mixed().test({
@@ -545,7 +538,6 @@ describe('Mixed Types ', () => {
 
     await first.validate(testFixture);
     calledFirst.should.equal(true);
-    calledSecond.should.equal(true);
     calledThird.should.equal(true);
   });
 
