@@ -147,7 +147,10 @@ inherits(ObjectSchema, MixedSchema, {
 
         from = originalValue
           ? from
-          : [...from].splice(0, 1, { schema: this, value: originalValue });
+          : [
+              { schema: this, value: originalValue || value },
+              ...(opts.from || []),
+            ];
         originalValue = originalValue || value;
 
         let validations = this._nodes.map(key => {
