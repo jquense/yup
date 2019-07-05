@@ -146,7 +146,7 @@ inherits(ObjectSchema, MixedSchema, {
         }
 
         from = originalValue
-          ? from
+          ? [...from]
           : [
               { schema: this, value: originalValue || value },
               ...(opts.from || []),
