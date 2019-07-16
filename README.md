@@ -1225,7 +1225,10 @@ const personSchema = yup.object({
     .string(),
   nickName: yup
     .string()
-    .nullable()
+    .nullable(),
+  gender: yup
+    .mixed<'male' | 'female' | 'other'>()
+    .oneOf(['male', 'female', 'other']),
   email: yup
     .string()
     .nullable()
@@ -1251,6 +1254,7 @@ Which is equivalent to the following TypeScript type alias:
 type Person = {
   firstName: string;
   nickName: string | null;
+  gender: "male" | "female" | "other";
   email?: string | null | undefined;
   birthDate?: Date | null | undefined;
 }
@@ -1261,12 +1265,14 @@ Making the following objects valid both for TypeScript and Yup validation:
 ```TypeScript
 const minimalPerson: Person = {
     firstName: "Matt",
-    nickName: null
+    nickName: null,
+    gender: "male"
 };
 
 const fullPerson: Person = {
     firstName: "Matt",
     nickName: "The Hammer",
+    gender: "male",
     email: "matt@the-hammer.com",
     birthDate: new Date(1976, 9, 5)
 };
