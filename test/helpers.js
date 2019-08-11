@@ -43,3 +43,20 @@ export let validateAll = (inst, { valid = [], invalid = [] }) => {
     });
   }
 };
+
+export function ensureSync(fn) {
+  let run = false;
+  let resolve = t => {
+    if (!run) return t;
+    throw new Error('Did not execute synchronously');
+  };
+  let err = t => {
+    if (!run) throw t;
+    throw new Error('Did not execute synchronously');
+  };
+
+  let result = fn().then(resolve, err);
+
+  run = true;
+  return result;
+}

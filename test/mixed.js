@@ -1,34 +1,18 @@
 import {
   array,
-  mixed,
-  string,
-  number,
-  object,
-  ref,
-  reach,
   bool,
   lazy,
+  mixed,
+  number,
+  object,
+  reach,
+  ref,
+  string,
   ValidationError,
 } from '../src';
+import { ensureSync } from './helpers';
 
 let noop = () => {};
-
-function ensureSync(fn) {
-  let run = false;
-  let resolve = t => {
-    if (!run) return t;
-    throw new Error('Did not execute synchonously');
-  };
-  let err = t => {
-    if (!run) throw t;
-    throw new Error('Did not execute synchonously');
-  };
-
-  let result = fn().then(resolve, err);
-
-  run = true;
-  return result;
-}
 
 global.YUP_USE_SYNC &&
   it('[internal] normal methods should be running in sync Mode', async () => {
