@@ -10,6 +10,7 @@ import {
   lazy,
   reach,
 } from '../src';
+import { ensureSync } from './helpers';
 
 describe('Object types', () => {
   describe('casting', () => {
@@ -714,6 +715,68 @@ describe('Object types', () => {
         .equal(true),
     ]);
   });
+
+  it('should handle conditionals with unknown dependencies', () => {
+    let inst = object().shape({
+      value: number().when('isRequired', {
+        is: true,
+        then: number().required(),
+      }),
+    });
+
+    return Promise.all([
+      inst
+        .isValid({
+          isRequired: true,
+          value: 1234,
+        })
+        .should.eventually.equal(true),
+      inst
+        .isValid({
+          isRequired: true,
+        })
+        .should.eventually.equal(false),
+
+      inst
+        .isValid({
+          isRequired: false,
+          value: 1234,
+        })
+        .should.eventually.equal(true),
+      inst
+        .isValid({
+          value: 1234,
+        })
+        .should.eventually.equal(true),
+    ]);
+  });
+
+  global.YUP_USE_SYNC &&
+    it('should handle conditionals synchronously', () => {
+      let inst = object().shape({
+        knownDependency: bool(),
+        value: number().when(['unknownDependency', 'knownDependency'], {
+          is: true,
+          then: number().required(),
+        }),
+      });
+
+      return Promise.all([
+        ensureSync(() =>
+          inst.validate({
+            unknownDependency: true,
+            knownDependency: true,
+            value: 1234,
+          }),
+        ).should.not.be.rejected(),
+        ensureSync(() =>
+          inst.validate({
+            unknownDependency: true,
+            knownDependency: true,
+          }),
+        ).should.be.rejectedWith(Error, /required/),
+      ]);
+    });
 
   it('should allow opt out of topo sort on specific edges', () => {
     (function() {
