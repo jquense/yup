@@ -12,8 +12,11 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';
 import makePath from './util/makePath';
 import runValidations, { propagateErrors } from './util/runValidations';
+import { SynchronousPromise } from 'synchronous-promise';
 
 let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
+
+let promise = sync => (sync ? SynchronousPromise : Promise);
 
 function unknown(ctx, value) {
   let known = Object.keys(ctx.fields);
@@ -167,7 +170,7 @@ inherits(ObjectSchema, MixedSchema, {
             return field.validate(value[key], innerOptions);
           }
 
-          return Promise.resolve(true);
+          return promise(sync).resolve(true);
         });
 
         return runValidations({
