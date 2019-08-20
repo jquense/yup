@@ -394,7 +394,7 @@ const proto = (SchemaType.prototype = {
       opts = { name: args[0], message: args[1], test: args[2] };
     }
 
-    if (opts.message === undefined) opts.message = locale.default;
+    if (opts.message === undefined) opts.message = locale.test[opts.name] || locale.default;
 
     if (typeof opts.test !== 'function')
       throw new TypeError('`test` is a required parameters');
