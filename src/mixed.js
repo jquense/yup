@@ -395,7 +395,9 @@ const proto = (SchemaType.prototype = {
     }
 
     if (opts.message === undefined) {
-	    if (locale.test) opts.message = locale.test[opts.name];
+        if (locale.test && locale.test[opts.name]) {
+	    opts.message = locale.test[opts.name];
+	} else opts.message = locale.default;
     } else opts.messge = locale.default;
 
     if (typeof opts.test !== 'function')
