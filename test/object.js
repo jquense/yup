@@ -586,7 +586,24 @@ describe('Object types', () => {
     ]);
   });
 
-  fit('should sort errors by insertion order', async () => {
+  it('should sort errors by insertion order', async () => {
+    let inst = object({
+      // use `when` to make sure it is validated second
+      foo: string().when('bar', () => string().min(5)),
+      bar: string().required(),
+    });
+
+    let err = await inst
+      .validate({ foo: 'foo' }, { abortEarly: false })
+      .should.rejected();
+
+    err.errors.should.eql([
+      'foo must be at least 5 characters',
+      'bar is a required field',
+    ]);
+  });
+
+  it('should sort errors by insertion order even when it matches partially', async () => {
     let inst = object({
       // use `when` to make sure it is validated second
       foo: string().when('bar', () => string().min(5)),
