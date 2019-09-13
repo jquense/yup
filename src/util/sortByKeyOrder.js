@@ -1,7 +1,7 @@
 function findIndex(arr, err) {
   let idx = Infinity;
   arr.some((key, ii) => {
-    if (err.path.indexOf(key) !== -1) {
+    if (new RegExp(`^${err.path}$`).test(key)) {
       idx = ii;
       return true;
     }

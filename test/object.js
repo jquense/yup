@@ -586,11 +586,12 @@ describe('Object types', () => {
     ]);
   });
 
-  it('should sort errors by insertion order', async () => {
+  fit('should sort errors by insertion order', async () => {
     let inst = object({
       // use `when` to make sure it is validated second
       foo: string().when('bar', () => string().min(5)),
       bar: string().required(),
+      barfoo: string().required(),
     });
 
     let err = await inst
@@ -600,6 +601,7 @@ describe('Object types', () => {
     err.errors.should.eql([
       'foo must be at least 5 characters',
       'bar is a required field',
+      'barfoo is a required field',
     ]);
   });
 
