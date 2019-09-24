@@ -228,9 +228,9 @@ yup.ValidationError;
 
 #### `yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`
 
-For nested schema's `yup.reach` will retrieve a nested schema based on the provided path.
+For nested schemas `yup.reach` will retrieve a nested schema based on the provided path.
 
-For nested schema that need to resolve dynamically, you can provide a `value` and optionally
+For nested schemas that need to resolve dynamically, you can provide a `value` and optionally
 a `context` object.
 
 ```js
@@ -264,8 +264,8 @@ yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
 
 #### `yup.ref(path: string, options: { contextPrefix: string }): Ref`
 
-Creates a reference to another sibling or sibling descendant field. Ref's are resolved
-at _validation/cast time_ and supported where specified. Ref's are evaluated in in the proper order so that
+Creates a reference to another sibling or sibling descendant field. Refs are resolved
+at _validation/cast time_ and supported where specified. Refs are evaluated in the proper order so that
 the ref value is resolved before the field using the ref (be careful of circular dependencies!).
 
 ```js
