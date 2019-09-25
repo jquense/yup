@@ -930,4 +930,41 @@ describe('Mixed Types ', () => {
       },
     });
   });
+
+  describe('defined', () => {
+    it('should fail when value is undefined', async () => {
+      let inst = object({
+        prop: string().defined(),
+      });
+
+      await inst
+        .validate({})
+        .should.be.rejected()
+        .then(function(err) {
+          err.message.should.equal('prop must be defined');
+        });
+    });
+
+    it('should pass when value is null', async () => {
+      let inst = object({
+        prop: string().defined(),
+      });
+
+      await inst
+        .isValid({ prop: null })
+        .should.eventually()
+        .equal(true);
+    });
+
+    it('should pass when value is not undefined nor null', async () => {
+      let inst = object({
+        prop: string().defined(),
+      });
+
+      await inst
+        .isValid({ prop: 'prop value' })
+        .should.eventually()
+        .equal(true);
+    });
+  });
 });
