@@ -257,7 +257,7 @@ yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
 
     value = Moment(originalValue, formats, parseStrict);
 
-    return date.isValid() ? date.toDate() : invalidDate;
+    return value.isValid() ? value.toDate() : new Date('');
   });
 });
 ```
