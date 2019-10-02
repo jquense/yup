@@ -284,7 +284,7 @@ schema.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } });
 #### `yup.lazy((value: any) => Schema): Lazy`
 
 Creates a schema that is evaluated at validation/cast time. Useful for creating
-recursive schema like Trees, for polymophic fields and arrays.
+recursive schema like Trees, for polymorphic fields and arrays.
 
 **CAUTION!** When defining parent-child recursive object schema, you want to reset the `default()`
 to `undefined` on the child otherwise the object will infinitely nest itself when you cast it!.
