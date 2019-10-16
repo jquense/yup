@@ -201,6 +201,35 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
 });
 ```
 
+If you need multi-language support, Yup has got you covered. The function `useLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
+
+```js
+import { setLocale } from 'yup';
+
+setLocale({
+  // use constant translation keys for messages without values
+  mixed: {
+    default: 'field_invalid',
+  },
+  // use functions to generate an error object that includes the value from the schema
+  number: {
+    min: ({ min }) => ({ key: 'field_too_short', values: { min } }),
+    max: ({ max }) => ({ key: 'field_too_big', values: { max } }),
+  },
+});
+
+// now use Yup schemas AFTER you defined your custom dictionary
+let schema = yup.object().shape({
+  name: yup.string(),
+  age: yup.number().min(18),
+});
+
+schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
+  err.name; // => 'ValidationError'
+  err.errors; // => [{ key: 'field_too_short', values: { min: 18 } }]
+});
+```
+
 ## API
 
 ### `yup`
