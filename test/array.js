@@ -175,4 +175,19 @@ describe('Array types', () => {
 
     inst.cast(null).should.eql([]);
   });
+
+  it('should pass resolved path to descendants', async () => {
+    let value = ['2', '3'];
+    let expectedPaths = ['[0]', '[1]'];
+
+    let itemSchema = string().when([], function(_, context) {
+      let path = context.path || '';
+      path.should.be.oneOf(expectedPaths);
+      return string().required();
+    });
+
+    await array()
+      .of(itemSchema)
+      .validate(value);
+  });
 });
