@@ -46,8 +46,13 @@ inherits(ArraySchema, MixedSchema, {
     if (!this._typeCheck(value) || !this._subType) return value;
 
     let isChanged = false;
-    const castArray = value.map(v => {
-      const castElement = this._subType.cast(v, _opts);
+    const castArray = value.map((v, idx) => {
+      var path = makePath`${_opts.path}[${idx}]`;
+      var innerOptions = {
+        ..._opts,
+        path,
+      };
+      const castElement = this._subType.cast(v, innerOptions);
       if (castElement !== v) {
         isChanged = true;
       }
