@@ -1,5 +1,5 @@
 {
-  "name": "yup",
+  "name": "yup-fix-array-when-context",
   "version": "0.27.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
