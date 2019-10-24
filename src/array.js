@@ -47,12 +47,10 @@ inherits(ArraySchema, MixedSchema, {
 
     let isChanged = false;
     const castArray = value.map((v, idx) => {
-      var path = makePath`${_opts.path}[${idx}]`;
-      var innerOptions = {
+      const castElement = this._subType.cast(v, {
         ..._opts,
-        path,
-      };
-      const castElement = this._subType.cast(v, innerOptions);
+        path: makePath`${_opts.path}[${idx}]`,
+      });
       if (castElement !== v) {
         isChanged = true;
       }
