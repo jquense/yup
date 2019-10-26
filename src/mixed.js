@@ -1,8 +1,7 @@
 import has from 'lodash/has';
 import cloneDeepWith from 'lodash/cloneDeepWith';
 import toArray from 'lodash/toArray';
-
-import { mixed as locale } from './locale';
+import globalLocale, { mixed as locale } from './locale';
 import Condition from './Condition';
 import runValidations from './util/runValidations';
 import prependDeep from './util/prependDeep';
@@ -394,7 +393,15 @@ const proto = (SchemaType.prototype = {
       opts = { name: args[0], message: args[1], test: args[2] };
     }
 
-    if (opts.message === undefined) opts.message = locale.default;
+    if (opts.message === undefined) {
+      if (globalLocale[this._type] && globalLocale[this._type][opts.name]) {
+        opts.message = globalLocale[this._type][opts.name];
+      } else if (locale[opts.name]) {
+        opts.message = locale[opts.name];
+      } else {
+        opts.message = locale.default;
+      }
+    }
 
     if (typeof opts.test !== 'function')
       throw new TypeError('`test` is a required parameters');

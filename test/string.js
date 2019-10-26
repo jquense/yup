@@ -1,6 +1,13 @@
 import * as TestHelpers from './helpers';
 
-import { string, number, object, ref } from '../src';
+import {
+  string,
+  number,
+  object,
+  ref,
+  setLocale,
+  ValidationError,
+} from '../src';
 
 describe('String types', () => {
   describe('casting', () => {
@@ -362,5 +369,48 @@ describe('String types', () => {
         .should.eventually()
         .equal(false),
     ]);
+  });
+
+  it('should use string locale to locate default test messages', function() {
+    const locale = require('../src/locale').default;
+    const dict = {
+      mixed: {
+        myTestWithLocale: 'Wrong error message',
+      },
+      string: {
+        myTestWithLocale: 'Right error message',
+      },
+    };
+
+    setLocale(dict);
+    try {
+      let inst = string().test('myTestWithLocale', () => false);
+
+      return inst
+        .validate('foo')
+        .should.be.rejectedWith(ValidationError, 'Right error message');
+    } finally {
+      setLocale(locale);
+    }
+  });
+
+  it('should use mixed locale when string locale contains no default test message', function() {
+    const locale = require('../src/locale').default;
+    const dict = {
+      mixed: {
+        myTestWithLocale: 'Right error message',
+      },
+    };
+
+    setLocale(dict);
+    try {
+      let inst = string().test('myTestWithLocale', () => false);
+
+      return inst
+        .validate('foo')
+        .should.be.rejectedWith(ValidationError, 'Right error message');
+    } finally {
+      setLocale(locale);
+    }
   });
 });
