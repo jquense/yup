@@ -201,7 +201,7 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
 });
 ```
 
-If you need multi-language support, Yup has got you covered. The function `useLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
+If you need multi-language support, Yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
 
 ```js
 import { setLocale } from 'yup';
