@@ -70,6 +70,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
     - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
     - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
+    - [`number.multipleOf(multipleOf: number | Ref, message?: string | function): Schema`](#numbermultipleofmultipleof-number--ref-message-string--function-schema)
     - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
     - [`number.truncate(): Schema`](#numbertruncate-schema)
     - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
@@ -928,6 +929,10 @@ Value must be a positive number.
 #### `number.negative(message?: string | function): Schema`
 
 Value must be a negative number.
+
+#### `number.multipleOf(multipleOf: number | Ref, message?: string | function): Schema`
+
+Value must be a multiple of `multipleOf`.
 
 #### `number.integer(message?: string | function): Schema`
 

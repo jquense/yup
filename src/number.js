@@ -91,6 +91,18 @@ inherits(NumberSchema, MixedSchema, {
     return this.lessThan(0, msg);
   },
 
+  multipleOf(multipleOf, message = locale.multipleOf) {
+    return this.test({
+      message,
+      name: 'multipleOf',
+      exclusive: true,
+      params: { multipleOf },
+      test(value) {
+        return isAbsent(value) || value % this.resolve(multipleOf) === 0;
+      },
+    });
+  },
+
   integer(message = locale.integer) {
     return this.test({
       name: 'integer',
