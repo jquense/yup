@@ -728,8 +728,8 @@ test functions are called with a special context, or `this` value, that exposes 
 - `this.schema`: the resolved schema object that the test is running against.
 - `this.options`: the `options` object that validate() or isValid() was called with
 - `this.parent`: in the case of nested schema, this is the value of the parent object
-- `this.createError(Object: { path: String, message: String })`: create and return a
-  validation error. Useful for dynamically setting the `path`, or more likely, the error `message`.
+- `this.createError(Object: { path: String, message: String, params: Object })`: create and return a
+  validation error. Useful for dynamically setting the `path`, `params`, or more likely, the error `message`.
   If either option is omitted it will use the current path, or default message.
 
 #### `mixed.test(options: object): Schema`
