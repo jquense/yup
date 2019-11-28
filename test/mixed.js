@@ -930,4 +930,83 @@ describe('Mixed Types ', () => {
       },
     });
   });
+
+  describe('runInOrder', () => {
+    it('should work well when all functions are valid', () => {
+      let inst = string()
+        .required()
+        .test('test', 'test function', () => {
+          return true;
+        })
+        .runInOrder();
+
+      return Promise.all([
+        inst
+          .strict()
+          .validate('hi')
+          .then(res => {
+            res.should.equal('hi');
+          }),
+      ]);
+    });
+
+    it('should stop later validations when error happens', () => {
+      let inst = string()
+        .required()
+        .min(5)
+        .test('test', 'test function', () => {
+          return false;
+        })
+        .runInOrder();
+
+      return Promise.all([
+        inst
+          .strict()
+          .validate('hi', { abortEarly: false })
+          .should.be.rejected()
+          .then(err => {
+            err.errors.length.should.equal(1);
+          }),
+
+        inst
+          .strict()
+          .validate('I am more than 5 chars', { abortEarly: false })
+          .should.be.rejected()
+          .then(err => {
+            err.errors.length.should.equal(1);
+          }),
+      ]);
+    });
+
+    it('below runInOrder the validations should be independent of above validations', () => {
+      let inst = string()
+        .required()
+        .min(5)
+        .test('test', 'test function', () => {
+          return false;
+        })
+        .runInOrder()
+        .test('test-below', 'test below', () => {
+          return false;
+        });
+
+      return Promise.all([
+        inst
+          .strict()
+          .validate('hi', { abortEarly: false })
+          .should.be.rejected()
+          .then(err => {
+            err.errors.length.should.equal(2);
+          }),
+
+        inst
+          .strict()
+          .validate('I am more than 5 chars', { abortEarly: false })
+          .should.be.rejected()
+          .then(err => {
+            err.errors.length.should.equal(2);
+          }),
+      ]);
+    });
+  });
 });
