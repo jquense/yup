@@ -522,6 +522,38 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
+  runInOrder() {
+    const next = this.clone();
+    let tests = next.tests;
+    const fn = params => {
+      const schema = params.schema;
+      tests = tests.filter(fn => {
+        const test = schema.tests.find(
+          test => fn.OPTIONS.name === test.OPTIONS.name,
+        );
+        if (test) {
+          if (
+            test.OPTIONS.isExclusive ||
+            schema._exclusive[fn.OPTIONS.name] ||
+            fn.OPTIONS.test === test.OPTIONS.test
+          ) {
+            return false;
+          }
+        }
+        return true;
+      });
+      return tests.reduce((prev, next) => {
+        const _prev = typeof prev === 'function' ? prev(params) : prev;
+        return _prev.then(() => next(params));
+      });
+    };
+    fn.OPTIONS = {
+      name: () => 'run-in-order', // function to make name unique
+    };
+    next.tests = [fn];
+    return next;
+  },
+
   _option(key, overrides) {
     return has(overrides, key) ? overrides[key] : this._options[key];
   },
