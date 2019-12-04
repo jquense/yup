@@ -16,7 +16,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function (value) {
+    this.transform(function(value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -66,6 +66,44 @@ inherits(StringSchema, MixedSchema, {
       params: { max },
       test(value) {
         return isAbsent(value) || value.length <= this.resolve(max);
+      },
+    });
+  },
+
+  codepointLength(length, message = locale.length) {
+    return this.test({
+      message,
+      name: 'codepointLength',
+      exclusive: true,
+      params: { length },
+      test(value) {
+        return (
+          isAbsent(value) || Array.from(value).length === this.resolve(length)
+        );
+      },
+    });
+  },
+
+  codepointMin(min, message = locale.min) {
+    return this.test({
+      message,
+      name: 'codepointMin',
+      exclusive: true,
+      params: { min },
+      test(value) {
+        return isAbsent(value) || Array.from(value).length >= this.resolve(min);
+      },
+    });
+  },
+
+  codepointMax(max, message = locale.max) {
+    return this.test({
+      message,
+      name: 'codepointMax',
+      exclusive: true,
+      params: { max },
+      test(value) {
+        return isAbsent(value) || Array.from(value).length <= this.resolve(max);
       },
     });
   },
@@ -126,8 +164,8 @@ inherits(StringSchema, MixedSchema, {
   },
 
   lowercase(message = locale.lowercase) {
-    return this.transform(
-      value => (!isAbsent(value) ? value.toLowerCase() : value),
+    return this.transform(value =>
+      !isAbsent(value) ? value.toLowerCase() : value,
     ).test({
       message,
       name: 'string_case',
@@ -137,8 +175,8 @@ inherits(StringSchema, MixedSchema, {
   },
 
   uppercase(message = locale.uppercase) {
-    return this.transform(
-      value => (!isAbsent(value) ? value.toUpperCase() : value),
+    return this.transform(value =>
+      !isAbsent(value) ? value.toUpperCase() : value,
     ).test({
       message,
       name: 'string_case',

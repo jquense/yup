@@ -305,6 +305,52 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check codepointMin correctly', function() {
+    var v = string().codepointMin(3);
+    return Promise.all([
+      v
+        .isValid('💩💩💩')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('💩💩')
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
+  it('should check codepointMax correctly', function() {
+    var v = string().codepointMax(1);
+    return Promise.all([
+      v
+        .isValid('💩💩')
+        .should.eventually()
+        .equal(false),
+      v
+        .isValid('💩')
+        .should.eventually()
+        .equal(true),
+    ]);
+  });
+
+  it('should check codepointLength correctly', function() {
+    var v = string().codepointLength(2);
+    return Promise.all([
+      v
+        .isValid('')
+        .should.eventually()
+        .equal(false),
+      v
+        .isValid('💩💩💩')
+        .should.eventually()
+        .equal(false),
+      v
+        .isValid('💩💩')
+        .should.eventually()
+        .equal(true),
+    ]);
+  });
+
   it('should check url correctly', function() {
     var v = string().url();
 
