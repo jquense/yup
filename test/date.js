@@ -158,4 +158,108 @@ describe('Date types', () => {
         .equal(false),
     ]);
   });
+
+  it('should check LESSTHAN correctly', () => {
+    var lessThan = new Date(2014, 7, 15),
+      invalid = new Date(2014, 9, 15),
+      valid = new Date(2014, 5, 15);
+    (function() {
+      date().lessThan('hello');
+    }.should.throw(TypeError));
+    (function() {
+      date().lessThan(ref('$foo'));
+    }.should.not.throw());
+
+    return Promise.all([
+      date()
+        .lessThan(lessThan)
+        .isValid(valid)
+        .should.eventually()
+        .equal(true),
+      date()
+        .lessThan(lessThan)
+        .isValid(invalid)
+        .should.eventually()
+        .equal(false),
+      date()
+        .lessThan(lessThan)
+        .isValid(lessThan)
+        .should.eventually()
+        .equal(false),
+      date()
+        .lessThan(lessThan)
+        .nullable(true)
+        .isValid(null)
+        .should.eventually()
+        .equal(true),
+
+      date()
+        .lessThan(ref('$foo'))
+        .isValid(valid, { context: { foo: lessThan } })
+        .should.eventually()
+        .equal(true),
+      date()
+        .lessThan(ref('$foo'))
+        .isValid(invalid, { context: { foo: lessThan } })
+        .should.eventually()
+        .equal(false),
+      date()
+        .lessThan(ref('$foo'))
+        .isValid(lessThan, { context: { foo: lessThan } })
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
+  it('should check MORETHAN correctly', () => {
+    var moreThan = new Date(2014, 7, 15),
+      invalid = new Date(2014, 5, 15),
+      valid = new Date(2014, 9, 15);
+    (function() {
+      date().moreThan('hello');
+    }.should.throw(TypeError));
+    (function() {
+      date().moreThan(ref('$foo'));
+    }.should.not.throw());
+
+    return Promise.all([
+      date()
+        .moreThan(moreThan)
+        .isValid(valid)
+        .should.eventually()
+        .equal(true),
+      date()
+        .moreThan(moreThan)
+        .isValid(invalid)
+        .should.eventually()
+        .equal(false),
+      date()
+        .moreThan(moreThan)
+        .isValid(moreThan)
+        .should.eventually()
+        .equal(false),
+      date()
+        .moreThan(moreThan)
+        .nullable(true)
+        .isValid(null)
+        .should.eventually()
+        .equal(true),
+
+      date()
+        .moreThan(ref('$foo'))
+        .isValid(valid, { context: { foo: moreThan } })
+        .should.eventually()
+        .equal(true),
+      date()
+        .moreThan(ref('$foo'))
+        .isValid(invalid, { context: { foo: moreThan } })
+        .should.eventually()
+        .equal(false),
+      date()
+        .moreThan(ref('$foo'))
+        .isValid(moreThan, { context: { foo: moreThan } })
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
 });
