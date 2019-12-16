@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "runkitExampleFilename": "./runkit-example.js",
