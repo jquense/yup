@@ -11,7 +11,9 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Provide a running code snippet in using https://repl.it/@jquense/yup or similar 
+
+Write a **runnable** test case using the code sandbox template: https://codesandbox.io/s/yup-test-case-gg1g1 
+In the `index.test.js` file change the passing test to a failing one demostrating your issue
 
 > NOTE: if you do not provide a runnable reproduction the chances of getting feedback are significantly lower
 
