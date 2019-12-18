@@ -697,7 +697,7 @@ All tests must provide a `name`, an error `message` and a validation function th
 `true` or `false` or a `ValidationError`. To make a test async return a promise that resolves `true`
 or `false` or a `ValidationError`.
 
-for the `message` argument you can provide a string which is will interpolate certain values
+for the `message` argument you can provide a string which will interpolate certain values
 if specified using the `${param}` syntax. By default all test messages are passed a `path` value
 which is valuable in nested schemas.
 
