@@ -605,6 +605,9 @@ be used in the `message` argument.
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
 
+Note that `undefined` does not fail this validator, even when `undefined` is not included in `arrayOfValues`.
+If you don't want `undefined` to be a valid value, you can use `mixed.required`.
+
 ```js
 let schema = yup.mixed().oneOf(['jimmy', 42]);
 
