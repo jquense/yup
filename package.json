@@ -3,6 +3,7 @@
   "version": "0.28.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
+  "module": "es/index.js",
   "runkitExampleFilename": "./runkit-example.js",
   "scripts": {
     "test": "npm run lint && npm run test-all -- --runInBand",
@@ -13,10 +14,13 @@
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
     "release": "rollout",
-    "build": "babel src --out-dir lib --delete-dir-on-start && npm run toc",
+    "build": "yarn build:commonjs && yarn build:modules && npm run toc",
+    "build:commonjs": "babel src --out-dir lib --delete-dir-on-start",
+    "build:modules": "BABEL_ENV=modules babel src --out-dir es --delete-dir-on-start",
     "prepublishOnly": "npm run build"
   },
   "files": [
+    "es",
     "lib"
   ],
   "repository": {

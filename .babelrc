@@ -1,6 +1,14 @@
 {
   "presets": [["jason", { "debug": true, "ignoreBrowserslistConfig": true }]],
   "env": {
+    "modules": {
+      "presets": [
+        [
+          "jason",
+          { "debug": true, "ignoreBrowserslistConfig": true, "modules": false }
+        ]
+      ]
+    },
     "test": {
       "sourceMaps": "inline",
       "presets": [
