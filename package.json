@@ -16,7 +16,7 @@
     "release": "rollout",
     "build": "yarn build:commonjs && yarn build:modules && npm run toc",
     "build:commonjs": "babel src --out-dir lib --delete-dir-on-start",
-    "build:modules": "BABEL_ENV=modules babel src --out-dir es --delete-dir-on-start",
+    "build:modules": "babel src --out-dir es --delete-dir-on-start --env-name modules",
     "prepublishOnly": "npm run build"
   },
   "files": [
