@@ -21,8 +21,8 @@ function DateSchema() {
       if (this.isType(value)) return value;
 
       value = isoParse(value);
-      // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch)
-      return value > -1 ? new Date(value) : invalidDate;
+      // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
+      return !isNaN(value) ? new Date(value) : invalidDate;
     });
   });
 }
