@@ -191,6 +191,77 @@ describe('String types', () => {
       .equal(true);
   });
 
+  it('EMAIL should match valid email formats', () => {
+    const v = string().email();
+    const emails = [
+      'simple@example.com',
+      'very.common@example.com',
+      'disposable.style.email.with+symbol@example.com',
+      'other.email-with-hyphen@example.com',
+      'fully-qualified-domain@example.com',
+      // may go to user.name@example.com inbox depending on mail server
+      'user.name+tag+sorting@example.com',
+      // one-letter local-part
+      'x@example.com',
+      'example-indeed@strange-example.com',
+      // local domain name with no TLD, although ICANN highly discourages dotless email addresses (so we won't include it)
+      // 'admin@mailserver1'
+      // see the List of Internet top-level domains
+      'example@s.example',
+      // space between the quotes
+      '" "@example.org',
+      // quoted double dot
+      '"john..doe"@example.org',
+      // bangified host route used for uucp mailers
+      'mailhost!username@example.org',
+      // % escaped mail route to user@example.com via example.org
+      'user%example.com@example.org',
+    ];
+
+    return Promise.all(
+      emails.map(email =>
+        v
+          .isValid(email)
+          .should.eventually()
+          .equal(true),
+      ),
+    );
+  });
+
+  it('EMAIL should not match invalid email formats', () => {
+    const v = string().email();
+    const emails = [
+      // no @ character
+      'Abc.example.com',
+      // only one @ is allowed outside quotation marks
+      'A@b@c@example.com',
+      // only one dot is allowed
+      'A@b@c@example..com',
+      'A@b@c@example.com..au',
+      // none of the special characters in this local-part are allowed outside quotation marks
+      'a"b(c)d,e:f;g<h>i[j\\k]l@example.com',
+      // quoted strings must be dot separated or the only element making up the local-part
+      'just"not"right@example.com',
+      // spaces, quotes, and backslashes may only exist when within quoted strings and preceded by a backslash
+      // eslint-disable-next-line no-useless-escape
+      'this is"notallowed@example.com',
+      // even if escaped (preceded by a backslash), spaces, quotes, and backslashes must still be contained by quotes
+      // eslint-disable-next-line no-useless-escape
+      'this still"notallowed@example.com',
+      // local part is longer than 64 characters
+      '1234567890123456789012345678901234567890123456789012345678901234+x@example.com',
+    ];
+
+    return Promise.all(
+      emails.map(email =>
+        v
+          .isValid(email)
+          .should.eventually()
+          .equal(false),
+      ),
+    );
+  });
+
   it('should check MIN correctly', function() {
     var v = string().min(5);
     var obj = object({
