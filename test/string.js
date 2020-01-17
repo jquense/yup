@@ -247,7 +247,7 @@ describe('String types', () => {
       'this is"notallowed@example.com',
       // even if escaped (preceded by a backslash), spaces, quotes, and backslashes must still be contained by quotes
       // eslint-disable-next-line no-useless-escape
-      'this still"notallowed@example.com',
+      'this still"not\\allowed@example.com',
       // local part is longer than 64 characters
       '1234567890123456789012345678901234567890123456789012345678901234+x@example.com',
     ];
