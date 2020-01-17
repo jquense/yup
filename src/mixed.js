@@ -533,6 +533,7 @@ const proto = (SchemaType.prototype = {
       type: next._type,
       meta: next._meta,
       label: next._label,
+      nullable: next._nullable,
       tests: next.tests
         .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
         .filter(
