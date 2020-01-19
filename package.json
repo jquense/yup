@@ -67,6 +67,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^9.0.0",
     "babel-jest": "^22.4.3",
+    "babel-plugin-transform-rename-import": "^2.3.0",
     "babel-preset-jason": "^6.0.1",
     "benchmark": "^2.0.0",
     "chai": "^4.2.0",
@@ -95,6 +96,7 @@
     "@babel/runtime": "^7.0.0",
     "fn-name": "~2.0.1",
     "lodash": "^4.17.11",
+    "lodash-es": "^4.17.11",
     "property-expr": "^1.5.0",
     "synchronous-promise": "^2.0.6",
     "toposort": "^2.0.2"
