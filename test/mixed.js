@@ -930,4 +930,99 @@ describe('Mixed Types ', () => {
       },
     });
   });
+
+  describe('strict in object shape', () => {
+    it('should reject if number member in object is string', async () => {
+      const schema = object({
+        numberField: number().strict(true),
+      });
+      const value = {
+        numberField: '25',
+      };
+
+      await schema.validateAt('numberField', value).should.be.rejected();
+    });
+
+    it('should accept if number member in object passed correctly', async () => {
+      const schema = object({
+        numberField: number().strict(true),
+      });
+      const value = {
+        numberField: 25,
+      };
+
+      await schema.validateAt('numberField', value).should.be.fulfilled();
+    });
+
+    it('should accept if number member in object passed as string and strict is false using strict()', async () => {
+      const schema = object({
+        numberField: number().strict(false),
+      });
+      const value = {
+        numberField: '25',
+      };
+
+      await schema.validateAt('numberField', value).should.be.fulfilled();
+    });
+
+    it('should accept if number member in object passed as string and strict is false using options', async () => {
+      const schema = object({
+        numberField: number(),
+      });
+      const value = {
+        numberField: '25',
+      };
+
+      await schema
+        .validateAt('numberField', value, { strict: false })
+        .should.be.fulfilled();
+    });
+
+    it('should reject if number member in object passed as string and strict is true using options', async () => {
+      const schema = object({
+        numberField: number(),
+      });
+      const value = {
+        numberField: '25',
+      };
+
+      await schema
+        .validateAt('numberField', value, { strict: true })
+        .should.be.rejected();
+    });
+
+    it(
+      'should reject if number member in object passed as string and strict is true using options, ' +
+        'even if strict(false) has been called on field',
+      async () => {
+        const schema = object({
+          numberField: number().strict(false),
+        });
+        const value = {
+          numberField: '25',
+        };
+
+        await schema
+          .validateAt('numberField', value, { strict: true })
+          .should.be.rejected();
+      },
+    );
+
+    it(
+      'should accept if number member in object passed as string and strict is true using options, ' +
+        'but if strict(false, true) has been called on field',
+      async () => {
+        const schema = object({
+          numberField: number().strict(false, true),
+        });
+        const value = {
+          numberField: '25',
+        };
+
+        await schema
+          .validateAt('numberField', value, { strict: true })
+          .should.be.fulfilled();
+      },
+    );
+  });
 });

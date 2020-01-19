@@ -58,6 +58,7 @@ export default function SchemaType(options = {}) {
   this._deps = [];
   this._conditions = [];
   this._options = { abortEarly: true, recursive: true };
+  this._forcedOwnOptions = [];
   this._exclusive = Object.create(null);
 
   this._whitelist = new RefSet();
@@ -327,9 +328,12 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  strict(isStrict = true) {
+  strict(isStrict = true, isOwnOptionForced = false) {
     var next = this.clone();
     next._options.strict = isStrict;
+    if (isOwnOptionForced) {
+      next._forcedOwnOptions.push('strict');
+    }
     return next;
   },
 
@@ -523,6 +527,10 @@ const proto = (SchemaType.prototype = {
   },
 
   _option(key, overrides) {
+    if (this._forcedOwnOptions.indexOf(key) !== -1 && has(this._options, key)) {
+      return this._options[key];
+    }
+
     return has(overrides, key) ? overrides[key] : this._options[key];
   },
 
