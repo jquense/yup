@@ -124,7 +124,7 @@ npm install -D @types/yup
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
 
-**try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup**
+**Try it out:** https://runkit.com/570c52590a85f71200eb09ba/yup
 
 When using es module syntax, yup exports everything as a named export
 
