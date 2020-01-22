@@ -1,14 +1,8 @@
 # Yup
 
-Yup is a JavaScript object schema validator and object parser. The API and style is ~~stolen~~ heavily inspired
-by [Joi](https://github.com/hapijs/joi), which is an amazing library but is generally too large and difficult
-to package for use in a browser. Yup is leaner: in the same spirit, without some of the fancy features.
-You can use it on the server as well, but in that case you might as well just use Joi.
+Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations. 
 
-Yup is also a good bit less opinionated than joi, allowing for custom transformations and async validation.
-It also allows "stacking" conditions via `when` for properties that depend on more than one other sibling or
-child property. Yup separates the parsing and validating functions into separate steps so it can be used to parse
-json separate from validating it, via the `cast` method.
+Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as it's primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be preformed together (such as form HTML form validation) or seperately (such as deserializing trusted data from API's).
 
 **Try it out:** https://runkit.com/jquense/yup#
 
@@ -122,11 +116,7 @@ npm install -D @types/yup
 
 ## Usage
 
-You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object.
-
-**try it out using tonicdev! https://tonicdev.com/570c52590a85f71200eb09ba/yup**
-
-When using es module syntax, yup exports everything as a named export
+You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object. When using es module syntax, yup exports everything as a named export
 
 ```js
 import * as yup from 'yup'; // for everything
