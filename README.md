@@ -1,8 +1,8 @@
 # Yup
 
-Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations. 
+Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
 
-Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as it's primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be preformed together (such as form HTML form validation) or seperately (such as deserializing trusted data from API's).
+Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as it's primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be preformed together (such as HTML form validation) or seperately (such as deserializing trusted data from API's).
 
 **Try it out:** https://runkit.com/jquense/yup#
 
