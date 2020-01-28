@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -25,9 +25,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jquense/yup.git"
+    "url": "git+https://github.com/jquense/yup.git"
   },
-  "author": "@monasticpanic Jason Quense",
+  "author": {
+    "name": "@monasticpanic Jason Quense"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jquense/yup/issues"
@@ -100,5 +102,7 @@
     "property-expr": "^1.5.0",
     "synchronous-promise": "^2.0.6",
     "toposort": "^2.0.2"
-  }
+  },
+  "readme": "ERROR: No README data found!",
+  "_id": "yup@0.28.0"
 }
