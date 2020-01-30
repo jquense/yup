@@ -401,7 +401,7 @@ Options = {
 }
 ```
 
-- `strict`: only validate the input, and skip and coercion or transformation
+- `strict`: only validate the input, and skip any coercion or transformation
 - `abortEarly`: return from validation methods on the first error rather
   than after all validations run.
 - `stripUnknown`: remove unspecified keys from objects.
