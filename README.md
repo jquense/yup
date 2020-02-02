@@ -2,7 +2,7 @@
 
 Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
 
-Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as it's primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be preformed together (such as HTML form validation) or seperately (such as deserializing trusted data from API's).
+Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as its primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be performed together (such as HTML form validation) or seperately (such as deserializing trusted data from APIs).
 
 **Try it out:** https://runkit.com/jquense/yup#
 
@@ -306,7 +306,7 @@ Creates a schema that is evaluated at validation/cast time. Useful for creating
 recursive schema like Trees, for polymorphic fields and arrays.
 
 **CAUTION!** When defining parent-child recursive object schema, you want to reset the `default()`
-to `undefined` on the child otherwise the object will infinitely nest itself when you cast it!.
+to `undefined` on the child—otherwise the object will infinitely nest itself when you cast it!
 
 ```js
 let node = object({
@@ -790,10 +790,10 @@ module.exports = function(formats = 'MMM dd, yyyy') {
     // check to see if the previous transform already parsed the date
     if (this.isType(value)) return value;
 
-    // the default coercion failed so lets try it with Moment.js instead
+    // the default coercion failed so let's try it with Moment.js instead
     value = Moment(originalValue, formats);
 
-    // if its valid return the date object, otherwise return an `InvalidDate`
+    // if it's valid return the date object, otherwise return an `InvalidDate`
     return value.isValid() ? value.toDate() : new Date('');
   });
 };
@@ -1147,7 +1147,7 @@ let invalidDate = new Date('');
 
 module.exports = yup.date().transform(function(value, originalValue) {
   if (this.isType(value)) return value;
-  // the default coercion transform failed so lets try it with Moment instead
+  // the default coercion transform failed so let's try it with Moment instead
   value = Moment(originalValue, parseFormats);
   return value.isValid() ? value.toDate() : invalidDate;
 });
@@ -1157,7 +1157,7 @@ Alternatively, each schema is a normal JavaScript constructor function that you 
 using the normal patterns. Generally you should not inherit from `mixed` unless you know what you are doing,
 better to think of it as an abstract class. The other types are fair game though.
 
-You should keep in mind some basic guidelines when extending schemas
+You should keep in mind some basic guidelines when extending schemas:
 
 - never mutate an existing schema, always `clone()` and then mutate the new one before returning it.
   Built-in methods like `test` and `transform` take care of this for you, so you can safely use them (see below) without worrying
@@ -1181,7 +1181,7 @@ function parseDateFromFormats(formats, parseStrict) {
   });
 }
 
-// `addMethod` doesn't do anything special it's
+// `addMethod` doesn't do anything special; it's
 // equivalent to: yup.date.prototype.format = parseDateFromFormats
 yup.addMethod(yup.date, 'format', parseDateFromFormats);
 ```
@@ -1189,8 +1189,8 @@ yup.addMethod(yup.date, 'format', parseDateFromFormats);
 **Creating new Types**
 
 Yup schema use the common constructor pattern for modeling inheritance. You can use any
-utility or pattern that works with that pattern. The below demonstrates using the es6 class
-syntax since its less verbose, but you absolutely aren't required to use it.
+utility or pattern that works with that pattern. The below demonstrates using the ES6 class
+syntax since it's less verbose, but you absolutely aren't required to use it.
 
 ```js
 let DateSchema = yup.date;
