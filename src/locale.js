@@ -20,6 +20,7 @@ export let mixed = {
 
     return msg;
   },
+  defined: '${path} must be defined',
 };
 
 export let string = {

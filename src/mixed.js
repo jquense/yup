@@ -540,6 +540,17 @@ const proto = (SchemaType.prototype = {
         ),
     };
   },
+
+  defined(message = locale.defined) {
+    return this.nullable().test({
+      message,
+      name: 'defined',
+      exclusive: true,
+      test(value) {
+        return value !== undefined;
+      },
+    });
+  },
 });
 
 for (const method of ['validate', 'validateSync'])
