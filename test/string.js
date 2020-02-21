@@ -191,6 +191,17 @@ describe('String types', () => {
       .equal(true);
   });
 
+  it('EMAIL respect tld', () => {
+    const v = string()
+      .email()
+      .required();
+
+    return v
+      .isValid('jill@mysite.com.a')
+      .should.eventually()
+      .equal(false);
+  });
+
   it('should check MIN correctly', function() {
     var v = string().min(5);
     var obj = object({

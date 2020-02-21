@@ -16,7 +16,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function (value) {
+    this.transform(function(value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -97,11 +97,25 @@ inherits(StringSchema, MixedSchema, {
   },
 
   email(message = locale.email) {
-    return this.matches(rEmail, {
-      name: 'email',
-      message,
-      excludeEmptyString: true,
-    });
+    return (
+      this.matches(rEmail, {
+        name: 'email',
+        message,
+        excludeEmptyString: true,
+      }) &&
+      this.test({
+        name: 'email',
+        message,
+        test: value => {
+          const splitEmail = value.split('.');
+          return (
+            isAbsent(value) ||
+            value === '' ||
+            splitEmail[splitEmail.length - 1].length > 1
+          );
+        },
+      })
+    );
   },
 
   url(message = locale.url) {
