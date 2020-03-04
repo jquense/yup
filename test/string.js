@@ -310,6 +310,10 @@ describe('String types', () => {
 
     return Promise.all([
       v
+        .isValid('www.github.com/')
+        .should.eventually()
+        .equal(true),
+      v
         .isValid('//www.github.com/')
         .should.eventually()
         .equal(true),
