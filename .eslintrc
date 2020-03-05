@@ -1,6 +1,8 @@
 {
-  "parser": "babel-eslint",
   "extends": ["jason", "prettier"],
+  "env": {
+    "browser": true
+  },
   "overrides": [
     {
       "files": ["test/**"],

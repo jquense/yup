@@ -16,7 +16,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function (value) {
+    this.transform(function(value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -76,11 +76,7 @@ inherits(StringSchema, MixedSchema, {
     let name;
 
     if (options) {
-      if (
-        options.message ||
-        options.hasOwnProperty('excludeEmptyString') ||
-        options.name
-      ) {
+      if (options.message || 'excludeEmptyString' in options || options.name) {
         ({ excludeEmptyString, message, name } = options);
       } else message = options;
     }
@@ -126,8 +122,8 @@ inherits(StringSchema, MixedSchema, {
   },
 
   lowercase(message = locale.lowercase) {
-    return this.transform(
-      value => (!isAbsent(value) ? value.toLowerCase() : value),
+    return this.transform(value =>
+      !isAbsent(value) ? value.toLowerCase() : value,
     ).test({
       message,
       name: 'string_case',
@@ -137,8 +133,8 @@ inherits(StringSchema, MixedSchema, {
   },
 
   uppercase(message = locale.uppercase) {
-    return this.transform(
-      value => (!isAbsent(value) ? value.toUpperCase() : value),
+    return this.transform(value =>
+      !isAbsent(value) ? value.toUpperCase() : value,
     ).test({
       message,
       name: 'string_case',
