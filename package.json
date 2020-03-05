@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/jquense/yup",
   "release": {
-    "conventional-commits": true
+    "conventionalCommits": true
   },
   "prettier": {
     "singleQuote": true,
