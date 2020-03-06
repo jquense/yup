@@ -131,7 +131,7 @@ describe('String types', () => {
   });
 
   it('should check MATCHES correctly', function() {
-    var v = string().matches(/(hi|bye)/);
+    var v = string().matches(/(hi|bye)/, 'A message');
 
     return Promise.all([
       v
