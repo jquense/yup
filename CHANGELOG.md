@@ -1,3 +1,15 @@
+## [0.28.3](https://github.com/jquense/yup/compare/v0.28.2...v0.28.3) (2020-03-06)
+
+
+### Bug Fixes
+
+* array.ensure ([94659c2](https://github.com/jquense/yup/commit/94659c2)), closes [#343](https://github.com/jquense/yup/issues/343)
+* match options ([493cc61](https://github.com/jquense/yup/commit/493cc61)), closes [#802](https://github.com/jquense/yup/issues/802) [#801](https://github.com/jquense/yup/issues/801) [#799](https://github.com/jquense/yup/issues/799) [#798](https://github.com/jquense/yup/issues/798)
+
+
+
+
+
 # [0.28.0](https://github.com/jquense/yup/compare/v0.26.10...v0.28.0) (2019-12-16)
 
 
