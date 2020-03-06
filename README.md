@@ -9,7 +9,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -1087,6 +1086,46 @@ object({
 The default `cast` behavior for `object` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
 
 Failed casts return: `null`;
+
+#### Object schema defaults
+
+Object schema come with a default value already set, which "builds" out the object shape, a
+sets any defaults for fields:
+
+```js
+const schema = object({
+  name: string().default(''),
+});
+
+schema.default(); // -> { name: '' }
+```
+
+This may be a bit suprising, but is generally very helpful since it allows large, nested
+schema to create default values that fill out the whole shape and not just the root object.
+One gotcha! tho is that nested object schema that are optional but include non optional fields
+may fail in unexpected ways:
+
+```js
+const schema = object({
+  id: string().required(),
+  names: object({
+    first: string().required(),
+  }),
+});
+
+schema.isValid({ id: 1 }); // false! names.first is required
+```
+
+This is due to to whole yup will cast the input object before running validation
+which will produce:
+
+> `{ id: '1', names: { first: undefined }}`
+
+During the validation phase `names` exists, and is validated, finding `names.first` missing.
+If you wish to avoid this behavior do one of the following:
+
+- Set the nested default to undefined: `names.default(undefined)`
+- mark it nullable and default to null: `names.nullable().default(null)`
 
 #### `object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`
 
