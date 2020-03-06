@@ -76,9 +76,10 @@ inherits(StringSchema, MixedSchema, {
     let name;
 
     if (options) {
-      if (options.message || 'excludeEmptyString' in options || options.name) {
+      if (typeof options === 'string') message = options;
+      if (typeof options === 'object') {
         ({ excludeEmptyString, message, name } = options);
-      } else message = options;
+      }
     }
 
     return this.test({
