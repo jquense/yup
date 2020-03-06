@@ -174,6 +174,18 @@ describe('Array types', () => {
     inst.cast(a).should.equal(a);
 
     inst.cast(null).should.eql([]);
+    // nullable is redundant since this should always produce an array
+    // but we want to ensure that null is actually turned into an array
+    inst
+      .nullable()
+      .cast(null)
+      .should.eql([]);
+
+    inst.cast(1).should.eql([1]);
+    inst
+      .nullable()
+      .cast(1)
+      .should.eql([1]);
   });
 
   it('should pass resolved path to descendants', async () => {

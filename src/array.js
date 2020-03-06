@@ -158,17 +158,18 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   ensure() {
-    return this.default(() => []).transform(val => {
-      if (this.isType(val)) return val;
-      return val === null ? [] : [].concat(val);
+    return this.default(() => []).transform((val, original) => {
+      // We don't want to return `null` for nullable schema
+      if (this._typeCheck(val)) return val;
+      return original == null ? [] : [].concat(original);
     });
   },
 
   compact(rejector) {
     let reject = !rejector ? v => !!v : (v, i, a) => !rejector(v, i, a);
 
-    return this.transform(
-      values => (values != null ? values.filter(reject) : values),
+    return this.transform(values =>
+      values != null ? values.filter(reject) : values,
     );
   },
 
