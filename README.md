@@ -9,6 +9,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -84,6 +85,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`array.ensure(): Schema`](#arrayensure-schema)
     - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
   - [object](#object)
+    - [Object schema defaults](#object-schema-defaults)
     - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
