@@ -1,3 +1,4 @@
+import { isArray } from 'lodash'
 import inherits from './util/inherits';
 import MixedSchema from './mixed';
 import { string as locale } from './locale';
@@ -75,7 +76,7 @@ inherits(StringSchema, MixedSchema, {
     let message;
     let name;
 
-    if (options) {
+    if (options && typeof options === 'object' && !isArray(options)) {
       if (options.message || 'excludeEmptyString' in options || options.name) {
         ({ excludeEmptyString, message, name } = options);
       } else message = options;

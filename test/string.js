@@ -173,6 +173,33 @@ describe('String types', () => {
       .equal(false);
   });
 
+  it('options given to MATCHES should not be a string', () => {
+    let v = string().matches(/(hi|bye)/, 'testString');
+
+    return v
+      .isValid('')
+      .should.eventually()
+      .equal(false);
+  });
+
+  it('options given to MATCHES should not be a number', () => {
+    let v = string().matches(/(hi|bye)/, 333);
+
+    return v
+      .isValid('')
+      .should.eventually()
+      .equal(false);
+  });
+
+  it('options given to MATCHES should not be an array', () => {
+    let v = string().matches(/(hi|bye)/, ['hi', 'bye']);
+
+    return v
+      .isValid('')
+      .should.eventually()
+      .equal(false);
+  });
+
   it('MATCHES should exclude empty strings', () => {
     let v = string().matches(/(hi|bye)/, { excludeEmptyString: true });
 
