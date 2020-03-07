@@ -15,6 +15,8 @@ describe('Date types', () => {
     inst.cast('2016-08-10T11:32:19.012Z').should.eql(new Date(1470828739012));
     // Microsecond precision
     inst.cast('2016-08-10T11:32:19.2125Z').should.eql(new Date(1470828739212));
+    // Single digit years
+    inst.cast('0001-01-01T00:00:00.000Z').should.eql(new Date(-62135596800000));
   });
 
   it('should return invalid date for failed casts', function() {

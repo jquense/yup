@@ -31,8 +31,8 @@ export default function parseIsoDate(date) {
     if (
       (struct[8] === undefined || struct[8] === '') &&
       (struct[9] === undefined || struct[9] === '')
-    )
-      timestamp = +new Date(
+    ) {
+      var parsedDate = new Date(
         struct[1],
         struct[2],
         struct[3],
@@ -41,22 +41,34 @@ export default function parseIsoDate(date) {
         struct[6],
         struct[7],
       );
-    else {
+
+      // Support 1 & 2 digit years
+      parsedDate.setFullYear(struct[1]);
+
+      timestamp = +parsedDate;
+    } else {
       if (struct[8] !== 'Z' && struct[9] !== undefined) {
         minutesOffset = struct[10] * 60 + struct[11];
 
         if (struct[9] === '+') minutesOffset = 0 - minutesOffset;
       }
 
-      timestamp = Date.UTC(
-        struct[1],
-        struct[2],
-        struct[3],
-        struct[4],
-        struct[5] + minutesOffset,
-        struct[6],
-        struct[7],
+      var parsedDate = new Date(
+        Date.UTC(
+          struct[1],
+          struct[2],
+          struct[3],
+          struct[4],
+          struct[5] + minutesOffset,
+          struct[6],
+          struct[7],
+        ),
       );
+
+      // Support 1 & 2 digit years
+      parsedDate.setUTCFullYear(struct[1]);
+
+      timestamp = +parsedDate;
     }
   } else timestamp = Date.parse ? Date.parse(date) : NaN;
 
