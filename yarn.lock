@@ -1251,6 +1251,11 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@tecfu/is-multiple-of@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tecfu/is-multiple-of/-/is-multiple-of-1.0.2.tgz#b5d3f18be0a339160ad29ba5a2a45d9ec346df1f"
+  integrity sha512-XSC9G5/4F6nX6bm/KwEuMNtwi0+H8vd1O7eRhiXa49eMMgISmWRC/QfWy+PtQZl2FPw6CAeN4kte3eBu0IOn4w==
+
 "@textlint/ast-node-types@^4.0.3":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@textlint/ast-node-types/-/ast-node-types-4.2.1.tgz#978fa10e23468114462fc08ef29f96980c12a8ef"
