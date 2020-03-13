@@ -325,7 +325,7 @@ describe('Object types', () => {
         .validate({ extra: 'field' }, { strict: true })
         .should.be.rejected()
         .then(err => {
-          err.errors[0].should.be.a('string');
+          err.errors[0].should.be.a('string').that.include('extra');
         }),
     ]);
   });

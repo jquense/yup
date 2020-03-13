@@ -240,8 +240,12 @@ inherits(ObjectSchema, MixedSchema, {
       exclusive: true,
       message: message,
       test(value) {
+        const unknownKeys = unknown(this.schema, value);
         return (
-          value == null || !noAllow || unknown(this.schema, value).length === 0
+          value == null ||
+          !noAllow ||
+          unknownKeys.length === 0 ||
+          this.createError({ params: { unknown: unknownKeys.join(', ') } })
         );
       },
     });

@@ -54,7 +54,7 @@ export let date = {
 export let boolean = {};
 
 export let object = {
-  noUnknown: '${path} field cannot have keys not specified in the object shape',
+  noUnknown: '${path} field has unspecified keys: ${unknown}',
 };
 
 export let array = {
