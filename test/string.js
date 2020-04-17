@@ -318,6 +318,14 @@ describe('String types', () => {
         .should.eventually()
         .equal(true),
       v
+        .isValid('http://localhost/')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('http://localhost:4000/')
+        .should.eventually()
+        .equal(true),
+      v
         .isValid('this is not a url')
         .should.eventually()
         .equal(false),
