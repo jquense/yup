@@ -72,6 +72,8 @@ export default function SchemaType(options = {}) {
 
   if (has(options, 'default')) this._defaultDefault = options.default;
 
+  this.type = options.type || 'mixed';
+  // TODO: remove
   this._type = options.type || 'mixed';
 }
 
@@ -117,9 +119,7 @@ const proto = (SchemaType.prototype = {
 
     if (schema._type !== this._type && this._type !== 'mixed')
       throw new TypeError(
-        `You cannot \`concat()\` schema's of different types: ${
-          this._type
-        } and ${schema._type}`,
+        `You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`,
       );
 
     var next = prependDeep(schema.clone(), this);

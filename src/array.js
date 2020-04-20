@@ -17,6 +17,7 @@ function ArraySchema(type) {
   // `undefined` specifically means uninitialized, as opposed to
   // "no subtype"
   this._subType = undefined;
+  this.innerType = undefined;
 
   this.withMutation(() => {
     this.transform(function(values) {
@@ -43,11 +44,11 @@ inherits(ArraySchema, MixedSchema, {
     const value = MixedSchema.prototype._cast.call(this, _value, _opts);
 
     //should ignore nulls here
-    if (!this._typeCheck(value) || !this._subType) return value;
+    if (!this._typeCheck(value) || !this.innerType) return value;
 
     let isChanged = false;
     const castArray = value.map((v, idx) => {
-      const castElement = this._subType.cast(v, {
+      const castElement = this.innerType.cast(v, {
         ..._opts,
         path: makePath`${_opts.path}[${idx}]`,
       });
@@ -65,7 +66,7 @@ inherits(ArraySchema, MixedSchema, {
     let errors = [];
     let sync = options.sync;
     let path = options.path;
-    let subType = this._subType;
+    let innerType = this.innerType;
     let endEarly = this._option('abortEarly', options);
     let recursive = this._option('recursive', options);
 
@@ -76,7 +77,7 @@ inherits(ArraySchema, MixedSchema, {
       .call(this, _value, options)
       .catch(propagateErrors(endEarly, errors))
       .then(value => {
-        if (!recursive || !subType || !this._typeCheck(value)) {
+        if (!recursive || !innerType || !this._typeCheck(value)) {
           if (errors.length) throw errors[0];
           return value;
         }
@@ -95,7 +96,7 @@ inherits(ArraySchema, MixedSchema, {
             originalValue: originalValue[idx],
           };
 
-          if (subType.validate) return subType.validate(item, innerOptions);
+          if (innerType.validate) return innerType.validate(item, innerOptions);
 
           return true;
         });
@@ -126,6 +127,7 @@ inherits(ArraySchema, MixedSchema, {
       );
 
     next._subType = schema;
+    next.innerType = schema;
 
     return next;
   },
@@ -175,7 +177,7 @@ inherits(ArraySchema, MixedSchema, {
 
   describe() {
     let base = MixedSchema.prototype.describe.call(this);
-    if (this._subType) base.innerType = this._subType.describe();
+    if (this.innerType) base.innerType = this.innerType.describe();
     return base;
   },
 });

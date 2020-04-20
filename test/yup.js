@@ -107,7 +107,6 @@ describe('Yup', function() {
 
     const { schema, parent, parentPath } = getIn(inst, 'nested.arr[1]', value);
 
-    console.log(parentPath);
     expect(schema).to.equal(shape);
     expect(parentPath).to.equal('1');
     expect(parent).to.equal(value.nested.arr);
@@ -127,14 +126,14 @@ describe('Yup', function() {
 
     reach(inst, '').should.equal(inst);
 
-    reach(inst, 'nested.arr.num').should.equal(num);
+    reach(inst, 'nested.arr[0].num').should.equal(num);
     reach(inst, 'nested.arr[].num').should.equal(num);
     reach(inst, 'nested.arr[1].num').should.equal(num);
     reach(inst, 'nested.arr[1]').should.equal(shape);
 
     reach(inst, 'nested["arr"][1].num').should.not.equal(number());
 
-    let valid = await reach(inst, 'nested.arr[].num').isValid(5);
+    let valid = await reach(inst, 'nested.arr[0].num').isValid(5);
     valid.should.equal(true);
   });
 
