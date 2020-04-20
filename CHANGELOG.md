@@ -1,3 +1,20 @@
+## [0.28.4](https://github.com/jquense/yup/compare/v0.28.3...v0.28.4) (2020-04-20)
+
+
+### Bug Fixes
+
+* array reaching ([81e4058](https://github.com/jquense/yup/commit/81e4058))
+
+
+### Features
+
+* make schema.type and array.innerType public API's ([8f00d50](https://github.com/jquense/yup/commit/8f00d50))
+* provide keys in default noUnknown message ([#579](https://github.com/jquense/yup/issues/579)) ([ad5d015](https://github.com/jquense/yup/commit/ad5d015))
+
+
+
+
+
 ## [0.28.3](https://github.com/jquense/yup/compare/v0.28.2...v0.28.3) (2020-03-06)
 
 

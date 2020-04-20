@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "0.28.3",
+  "version": "0.28.4",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -107,5 +107,5 @@
     "toposort": "^2.0.2"
   },
   "readme": "ERROR: No README data found!",
-  "_id": "yup@0.28.2"
+  "_id": "yup@0.28.3"
 }
