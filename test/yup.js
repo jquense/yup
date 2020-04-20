@@ -66,17 +66,18 @@ describe('Yup', function() {
   });
 
   it('should getIn correctly', async () => {
-    var num = number(),
-      inst = object().shape({
-        num: number().max(4),
+    let num = number();
+    let shape = object({ 'num-1': num });
+    let inst = object({
+      num: number().max(4),
 
-        nested: object().shape({
-          arr: array().of(object().shape({ 'num-1': num })),
-        }),
-      });
+      nested: object({
+        arr: array().of(shape),
+      }),
+    });
 
     const value = { nested: { arr: [{}, { 'num-1': 2 }] } };
-    const { schema, parent, parentPath } = getIn(
+    let { schema, parent, parentPath } = getIn(
       inst,
       'nested.arr[1].num-1',
       value,
@@ -87,21 +88,50 @@ describe('Yup', function() {
     expect(parent).to.equal(value.nested.arr[1]);
   });
 
-  it('should REACH correctly', async () => {
-    var num = number(),
-      inst = object().shape({
-        num: number().max(4),
+  it('should getIn array correctly', async () => {
+    let num = number();
+    let shape = object({ 'num-1': num });
+    let inst = object({
+      num: number().max(4),
 
-        nested: object().shape({
-          arr: array().of(object().shape({ num: num })),
-        }),
-      });
+      nested: object({
+        arr: array().of(shape),
+      }),
+    });
+
+    const value = {
+      nested: {
+        arr: [{}, { 'num-1': 2 }],
+      },
+    };
+
+    const { schema, parent, parentPath } = getIn(inst, 'nested.arr[1]', value);
+
+    console.log(parentPath);
+    expect(schema).to.equal(shape);
+    expect(parentPath).to.equal('1');
+    expect(parent).to.equal(value.nested.arr);
+  });
+
+  it('should REACH correctly', async () => {
+    let num = number();
+    let shape = object({ num });
+
+    let inst = object({
+      num: number().max(4),
+
+      nested: object({
+        arr: array().of(shape),
+      }),
+    });
 
     reach(inst, '').should.equal(inst);
 
     reach(inst, 'nested.arr.num').should.equal(num);
     reach(inst, 'nested.arr[].num').should.equal(num);
     reach(inst, 'nested.arr[1].num').should.equal(num);
+    reach(inst, 'nested.arr[1]').should.equal(shape);
+
     reach(inst, 'nested["arr"][1].num').should.not.equal(number());
 
     let valid = await reach(inst, 'nested.arr[].num').isValid(5);
@@ -185,7 +215,10 @@ describe('Yup', function() {
     })
       .strict()
       .validate({
-        x: [{ type: 1, foo: '4' }, { type: 2, foo: '5' }],
+        x: [
+          { type: 1, foo: '4' },
+          { type: 2, foo: '5' },
+        ],
       })
       .should.be.rejected();
     err.message.should.match(/must be a `number` type/);

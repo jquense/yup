@@ -16,7 +16,9 @@ export function getIn(schema, path, value, context) {
       schema,
     };
 
-  forEach(path, (_part, isBracket, isArray) => {
+  // I no longer remember why this is so complicated
+  forEach(path, (_part, isBracket, isArray, partIdx, parts) => {
+    let isLast = partIdx === parts.length - 1;
     let part = isBracket ? trim(_part) : _part;
 
     if (isArray || has(schema, '_subType')) {
@@ -33,6 +35,11 @@ export function getIn(schema, path, value, context) {
           );
         }
 
+        if (isLast) {
+          parent = value;
+          lastPart = part;
+          lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
+        }
         value = value[idx];
       }
     }
@@ -43,7 +50,7 @@ export function getIn(schema, path, value, context) {
       if (!has(schema, 'fields') || !has(schema.fields, part))
         throw new Error(
           `The schema does not contain the path: ${path}. ` +
-            `(failed at: ${lastPartDebug} which is a type: "${schema._type}") `,
+            `(failed at: ${lastPartDebug} which is a type: "${schema._type}")`,
         );
 
       schema = schema.fields[part];
