@@ -76,10 +76,10 @@ inherits(StringSchema, MixedSchema, {
     let name;
 
     if (options) {
-      if (typeof options === 'string') message = options;
-      if (typeof options === 'function') message = options;
       if (typeof options === 'object') {
         ({ excludeEmptyString, message, name } = options);
+      } else {
+        message = options;
       }
     }
 
