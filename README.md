@@ -117,6 +117,8 @@ If you are using TypeScript installing the Yup typings is recommended
 npm install -D @types/yup
 ```
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ## Usage
 
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object. When using es module syntax, yup exports everything as a named export
@@ -164,6 +166,8 @@ schema.cast({
 ```
 
 > If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### Using a custom locale dictionary
 
@@ -223,7 +227,11 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
 });
 ```
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ## API
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### `yup`
 
@@ -341,6 +349,8 @@ Thrown on failed validations, with the following properties
 - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
   validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
   alternatively, `errors` will have all of the messages from each inner error.
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### mixed
 
@@ -806,6 +816,8 @@ module.exports = function(formats = 'MMM dd, yyyy') {
 };
 ```
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ### string
 
 Define a string schema. Supports all the same methods as [`mixed`](#mixed).
@@ -887,6 +899,8 @@ will only validate that the value is lowercase.
 Transforms the string value to uppercase. If `strict()` is set it
 will only validate that the value is uppercase.
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ### number
 
 Define a number schema. Supports all the same methods as [`mixed`](#mixed).
@@ -942,6 +956,8 @@ to the right of the decimal point.
 
 Adjusts the value via the specified method of `Math` (defaults to 'round').
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ### boolean
 
 Define a boolean schema. Supports all the same methods as [`mixed`](#mixed).
@@ -951,6 +967,8 @@ let schema = yup.boolean();
 
 await schema.isValid(true); // => true
 ```
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### date
 
@@ -978,6 +996,8 @@ and use the result as the limit.
 
 Set the maximum date allowed, When a string is provided it will attempt to cast to a date first
 and use the result as the limit.
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### array
 
@@ -1055,6 +1075,8 @@ array()
   })
   .cast(['', 1, 0, 4, false, null]); // => ['', 1, 0, 4, false]
 ```
+
+[🔝](#yup)<!-- Link generated with jump2header -->
 
 ### object
 
@@ -1183,6 +1205,8 @@ Transforms all object keys to camelCase
 
 Transforms all object keys to CONSTANT_CASE.
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ## Extending Schema Types
 
 The simplest way to extend an existing type is just to cache a configured schema and use that through your application.
@@ -1276,6 +1300,8 @@ let schema = new MomentDateSchemaType();
 schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
 ```
 
+[🔝](#yup)<!-- Link generated with jump2header -->
+
 ## TypeScript Support
 
 If you are using TypeScript installing the Yup typings is recommended
@@ -1346,3 +1372,5 @@ const fullPerson: Person = {
     birthDate: new Date(1976, 9, 5)
 };
 ```
+
+[🔝](#yup)<!-- Link generated with jump2header -->
