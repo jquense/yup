@@ -1346,3 +1346,7 @@ const fullPerson: Person = {
     birthDate: new Date(1976, 9, 5)
 };
 ```
+
+**A Note about the `strict` compiler option**:
+
+You'll have to specify `compilerOptions.strict = true` in your `tsconfig.json` or all members of any inferred type will be optional.
