@@ -1347,6 +1347,10 @@ const fullPerson: Person = {
 };
 ```
 
+### TypeScript setting
+
+For `yup.InferType<T>` to work correctly with required and nullable types you have to set `strict: true` or `strictNullChecks: true` in your tsconfig.json.
+
 ### Why does InferType not default to nonRequired()?
 
 This was considered when inplementing `InferType<T>` but decided against.
