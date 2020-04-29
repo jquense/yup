@@ -1355,7 +1355,6 @@ For `yup.InferType<T>` to work correctly with required and nullable types you ha
 
 This was considered when inplementing `InferType<T>` but decided against.
 
-First of all 
 The semantics of a required property in Yup is not the same as in TypeScript. For example a `Yup.array().of(Yup.string()).required()` will fail validation if you pass in an empty array. A required array should not be empty: [empty arrays are also considered 'missing' values](#arrayrequiredmessage-string--function-schema). The same is true for a `Yup.string().required()` where passing in an empty string `""` is considered invalid while an not empry string `"hello"` is considered valid. With TypeScript both would satisfy required. Another example of that is a `Yup.date()` that will pass validation if you use the string `"2020-02-14T07:52:25.495Z"` if you don't call `.strict()`.
 
 In general there isn't a one to one match between Yup and TypeScript concepts so this is never going to be perfect. 
