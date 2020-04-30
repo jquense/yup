@@ -2,6 +2,7 @@ import inherits from './util/inherits';
 import MixedSchema from './mixed';
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
+import { default as isMultipleOf } from '@tecfu/is-multiple-of'
 
 let isNaN = value => value != +value;
 
@@ -89,6 +90,18 @@ inherits(NumberSchema, MixedSchema, {
 
   negative(msg = locale.negative) {
     return this.lessThan(0, msg);
+  },
+
+  multipleOf(multipleOf, message = locale.multipleOf) {
+    return this.test({
+      message,
+      name: 'multipleOf',
+      exclusive: true,
+      params: { multipleOf },
+      test(value) {
+        return isAbsent(value) || isMultipleOf(value, this.resolve(multipleOf));
+      },
+    });
   },
 
   integer(message = locale.integer) {

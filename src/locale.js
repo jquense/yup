@@ -43,6 +43,7 @@ export let number = {
   notEqual: '${path} must be not equal to ${notEqual}',
   positive: '${path} must be a positive number',
   negative: '${path} must be a negative number',
+  multipleOf: '${path} must be a multiple of ${multipleOf}',
   integer: '${path} must be an integer',
 };
 

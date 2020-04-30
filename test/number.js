@@ -260,4 +260,38 @@ describe('Number types', function() {
         }),
     ]);
   });
+
+  it('should check IS_MULTIPLE_OF correctly', function() {
+    var v = number().multipleOf(.05)
+    var v2 = number().multipleOf(.1)
+    var v3 = number().multipleOf(3)
+
+    return Promise.all([
+      v
+        .isValid(4.05)
+        .should.eventually()
+        .equal(true),
+
+      v
+        .isValid(0)
+        .should.eventually()
+        .equal(false),
+
+      v2
+        .isValid(1.1)
+        .should.eventually()
+        .equal(true),
+
+      v3
+        .isValid(9)
+        .should.eventually()
+        .equal(true),
+
+      v3
+        .isValid(-9)
+        .should.eventually()
+        .equal(true),
+    ]);
+  });
+
 });
