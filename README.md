@@ -93,6 +93,8 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
 - [Extending Schema Types](#extending-schema-types)
 - [TypeScript Support](#typescript-support)
+  - [TypeScript setting](#typescript-setting)
+  - [Why does InferType not default to nonRequired()?](#why-does-infertype-not-default-to-nonrequired)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
