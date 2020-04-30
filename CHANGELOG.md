@@ -1,3 +1,15 @@
+## [0.28.5](https://github.com/jquense/yup/compare/v0.28.4...v0.28.5) (2020-04-30)
+
+
+### Bug Fixes
+
+* allow passing of function to .matches() options/message param ([#850](https://github.com/jquense/yup/issues/850)) ([16efe88](https://github.com/jquense/yup/commit/16efe88a8953db60438f77f43bd5bf614079803d))
+* bug in object.noUnknown for nullish values https://github.com/jquense/yup/issues/854 ([#855](https://github.com/jquense/yup/issues/855)) ([ccb7c7d](https://github.com/jquense/yup/commit/ccb7c7d3c450537dffbb7d589e3111fc1f9a86fd))
+
+
+
+
+
 ## [0.28.4](https://github.com/jquense/yup/compare/v0.28.3...v0.28.4) (2020-04-20)
 
 
