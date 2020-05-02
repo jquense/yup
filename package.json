@@ -84,7 +84,7 @@
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-jest": "^23.8.2",
     "eslint-plugin-react": "^7.19.0",
-    "eslint-plugin-react-hooks": "^3.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
     "husky": "^4.2.5",
     "jest": "^25.5.2",
     "lint-staged": "^10.2.1",
