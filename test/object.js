@@ -146,6 +146,20 @@ describe('Object types', () => {
       err.message.should.match(/must be a `string` type/);
     });
 
+    it('should respect strict for nested object values', async () => {
+      inst = object({
+        obj: object({
+          field: string().strict(),
+        }),
+      });
+
+      let err = await inst
+        .validate({ obj: { field: 5 } })
+        .should.be.rejected();
+
+      err.message.should.match(/must be a `string` type/);
+    });
+
     it('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict(),

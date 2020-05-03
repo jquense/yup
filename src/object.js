@@ -88,7 +88,7 @@ inherits(ObjectSchema, MixedSchema, {
     let innerOptions = {
       ...options,
       parent: intermediateValue,
-      __validating: false,
+      __validating: options.__validating || false,
     };
 
     let isChanged = false;
