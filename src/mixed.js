@@ -17,6 +17,17 @@ class RefSet {
     this.list = new Set();
     this.refs = new Map();
   }
+  get size() {
+    return this.list.size + this.refs.size;
+  }
+  describe() {
+    const description = [];
+
+    for (const item of this.list) description.push(item);
+    for (const [, ref] of this.refs) description.push(ref.describe());
+
+    return description;
+  }
   toArray() {
     return toArray(this.list).concat(toArray(this.refs.values()));
   }
@@ -528,8 +539,7 @@ const proto = (SchemaType.prototype = {
 
   describe() {
     const next = this.clone();
-
-    return {
+    const description = {
       type: next._type,
       meta: next._meta,
       label: next._label,
@@ -538,7 +548,12 @@ const proto = (SchemaType.prototype = {
         .filter(
           (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
         ),
-    };
+    }
+
+    if (next._whitelist.size) description.whitelist = next._whitelist.describe();
+    if (next._blacklist.size) description.blacklist = next._blacklist.describe();
+    
+    return description;
   },
 
   defined(message = locale.defined) {
