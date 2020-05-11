@@ -888,19 +888,22 @@ describe('Mixed Types ', () => {
       bar: string()
         .max(2)
         .meta({ input: 'foo' })
-        .label('str!'),
+        .label('str!')
+        .nullable(),
     }).describe();
 
     desc.should.eql({
       type: 'object',
       meta: undefined,
       label: undefined,
+      nullable: undefined,
       tests: [],
       fields: {
         foo: {
           type: 'array',
           meta: undefined,
           label: undefined,
+          nullable: undefined,
           tests: [
             {
               name: 'required',
@@ -911,6 +914,7 @@ describe('Mixed Types ', () => {
             type: 'number',
             meta: undefined,
             label: undefined,
+            nullable: undefined,
             tests: [
               {
                 name: 'integer',
@@ -922,6 +926,7 @@ describe('Mixed Types ', () => {
         bar: {
           type: 'string',
           label: 'str!',
+          nullable: true,
           tests: [{ name: 'max', params: { max: 2 } }],
           meta: {
             input: 'foo',
