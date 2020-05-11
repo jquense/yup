@@ -32,10 +32,10 @@
     read-pkg-up "^7.0.1"
     yargs "^15.0.1"
 
-"@4c/rollout@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@4c/rollout/-/rollout-2.1.7.tgz#717ba0953c50bf0b57bac74f106003da27e9481d"
-  integrity sha512-Nlx0mmsRfXWJXGlq/IPfDCZJC5BhAn95GhU/NDu4Hji0CuwNVY/jeO0zfk9GCRb8E0/f0a4anf1vLSi0ZQPxQg==
+"@4c/rollout@^2.1.9":
+  version "2.1.9"
+  resolved "https://registry.yarnpkg.com/@4c/rollout/-/rollout-2.1.9.tgz#a6a80d6159f1b6995ba12749456e0553a88cf35c"
+  integrity sha512-5p3gAeMyzxhSKOL35I+zzlobqb6F/Ky9SsTdsTqnkdG3VEBwqYarBKbo3So1h3d0EPmSqFAgG6kZXwW62RYaxg==
   dependencies:
     "@4c/cli-core" "^2.1.5"
     "@4c/file-butler" "^4.1.7"
@@ -3602,10 +3602,10 @@ eslint-plugin-import@^2.20.2:
     read-pkg-up "^2.0.0"
     resolve "^1.12.0"
 
-eslint-plugin-jest@^23.9.0:
-  version "23.9.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jest/-/eslint-plugin-jest-23.9.0.tgz#7f4932eceb7ca487d171898fb9d55c05e6b36701"
-  integrity sha512-8mt5xJQIFh33W5nE7vCikkDTE4saTo08V91KjU6yI5sLQ9e8Jkp1OXkWJoIHLheFqY5OXIZdAjZmNYHSJ3IpzQ==
+eslint-plugin-jest@^23.10.0:
+  version "23.10.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jest/-/eslint-plugin-jest-23.10.0.tgz#4738c7ca9e6513da50f4e99d7b161c1f82fa8e8f"
+  integrity sha512-cHC//nesojSO1MLxVmFJR/bUaQQG7xvMHQD8YLbsQzevR41WKm8paKDUv2wMHlUy5XLZUmNcWuflOi4apS8D+Q==
   dependencies:
     "@typescript-eslint/experimental-utils" "^2.5.0"
 
@@ -7617,10 +7617,10 @@ rollup-pluginutils@^2.8.1:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@^2.7.6:
-  version "2.7.6"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.7.6.tgz#8e6682e64ca65eb33b896dcce902696f0415ce1a"
-  integrity sha512-AdHosxHBKyBsdtbT1/AqbWNQ87O4SSxS4N9iMwEpoCDAT6e4Du3uJSy83mp3ckgmCxly5VeXGx0WHsm21Djytg==
+rollup@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.9.1.tgz#3038ba1378e2ee614b5c9385b8379d7bec4c69ea"
+  integrity sha512-kEZn76R0j+WD4AActu5Np4RShNlewTtJhdUaWNtHwHnAA8AOapyXgH6O7NL2RkcQLHnl49oz1xW1VrDcu5yP+Q==
   optionalDependencies:
     fsevents "~2.1.2"
 
