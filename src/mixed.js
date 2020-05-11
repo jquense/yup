@@ -550,8 +550,8 @@ const proto = (SchemaType.prototype = {
         ),
     }
 
-    if (next._whitelist.size) description.whitelist = next._whitelist.describe();
-    if (next._blacklist.size) description.blacklist = next._blacklist.describe();
+    if (next._whitelist.size) description.oneOf = next._whitelist.describe();
+    if (next._blacklist.size) description.notOneOf = next._blacklist.describe();
     
     return description;
   },
