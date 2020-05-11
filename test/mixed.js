@@ -928,8 +928,8 @@ describe('Mixed Types ', () => {
           meta: {
             input: 'foo',
           },
-          whitelist: ['a', 'b'],
-          blacklist: [{
+          oneOf: ['a', 'b'],
+          notOneOf: [{
             type: 'ref',
             key: 'foo'
           }]
