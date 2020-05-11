@@ -888,7 +888,9 @@ describe('Mixed Types ', () => {
       bar: string()
         .max(2)
         .meta({ input: 'foo' })
-        .label('str!'),
+        .label('str!')
+        .oneOf(['a', 'b'])
+        .notOneOf([ref('foo')]),
     }).describe();
 
     desc.should.eql({
@@ -926,6 +928,11 @@ describe('Mixed Types ', () => {
           meta: {
             input: 'foo',
           },
+          oneOf: ['a', 'b'],
+          notOneOf: [{
+            type: 'ref',
+            key: 'foo'
+          }]
         },
       },
     });
