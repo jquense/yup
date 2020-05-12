@@ -94,7 +94,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 - [Extending Schema Types](#extending-schema-types)
 - [TypeScript Support](#typescript-support)
   - [TypeScript setting](#typescript-setting)
-  - [Why does InferType not default to nonRequired()?](#why-does-infertype-not-default-to-nonrequired)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1280,7 +1279,7 @@ schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:0
 
 ## TypeScript Support
 
-If you are using TypeScript installing the Yup typings is recommended
+If you are using TypeScript installing the Yup typings is recommended:
 
 ```sh
 npm install -D @types/yup
@@ -1293,13 +1292,18 @@ import * as yup from 'yup';
 
 const personSchema = yup.object({
   firstName: yup
-    .string(),
+    .string()
+    .defined(),
   nickName: yup
     .string()
+    .defined()
     .nullable(),
   gender: yup
-    .mixed<'male' | 'female' | 'other'>()
-    .oneOf(['male', 'female', 'other']),
+    .mixed()
+    .defined()
+    // Note `as const`: this types the array as `["male", "female", "other"]`
+    // instead of `string[]`.
+    .oneOf(['male', 'female', 'other'] as const),
   email: yup
     .string()
     .nullable()
@@ -1310,7 +1314,7 @@ const personSchema = yup.object({
     .nullable()
     .notRequired()
     .min(new Date(1900, 0, 1)),
-});
+}).defined();
 ```
 
 You can derive the TypeScript type as follows:
@@ -1349,14 +1353,25 @@ const fullPerson: Person = {
 };
 ```
 
+You can also go the other direction, specifying an interface and ensuring that a schema matches it:
+
+```TypeScript
+type Person = {
+  firstName: string;
+}
+
+// ✔️ compiles
+const goodPersonSchema: yup.ObjectSchema<Person> = yup.object({
+  firstName: yup.string().defined()
+}).defined();
+
+// ❌ errors:
+// "Type 'number | undefined' is not assignable to type 'string'."
+const badPersonSchema: yup.ObjectSchema<Person> = yup.object({
+  firstName: yup.number()
+});
+```
+
 ### TypeScript setting
 
 For `yup.InferType<T>` to work correctly with required and nullable types you have to set `strict: true` or `strictNullChecks: true` in your tsconfig.json.
-
-### Why does InferType not default to nonRequired()?
-
-This was considered when implementing `InferType<T>` but was decided against.
-
-The semantics of a required property in Yup is not the same as in TypeScript. For example a `Yup.array().of(Yup.string()).required()` will fail validation if you pass in an empty array. A required array should not be empty: [empty arrays are also considered 'missing' values](#arrayrequiredmessage-string--function-schema). The same is true for a `Yup.string().required()` where passing in an empty string `""` is considered invalid while the non-empty string: `"hello"` is considered valid. With TypeScript both would satisfy required. Another example of that is a `Yup.date()` that will pass validation if you use the string `"2020-02-14T07:52:25.495Z"` if you don't call `.strict()`.
-
-In general there isn't a one to one match between Yup and TypeScript concepts so this is never going to be perfect. 
