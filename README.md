@@ -1300,10 +1300,10 @@ const personSchema = yup.object({
     .nullable(),
   gender: yup
     .mixed()
-    .defined()
     // Note `as const`: this types the array as `["male", "female", "other"]`
     // instead of `string[]`.
-    .oneOf(['male', 'female', 'other'] as const),
+    .oneOf(['male', 'female', 'other'] as const)
+    .defined(),
   email: yup
     .string()
     .nullable()
