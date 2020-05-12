@@ -1293,6 +1293,10 @@ import * as yup from 'yup';
 const personSchema = yup.object({
   firstName: yup
     .string()
+    // Here we use `defined` instead of `required` to more closely align with
+    // TypeScript. Both will have the same effect on the resulting type by
+    // excluding `undefined`, but `required` will also disallow other values
+    // such as empty strings.
     .defined(),
   nickName: yup
     .string()
