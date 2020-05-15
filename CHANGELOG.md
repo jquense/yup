@@ -1,3 +1,11 @@
+## [0.29.0](https://github.com/jquense/yup/compare/v0.28.5...v0.29.0) (2020-05-15)
+
+
+### BREAKING CHANGES
+
+* the types ([@types/yup](https://www.npmjs.com/package/@types/yup)) have been updated to include `undefined` by default. TypeScript users can add `.defined()` to their schemas to account for this.
+
+
 ## [0.28.5](https://github.com/jquense/yup/compare/v0.28.4...v0.28.5) (2020-04-30)
 
 
