@@ -1,3 +1,27 @@
+# [0.29.0](https://github.com/jquense/yup/compare/v0.28.5...v0.29.0) (2020-05-19)
+
+
+* feat!: update docs to account for changes in types and add additional example (#891) ([e105a71](https://github.com/jquense/yup/commit/e105a71)), closes [#891](https://github.com/jquense/yup/issues/891)
+
+
+### Bug Fixes
+
+* object bug when nested object has a property with strict ([#871](https://github.com/jquense/yup/issues/871)) ([7f52b8a](https://github.com/jquense/yup/commit/7f52b8a))
+
+
+### Features
+
+* expose oneOf and notOneOf values on description ([#885](https://github.com/jquense/yup/issues/885)) ([08dad5f](https://github.com/jquense/yup/commit/08dad5f))
+
+
+### BREAKING CHANGES
+
+* For users of `@types/yup` only, no function changes but the type def change is large enough that it warranted a major bump here
+
+
+
+
+
 ## [0.28.5](https://github.com/jquense/yup/compare/v0.28.4...v0.28.5) (2020-04-30)
 
 ### Bug Fixes
