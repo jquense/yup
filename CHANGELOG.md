@@ -1,126 +1,89 @@
-## [0.29.0](https://github.com/jquense/yup/compare/v0.28.5...v0.29.0) (2020-05-15)
-
-
-### BREAKING CHANGES
-
-* the types ([@types/yup](https://www.npmjs.com/package/@types/yup)) have been updated to include `undefined` by default. TypeScript users can add `.defined()` to their schemas to account for this.
-
-
 ## [0.28.5](https://github.com/jquense/yup/compare/v0.28.4...v0.28.5) (2020-04-30)
-
 
 ### Bug Fixes
 
-* allow passing of function to .matches() options/message param ([#850](https://github.com/jquense/yup/issues/850)) ([16efe88](https://github.com/jquense/yup/commit/16efe88a8953db60438f77f43bd5bf614079803d))
-* bug in object.noUnknown for nullish values https://github.com/jquense/yup/issues/854 ([#855](https://github.com/jquense/yup/issues/855)) ([ccb7c7d](https://github.com/jquense/yup/commit/ccb7c7d3c450537dffbb7d589e3111fc1f9a86fd))
-
-
-
-
+- allow passing of function to .matches() options/message param ([#850](https://github.com/jquense/yup/issues/850)) ([16efe88](https://github.com/jquense/yup/commit/16efe88a8953db60438f77f43bd5bf614079803d))
+- bug in object.noUnknown for nullish values https://github.com/jquense/yup/issues/854 ([#855](https://github.com/jquense/yup/issues/855)) ([ccb7c7d](https://github.com/jquense/yup/commit/ccb7c7d3c450537dffbb7d589e3111fc1f9a86fd))
 
 ## [0.28.4](https://github.com/jquense/yup/compare/v0.28.3...v0.28.4) (2020-04-20)
 
-
 ### Bug Fixes
 
-* array reaching ([81e4058](https://github.com/jquense/yup/commit/81e4058))
-
+- array reaching ([81e4058](https://github.com/jquense/yup/commit/81e4058))
 
 ### Features
 
-* make schema.type and array.innerType public API's ([8f00d50](https://github.com/jquense/yup/commit/8f00d50))
-* provide keys in default noUnknown message ([#579](https://github.com/jquense/yup/issues/579)) ([ad5d015](https://github.com/jquense/yup/commit/ad5d015))
-
-
-
-
+- make schema.type and array.innerType public API's ([8f00d50](https://github.com/jquense/yup/commit/8f00d50))
+- provide keys in default noUnknown message ([#579](https://github.com/jquense/yup/issues/579)) ([ad5d015](https://github.com/jquense/yup/commit/ad5d015))
 
 ## [0.28.3](https://github.com/jquense/yup/compare/v0.28.2...v0.28.3) (2020-03-06)
 
-
 ### Bug Fixes
 
-* array.ensure ([94659c2](https://github.com/jquense/yup/commit/94659c2)), closes [#343](https://github.com/jquense/yup/issues/343)
-* match options ([493cc61](https://github.com/jquense/yup/commit/493cc61)), closes [#802](https://github.com/jquense/yup/issues/802) [#801](https://github.com/jquense/yup/issues/801) [#799](https://github.com/jquense/yup/issues/799) [#798](https://github.com/jquense/yup/issues/798)
-
-
-
-
+- array.ensure ([94659c2](https://github.com/jquense/yup/commit/94659c2)), closes [#343](https://github.com/jquense/yup/issues/343)
+- match options ([493cc61](https://github.com/jquense/yup/commit/493cc61)), closes [#802](https://github.com/jquense/yup/issues/802) [#801](https://github.com/jquense/yup/issues/801) [#799](https://github.com/jquense/yup/issues/799) [#798](https://github.com/jquense/yup/issues/798)
 
 # [0.28.0](https://github.com/jquense/yup/compare/v0.26.10...v0.28.0) (2019-12-16)
 
-
 ### Bug Fixes
 
-* [#473](https://github.com/jquense/yup/issues/473) make concat compatible with (not)oneOf ([#492](https://github.com/jquense/yup/issues/492)) ([8d21cc9](https://github.com/jquense/yup/commit/8d21cc9))
-* array path resolve for descendants ([#669](https://github.com/jquense/yup/issues/669)) ([d31e34d](https://github.com/jquense/yup/commit/d31e34d))
-* change @babel/runtime version to be a range ([#488](https://github.com/jquense/yup/issues/488)) ([1c9b362](https://github.com/jquense/yup/commit/1c9b362)), closes [#486](https://github.com/jquense/yup/issues/486)
-* concat of mixed and subtype ([#444](https://github.com/jquense/yup/issues/444)) ([7705972](https://github.com/jquense/yup/commit/7705972))
-* default message for test with object ([#453](https://github.com/jquense/yup/issues/453)) ([f1be37f](https://github.com/jquense/yup/commit/f1be37f))
-* noUnknown() overriding ([#452](https://github.com/jquense/yup/issues/452)) ([3047b33](https://github.com/jquense/yup/commit/3047b33))
-* string.matches() and regex global flag ([#450](https://github.com/jquense/yup/issues/450)) ([a8935b7](https://github.com/jquense/yup/commit/a8935b7))
-* synchronous conditional object validation with unknown dependencies ([#598](https://github.com/jquense/yup/issues/598)) ([1081c41](https://github.com/jquense/yup/commit/1081c41))
-* typo README  (about excludeEmptyString) ([#441](https://github.com/jquense/yup/issues/441)) ([d02ff5e](https://github.com/jquense/yup/commit/d02ff5e))
-* unix epoc bug in date parser ([#655](https://github.com/jquense/yup/issues/655)) ([0d14827](https://github.com/jquense/yup/commit/0d14827))
-
+- [#473](https://github.com/jquense/yup/issues/473) make concat compatible with (not)oneOf ([#492](https://github.com/jquense/yup/issues/492)) ([8d21cc9](https://github.com/jquense/yup/commit/8d21cc9))
+- array path resolve for descendants ([#669](https://github.com/jquense/yup/issues/669)) ([d31e34d](https://github.com/jquense/yup/commit/d31e34d))
+- change @babel/runtime version to be a range ([#488](https://github.com/jquense/yup/issues/488)) ([1c9b362](https://github.com/jquense/yup/commit/1c9b362)), closes [#486](https://github.com/jquense/yup/issues/486)
+- concat of mixed and subtype ([#444](https://github.com/jquense/yup/issues/444)) ([7705972](https://github.com/jquense/yup/commit/7705972))
+- default message for test with object ([#453](https://github.com/jquense/yup/issues/453)) ([f1be37f](https://github.com/jquense/yup/commit/f1be37f))
+- noUnknown() overriding ([#452](https://github.com/jquense/yup/issues/452)) ([3047b33](https://github.com/jquense/yup/commit/3047b33))
+- string.matches() and regex global flag ([#450](https://github.com/jquense/yup/issues/450)) ([a8935b7](https://github.com/jquense/yup/commit/a8935b7))
+- synchronous conditional object validation with unknown dependencies ([#598](https://github.com/jquense/yup/issues/598)) ([1081c41](https://github.com/jquense/yup/commit/1081c41))
+- typo README (about excludeEmptyString) ([#441](https://github.com/jquense/yup/issues/441)) ([d02ff5e](https://github.com/jquense/yup/commit/d02ff5e))
+- unix epoc bug in date parser ([#655](https://github.com/jquense/yup/issues/655)) ([0d14827](https://github.com/jquense/yup/commit/0d14827))
 
 ### Features
 
-* add _isFilled as overrideable `mixed` method to control required behavior ([#459](https://github.com/jquense/yup/issues/459)) ([5b01f18](https://github.com/jquense/yup/commit/5b01f18))
-* add function test names to email and url ([#292](https://github.com/jquense/yup/issues/292)) ([7e94395](https://github.com/jquense/yup/commit/7e94395))
-* aliases `optional()` and `unknown()` ([#460](https://github.com/jquense/yup/issues/460)) ([51e8661](https://github.com/jquense/yup/commit/51e8661))
-* allow toggling strict() ([#457](https://github.com/jquense/yup/issues/457)) ([851d421](https://github.com/jquense/yup/commit/851d421))
-* allow withMutation() nesting ([#456](https://github.com/jquense/yup/issues/456)) ([e53ea8c](https://github.com/jquense/yup/commit/e53ea8c))
-* do concat in mutation mode ([#461](https://github.com/jquense/yup/issues/461)) ([02be4ca](https://github.com/jquense/yup/commit/02be4ca))
-* finalize resolve() ([#447](https://github.com/jquense/yup/issues/447)) ([afc5119](https://github.com/jquense/yup/commit/afc5119))
-* replace integer check with Number.isInteger ([#405](https://github.com/jquense/yup/issues/405)) ([1c18442](https://github.com/jquense/yup/commit/1c18442))
-* support self references ([#443](https://github.com/jquense/yup/issues/443)) ([1cac515](https://github.com/jquense/yup/commit/1cac515)), closes [/github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js#L3](https://github.com//github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js/issues/L3)
-* use the alternate object index path syntax if the key contains dots (fixes [#536](https://github.com/jquense/yup/issues/536)) ([#539](https://github.com/jquense/yup/issues/539)) ([13e8c76](https://github.com/jquense/yup/commit/13e8c76))
-
+- add \_isFilled as overrideable `mixed` method to control required behavior ([#459](https://github.com/jquense/yup/issues/459)) ([5b01f18](https://github.com/jquense/yup/commit/5b01f18))
+- add function test names to email and url ([#292](https://github.com/jquense/yup/issues/292)) ([7e94395](https://github.com/jquense/yup/commit/7e94395))
+- aliases `optional()` and `unknown()` ([#460](https://github.com/jquense/yup/issues/460)) ([51e8661](https://github.com/jquense/yup/commit/51e8661))
+- allow toggling strict() ([#457](https://github.com/jquense/yup/issues/457)) ([851d421](https://github.com/jquense/yup/commit/851d421))
+- allow withMutation() nesting ([#456](https://github.com/jquense/yup/issues/456)) ([e53ea8c](https://github.com/jquense/yup/commit/e53ea8c))
+- do concat in mutation mode ([#461](https://github.com/jquense/yup/issues/461)) ([02be4ca](https://github.com/jquense/yup/commit/02be4ca))
+- finalize resolve() ([#447](https://github.com/jquense/yup/issues/447)) ([afc5119](https://github.com/jquense/yup/commit/afc5119))
+- replace integer check with Number.isInteger ([#405](https://github.com/jquense/yup/issues/405)) ([1c18442](https://github.com/jquense/yup/commit/1c18442))
+- support self references ([#443](https://github.com/jquense/yup/issues/443)) ([1cac515](https://github.com/jquense/yup/commit/1cac515)), closes [/github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js#L3](https://github.com//github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js/issues/L3)
+- use the alternate object index path syntax if the key contains dots (fixes [#536](https://github.com/jquense/yup/issues/536)) ([#539](https://github.com/jquense/yup/issues/539)) ([13e8c76](https://github.com/jquense/yup/commit/13e8c76))
 
 ### BREAKING CHANGES
 
-* use Number.isInteger. This works correctly for large numbers.
+- use Number.isInteger. This works correctly for large numbers.
 
 Related to https://github.com/jquense/yup/pull/147
-* reach() no longer resolves the returned schema meaning it's conditions have not been processed yet; prefer validateAt/castAt where it makes sense
-* required no longer shows up twice in describe() output for array and strings, which also no longer override required
 
-
-
-
+- reach() no longer resolves the returned schema meaning it's conditions have not been processed yet; prefer validateAt/castAt where it makes sense
+- required no longer shows up twice in describe() output for array and strings, which also no longer override required
 
 # [0.27.0](https://github.com/jquense/yup/compare/v0.26.10...v0.27.0) (2019-03-14)
 
-
 ### Bug Fixes
 
-* change @babel/runtime version to be a range ([#488](https://github.com/jquense/yup/issues/488)) ([1c9b362](https://github.com/jquense/yup/commit/1c9b362)), closes [#486](https://github.com/jquense/yup/issues/486)
-* concat of mixed and subtype ([#444](https://github.com/jquense/yup/issues/444)) ([7705972](https://github.com/jquense/yup/commit/7705972))
-* default message for test with object ([#453](https://github.com/jquense/yup/issues/453)) ([f1be37f](https://github.com/jquense/yup/commit/f1be37f))
-* noUnknown() overriding ([#452](https://github.com/jquense/yup/issues/452)) ([3047b33](https://github.com/jquense/yup/commit/3047b33))
-* typo README  (about excludeEmptyString) ([#441](https://github.com/jquense/yup/issues/441)) ([d02ff5e](https://github.com/jquense/yup/commit/d02ff5e))
-
+- change @babel/runtime version to be a range ([#488](https://github.com/jquense/yup/issues/488)) ([1c9b362](https://github.com/jquense/yup/commit/1c9b362)), closes [#486](https://github.com/jquense/yup/issues/486)
+- concat of mixed and subtype ([#444](https://github.com/jquense/yup/issues/444)) ([7705972](https://github.com/jquense/yup/commit/7705972))
+- default message for test with object ([#453](https://github.com/jquense/yup/issues/453)) ([f1be37f](https://github.com/jquense/yup/commit/f1be37f))
+- noUnknown() overriding ([#452](https://github.com/jquense/yup/issues/452)) ([3047b33](https://github.com/jquense/yup/commit/3047b33))
+- typo README (about excludeEmptyString) ([#441](https://github.com/jquense/yup/issues/441)) ([d02ff5e](https://github.com/jquense/yup/commit/d02ff5e))
 
 ### Features
 
-* add _isFilled as overrideable `mixed` method to control required behavior ([#459](https://github.com/jquense/yup/issues/459)) ([5b01f18](https://github.com/jquense/yup/commit/5b01f18))
-* aliases `optional()` and `unknown()` ([#460](https://github.com/jquense/yup/issues/460)) ([51e8661](https://github.com/jquense/yup/commit/51e8661))
-* allow toggling strict() ([#457](https://github.com/jquense/yup/issues/457)) ([851d421](https://github.com/jquense/yup/commit/851d421))
-* allow withMutation() nesting ([#456](https://github.com/jquense/yup/issues/456)) ([e53ea8c](https://github.com/jquense/yup/commit/e53ea8c))
-* do concat in mutation mode ([#461](https://github.com/jquense/yup/issues/461)) ([02be4ca](https://github.com/jquense/yup/commit/02be4ca))
-* finalize resolve() ([#447](https://github.com/jquense/yup/issues/447)) ([afc5119](https://github.com/jquense/yup/commit/afc5119))
-* support self references ([#443](https://github.com/jquense/yup/issues/443)) ([1cac515](https://github.com/jquense/yup/commit/1cac515)), closes [/github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js#L3](https://github.com//github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js/issues/L3)
-
+- add \_isFilled as overrideable `mixed` method to control required behavior ([#459](https://github.com/jquense/yup/issues/459)) ([5b01f18](https://github.com/jquense/yup/commit/5b01f18))
+- aliases `optional()` and `unknown()` ([#460](https://github.com/jquense/yup/issues/460)) ([51e8661](https://github.com/jquense/yup/commit/51e8661))
+- allow toggling strict() ([#457](https://github.com/jquense/yup/issues/457)) ([851d421](https://github.com/jquense/yup/commit/851d421))
+- allow withMutation() nesting ([#456](https://github.com/jquense/yup/issues/456)) ([e53ea8c](https://github.com/jquense/yup/commit/e53ea8c))
+- do concat in mutation mode ([#461](https://github.com/jquense/yup/issues/461)) ([02be4ca](https://github.com/jquense/yup/commit/02be4ca))
+- finalize resolve() ([#447](https://github.com/jquense/yup/issues/447)) ([afc5119](https://github.com/jquense/yup/commit/afc5119))
+- support self references ([#443](https://github.com/jquense/yup/issues/443)) ([1cac515](https://github.com/jquense/yup/commit/1cac515)), closes [/github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js#L3](https://github.com//github.com/jquense/yup/blob/d02ff5e59e004b4c5189d1b9fc0055cff45c61df/src/Reference.js/issues/L3)
 
 ### BREAKING CHANGES
 
-* reach() no longer resolves the returned schema meaning it's conditions have not been processed yet; prefer validateAt/castAt where it makes sense
-* required no longer shows up twice in describe() output for array and strings, which also no longer override required
-
-
-
-
+- reach() no longer resolves the returned schema meaning it's conditions have not been processed yet; prefer validateAt/castAt where it makes sense
+- required no longer shows up twice in describe() output for array and strings, which also no longer override required
 
 ## v0.26.3 - Tue, 28 Aug 2018 15:00:04 GMT
 
@@ -128,7 +91,7 @@ Related to https://github.com/jquense/yup/pull/147
 
 ### BREAKING CHANGES
 
-* locale `number` config properties `less` and `more` are now `lessThan` and `moreThan`
+- locale `number` config properties `less` and `more` are now `lessThan` and `moreThan`
 
 ## v0.25.1 - Wed, 16 May 2018 23:59:14 GMT
 

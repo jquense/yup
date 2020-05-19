@@ -1,4 +1,5 @@
 {
+  "displayName": "sync",
   "globals": {
     "YUP_USE_SYNC": true
   },
