@@ -467,6 +467,46 @@ describe('Mixed Types ', () => {
     called.should.equal(true);
   });
 
+  it('tests should be able to access nested parent', async () => {
+    let finalFrom,finalOptions;
+    let testFixture = {
+      firstField: 'test',
+      second: [
+        {
+          thirdField: 'test3',
+        },
+        {
+          thirdField: 'test4',
+        },
+      ],
+    };
+
+    let third = object({
+      thirdField: mixed().test({
+        test() {
+          finalFrom = this.from;
+          finalOptions = this.options;
+          return true;
+        },
+      }),
+    });
+
+    let second = array().of(third);
+
+    let first = object({
+      firstField: mixed(),
+      second,
+    });
+
+    await first.validate(testFixture);
+
+    finalFrom[0].value.should.eql(testFixture.second[finalOptions.index]);
+    finalFrom[0].schema.should.equal(third);
+    finalFrom[1].value.should.equal(testFixture);
+    finalFrom[1].schema.should.equal(first);
+
+  });
+
   it('tests can return an error', () => {
     let inst = mixed().test({
       message: 'invalid ${path}',
