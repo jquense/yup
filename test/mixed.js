@@ -484,9 +484,7 @@ describe('Mixed Types ', () => {
   });
 
   it('tests should be able to access nested parent', async () => {
-    let calledFirst = false;
-    let calledThird = false;
-
+    let finalFrom,finalOptions;
     let testFixture = {
       firstField: 'test',
       second: [
@@ -502,14 +500,8 @@ describe('Mixed Types ', () => {
     let third = object({
       thirdField: mixed().test({
         test() {
-          calledThird = true;
-
-          this.from[0].value.should.eql(testFixture.second[this.options.index]);
-          this.from[0].schema.should.equal(third);
-
-          this.from[1].value.should.equal(testFixture);
-          this.from[1].schema.should.equal(first);
-
+          finalFrom = this.from;
+          finalOptions = this.options;
           return true;
         },
       }),
@@ -518,20 +510,17 @@ describe('Mixed Types ', () => {
     let second = array().of(third);
 
     let first = object({
-      firstField: mixed().test({
-        test() {
-          calledFirst = true;
-          this.from[0].value.should.equal(testFixture);
-          this.from[0].schema.should.equal(first);
-          return true;
-        },
-      }),
+      firstField: mixed(),
       second,
     });
 
     await first.validate(testFixture);
-    calledFirst.should.equal(true);
-    calledThird.should.equal(true);
+
+    finalFrom[0].value.should.eql(testFixture.second[finalOptions.index]);
+    finalFrom[0].schema.should.equal(third);
+    finalFrom[1].value.should.equal(testFixture);
+    finalFrom[1].schema.should.equal(first);
+
   });
 
   it('tests can return an error', () => {
