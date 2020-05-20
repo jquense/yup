@@ -504,13 +504,6 @@ describe('Mixed Types ', () => {
         test() {
           calledThird = true;
 
-          // I want to do something like this,
-          // this.resolve(ref(this.path),this.from[1].value);
-          // OR probably preferably
-          // this.from[1].resolve(ref(this.path))
-          // but I can't get it working :( ...help?
-
-          // so I added an "index" option to array test options to make this test make sense
           this.from[0].value.should.eql(testFixture.second[this.options.index]);
           this.from[0].schema.should.equal(third);
 
