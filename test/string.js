@@ -324,6 +324,21 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check ipv4 address correctly', function() {
+    var v = string().ipv4();
+
+    return Promise.all([
+      v
+        .isValid('192.168.20.15')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('this is not a ipv4 address')
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
   it('should validate transforms', function() {
     return Promise.all([
       string()
