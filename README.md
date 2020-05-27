@@ -1087,8 +1087,8 @@ schema.default(); // -> { name: '' }
 ```
 
 This may be a bit suprising, but is generally very helpful since it allows large, nested
-schema to create default values that fill out the whole shape and not just the root object.
-One gotcha! tho is that nested object schema that are optional but include non optional fields
+schema to create default values that fill out the whole shape and not just the root object. There is
+one gotcha! though. For nested object schema that are optional but include non optional fields
 may fail in unexpected ways:
 
 ```js
@@ -1102,7 +1102,7 @@ const schema = object({
 schema.isValid({ id: 1 }); // false! names.first is required
 ```
 
-This is due to to whole yup will cast the input object before running validation
+This is because yup casts the input object before running validation
 which will produce:
 
 > `{ id: '1', names: { first: undefined }}`
