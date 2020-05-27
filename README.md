@@ -9,7 +9,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -133,14 +132,10 @@ let yup = require('yup');
 
 let schema = yup.object().shape({
   name: yup.string().required(),
-  age: yup
-    .number()
-    .required()
-    .positive()
-    .integer(),
+  age: yup.number().required().positive().integer(),
   email: yup.string().email(),
   website: yup.string().url(),
-  createdOn: yup.date().default(function() {
+  createdOn: yup.date().default(function () {
     return new Date();
   }),
 });
@@ -151,7 +146,7 @@ schema
     name: 'jimmy',
     age: 24,
   })
-  .then(function(valid) {
+  .then(function (valid) {
     valid; // => true
   });
 
@@ -189,7 +184,7 @@ let schema = yup.object().shape({
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
+schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   err.name; // => 'ValidationError'
   err.errors; // => ['Deve ser maior que 18']
 });
@@ -218,7 +213,7 @@ let schema = yup.object().shape({
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function(err) {
+schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   err.name; // => 'ValidationError'
   err.errors; // => [{ key: 'field_too_short', values: { min: 18 } }]
 });
@@ -274,8 +269,8 @@ reach(schema, 'nested["arr"][1].num');
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
 ```js
-yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
-  return this.transform(function(value, originalValue) {
+yup.addMethod(yup.date, 'format', function (formats, parseStrict) {
+  return this.transform(function (value, originalValue) {
     if (this.isType(value)) return value;
 
     value = Moment(originalValue, formats, parseStrict);
@@ -318,7 +313,7 @@ let node = object({
   child: yup.lazy(() => node.default(undefined)),
 });
 
-let renderable = yup.lazy(value => {
+let renderable = yup.lazy((value) => {
   switch (typeof value) {
     case 'number':
       return number();
@@ -350,7 +345,7 @@ Creates a schema that matches all types. All types inherit from this base type
 ```js
 let schema = yup.mixed();
 
-schema.isValid(undefined, function(valid) {
+schema.isValid(undefined, function (valid) {
   valid; // => true
 });
 ```
@@ -414,11 +409,11 @@ Options = {
 - `context`: any context needed for validating schema conditions (see: `when()`)
 
 ```js
-schema.validate({ name: 'jimmy', age: 24 }).then(function(value) {
+schema.validate({ name: 'jimmy', age: 24 }).then(function (value) {
   value; // => { name: 'jimmy',age: 24 }
 });
 
-schema.validate({ name: 'jimmy', age: 'hi' }).catch(function(err) {
+schema.validate({ name: 'jimmy', age: 'hi' }).catch(function (err) {
   err.name; // => 'ValidationError'
   err.errors; // => ['age must be a number']
 });
@@ -436,7 +431,7 @@ For instance this will work:
 let schema = number().test(
   'is-42',
   "this isn't the number i want",
-  value => value != 42,
+  (value) => value != 42,
 );
 
 schema.validateSync(23); // throws ValidationError
@@ -445,7 +440,7 @@ schema.validateSync(23); // throws ValidationError
 however this will not:
 
 ```js
-let schema = number().test('is-42', "this isn't the number i want", value =>
+let schema = number().test('is-42', "this isn't the number i want", (value) =>
   Promise.resolve(value != 42),
 );
 
@@ -466,7 +461,7 @@ let schema = object({
       loose: boolean(),
       bar: string().when('loose', {
         is: true,
-        otherwise: s => s.strict(),
+        otherwise: (s) => s.strict(),
       }),
     }),
   ),
@@ -547,8 +542,8 @@ when instantiating a schema object.
 ```js
 object()
   .shape({ key: string() })
-  .withMutation(schema => {
-    return arrayOfObjectTests.forEach(test => {
+  .withMutation((schema) => {
+    return arrayOfObjectTests.forEach((test) => {
       schema.test(test);
     });
   });
@@ -766,22 +761,21 @@ let schema = yup.mixed().test({
   exclusive: true,
   params: { max },
   message: '${path} must be less than ${max} characters',
-  test: value => value == null || value.length <= max,
+  test: (value) => value == null || value.length <= max,
 });
 ```
 
 #### `mixed.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)).
-transforms are run before validations and only applied when `strict` is `true`. Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```js
-let schema = string().transform(function(value, originalvalue) {
+let schema = string().transform(function (value, originalvalue) {
   return this.isType(value) && value !== null ? value.toUpperCase() : value;
 });
 
@@ -793,8 +787,8 @@ you may want to adjust or refine the default behavior. For example, if you wante
 date parsing strategy than the default one you could do that with a transform.
 
 ```js
-module.exports = function(formats = 'MMM dd, yyyy') {
-  return date().transform(function(value, originalvalue) {
+module.exports = function (formats = 'MMM dd, yyyy') {
+  return date().transform(function (value, originalvalue) {
     // check to see if the previous transform already parsed the date
     if (this.isType(value)) return value;
 
@@ -1030,15 +1024,9 @@ Ensures that the value is an array, by setting the default to `[]` and transform
 values to an empty array as well. Any non-empty, non-array value will be wrapped in an array.
 
 ```js
-array()
-  .ensure()
-  .cast(null); // => []
-array()
-  .ensure()
-  .cast(1); // => [1]
-array()
-  .ensure()
-  .cast([1]); // => [1]
+array().ensure().cast(null); // => []
+array().ensure().cast(1); // => [1]
+array().ensure().cast([1]); // => [1]
 ```
 
 #### `array.compact(rejector: (value) => boolean): Schema`
@@ -1046,12 +1034,10 @@ array()
 Removes falsey values from the array. Providing a rejecter function lets you specify the rejection criteria yourself.
 
 ```js
-array()
-  .compact()
-  .cast(['', 1, 0, 4, false, null]); // => [1, 4]
+array().compact().cast(['', 1, 0, 4, false, null]); // => [1, 4]
 
 array()
-  .compact(function(v) {
+  .compact(function (v) {
     return v == null;
   })
   .cast(['', 1, 0, 4, false, null]); // => ['', 1, 0, 4, false]
@@ -1065,10 +1051,7 @@ Supports all the same methods as [`mixed`](#mixed).
 ```js
 yup.object().shape({
   name: string().required(),
-  age: number()
-    .required()
-    .positive()
-    .integer(),
+  age: number().required().positive().integer(),
   email: string().email(),
   website: string().url(),
 });
@@ -1193,7 +1176,7 @@ let yup = require('yup');
 let parseFormats = ['MMM dd, yyy'];
 let invalidDate = new Date('');
 
-module.exports = yup.date().transform(function(value, originalValue) {
+module.exports = yup.date().transform(function (value, originalValue) {
   if (this.isType(value)) return value;
   // the default coercion transform failed so let's try it with Moment instead
   value = Moment(originalValue, parseFormats);
@@ -1220,7 +1203,7 @@ You should keep in mind some basic guidelines when extending schemas:
 let invalidDate = new Date('');
 
 function parseDateFromFormats(formats, parseStrict) {
-  return this.transform(function(value, originalValue) {
+  return this.transform(function (value, originalValue) {
     if (this.isType(value)) return value;
 
     value = Moment(originalValue, formats, parseStrict);
@@ -1250,7 +1233,7 @@ class MomentDateSchemaType extends DateSchema {
     this._validFormats = [];
 
     this.withMutation(() => {
-      this.transform(function(value, originalvalue) {
+      this.transform(function (value, originalvalue) {
         if (this.isType(value))
           // we have a valid value
           return value;
