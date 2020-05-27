@@ -8,7 +8,7 @@ let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\u
 // eslint-disable-next-line
 let rUrl = /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i;
 
-let isTrimmed = value => isAbsent(value) || value === value.trim();
+let isTrimmed = (value) => isAbsent(value) || value === value.trim();
 
 export default function StringSchema() {
   if (!(this instanceof StringSchema)) return new StringSchema();
@@ -16,7 +16,7 @@ export default function StringSchema() {
   MixedSchema.call(this, { type: 'string' });
 
   this.withMutation(() => {
-    this.transform(function(value) {
+    this.transform(function (value) {
       if (this.isType(value)) return value;
       return value != null && value.toString ? value.toString() : value;
     });
@@ -31,7 +31,9 @@ inherits(StringSchema, MixedSchema, {
   },
 
   _isPresent(value) {
-    return MixedSchema.prototype._cast.call(this, value) && value.length > 0;
+    return (
+      MixedSchema.prototype._isPresent.call(this, value) && value.length > 0
+    );
   },
 
   length(length, message = locale.length) {
@@ -87,7 +89,7 @@ inherits(StringSchema, MixedSchema, {
       name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
-      test: value =>
+      test: (value) =>
         isAbsent(value) ||
         (value === '' && excludeEmptyString) ||
         value.search(regex) !== -1,
@@ -112,11 +114,11 @@ inherits(StringSchema, MixedSchema, {
 
   //-- transforms --
   ensure() {
-    return this.default('').transform(val => (val === null ? '' : val));
+    return this.default('').transform((val) => (val === null ? '' : val));
   },
 
   trim(message = locale.trim) {
-    return this.transform(val => (val != null ? val.trim() : val)).test({
+    return this.transform((val) => (val != null ? val.trim() : val)).test({
       message,
       name: 'trim',
       test: isTrimmed,
@@ -124,24 +126,24 @@ inherits(StringSchema, MixedSchema, {
   },
 
   lowercase(message = locale.lowercase) {
-    return this.transform(value =>
+    return this.transform((value) =>
       !isAbsent(value) ? value.toLowerCase() : value,
     ).test({
       message,
       name: 'string_case',
       exclusive: true,
-      test: value => isAbsent(value) || value === value.toLowerCase(),
+      test: (value) => isAbsent(value) || value === value.toLowerCase(),
     });
   },
 
   uppercase(message = locale.uppercase) {
-    return this.transform(value =>
+    return this.transform((value) =>
       !isAbsent(value) ? value.toUpperCase() : value,
     ).test({
       message,
       name: 'string_case',
       exclusive: true,
-      test: value => isAbsent(value) || value === value.toUpperCase(),
+      test: (value) => isAbsent(value) || value === value.toUpperCase(),
     });
   },
 });

@@ -20,7 +20,7 @@ function ArraySchema(type) {
   this.innerType = undefined;
 
   this.withMutation(() => {
-    this.transform(function(values) {
+    this.transform(function (values) {
       if (typeof values === 'string')
         try {
           values = JSON.parse(values);
@@ -76,7 +76,7 @@ inherits(ArraySchema, MixedSchema, {
     return MixedSchema.prototype._validate
       .call(this, _value, options)
       .catch(propagateErrors(endEarly, errors))
-      .then(value => {
+      .then((value) => {
         if (!recursive || !innerType || !this._typeCheck(value)) {
           if (errors.length) throw errors[0];
           return value;
@@ -114,7 +114,9 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   _isPresent(value) {
-    return MixedSchema.prototype._cast.call(this, value) && value.length > 0;
+    return (
+      MixedSchema.prototype._isPresent.call(this, value) && value.length > 0
+    );
   },
 
   of(schema) {
@@ -169,9 +171,9 @@ inherits(ArraySchema, MixedSchema, {
   },
 
   compact(rejector) {
-    let reject = !rejector ? v => !!v : (v, i, a) => !rejector(v, i, a);
+    let reject = !rejector ? (v) => !!v : (v, i, a) => !rejector(v, i, a);
 
-    return this.transform(values =>
+    return this.transform((values) =>
       values != null ? values.filter(reject) : values,
     );
   },
