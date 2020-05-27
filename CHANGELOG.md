@@ -1,3 +1,19 @@
+## [0.29.1](https://github.com/jquense/yup/compare/v0.29.0...v0.29.1) (2020-05-27)
+
+
+### Bug Fixes
+
+* present checks for array and strings ([ecd8ebe](https://github.com/jquense/yup/commit/ecd8ebe483456805d743c888a82e180394ba8a22)), closes [#913](https://github.com/jquense/yup/issues/913)
+
+
+### Features
+
+* allow access to parent schema (and unlimited ancestors!) in test context ([#556](https://github.com/jquense/yup/issues/556)) ([db35920](https://github.com/jquense/yup/commit/db35920b1ede4ea41ea90e1204b3da2a39787635))
+
+
+
+
+
 # [0.29.0](https://github.com/jquense/yup/compare/v0.28.5...v0.29.0) (2020-05-19)
 
 
