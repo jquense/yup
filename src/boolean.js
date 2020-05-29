@@ -1,5 +1,7 @@
 import inherits from './util/inherits';
 import MixedSchema from './mixed';
+import { boolean as locale } from './locale';
+import isAbsent from './util/isAbsent';
 
 export default BooleanSchema;
 
@@ -24,5 +26,29 @@ inherits(BooleanSchema, MixedSchema, {
     if (v instanceof Boolean) v = v.valueOf();
 
     return typeof v === 'boolean';
+  },
+
+  isTrue(message = locale.isValue) {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'true' },
+      test(value) {
+        return isAbsent(value) || value === true;
+      },
+    });
+  },
+
+  isFalse(message = locale.isValue) {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'false' },
+      test(value) {
+        return isAbsent(value) || value === false;
+      },
+    });
   },
 });

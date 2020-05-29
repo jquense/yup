@@ -51,7 +51,9 @@ export let date = {
   max: '${path} field must be at earlier than ${max}',
 };
 
-export let boolean = {};
+export let boolean = {
+  isValue: '${path} field must be ${value}',
+};
 
 export let object = {
   noUnknown: '${path} field has unspecified keys: ${unknown}',
