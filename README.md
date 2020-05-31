@@ -377,7 +377,7 @@ SchemaDescription {
 }
 ```
 
-#### `mixed.concat(schema: Schema)`
+#### `mixed.concat(schema: Schema): Schema`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
 
