@@ -324,6 +324,33 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check UUID correctly', function() {
+    var v = string().uuid();
+
+    return Promise.all([
+      v
+        .isValid('0c40428c-d88d-4ff0-a5dc-a6755cb4f4d1')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('42c4a747-3e3e-42be-af30-469cfb9c1913')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('42c4a747-3e3e-zzzz-af30-469cfb9c1913')
+        .should.eventually()
+        .equal(false),
+      v
+        .isValid('this is not a uuid')
+        .should.eventually()
+        .equal(false),
+      v
+        .isValid('')
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
   it('should validate transforms', function() {
     return Promise.all([
       string()

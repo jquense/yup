@@ -58,6 +58,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
+    - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
     - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
@@ -861,6 +862,10 @@ Validates the value as an email address via a regex.
 #### `string.url(message?: string | function): Schema`
 
 Validates the value as a valid URL via a regex.
+
+#### `string.uuid(message?: string | function): Schema`
+
+Validates the value as a valid UUID via a regex.
 
 #### `string.ensure(): Schema`
 
