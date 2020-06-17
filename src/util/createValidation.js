@@ -32,6 +32,7 @@ export function createErrorFactory({
   label,
   resolve,
   originalValue,
+  _info,
   ...opts
 }) {
   return function createError({
@@ -45,6 +46,7 @@ export function createErrorFactory({
       value,
       originalValue,
       label,
+      _info,
       ...resolveParams(opts.params, params, resolve),
     };
 
@@ -56,7 +58,7 @@ export function createErrorFactory({
 }
 
 export default function createValidation(options) {
-  let { name, message, test, params } = options;
+  let { name, message, test, params, _info } = options;
 
   function validate({
     value,
@@ -82,6 +84,7 @@ export default function createValidation(options) {
       label,
       resolve,
       name,
+      _info,
     });
 
     let ctx = {
