@@ -103,6 +103,7 @@ const proto = (SchemaType.prototype = {
     var clone = cloneDeepWith(this, value => {
       if (isSchema(value) && value !== this) return value;
     });
+    this._info = info;
     clone._info = info;
     return clone;
   },
