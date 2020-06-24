@@ -202,4 +202,14 @@ describe('Array types', () => {
       .of(itemSchema)
       .validate(value);
   });
+
+  it('should treat sparse arrays empty spots as undefined', async () => {
+    let sparseArray = new Array(2);
+    sparseArray[1] = 1;
+    let value = await array().of(number()).validate(sparseArray);
+    // assert the sparse array position has been turned into a real position
+    expect(0 in sparseArray).to.be.false()
+    expect(0 in value).to.be.true()
+    value.should.eql([undefined, 1]);
+  });
 });

@@ -84,6 +84,12 @@ inherits(ArraySchema, MixedSchema, {
 
         originalValue = originalValue || value;
 
+        // Populate sparse arrays positions with undefined
+        value = value.slice()
+        let len = value.length;
+        let idx = -1;
+        while (++idx < len) if (!(idx in value)) value[idx] = undefined;
+
         let validations = value.map((item, idx) => {
           var path = makePath`${options.path}[${idx}]`;
 
