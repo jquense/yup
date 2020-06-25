@@ -84,6 +84,7 @@ inherits(ArraySchema, MixedSchema, {
 
         originalValue = originalValue || value;
 
+        // #950 Ensure that sparse array empty slots are validated
         let validations = new Array(value.length);
         for (let idx = 0; idx < value.length; idx++) {
           let item = value[idx];
