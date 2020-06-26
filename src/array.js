@@ -84,8 +84,11 @@ inherits(ArraySchema, MixedSchema, {
 
         originalValue = originalValue || value;
 
-        let validations = value.map((item, idx) => {
-          var path = makePath`${options.path}[${idx}]`;
+        // #950 Ensure that sparse array empty slots are validated
+        let validations = new Array(value.length);
+        for (let idx = 0; idx < value.length; idx++) {
+          let item = value[idx];
+          let path = makePath`${options.path}[${idx}]`;
 
           // object._validate note for isStrict explanation
           var innerOptions = {
@@ -97,10 +100,10 @@ inherits(ArraySchema, MixedSchema, {
             originalValue: originalValue[idx],
           };
 
-          if (innerType.validate) return innerType.validate(item, innerOptions);
-
-          return true;
-        });
+          validations[idx] = innerType.validate
+            ? innerType.validate(item, innerOptions)
+            : true;
+        }
 
         return runValidations({
           sync,

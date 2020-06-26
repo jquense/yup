@@ -202,4 +202,20 @@ describe('Array types', () => {
       .of(itemSchema)
       .validate(value);
   });
+
+  it('should maintain array sparseness through validation', async () => {
+    let sparseArray = new Array(2);
+    sparseArray[1] = 1;
+    let value = await array().of(number()).validate(sparseArray);
+    expect(0 in sparseArray).to.be.false()
+    expect(0 in value).to.be.false()
+    // eslint-disable-next-line no-sparse-arrays
+    value.should.eql([,1]);
+  });
+
+  it('should validate empty slots in sparse array', async () => {
+    let sparseArray = new Array(2);
+    sparseArray[1] = 1;
+    await array().of(number().required()).isValid(sparseArray).should.become(false);
+  });
 });
