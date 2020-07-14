@@ -146,23 +146,36 @@ describe('Mixed Types ', () => {
     expect(error.message).to.match(/My string is required/);
   });
 
-  it('should check types', async () => {
-    let inst = string()
-      .strict()
-      .typeError('must be a ${type}!');
+  describe('typeError', () => {
+    it('should check types', async () => {
+      let inst = string()
+        .strict()
+        .typeError('must be a ${type}!');
 
-    let error = await inst.validate(5).should.be.rejected();
+      let error = await inst.validate(5).should.be.rejected();
 
-    error.type.should.equal('typeError');
-    error.message.should.equal('must be a string!');
-    error.inner.length.should.equal(0);
+      error.type.should.equal('typeError');
+      error.message.should.equal('must be a string!');
+      error.inner.length.should.equal(0);
 
-    error = await inst.validate(5, { abortEarly: false }).should.be.rejected();
+      error = await inst.validate(5, { abortEarly: false }).should.be.rejected();
 
-    expect(error.type).to.not.exist();
-    error.message.should.equal('must be a string!');
-    error.inner.length.should.equal(1);
-  });
+      expect(error.type).to.not.exist();
+      error.message.should.equal('must be a string!');
+      error.inner.length.should.equal(1);
+    });
+
+    it('should fallback to default message', async () => {
+      let inst = string()
+        .strict()
+        .typeError();
+
+      let error = await inst.validate(5).should.be.rejected();
+
+      error.type.should.equal('typeError');
+      error.message.should.equal('this must be a `string` type, but the final value was: `5`.');
+    })
+  })
 
   it('should limit values', async () => {
     let inst = mixed().oneOf([5, 'hello']);
