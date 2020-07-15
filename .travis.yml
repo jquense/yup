@@ -2,8 +2,8 @@ sudo: false
 language: node_js
 cache: 'yarn'
 node_js:
-  - 8
-  - 10
+  - 12
+  - 14
 branches:
   only:
     - master
