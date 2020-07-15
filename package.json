@@ -109,6 +109,6 @@
   "readme": "ERROR: No README data found!",
   "_id": "yup@0.28.3",
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   }
 }
