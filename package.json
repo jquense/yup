@@ -107,5 +107,8 @@
     "toposort": "^2.0.2"
   },
   "readme": "ERROR: No README data found!",
-  "_id": "yup@0.28.3"
+  "_id": "yup@0.28.3",
+  "engines": {
+    "node": ">=8"
+  }
 }
