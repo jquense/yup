@@ -9,6 +9,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -24,7 +25,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`mixed.label(label: string): Schema`](#mixedlabellabel-string-schema)
     - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
     - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
-    - [`mixed.concat(schema: Schema)`](#mixedconcatschema-schema)
+    - [`mixed.concat(schema: Schema): Schema`](#mixedconcatschema-schema-schema)
     - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
     - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
     - [`mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-options-object-promiseany-validationerror)

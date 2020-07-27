@@ -72,7 +72,7 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.1.0",
     "babel-plugin-transform-rename-import": "^2.3.0",
-    "babel-preset-jason": "^6.2.0",
+    "babel-preset-jason": "^6.3.0",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
