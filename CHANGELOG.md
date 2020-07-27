@@ -1,3 +1,19 @@
+## [0.29.2](https://github.com/jquense/yup/compare/v0.29.1...v0.29.2) (2020-07-27)
+
+
+### Bug Fixes
+
+* handle sparse array positions as undefined ([#950](https://github.com/jquense/yup/issues/950)) ([4e77348](https://github.com/jquense/yup/commit/4e77348))
+
+
+### Features
+
+* string UUID validation via a regex ([#909](https://github.com/jquense/yup/issues/909)) ([8f2bd2b](https://github.com/jquense/yup/commit/8f2bd2b))
+
+
+
+
+
 ## [0.29.1](https://github.com/jquense/yup/compare/v0.29.0...v0.29.1) (2020-05-27)
 
 
