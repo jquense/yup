@@ -73,6 +73,10 @@ inherits(ArraySchema, MixedSchema, {
     let originalValue =
       options.originalValue != null ? options.originalValue : _value;
 
+    let from = [{ schema: this, value: originalValue }, ...(options.from || [])];
+
+    const opts = { ...options, __validating: true, originalValue, from };
+
     return MixedSchema.prototype._validate
       .call(this, _value, options)
       .catch(propagateErrors(endEarly, errors))
@@ -81,6 +85,13 @@ inherits(ArraySchema, MixedSchema, {
           if (errors.length) throw errors[0];
           return value;
         }
+
+        from = originalValue
+          ? [...from]
+          : [
+              { schema: this, value: originalValue || value },
+              ...(opts.from || []),
+            ];
 
         originalValue = originalValue || value;
 
@@ -95,6 +106,7 @@ inherits(ArraySchema, MixedSchema, {
             ...options,
             path,
             strict: true,
+            from,
             parent: value,
             index: idx,
             originalValue: originalValue[idx],

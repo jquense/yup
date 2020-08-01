@@ -502,9 +502,12 @@ describe('Mixed Types ', () => {
 
     finalFrom[0].value.should.eql(testFixture.second[finalOptions.index]);
     finalFrom[0].schema.should.equal(third);
-    finalFrom[1].value.should.equal(testFixture);
-    finalFrom[1].schema.should.equal(first);
 
+    finalFrom[1].value.should.equal(testFixture.second);
+    finalFrom[1].schema.should.equal(second);
+
+    finalFrom[2].value.should.equal(testFixture);
+    finalFrom[2].schema.should.equal(first);
   });
 
   it('tests can return an error', () => {
