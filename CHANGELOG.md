@@ -1,3 +1,9 @@
+## [0.29.3](https://github.com/jquense/yup/compare/v0.29.2...v0.29.3) (2020-08-04)
+
+
+
+
+
 ## [0.29.2](https://github.com/jquense/yup/compare/v0.29.1...v0.29.2) (2020-07-27)
 
 
