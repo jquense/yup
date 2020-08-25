@@ -460,7 +460,7 @@ const proto = (SchemaType.prototype = {
     return next;
   },
 
-  typeError(message) {
+  typeError(message = locale.notType) {
     var next = this.clone();
 
     next._typeError = createValidation({
@@ -557,7 +557,7 @@ const proto = (SchemaType.prototype = {
 
     if (next._whitelist.size) description.oneOf = next._whitelist.describe();
     if (next._blacklist.size) description.notOneOf = next._blacklist.describe();
-    
+
     return description;
   },
 
