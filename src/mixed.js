@@ -98,14 +98,25 @@ const proto = (SchemaType.prototype = {
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, value => {
+    var info = this._info;
+    delete this._info;
+    var clone = cloneDeepWith(this, value => {
       if (isSchema(value) && value !== this) return value;
     });
+    this._info = info;
+    clone._info = info;
+    return clone;
   },
 
   label(label) {
     var next = this.clone();
     next._label = label;
+    return next;
+  },
+
+  info(info) {
+    var next = this.clone();
+    next._info = info;
     return next;
   },
 
@@ -411,6 +422,7 @@ const proto = (SchemaType.prototype = {
     }
 
     if (opts.message === undefined) opts.message = locale.default;
+    opts._info = this._info;
 
     if (typeof opts.test !== 'function')
       throw new TypeError('`test` is a required parameters');
