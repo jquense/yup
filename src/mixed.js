@@ -93,14 +93,16 @@ const proto = (SchemaType.prototype = {
 
   constructor: SchemaType,
 
-  clone() {
-    if (this._mutate) return this;
+  clone(fn) {
+    let next = this._mutate
+      ? this
+      : cloneDeepWith(this, value => {
+          if (isSchema(value) && value !== this) return value;
+        });
 
-    // if the nested value is a schema we can skip cloning, since
-    // they are already immutable
-    return cloneDeepWith(this, value => {
-      if (isSchema(value) && value !== this) return value;
-    });
+    if (fn) next.withMutation(fn);
+
+    return next;
   },
 
   label(label) {

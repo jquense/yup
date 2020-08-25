@@ -54,6 +54,30 @@ describe('Mixed Types ', () => {
     ]);
   });
 
+  describe('clone', () => {
+    it('should return a different instance', () => {
+      let inst = mixed();
+
+      inst.clone().should.not.equal(inst);
+    });
+
+    it('should return the same instance when in mutable mode', () => {
+      let inst = mixed();
+      inst._mutate = true;
+
+      inst.clone().should.equal(inst);
+    });
+
+    it('should pass a returning instance to a provided function', () => {
+      let inst = mixed();
+      let tapping = sinon.spy(next => (next.foo = 'bar'));
+      let next = inst.clone(tapping);
+
+      tapping.should.have.been.calledOnceWithExactly(next);
+      next.should.have.property('foo', 'bar');
+    });
+  });
+
   it('cast should return a default when undefined', () => {
     let inst = mixed().default('hello');
 
