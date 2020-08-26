@@ -17,8 +17,8 @@ class Lazy {
   cast(value, options) {
     return this._resolve(value, options).cast(value, options);
   }
-  validate(value, options) {
-    return this._resolve(value, options).validate(value, options);
+  validate(value, options, maybeCb) {
+    return this._resolve(value, options).validate(value, options, maybeCb);
   }
   validateSync(value, options) {
     return this._resolve(value, options).validateSync(value, options);

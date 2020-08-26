@@ -1,10 +1,10 @@
 import reach, { getIn } from '../src/util/reach';
 import prependDeep from '../src/util/prependDeep';
-import { settled } from '../src/util/runValidations';
+import * as Async from '../src/util/async';
 
 import { object, array, string, lazy, number, ValidationError } from '../src';
 
-describe('Yup', function() {
+describe('Yup', function () {
   it('cast should not assert on undefined', () => {
     (() => string().cast(undefined)).should.not.throw();
   });
@@ -22,21 +22,7 @@ describe('Yup', function() {
     (() => string().cast(null, { assert: false })).should.not.throw();
   });
 
-  it('should do settled', function() {
-    return Promise.all([
-      settled([Promise.resolve('hi'), Promise.reject('error')])
-        .should.be.fulfilled()
-        .then(function(results) {
-          results.length.should.equal(2);
-          results[0].fulfilled.should.equal(true);
-          results[0].value.should.equal('hi');
-          results[1].fulfilled.should.equal(false);
-          results[1].value.should.equal('error');
-        }),
-    ]);
-  });
-
-  it('should prepend deeply', function() {
+  it('should prepend deeply', function () {
     var a = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
     var b = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
 
@@ -54,7 +40,7 @@ describe('Yup', function() {
     });
   });
 
-  it('should not prepend needlesly', function() {
+  it('should not prepend needlesly', function () {
     var schema = string();
     var spy = sinon.spy(schema, 'concat');
     var a = { schema };
@@ -137,18 +123,18 @@ describe('Yup', function() {
     valid.should.equal(true);
   });
 
-  it('should REACH conditionally correctly', async function() {
+  it('should REACH conditionally correctly', async function () {
     var num = number().oneOf([4]),
       inst = object().shape({
         num: number().max(4),
         nested: object().shape({
-          arr: array().when('$bar', function(bar) {
+          arr: array().when('$bar', function (bar) {
             return bar !== 3
               ? array().of(number())
               : array().of(
                   object().shape({
                     foo: number(),
-                    num: number().when('foo', foo => {
+                    num: number().when('foo', (foo) => {
                       if (foo === 5) return num;
                     }),
                   }),
@@ -168,12 +154,8 @@ describe('Yup', function() {
     let options = {};
     options.parent = value.nested.arr[0];
     options.value = options.parent.num;
-    reach(inst, 'nested.arr.num', value)
-      .resolve(options)
-      .should.equal(num);
-    reach(inst, 'nested.arr[].num', value)
-      .resolve(options)
-      .should.equal(num);
+    reach(inst, 'nested.arr.num', value).resolve(options).should.equal(num);
+    reach(inst, 'nested.arr[].num', value).resolve(options).should.equal(num);
 
     options.context = context;
     reach(inst, 'nested.arr.num', value, context)
@@ -210,7 +192,7 @@ describe('Yup', function() {
     };
 
     let err = await object({
-      x: array(lazy(val => types[val.type])),
+      x: array(lazy((val) => types[val.type])),
     })
       .strict()
       .validate({
@@ -221,5 +203,95 @@ describe('Yup', function() {
       })
       .should.be.rejected();
     err.message.should.match(/must be a `number` type/);
+  });
+
+  describe('parallel', () => {
+    it('returns results', (done) => {
+      Async.parallel(
+        [
+          (cb) => Async.asCallback(Promise.resolve(1), cb),
+          (cb) => Async.asCallback(Promise.resolve(2), cb),
+          (cb) => Async.asCallback(Promise.resolve(3), cb),
+          (cb) => Async.asCallback(Promise.resolve(4), cb),
+        ],
+        (err, results) => {
+          expect(results).to.eql([1, 2, 3, 4]);
+          done();
+        },
+      );
+    });
+
+    it('fails fast', (done) => {
+      Async.parallel(
+        [
+          (cb) => Async.asCallback(Promise.resolve(1), cb),
+          (cb) => Async.asCallback(Promise.reject(2), cb),
+          (cb) => Async.asCallback(Promise.reject(3), cb),
+          (cb) => Async.asCallback(Promise.resolve(4), cb),
+        ],
+        (err, results) => {
+          expect(results).to.equal(undefined);
+          expect(err).to.equal(2);
+          done();
+        },
+      );
+    });
+
+    it('handles empty', (done) => {
+      Async.parallel([], (err, results) => {
+        expect(results).to.eql([]);
+        done();
+      });
+    });
+  });
+
+  describe('settled', () => {
+    it('handles empty', (done) => {
+      Async.settled([], (err, results) => {
+        expect(results).to.eql([]);
+        done();
+      });
+    });
+
+    it('returns results', (done) => {
+      Async.settled(
+        [
+          (cb) => Async.asCallback(Promise.resolve(1), cb),
+          (cb) => Async.asCallback(Promise.resolve(2), cb),
+          (cb) => Async.asCallback(Promise.resolve(3), cb),
+          (cb) => Async.asCallback(Promise.resolve(4), cb),
+        ],
+        (err, results) => {
+          expect(results).to.eql([
+            { fulfilled: true, value: 1 },
+            { fulfilled: true, value: 2 },
+            { fulfilled: true, value: 3 },
+            { fulfilled: true, value: 4 },
+          ]);
+          done();
+        },
+      );
+    });
+
+    it('fails fast', (done) => {
+      Async.settled(
+        [
+          (cb) => Async.asCallback(Promise.resolve(1), cb),
+          (cb) => Async.asCallback(Promise.reject(2), cb),
+          (cb) => Async.asCallback(Promise.reject(3), cb),
+          (cb) => Async.asCallback(Promise.resolve(4), cb),
+        ],
+        (err, results) => {
+          expect(results).to.eql([
+            { fulfilled: true, value: 1 },
+            { fulfilled: false, value: 2 },
+            { fulfilled: false, value: 3 },
+            { fulfilled: true, value: 4 },
+          ]);
+          expect(err).to.equal(null);
+          done();
+        },
+      );
+    });
   });
 });

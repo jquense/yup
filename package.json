@@ -6,18 +6,19 @@
   "module": "es/index.js",
   "runkitExampleFilename": "./runkit-example.js",
   "scripts": {
-    "test": "npm run lint && npm run test-all -- --runInBand",
+    "test": "yarn lint && yarn test-all --runInBand",
     "testonly": "jest",
-    "test-all": "npm run testonly -- --projects ./jest-sync.config.json --projects ./package.json",
+    "test-sync": "yarn  testonly --projects ./jest-sync.config.json",
+    "test-all": "yarn testonly --projects ./jest-sync.config.json --projects ./package.json",
     "tdd": "jest --watch",
     "lint": "eslint src test",
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
     "release": "rollout",
-    "build": "yarn build:commonjs && yarn build:modules && npm run toc",
+    "build": "yarn build:commonjs && yarn build:modules && yarn toc",
     "build:commonjs": "babel src --out-dir lib --delete-dir-on-start",
     "build:modules": "babel src --out-dir es --delete-dir-on-start --env-name modules",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "yarn build"
   },
   "files": [
     "es",
@@ -50,7 +51,7 @@
   },
   "jest": {
     "globals": {
-      "YUP_USE_SYNC": true
+      "YUP_USE_SYNC": false
     },
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
@@ -95,15 +96,14 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-size-snapshot": "^0.12.0",
     "sinon": "^9.0.2",
-    "sinon-chai": "^3.5.0"
+    "sinon-chai": "^3.5.0",
+    "synchronous-promise": "^2.0.13"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",
-    "fn-name": "~3.0.0",
     "lodash": "^4.17.15",
     "lodash-es": "^4.17.11",
     "property-expr": "^2.0.2",
-    "synchronous-promise": "^2.0.13",
     "toposort": "^2.0.2"
   },
   "readme": "ERROR: No README data found!",

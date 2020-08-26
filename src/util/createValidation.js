@@ -1,26 +1,37 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
-import { SynchronousPromise } from 'synchronous-promise';
+import { asCallback } from './async';
 
 let formatError = ValidationError.formatError;
 
-let thenable = p =>
+let thenable = (p) =>
   p && typeof p.then === 'function' && typeof p.catch === 'function';
 
-function runTest(testFn, ctx, value, sync) {
-  let result = testFn.call(ctx, value);
-  if (!sync) return Promise.resolve(result);
+function runTest(testFn, ctx, value, sync, callback) {
+  if (sync) {
+    let result,
+      err = null;
+    try {
+      result = testFn.call(ctx, value);
 
-  if (thenable(result)) {
-    throw new Error(
-      `Validation test of type: "${
-        ctx.type
-      }" returned a Promise during a synchronous validate. ` +
-        `This test will finish after the validate call has returned`,
-    );
+      if (thenable(result)) {
+        throw new Error(
+          `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
+            `This test will finish after the validate call has returned`,
+        );
+      }
+    } catch (e) {
+      err = e;
+    }
+
+    return callback(err, result);
   }
-  return SynchronousPromise.resolve(result);
+
+  return asCallback(
+    new Promise((resolve) => resolve(testFn.call(ctx, value))),
+    callback,
+  );
 }
 
 function resolveParams(oldParams, newParams, resolve) {
@@ -58,17 +69,12 @@ export function createErrorFactory({
 export default function createValidation(options) {
   let { name, message, test, params } = options;
 
-  function validate({
-    value,
-    path,
-    label,
-    options,
-    originalValue,
-    sync,
-    ...rest
-  }) {
+  function validate(
+    { value, path, label, options, originalValue, sync, ...rest },
+    cb,
+  ) {
     let parent = options.parent;
-    let resolve = item =>
+    let resolve = (item) =>
       Ref.isRef(item)
         ? item.getValue({ value, parent, context: options.context })
         : item;
@@ -94,9 +100,11 @@ export default function createValidation(options) {
       ...rest,
     };
 
-    return runTest(test, ctx, value, sync).then(validOrError => {
-      if (ValidationError.isError(validOrError)) throw validOrError;
-      else if (!validOrError) throw createError();
+    runTest(test, ctx, value, sync, (err, validOrError) => {
+      if (err) cb(err);
+      if (ValidationError.isError(validOrError)) cb(validOrError);
+      else if (!validOrError) cb(createError());
+      else cb(null, validOrError);
     });
   }
 

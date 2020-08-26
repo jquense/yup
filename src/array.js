@@ -62,7 +62,7 @@ inherits(ArraySchema, MixedSchema, {
     return isChanged ? castArray : value;
   },
 
-  _validate(_value, options = {}) {
+  _validate(_value, options = {}, callback) {
     let errors = [];
     let sync = options.sync;
     let path = options.path;
@@ -73,13 +73,20 @@ inherits(ArraySchema, MixedSchema, {
     let originalValue =
       options.originalValue != null ? options.originalValue : _value;
 
-    return MixedSchema.prototype._validate
-      .call(this, _value, options)
-      .catch(propagateErrors(endEarly, errors))
-      .then((value) => {
+    MixedSchema.prototype._validate.call(
+      this,
+      _value,
+      options,
+      (err, value) => {
+        if (err) {
+          if (endEarly) return void callback(err);
+          errors.push(err);
+          value = err.value;
+        }
+
         if (!recursive || !innerType || !this._typeCheck(value)) {
-          if (errors.length) throw errors[0];
-          return value;
+          callback(errors[0] || null, value);
+          return;
         }
 
         originalValue = originalValue || value;
@@ -91,7 +98,7 @@ inherits(ArraySchema, MixedSchema, {
           let path = makePath`${options.path}[${idx}]`;
 
           // object._validate note for isStrict explanation
-          var innerOptions = {
+          let innerOptions = {
             ...options,
             path,
             strict: true,
@@ -100,20 +107,25 @@ inherits(ArraySchema, MixedSchema, {
             originalValue: originalValue[idx],
           };
 
-          validations[idx] = innerType.validate
-            ? innerType.validate(item, innerOptions)
-            : true;
+          validations[idx] = (cb) =>
+            innerType.validate
+              ? innerType.validate(item, innerOptions, cb)
+              : cb(null, true);
         }
 
-        return runValidations({
-          sync,
-          path,
-          value,
-          errors,
-          endEarly,
-          validations,
-        });
-      });
+        runValidations(
+          {
+            sync,
+            path,
+            value,
+            errors,
+            endEarly,
+            validations,
+          },
+          callback,
+        );
+      },
+    );
   },
 
   _isPresent(value) {
