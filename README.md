@@ -706,26 +706,27 @@ use the alternate signature to provide more options (see below):
 let jimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  value => value === 'jimmy',
+  value, context => value === 'jimmy',
 );
 
 // or make it async by returning a promise
 let asyncJimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  async (value) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+  async (value, context) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
 });
 
 await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
 ```
 
-test functions are called with a special context, or `this` value, that exposes some useful metadata and functions. Note that to use the `this` context the test function must be a function expression (`function test(value) {}`), not an arrow function, since arrow functions have lexical context.
+test functions are called with a special context, or `this` value, that exposes some useful metadata and functions. Older versions just expose the `this` context using `function ()`, not arrow-func, but now it's exposed too as a second argument of the test functions. It's allow you decide which approach you prefer. 
 
 - `this.path`: the string path of the current validation
 - `this.schema`: the resolved schema object that the test is running against.
 - `this.options`: the `options` object that validate() or isValid() was called with
 - `this.parent`: in the case of nested schema, this is the value of the parent object
+- `this.originalValue`: the original value that is being tested
 - `this.createError(Object: { path: String, message: String, params: Object })`: create and return a
   validation error. Useful for dynamically setting the `path`, `params`, or more likely, the error `message`.
   If either option is omitted it will use the current path, or default message.
