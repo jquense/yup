@@ -9,15 +9,15 @@ let thenable = p =>
   p && typeof p.then === 'function' && typeof p.catch === 'function';
 
 function runTest(testFn, ctx, value, sync) {
-  let result = testFn.call(ctx, value);
+  let result = testFn.call(ctx, value, ctx);
   if (!sync) return Promise.resolve(result);
 
   if (thenable(result)) {
     throw new Error(
       `Validation test of type: "${
-        ctx.type
+      ctx.type
       }" returned a Promise during a synchronous validate. ` +
-        `This test will finish after the validate call has returned`,
+      `This test will finish after the validate call has returned`,
     );
   }
   return SynchronousPromise.resolve(result);
@@ -91,6 +91,7 @@ export default function createValidation(options) {
       createError,
       resolve,
       options,
+      originalValue,
       ...rest,
     };
 

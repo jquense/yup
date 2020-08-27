@@ -706,7 +706,7 @@ use the alternate signature to provide more options (see below):
 let jimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  value, context => value === 'jimmy',
+  (value, context) => value === 'jimmy',
 );
 
 // or make it async by returning a promise
