@@ -2,9 +2,6 @@ import printValue from './util/printValue';
 
 let strReg = /\$\{\s*(\w+)\s*\}/g;
 
-let replace = str => params =>
-  str.replace(strReg, (_, key) => printValue(params[key]));
-
 export default function ValidationError(errors, value, field, type) {
   this.name = 'ValidationError';
   this.value = value;
@@ -14,7 +11,7 @@ export default function ValidationError(errors, value, field, type) {
   this.inner = [];
 
   if (errors)
-    [].concat(errors).forEach(err => {
+    [].concat(errors).forEach((err) => {
       this.errors = this.errors.concat(err.errors || err);
 
       if (err.inner)
@@ -32,17 +29,16 @@ export default function ValidationError(errors, value, field, type) {
 ValidationError.prototype = Object.create(Error.prototype);
 ValidationError.prototype.constructor = ValidationError;
 
-ValidationError.isError = function(err) {
+ValidationError.isError = function (err) {
   return err && err.name === 'ValidationError';
 };
 
-ValidationError.formatError = function(message, params) {
-  if (typeof message === 'string') message = replace(message);
+ValidationError.formatError = function (message, params) {
+  params.path = params.label || params.path || 'this';
 
-  let fn = params => {
-    params.path = params.label || params.path || 'this';
-    return typeof message === 'function' ? message(params) : message;
-  };
+  if (typeof message === 'string')
+    return message.replace(strReg, (_, key) => printValue(params[key]));
+  if (typeof message === 'function') return message(params);
 
-  return arguments.length === 1 ? fn : fn(params);
+  return message;
 };

@@ -1,94 +1,41 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
-import { asCallback } from './async';
 
-let formatError = ValidationError.formatError;
-
-let thenable = (p) =>
-  p && typeof p.then === 'function' && typeof p.catch === 'function';
-
-function runTest(testFn, ctx, value, sync, callback) {
-  if (sync) {
-    let result,
-      err = null;
-    try {
-      result = testFn.call(ctx, value);
-
-      if (thenable(result)) {
-        throw new Error(
-          `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
-            `This test will finish after the validate call has returned`,
-        );
-      }
-    } catch (e) {
-      err = e;
-    }
-
-    return callback(err, result);
-  }
-
-  return asCallback(
-    new Promise((resolve) => resolve(testFn.call(ctx, value))),
-    callback,
-  );
-}
-
-function resolveParams(oldParams, newParams, resolve) {
-  return mapValues({ ...oldParams, ...newParams }, resolve);
-}
-
-export function createErrorFactory({
-  value,
-  label,
-  resolve,
-  originalValue,
-  ...opts
-}) {
-  return function createError({
-    path = opts.path,
-    message = opts.message,
-    type = opts.name,
-    params,
-  } = {}) {
-    params = {
-      path,
-      value,
-      originalValue,
-      label,
-      ...resolveParams(opts.params, params, resolve),
-    };
-
-    return Object.assign(
-      new ValidationError(formatError(message, params), value, path, type),
-      { params },
-    );
-  };
-}
-
-export default function createValidation(options) {
-  let { name, message, test, params } = options;
-
+export default function createValidation(config) {
   function validate(
     { value, path, label, options, originalValue, sync, ...rest },
     cb,
   ) {
-    let parent = options.parent;
-    let resolve = (item) =>
-      Ref.isRef(item)
-        ? item.getValue({ value, parent, context: options.context })
-        : item;
+    const { name, test, params, message } = config;
+    let { parent, context } = options;
 
-    let createError = createErrorFactory({
-      message,
-      path,
-      value,
-      originalValue,
-      params,
-      label,
-      resolve,
-      name,
-    });
+    function resolve(item) {
+      return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
+    }
+
+    function createError(overrides = {}) {
+      const nextParams = mapValues(
+        {
+          value,
+          originalValue,
+          label,
+          path: overrides.path || path,
+          ...params,
+          ...overrides.params,
+        },
+        resolve,
+      );
+
+      const error = new ValidationError(
+        ValidationError.formatError(overrides.message || message, nextParams),
+        value,
+        nextParams.path,
+        overrides.type || name,
+      );
+      error.params = nextParams;
+      return error;
+    }
 
     let ctx = {
       path,
@@ -100,15 +47,41 @@ export default function createValidation(options) {
       ...rest,
     };
 
-    runTest(test, ctx, value, sync, (err, validOrError) => {
-      if (err) cb(err);
-      if (ValidationError.isError(validOrError)) cb(validOrError);
-      else if (!validOrError) cb(createError());
-      else cb(null, validOrError);
-    });
+    if (!sync) {
+      try {
+        Promise.resolve(test.call(ctx, value)).then((validOrError) => {
+          if (ValidationError.isError(validOrError)) cb(validOrError);
+          else if (!validOrError) cb(createError());
+          else cb(null, validOrError);
+        });
+      } catch (err) {
+        cb(err);
+      }
+
+      return;
+    }
+
+    let result;
+    try {
+      result = test.call(ctx, value);
+
+      if (typeof result?.then === 'function') {
+        throw new Error(
+          `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
+            `This test will finish after the validate call has returned`,
+        );
+      }
+    } catch (err) {
+      cb(err);
+      return;
+    }
+
+    if (ValidationError.isError(result)) cb(result);
+    else if (!result) cb(createError());
+    else cb(null, result);
   }
 
-  validate.OPTIONS = options;
+  validate.OPTIONS = config;
 
   return validate;
 }

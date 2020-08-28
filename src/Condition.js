@@ -23,9 +23,9 @@ class Condition {
     let check =
       typeof is === 'function'
         ? is
-        : (...values) => values.every(value => value === is);
+        : (...values) => values.every((value) => value === is);
 
-    this.fn = function(...args) {
+    this.fn = function (...args) {
       let options = args.pop();
       let schema = args.pop();
       let branch = check(...args) ? then : otherwise;
@@ -37,7 +37,9 @@ class Condition {
   }
 
   resolve(base, options) {
-    let values = this.refs.map(ref => ref.getValue(options));
+    let values = this.refs.map((ref) =>
+      ref.getValue(options?.value, options?.parent, options?.context),
+    );
 
     let schema = this.fn.apply(base, values.concat(base, options));
 

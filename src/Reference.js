@@ -21,20 +21,16 @@ export default class Reference {
     let prefix = this.isContext
       ? prefixes.context
       : this.isValue
-        ? prefixes.value
-        : '';
+      ? prefixes.value
+      : '';
 
     this.path = this.key.slice(prefix.length);
     this.getter = this.path && getter(this.path, true);
     this.map = options.map;
   }
 
-  getValue(options) {
-    let result = this.isContext
-      ? options.context
-      : this.isValue
-        ? options.value
-        : options.parent;
+  getValue(value, parent, context) {
+    let result = this.isContext ? context : this.isValue ? value : parent;
 
     if (this.getter) result = this.getter(result || {});
 
@@ -43,8 +39,15 @@ export default class Reference {
     return result;
   }
 
+  /**
+   *
+   * @param {*} value
+   * @param {Object} options
+   * @param {Object=} options.context
+   * @param {Object=} options.parent
+   */
   cast(value, options) {
-    return this.getValue({ ...options, value });
+    return this.getValue(value, options?.parent, options?.context);
   }
 
   resolve() {

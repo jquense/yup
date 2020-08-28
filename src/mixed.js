@@ -4,7 +4,7 @@ import toArray from 'lodash/toArray';
 
 import { mixed as locale } from './locale';
 import Condition from './Condition';
-import runValidations from './util/runValidations';
+import runTests from './util/runTests';
 import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
 import createValidation from './util/createValidation';
@@ -186,9 +186,21 @@ const proto = (SchemaType.prototype = {
 
     return schema;
   },
-
+  /**
+   *
+   * @param {*} value
+   * @param {Object} options
+   * @param {*=} options.parent
+   * @param {*=} options.context
+   */
   cast(value, options = {}) {
-    let resolvedSchema = this.resolve({ ...options, value });
+    let resolvedSchema = this.resolve({
+      value,
+      ...options,
+      // parent: options.parent,
+      // context: options.context,
+    });
+
     let result = resolvedSchema._cast(value, options);
 
     if (
@@ -230,66 +242,59 @@ const proto = (SchemaType.prototype = {
   },
 
   _validate(_value, options = {}, cb) {
+    let {
+      sync,
+      path,
+      from = [],
+      originalValue = _value,
+      strict = this._options.strict,
+      abortEarly = this._options.abortEarly,
+    } = options;
+
     let value = _value;
-    let originalValue =
-      options.originalValue != null ? options.originalValue : _value;
-
-    let isStrict = this._option('strict', options);
-    let endEarly = this._option('abortEarly', options);
-
-    let sync = options.sync;
-    let path = options.path;
-    let label = this._label;
-
-    if (!isStrict) {
+    if (!strict) {
+      this._validating = true;
       value = this._cast(value, { assert: false, ...options });
+      this._validating = false;
     }
     // value is cast, we can check if it meets type requirements
-    let validationParams = {
+    let args = {
       value,
       path,
-      schema: this,
       options,
-      label,
       originalValue,
+      schema: this,
+      label: this._label,
       sync,
+      from,
     };
-
-    if (options.from) {
-      validationParams.from = options.from;
-    }
 
     let initialTests = [];
 
-    if (this._typeError)
-      initialTests.push((cb) => this._typeError(validationParams, cb));
+    if (this._typeError) initialTests.push(this._typeError);
+    if (this._whitelistError) initialTests.push(this._whitelistError);
+    if (this._blacklistError) initialTests.push(this._blacklistError);
 
-    if (this._whitelistError)
-      initialTests.push((cb) => this._whitelistError(validationParams, cb));
-
-    if (this._blacklistError)
-      initialTests.push((cb) => this._blacklistError(validationParams, cb));
-
-    return runValidations(
+    return runTests(
       {
-        validations: initialTests,
-        endEarly,
+        args,
         value,
         path,
         sync,
+        tests: initialTests,
+        endEarly: abortEarly,
       },
-      (err, value) => {
+      (err) => {
         if (err) return void cb(err);
 
-        runValidations(
+        runTests(
           {
+            tests: this.tests,
+            args,
             path,
             sync,
             value,
-            endEarly,
-            validations: this.tests.map((fn) => (cb) =>
-              fn(validationParams, cb),
-            ),
+            endEarly: abortEarly,
           },
           cb,
         );
