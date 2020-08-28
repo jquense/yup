@@ -11,16 +11,14 @@ import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';
 import makePath from './util/makePath';
-import runValidations, { propagateErrors } from './util/runValidations';
-import { SynchronousPromise } from 'synchronous-promise';
+import runValidations from './util/runValidations';
 
-let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
-
-let promise = sync => (sync ? SynchronousPromise : Promise);
+let isObject = (obj) =>
+  Object.prototype.toString.call(obj) === '[object Object]';
 
 function unknown(ctx, value) {
   let known = Object.keys(ctx.fields);
-  return Object.keys(value).filter(key => known.indexOf(key) === -1);
+  return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
 export default function ObjectSchema(spec) {
@@ -32,7 +30,7 @@ export default function ObjectSchema(spec) {
       if (!this._nodes.length) return undefined;
 
       let dft = {};
-      this._nodes.forEach(key => {
+      this._nodes.forEach((key) => {
         dft[key] = this.fields[key].default
           ? this.fields[key].default()
           : undefined;
@@ -81,7 +79,7 @@ inherits(ObjectSchema, MixedSchema, {
 
     let strip = this._option('stripUnknown', options) === true;
     let props = this._nodes.concat(
-      Object.keys(value).filter(v => this._nodes.indexOf(v) === -1),
+      Object.keys(value).filter((v) => this._nodes.indexOf(v) === -1),
     );
 
     let intermediateValue = {}; // is filled during the transform below
@@ -92,7 +90,7 @@ inherits(ObjectSchema, MixedSchema, {
     };
 
     let isChanged = false;
-    props.forEach(prop => {
+    props.forEach((prop) => {
       let field = fields[prop];
       let exists = has(value, prop);
 
@@ -124,7 +122,7 @@ inherits(ObjectSchema, MixedSchema, {
     return isChanged ? intermediateValue : value;
   },
 
-  _validate(_value, opts = {}) {
+  _validate(_value, opts = {}, callback) {
     let endEarly, recursive;
     let sync = opts.sync;
     let errors = [];
@@ -138,51 +136,55 @@ inherits(ObjectSchema, MixedSchema, {
 
     opts = { ...opts, __validating: true, originalValue, from };
 
-    return MixedSchema.prototype._validate
-      .call(this, _value, opts)
-      .catch(propagateErrors(endEarly, errors))
-      .then(value => {
-        if (!recursive || !isObject(value)) {
-          // only iterate though actual objects
-          if (errors.length) throw errors[0];
-          return value;
+    MixedSchema.prototype._validate.call(this, _value, opts, (err, value) => {
+      if (err) {
+        if (endEarly) return void callback(err);
+        errors.push(err);
+        value = err.value;
+      }
+
+      if (!recursive || !isObject(value)) {
+        callback(errors[0] || null, value);
+        return;
+      }
+
+      from = originalValue
+        ? [...from]
+        : [
+            { schema: this, value: originalValue || value },
+            ...(opts.from || []),
+          ];
+      originalValue = originalValue || value;
+
+      let validations = this._nodes.map((key) => {
+        let path =
+          key.indexOf('.') === -1
+            ? makePath`${opts.path}.${key}`
+            : makePath`${opts.path}["${key}"]`;
+        let field = this.fields[key];
+
+        let innerOptions = {
+          ...opts,
+          path,
+          from,
+          parent: value,
+          originalValue: originalValue[key],
+        };
+
+        if (field && field.validate) {
+          // inner fields are always strict:
+          // 1. this isn't strict so the casting will also have cast inner values
+          // 2. this is strict in which case the nested values weren't cast either
+          innerOptions.strict = true;
+
+          return (cb) => field.validate(value[key], innerOptions, cb);
         }
 
-        from = originalValue
-          ? [...from]
-          : [
-              { schema: this, value: originalValue || value },
-              ...(opts.from || []),
-            ];
-        originalValue = originalValue || value;
+        return (cb) => cb(null, true);
+      });
 
-        let validations = this._nodes.map(key => {
-          let path =
-            key.indexOf('.') === -1
-              ? makePath`${opts.path}.${key}`
-              : makePath`${opts.path}["${key}"]`;
-          let field = this.fields[key];
-
-          let innerOptions = {
-            ...opts,
-            path,
-            from,
-            parent: value,
-            originalValue: originalValue[key],
-          };
-
-          if (field && field.validate) {
-            // inner fields are always strict:
-            // 1. this isn't strict so the casting will also have cast inner values
-            // 2. this is strict in which case the nested values weren't cast either
-            innerOptions.strict = true;
-            return field.validate(value[key], innerOptions);
-          }
-
-          return promise(sync).resolve(true);
-        });
-
-        return runValidations({
+      runValidations(
+        {
           sync,
           validations,
           value,
@@ -190,8 +192,10 @@ inherits(ObjectSchema, MixedSchema, {
           endEarly,
           path: opts.path,
           sort: sortByKeyOrder(this.fields),
-        });
-      });
+        },
+        callback,
+      );
+    });
   },
 
   concat(schema) {
@@ -224,7 +228,7 @@ inherits(ObjectSchema, MixedSchema, {
   from(from, to, alias) {
     let fromGetter = getter(from, true);
 
-    return this.transform(obj => {
+    return this.transform((obj) => {
       if (obj == null) return obj;
       let newObj = obj;
       if (has(obj, from)) {
@@ -269,7 +273,7 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   transformKeys(fn) {
-    return this.transform(obj => obj && mapKeys(obj, (_, key) => fn(key)));
+    return this.transform((obj) => obj && mapKeys(obj, (_, key) => fn(key)));
   },
 
   camelCase() {
@@ -281,12 +285,12 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   constantCase() {
-    return this.transformKeys(key => snakeCase(key).toUpperCase());
+    return this.transformKeys((key) => snakeCase(key).toUpperCase());
   },
 
   describe() {
     let base = MixedSchema.prototype.describe.call(this);
-    base.fields = mapValues(this.fields, value => value.describe());
+    base.fields = mapValues(this.fields, (value) => value.describe());
     return base;
   },
 });

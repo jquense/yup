@@ -1,26 +1,8 @@
-import { SynchronousPromise } from 'synchronous-promise';
 import ValidationError from '../ValidationError';
-
-let promise = sync => (sync ? SynchronousPromise : Promise);
+import { settled, parallel } from './async';
 
 let unwrapError = (errors = []) =>
   errors.inner && errors.inner.length ? errors.inner : [].concat(errors);
-
-function scopeToValue(promises, value, sync) {
-  //console.log('scopeToValue', promises, value)
-  let p = promise(sync).all(promises);
-
-  //console.log('scopeToValue B', p)
-
-  let b = p.catch(err => {
-    if (err.name === 'ValidationError') err.value = value;
-    throw err;
-  });
-  //console.log('scopeToValue c', b)
-  let c = b.then(() => value);
-  //console.log('scopeToValue d', c)
-  return c;
-}
 
 /**
  * If not failing on the first error, catch the errors
@@ -29,41 +11,24 @@ function scopeToValue(promises, value, sync) {
 export function propagateErrors(endEarly, errors) {
   return endEarly
     ? null
-    : err => {
+    : (err) => {
         errors.push(err);
         return err.value;
       };
 }
 
-export function settled(promises, sync) {
-  const Promise = promise(sync);
-
-  return Promise.all(
-    promises.map(p =>
-      Promise.resolve(p).then(
-        value => ({ fulfilled: true, value }),
-        value => ({ fulfilled: false, value }),
-      ),
-    ),
-  );
-}
-
-export function collectErrors({
-  validations,
-  value,
-  path,
-  sync,
-  errors,
-  sort,
-}) {
+export function collectErrors({ validations, value, path, errors, sort }, cb) {
   errors = unwrapError(errors);
-  return settled(validations, sync).then(results => {
+
+  return settled(validations, (err, results) => {
+    if (err) return cb(err);
+
     let nestedErrors = results
-      .filter(r => !r.fulfilled)
+      .filter((r) => !r.fulfilled)
       .reduce((arr, { value: error }) => {
         // we are only collecting validation errors
         if (!ValidationError.isError(error)) {
-          throw error;
+          return cb(error);
         }
         return arr.concat(error);
       }, []);
@@ -73,15 +38,19 @@ export function collectErrors({
     //show parent errors after the nested ones: name.first, name
     errors = nestedErrors.concat(errors);
 
-    if (errors.length) throw new ValidationError(errors, value, path);
-
-    return value;
+    if (errors.length) cb(new ValidationError(errors, value, path));
+    else cb(null, value);
   });
 }
 
-export default function runValidations({ endEarly, ...options }) {
-  if (endEarly)
-    return scopeToValue(options.validations, options.value, options.sync);
+export default function runValidations({ endEarly, ...options }, cb) {
+  if (!endEarly) {
+    collectErrors(options, cb);
+    return;
+  }
 
-  return collectErrors(options);
+  parallel(options.validations, (err) => {
+    if (err && err.name === 'ValidationError') err.value = options.value;
+    cb(err, options.value);
+  });
 }
