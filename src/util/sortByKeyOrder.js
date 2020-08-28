@@ -10,8 +10,7 @@ function findIndex(arr, err) {
   return idx;
 }
 
-export default function sortByKeyOrder(fields) {
-  let keys = Object.keys(fields);
+export default function sortByKeyOrder(keys) {
   return (a, b) => {
     return findIndex(keys, a) - findIndex(keys, b);
   };

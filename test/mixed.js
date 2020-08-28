@@ -474,7 +474,7 @@ describe('Mixed Types ', () => {
     });
 
     await first.validate(testFixture);
-
+    // console.log(finalFrom);
     finalFrom[0].value.should.eql(testFixture.second[finalOptions.index]);
     finalFrom[0].schema.should.equal(third);
     finalFrom[1].value.should.equal(testFixture);

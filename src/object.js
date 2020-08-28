@@ -10,8 +10,7 @@ import { object as locale } from './locale.js';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import inherits from './util/inherits';
-import makePath from './util/makePath';
-import runValidations from './util/runValidations';
+import runTests from './util/runTests';
 
 let isObject = (obj) =>
   Object.prototype.toString.call(obj) === '[object Object]';
@@ -40,6 +39,9 @@ export default function ObjectSchema(spec) {
   });
 
   this.fields = Object.create(null);
+
+  this._sortErrors = sortByKeyOrder([]);
+
   this._nodes = [];
   this._excludedEdges = [];
 
@@ -68,7 +70,7 @@ inherits(ObjectSchema, MixedSchema, {
   },
 
   _cast(_value, options = {}) {
-    let value = MixedSchema.prototype._cast.call(this, _value, options);
+    let value = MixedSchema.prototype._cast.call(this, _value);
 
     //should ignore nulls here
     if (value === undefined) return this.default();
@@ -90,7 +92,7 @@ inherits(ObjectSchema, MixedSchema, {
     };
 
     let isChanged = false;
-    props.forEach((prop) => {
+    for (const prop of props) {
       let field = fields[prop];
       let exists = has(value, prop);
 
@@ -99,14 +101,14 @@ inherits(ObjectSchema, MixedSchema, {
         let strict = field._options && field._options.strict;
 
         // safe to mutate since this is fired in sequence
-        innerOptions.path = makePath`${options.path}.${prop}`;
+        innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
         innerOptions.value = value[prop];
 
         field = field.resolve(innerOptions);
 
         if (field._strip === true) {
           isChanged = isChanged || prop in value;
-          return;
+          continue;
         }
 
         fieldValue =
@@ -114,31 +116,67 @@ inherits(ObjectSchema, MixedSchema, {
             ? field.cast(value[prop], innerOptions)
             : value[prop];
 
-        if (fieldValue !== undefined) intermediateValue[prop] = fieldValue;
-      } else if (exists && !strip) intermediateValue[prop] = value[prop];
+        if (fieldValue !== undefined) {
+          intermediateValue[prop] = fieldValue;
+        }
+      } else if (exists && !strip) {
+        intermediateValue[prop] = value[prop];
+      }
 
-      if (intermediateValue[prop] !== value[prop]) isChanged = true;
-    });
+      if (intermediateValue[prop] !== value[prop]) {
+        isChanged = true;
+      }
+    }
+
     return isChanged ? intermediateValue : value;
   },
 
+  /**
+   * @typedef {Object} Ancestor
+   * @property {Object} schema - a string property of SpecialType
+   * @property {*} value - a number property of SpecialType
+   */
+
+  /**
+   *
+   * @param {*} _value
+   * @param {Object}       opts
+   * @param {string=}      opts.path
+   * @param {*=}           opts.parent
+   * @param {Object=}      opts.context
+   * @param {boolean=}     opts.sync
+   * @param {boolean=}     opts.stripUnknown
+   * @param {boolean=}     opts.strict
+   * @param {boolean=}     opts.recursive
+   * @param {boolean=}     opts.abortEarly
+   * @param {boolean=}     opts.__validating
+   * @param {Object=}      opts.originalValue
+   * @param {Ancestor[]=}  opts.from
+   * @param {Object}       [opts.from]
+   * @param {Function}     callback
+   */
   _validate(_value, opts = {}, callback) {
-    let endEarly, recursive;
-    let sync = opts.sync;
     let errors = [];
-    let originalValue =
-      opts.originalValue != null ? opts.originalValue : _value;
+    let {
+      sync,
+      from = [],
+      originalValue = _value,
+      abortEarly = this._options.abortEarly,
+      recursive = this._options.recursive,
+    } = opts;
 
-    let from = [{ schema: this, value: originalValue }, ...(opts.from || [])];
+    from = [{ schema: this, value: originalValue }, ...from];
 
-    endEarly = this._option('abortEarly', opts);
-    recursive = this._option('recursive', opts);
-
-    opts = { ...opts, __validating: true, originalValue, from };
+    // this flag is needed for handling `strict` correctly in the context of
+    // validation vs just casting. e.g strict() on a field is only used when validating
+    opts.__validating = true;
+    opts.originalValue = originalValue;
+    opts.from = from;
 
     MixedSchema.prototype._validate.call(this, _value, opts, (err, value) => {
       if (err) {
-        if (endEarly) return void callback(err);
+        if (abortEarly) return void callback(err);
+
         errors.push(err);
         value = err.value;
       }
@@ -148,50 +186,47 @@ inherits(ObjectSchema, MixedSchema, {
         return;
       }
 
-      from = originalValue
-        ? [...from]
-        : [
-            { schema: this, value: originalValue || value },
-            ...(opts.from || []),
-          ];
       originalValue = originalValue || value;
 
-      let validations = this._nodes.map((key) => {
+      let tests = this._nodes.map((key) => (_, cb) => {
         let path =
           key.indexOf('.') === -1
-            ? makePath`${opts.path}.${key}`
-            : makePath`${opts.path}["${key}"]`;
+            ? (opts.path ? `${opts.path}.` : '') + key
+            : `${opts.path || ''}["${key}"]`;
+
         let field = this.fields[key];
 
-        let innerOptions = {
-          ...opts,
-          path,
-          from,
-          parent: value,
-          originalValue: originalValue[key],
-        };
-
         if (field && field.validate) {
-          // inner fields are always strict:
-          // 1. this isn't strict so the casting will also have cast inner values
-          // 2. this is strict in which case the nested values weren't cast either
-          innerOptions.strict = true;
-
-          return (cb) => field.validate(value[key], innerOptions, cb);
+          field.validate(
+            value[key],
+            {
+              ...opts,
+              path,
+              from,
+              // inner fields are always strict:
+              // 1. this isn't strict so the casting will also have cast inner values
+              // 2. this is strict in which case the nested values weren't cast either
+              strict: true,
+              parent: value,
+              originalValue: originalValue[key],
+            },
+            cb,
+          );
+          return;
         }
 
-        return (cb) => cb(null, true);
+        cb(null);
       });
 
-      runValidations(
+      runTests(
         {
           sync,
-          validations,
+          tests,
           value,
           errors,
-          endEarly,
+          endEarly: abortEarly,
+          sort: this._sortErrors,
           path: opts.path,
-          sort: sortByKeyOrder(this.fields),
         },
         callback,
       );
@@ -211,6 +246,7 @@ inherits(ObjectSchema, MixedSchema, {
     let fields = Object.assign(next.fields, schema);
 
     next.fields = fields;
+    next._sortErrors = sortByKeyOrder(Object.keys(fields));
 
     if (excludes.length) {
       if (!Array.isArray(excludes[0])) excludes = [excludes];

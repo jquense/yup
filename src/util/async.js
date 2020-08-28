@@ -2,7 +2,7 @@ export function asCallback(promise, callback) {
   promise.then((result) => callback(null, result), callback);
 }
 
-const once = (cb) => {
+export const once = (cb) => {
   let fired = false;
   return (...args) => {
     if (fired) return;

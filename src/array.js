@@ -1,11 +1,10 @@
 import inherits from './util/inherits';
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
-import makePath from './util/makePath';
 import printValue from './util/printValue';
 import MixedSchema from './mixed';
 import { array as locale } from './locale';
-import runValidations, { propagateErrors } from './util/runValidations';
+import runTests from './util/runTests';
 
 export default ArraySchema;
 
@@ -50,7 +49,7 @@ inherits(ArraySchema, MixedSchema, {
     const castArray = value.map((v, idx) => {
       const castElement = this.innerType.cast(v, {
         ..._opts,
-        path: makePath`${_opts.path}[${idx}]`,
+        path: `${_opts.path || ''}[${idx}]`,
       });
       if (castElement !== v) {
         isChanged = true;
@@ -92,10 +91,10 @@ inherits(ArraySchema, MixedSchema, {
         originalValue = originalValue || value;
 
         // #950 Ensure that sparse array empty slots are validated
-        let validations = new Array(value.length);
+        let tests = new Array(value.length);
         for (let idx = 0; idx < value.length; idx++) {
           let item = value[idx];
-          let path = makePath`${options.path}[${idx}]`;
+          let path = `${options.path || ''}[${idx}]`;
 
           // object._validate note for isStrict explanation
           let innerOptions = {
@@ -107,20 +106,20 @@ inherits(ArraySchema, MixedSchema, {
             originalValue: originalValue[idx],
           };
 
-          validations[idx] = (cb) =>
+          tests[idx] = (_, cb) =>
             innerType.validate
               ? innerType.validate(item, innerOptions, cb)
-              : cb(null, true);
+              : cb(null);
         }
 
-        runValidations(
+        runTests(
           {
             sync,
             path,
             value,
             errors,
             endEarly,
-            validations,
+            tests,
           },
           callback,
         );

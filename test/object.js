@@ -10,7 +10,6 @@ import {
   lazy,
   reach,
 } from '../src';
-import { ensureSync } from './helpers';
 import { expect } from 'chai';
 
 describe('Object types', () => {
@@ -154,7 +153,7 @@ describe('Object types', () => {
       err.message.should.match(/must be a `string` type/);
     });
 
-    it('should respect child schema with strict()', async () => {
+    it.only('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict(),
       });
