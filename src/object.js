@@ -39,7 +39,7 @@ export default function ObjectSchema(spec) {
     },
   });
 
-  this.fields = Object.create(null);
+  this.fields = {};
   this._nodes = [];
   this._excludedEdges = [];
 
@@ -94,7 +94,7 @@ inherits(ObjectSchema, MixedSchema, {
       let field = fields[prop];
       let exists = has(value, prop);
 
-      if (field) {
+      if (field && field.resolve) {
         let fieldValue;
         let strict = field._options && field._options.strict;
 
