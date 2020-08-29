@@ -9,6 +9,8 @@ import {
   ref,
   lazy,
   reach,
+  StringSchema,
+  MixedSchema,
 } from '../src';
 import { expect } from 'chai';
 
@@ -116,7 +118,7 @@ describe('Object types', () => {
     });
 
     it('should prevent recursive casting', async () => {
-      let castSpy = sinon.spy(string.prototype, '_cast');
+      let castSpy = sinon.spy(StringSchema.prototype, '_cast');
 
       inst = object({
         field: string(),
@@ -128,7 +130,7 @@ describe('Object types', () => {
 
       castSpy.should.have.been.calledOnce();
 
-      string.prototype._cast.restore();
+      StringSchema.prototype._cast.restore();
     });
 
     it('should respect strict for nested values', async () => {
@@ -153,7 +155,7 @@ describe('Object types', () => {
       err.message.should.match(/must be a `string` type/);
     });
 
-    it.only('should respect child schema with strict()', async () => {
+    it('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict(),
       });
@@ -185,9 +187,9 @@ describe('Object types', () => {
     });
 
     it('should not clone during validating', async function () {
-      let base = mixed.prototype.clone;
+      let base = MixedSchema.prototype.clone;
 
-      mixed.prototype.clone = function (...args) {
+      MixedSchema.prototype.clone = function (...args) {
         if (!this._mutate) throw new Error('should not call clone');
 
         return base.apply(this, args);
@@ -206,7 +208,7 @@ describe('Object types', () => {
         /* ignore */
       } finally {
         //eslint-disable-line
-        mixed.prototype.clone = base;
+        MixedSchema.prototype.clone = base;
       }
     });
   });

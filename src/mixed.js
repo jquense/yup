@@ -63,35 +63,35 @@ class RefSet {
   }
 }
 
-export default function SchemaType(options = {}) {
-  if (!(this instanceof SchemaType)) return new SchemaType();
+export default class MixedSchema {
+  static create(options) {
+    return new MixedSchema(options);
+  }
 
-  this._deps = [];
-  this._conditions = [];
-  this._options = { abortEarly: true, recursive: true };
-  this._exclusive = Object.create(null);
+  constructor(options = {}) {
+    this._deps = [];
+    this._conditions = [];
+    this._options = { abortEarly: true, recursive: true };
+    this._exclusive = Object.create(null);
 
-  this._whitelist = new RefSet();
-  this._blacklist = new RefSet();
+    this._whitelist = new RefSet();
+    this._blacklist = new RefSet();
 
-  this.tests = [];
-  this.transforms = [];
+    this.tests = [];
+    this.transforms = [];
 
-  this.withMutation(() => {
-    this.typeError(locale.notType);
-  });
+    this.withMutation(() => {
+      this.typeError(locale.notType);
+    });
 
-  if (has(options, 'default')) this._defaultDefault = options.default;
+    if (has(options, 'default')) this._defaultDefault = options.default;
 
-  this.type = options.type || 'mixed';
-  // TODO: remove
-  this._type = options.type || 'mixed';
-}
+    this.type = options.type || 'mixed';
+    // TODO: remove
+    this._type = options.type || 'mixed';
+  }
 
-const proto = (SchemaType.prototype = {
-  __isYupSchema__: true,
-
-  constructor: SchemaType,
+  __isYupSchema__ = true;
 
   clone() {
     if (this._mutate) return this;
@@ -101,13 +101,13 @@ const proto = (SchemaType.prototype = {
     return cloneDeepWith(this, (value) => {
       if (isSchema(value) && value !== this) return value;
     });
-  },
+  }
 
   label(label) {
     var next = this.clone();
     next._label = label;
     return next;
-  },
+  }
 
   meta(obj) {
     if (arguments.length === 0) return this._meta;
@@ -115,7 +115,7 @@ const proto = (SchemaType.prototype = {
     var next = this.clone();
     next._meta = Object.assign(next._meta || {}, obj);
     return next;
-  },
+  }
 
   withMutation(fn) {
     let before = this._mutate;
@@ -123,7 +123,7 @@ const proto = (SchemaType.prototype = {
     let result = fn(this);
     this._mutate = before;
     return result;
-  },
+  }
 
   concat(schema) {
     if (!schema || schema === this) return this;
@@ -161,12 +161,12 @@ const proto = (SchemaType.prototype = {
     });
 
     return next;
-  },
+  }
 
   isType(v) {
     if (this._nullable && v === null) return true;
     return !this._typeCheck || this._typeCheck(v);
-  },
+  }
 
   resolve(options) {
     let schema = this;
@@ -185,7 +185,8 @@ const proto = (SchemaType.prototype = {
     }
 
     return schema;
-  },
+  }
+
   /**
    *
    * @param {*} value
@@ -223,7 +224,7 @@ const proto = (SchemaType.prototype = {
     }
 
     return result;
-  },
+  }
 
   _cast(rawValue) {
     let value =
@@ -239,7 +240,7 @@ const proto = (SchemaType.prototype = {
     }
 
     return value;
-  },
+  }
 
   _validate(_value, options = {}, cb) {
     let {
@@ -300,7 +301,7 @@ const proto = (SchemaType.prototype = {
         );
       },
     );
-  },
+  }
 
   validate(value, options = {}, maybeCb) {
     let schema = this.resolve({ ...options, value });
@@ -314,7 +315,7 @@ const proto = (SchemaType.prototype = {
             else resolve(value);
           }),
         );
-  },
+  }
 
   validateSync(value, options = {}) {
     let schema = this.resolve({ ...options, value });
@@ -326,7 +327,7 @@ const proto = (SchemaType.prototype = {
     });
 
     return result;
-  },
+  }
 
   isValid(value, options) {
     return this.validate(value, options)
@@ -335,7 +336,7 @@ const proto = (SchemaType.prototype = {
         if (err.name === 'ValidationError') return false;
         throw err;
       });
-  },
+  }
 
   isValidSync(value, options) {
     try {
@@ -345,12 +346,12 @@ const proto = (SchemaType.prototype = {
       if (err.name === 'ValidationError') return false;
       throw err;
     }
-  },
+  }
 
   getDefault(options = {}) {
     let schema = this.resolve(options);
     return schema.default();
-  },
+  }
 
   default(def) {
     if (arguments.length === 0) {
@@ -366,17 +367,17 @@ const proto = (SchemaType.prototype = {
     var next = this.clone();
     next._default = def;
     return next;
-  },
+  }
 
   strict(isStrict = true) {
     var next = this.clone();
     next._options.strict = isStrict;
     return next;
-  },
+  }
 
   _isPresent(value) {
     return value != null;
-  },
+  }
 
   required(message = locale.required) {
     return this.test({
@@ -387,25 +388,25 @@ const proto = (SchemaType.prototype = {
         return this.schema._isPresent(value);
       },
     });
-  },
+  }
 
   notRequired() {
     var next = this.clone();
     next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next;
-  },
+  }
 
   nullable(isNullable = true) {
     var next = this.clone();
     next._nullable = isNullable;
     return next;
-  },
+  }
 
   transform(fn) {
     var next = this.clone();
     next.transforms.push(fn);
     return next;
-  },
+  }
 
   /**
    * Adds a test function to the schema's queue of tests.
@@ -465,7 +466,7 @@ const proto = (SchemaType.prototype = {
     next.tests.push(validate);
 
     return next;
-  },
+  }
 
   when(keys, options) {
     if (arguments.length === 1) {
@@ -483,7 +484,7 @@ const proto = (SchemaType.prototype = {
     next._conditions.push(new Condition(deps, options));
 
     return next;
-  },
+  }
 
   typeError(message) {
     var next = this.clone();
@@ -502,7 +503,7 @@ const proto = (SchemaType.prototype = {
       },
     });
     return next;
-  },
+  }
 
   oneOf(enums, message = locale.oneOf) {
     var next = this.clone();
@@ -530,7 +531,7 @@ const proto = (SchemaType.prototype = {
     });
 
     return next;
-  },
+  }
 
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
@@ -555,17 +556,17 @@ const proto = (SchemaType.prototype = {
     });
 
     return next;
-  },
+  }
 
   strip(strip = true) {
     let next = this.clone();
     next._strip = strip;
     return next;
-  },
+  }
 
   _option(key, overrides) {
     return has(overrides, key) ? overrides[key] : this._options[key];
-  },
+  }
 
   describe() {
     const next = this.clone();
@@ -584,7 +585,7 @@ const proto = (SchemaType.prototype = {
     if (next._blacklist.size) description.notOneOf = next._blacklist.describe();
 
     return description;
-  },
+  }
 
   defined(message = locale.defined) {
     return this.nullable().test({
@@ -595,11 +596,11 @@ const proto = (SchemaType.prototype = {
         return value !== undefined;
       },
     });
-  },
-});
+  }
+}
 
 for (const method of ['validate', 'validateSync'])
-  proto[`${method}At`] = function (path, value, options = {}) {
+  MixedSchema.prototype[`${method}At`] = function (path, value, options = {}) {
     const { parent, parentPath, schema } = getIn(
       this,
       path,
@@ -613,6 +614,8 @@ for (const method of ['validate', 'validateSync'])
     });
   };
 
-for (const alias of ['equals', 'is']) proto[alias] = proto.oneOf;
-for (const alias of ['not', 'nope']) proto[alias] = proto.notOneOf;
-proto.optional = proto.notRequired;
+for (const alias of ['equals', 'is'])
+  MixedSchema.prototype[alias] = MixedSchema.prototype.oneOf;
+for (const alias of ['not', 'nope'])
+  MixedSchema.prototype[alias] = MixedSchema.prototype.notOneOf;
+MixedSchema.prototype.optional = MixedSchema.prototype.notRequired;

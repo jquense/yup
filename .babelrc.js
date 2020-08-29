@@ -1,7 +1,7 @@
 module.exports = (api) => ({
   presets: [
     [
-      'jason',
+      'babel-preset-jason/esm',
       api.env() !== 'test'
         ? {
             ignoreBrowserslistConfig: true,
@@ -9,6 +9,8 @@ module.exports = (api) => ({
           }
         : {
             target: 'node',
+
+            debug: true,
             targets: { node: 'current' },
           },
     ],

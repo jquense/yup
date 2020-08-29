@@ -9,7 +9,6 @@ import MixedSchema from './mixed';
 import { object as locale } from './locale.js';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import inherits from './util/inherits';
 import runTests from './util/runTests';
 
 let isObject = (obj) =>
@@ -20,57 +19,58 @@ function unknown(ctx, value) {
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
-export default function ObjectSchema(spec) {
-  if (!(this instanceof ObjectSchema)) return new ObjectSchema(spec);
+export default class ObjectSchema extends MixedSchema {
+  static create(spec) {
+    return new ObjectSchema(spec);
+  }
+  constructor(spec) {
+    super({
+      type: 'object',
+      default() {
+        if (!this._nodes.length) return undefined;
 
-  MixedSchema.call(this, {
-    type: 'object',
-    default() {
-      if (!this._nodes.length) return undefined;
-
-      let dft = {};
-      this._nodes.forEach((key) => {
-        dft[key] = this.fields[key].default
-          ? this.fields[key].default()
-          : undefined;
-      });
-      return dft;
-    },
-  });
-
-  this.fields = Object.create(null);
-
-  this._sortErrors = sortByKeyOrder([]);
-
-  this._nodes = [];
-  this._excludedEdges = [];
-
-  this.withMutation(() => {
-    this.transform(function coerce(value) {
-      if (typeof value === 'string') {
-        try {
-          value = JSON.parse(value);
-        } catch (err) {
-          value = null;
-        }
-      }
-      if (this.isType(value)) return value;
-      return null;
+        let dft = {};
+        this._nodes.forEach((key) => {
+          dft[key] = this.fields[key].default
+            ? this.fields[key].default()
+            : undefined;
+        });
+        return dft;
+      },
     });
 
-    if (spec) {
-      this.shape(spec);
-    }
-  });
-}
+    this.fields = Object.create(null);
 
-inherits(ObjectSchema, MixedSchema, {
+    this._sortErrors = sortByKeyOrder([]);
+
+    this._nodes = [];
+    this._excludedEdges = [];
+
+    this.withMutation(() => {
+      this.transform(function coerce(value) {
+        if (typeof value === 'string') {
+          try {
+            value = JSON.parse(value);
+          } catch (err) {
+            value = null;
+          }
+        }
+        if (this.isType(value)) return value;
+        return null;
+      });
+
+      if (spec) {
+        this.shape(spec);
+      }
+    });
+  }
+
   _typeCheck(value) {
     return isObject(value) || typeof value === 'function';
-  },
+  }
 
   _cast(_value, options = {}) {
-    let value = MixedSchema.prototype._cast.call(this, _value);
+    let value = super._cast(_value);
 
     //should ignore nulls here
     if (value === undefined) return this.default();
@@ -129,7 +129,7 @@ inherits(ObjectSchema, MixedSchema, {
     }
 
     return isChanged ? intermediateValue : value;
-  },
+  }
 
   /**
    * @typedef {Object} Ancestor
@@ -173,7 +173,7 @@ inherits(ObjectSchema, MixedSchema, {
     opts.originalValue = originalValue;
     opts.from = from;
 
-    MixedSchema.prototype._validate.call(this, _value, opts, (err, value) => {
+    super._validate(_value, opts, (err, value) => {
       if (err) {
         if (abortEarly) return void callback(err);
 
@@ -231,15 +231,15 @@ inherits(ObjectSchema, MixedSchema, {
         callback,
       );
     });
-  },
+  }
 
   concat(schema) {
-    var next = MixedSchema.prototype.concat.call(this, schema);
+    var next = super.concat(schema);
 
     next._nodes = sortFields(next.fields, next._excludedEdges);
 
     return next;
-  },
+  }
 
   shape(schema, excludes = []) {
     let next = this.clone();
@@ -259,7 +259,7 @@ inherits(ObjectSchema, MixedSchema, {
     next._nodes = sortFields(fields, next._excludedEdges);
 
     return next;
-  },
+  }
 
   from(from, to, alias) {
     let fromGetter = getter(from, true);
@@ -276,7 +276,7 @@ inherits(ObjectSchema, MixedSchema, {
 
       return newObj;
     });
-  },
+  }
 
   noUnknown(noAllow = true, message = locale.noUnknown) {
     if (typeof noAllow === 'string') {
@@ -302,31 +302,31 @@ inherits(ObjectSchema, MixedSchema, {
     next._options.stripUnknown = noAllow;
 
     return next;
-  },
+  }
 
   unknown(allow = true, message = locale.noUnknown) {
     return this.noUnknown(!allow, message);
-  },
+  }
 
   transformKeys(fn) {
     return this.transform((obj) => obj && mapKeys(obj, (_, key) => fn(key)));
-  },
+  }
 
   camelCase() {
     return this.transformKeys(camelCase);
-  },
+  }
 
   snakeCase() {
     return this.transformKeys(snakeCase);
-  },
+  }
 
   constantCase() {
     return this.transformKeys((key) => snakeCase(key).toUpperCase());
-  },
+  }
 
   describe() {
-    let base = MixedSchema.prototype.describe.call(this);
+    let base = super.describe();
     base.fields = mapValues(this.fields, (value) => value.describe());
     return base;
-  },
-});
+  }
+}

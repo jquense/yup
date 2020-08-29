@@ -1,28 +1,26 @@
-import inherits from './util/inherits';
 import MixedSchema from './mixed';
 
-export default BooleanSchema;
+export default class BooleanSchema extends MixedSchema {
+  static create(options) {
+    return new BooleanSchema(options);
+  }
 
-function BooleanSchema() {
-  if (!(this instanceof BooleanSchema)) return new BooleanSchema();
+  constructor() {
+    super({ type: 'boolean' });
 
-  MixedSchema.call(this, { type: 'boolean' });
-
-  this.withMutation(() => {
-    this.transform(function(value) {
-      if (!this.isType(value)) {
-        if (/^(true|1)$/i.test(value)) return true;
-        if (/^(false|0)$/i.test(value)) return false;
-      }
-      return value;
+    this.withMutation(() => {
+      this.transform(function (value) {
+        if (!this.isType(value)) {
+          if (/^(true|1)$/i.test(value)) return true;
+          if (/^(false|0)$/i.test(value)) return false;
+        }
+        return value;
+      });
     });
-  });
-}
-
-inherits(BooleanSchema, MixedSchema, {
+  }
   _typeCheck(v) {
     if (v instanceof Boolean) v = v.valueOf();
 
     return typeof v === 'boolean';
-  },
-});
+  }
+}

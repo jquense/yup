@@ -103,6 +103,7 @@
     "lodash": "^4.17.15",
     "lodash-es": "^4.17.11",
     "property-expr": "^2.0.2",
+    "synchronous-promise": "^2.0.13",
     "toposort": "^2.0.2"
   },
   "readme": "ERROR: No README data found!",

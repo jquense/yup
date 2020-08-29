@@ -1,4 +1,3 @@
-import inherits from './util/inherits';
 import MixedSchema from './mixed';
 import { string as locale } from './locale';
 import isAbsent from './util/isAbsent';
@@ -8,35 +7,34 @@ let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\u
 // eslint-disable-next-line
 let rUrl = /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i;
 // eslint-disable-next-line
-let rUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+let rUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 let isTrimmed = (value) => isAbsent(value) || value === value.trim();
 
-export default function StringSchema() {
-  if (!(this instanceof StringSchema)) return new StringSchema();
+export default class StringSchema extends MixedSchema {
+  static create() {
+    return new StringSchema();
+  }
+  constructor() {
+    super({ type: 'string' });
 
-  MixedSchema.call(this, { type: 'string' });
-
-  this.withMutation(() => {
-    this.transform(function (value) {
-      if (this.isType(value)) return value;
-      return value != null && value.toString ? value.toString() : value;
+    this.withMutation(() => {
+      this.transform(function (value) {
+        if (this.isType(value)) return value;
+        return value != null && value.toString ? value.toString() : value;
+      });
     });
-  });
-}
+  }
 
-inherits(StringSchema, MixedSchema, {
   _typeCheck(value) {
     if (value instanceof String) value = value.valueOf();
 
     return typeof value === 'string';
-  },
+  }
 
   _isPresent(value) {
-    return (
-      MixedSchema.prototype._isPresent.call(this, value) && value.length > 0
-    );
-  },
+    return super._isPresent(value) && value.length > 0;
+  }
 
   length(length, message = locale.length) {
     return this.test({
@@ -48,7 +46,7 @@ inherits(StringSchema, MixedSchema, {
         return isAbsent(value) || value.length === this.resolve(length);
       },
     });
-  },
+  }
 
   min(min, message = locale.min) {
     return this.test({
@@ -60,7 +58,7 @@ inherits(StringSchema, MixedSchema, {
         return isAbsent(value) || value.length >= this.resolve(min);
       },
     });
-  },
+  }
 
   max(max, message = locale.max) {
     return this.test({
@@ -72,7 +70,7 @@ inherits(StringSchema, MixedSchema, {
         return isAbsent(value) || value.length <= this.resolve(max);
       },
     });
-  },
+  }
 
   matches(regex, options) {
     let excludeEmptyString = false;
@@ -96,7 +94,7 @@ inherits(StringSchema, MixedSchema, {
         (value === '' && excludeEmptyString) ||
         value.search(regex) !== -1,
     });
-  },
+  }
 
   email(message = locale.email) {
     return this.matches(rEmail, {
@@ -104,7 +102,7 @@ inherits(StringSchema, MixedSchema, {
       message,
       excludeEmptyString: true,
     });
-  },
+  }
 
   url(message = locale.url) {
     return this.matches(rUrl, {
@@ -112,7 +110,7 @@ inherits(StringSchema, MixedSchema, {
       message,
       excludeEmptyString: true,
     });
-  },
+  }
 
   uuid(message = locale.uuid) {
     return this.matches(rUUID, {
@@ -120,12 +118,12 @@ inherits(StringSchema, MixedSchema, {
       message,
       excludeEmptyString: false,
     });
-  },
+  }
 
   //-- transforms --
   ensure() {
     return this.default('').transform((val) => (val === null ? '' : val));
-  },
+  }
 
   trim(message = locale.trim) {
     return this.transform((val) => (val != null ? val.trim() : val)).test({
@@ -133,7 +131,7 @@ inherits(StringSchema, MixedSchema, {
       name: 'trim',
       test: isTrimmed,
     });
-  },
+  }
 
   lowercase(message = locale.lowercase) {
     return this.transform((value) =>
@@ -144,7 +142,7 @@ inherits(StringSchema, MixedSchema, {
       exclusive: true,
       test: (value) => isAbsent(value) || value === value.toLowerCase(),
     });
-  },
+  }
 
   uppercase(message = locale.uppercase) {
     return this.transform((value) =>
@@ -155,5 +153,5 @@ inherits(StringSchema, MixedSchema, {
       exclusive: true,
       test: (value) => isAbsent(value) || value === value.toUpperCase(),
     });
-  },
-});
+  }
+}

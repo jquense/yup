@@ -1,5 +1,4 @@
 import MixedSchema from './mixed';
-import inherits from './util/inherits';
 import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
@@ -7,30 +6,30 @@ import Ref from './Reference';
 
 let invalidDate = new Date('');
 
-let isDate = obj => Object.prototype.toString.call(obj) === '[object Date]';
+let isDate = (obj) => Object.prototype.toString.call(obj) === '[object Date]';
 
-export default DateSchema;
+export default class DateSchema extends MixedSchema {
+  static create() {
+    return new DateSchema();
+  }
+  constructor() {
+    super({ type: 'date' });
 
-function DateSchema() {
-  if (!(this instanceof DateSchema)) return new DateSchema();
+    this.withMutation(() => {
+      this.transform(function (value) {
+        if (this.isType(value)) return value;
 
-  MixedSchema.call(this, { type: 'date' });
+        value = isoParse(value);
 
-  this.withMutation(() => {
-    this.transform(function(value) {
-      if (this.isType(value)) return value;
-
-      value = isoParse(value);
-      // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
-      return !isNaN(value) ? new Date(value) : invalidDate;
+        // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
+        return !isNaN(value) ? new Date(value) : invalidDate;
+      });
     });
-  });
-}
+  }
 
-inherits(DateSchema, MixedSchema, {
   _typeCheck(v) {
     return isDate(v) && !isNaN(v.getTime());
-  },
+  }
 
   min(min, message = locale.min) {
     var limit = min;
@@ -52,7 +51,7 @@ inherits(DateSchema, MixedSchema, {
         return isAbsent(value) || value >= this.resolve(limit);
       },
     });
-  },
+  }
 
   max(max, message = locale.max) {
     var limit = max;
@@ -74,5 +73,5 @@ inherits(DateSchema, MixedSchema, {
         return isAbsent(value) || value <= this.resolve(limit);
       },
     });
-  },
-});
+  }
+}

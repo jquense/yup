@@ -1,4 +1,4 @@
-import bool from '../src/boolean';
+import { bool } from '../src';
 
 describe('Boolean types', () => {
   it('should CAST correctly', () => {
@@ -20,11 +20,7 @@ describe('Boolean types', () => {
     let inst = bool();
 
     expect(inst.default()).to.equal(undefined);
-    inst
-      .default(true)
-      .required()
-      .default()
-      .should.equal(true);
+    inst.default(true).required().default().should.equal(true);
   });
 
   it('should type check', () => {
@@ -41,34 +37,20 @@ describe('Boolean types', () => {
 
     expect(inst.isType(null)).to.equal(false);
 
-    inst
-      .nullable()
-      .isType(null)
-      .should.equal(true);
+    inst.nullable().isType(null).should.equal(true);
   });
 
   it('bool should VALIDATE correctly', () => {
     let inst = bool().required();
 
     return Promise.all([
-      bool()
-        .isValid('1')
-        .should.eventually()
-        .equal(true),
-      bool()
-        .strict()
-        .isValid(null)
-        .should.eventually()
-        .equal(false),
-      bool()
-        .nullable()
-        .isValid(null)
-        .should.eventually()
-        .equal(true),
+      bool().isValid('1').should.eventually().equal(true),
+      bool().strict().isValid(null).should.eventually().equal(false),
+      bool().nullable().isValid(null).should.eventually().equal(true),
       inst
         .validate()
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors.length.should.equal(1);
           err.errors[0].should.contain('required');
         }),

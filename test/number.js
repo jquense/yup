@@ -1,15 +1,15 @@
 import * as TestHelpers from './helpers';
 
-import number from '../src/number';
+import { number, NumberSchema } from '../src';
 
 describe('Number types', function () {
-  it('is newable', () => {
-    let schema = new number();
-    schema.integer().required();
-  });
+  // it('is newable', () => {
+  //   let schema = new number();
+  //   schema.integer().required();
+  // });
 
   it('is extensible', () => {
-    class MyNumber extends number {
+    class MyNumber extends NumberSchema {
       foo() {
         return this;
       }

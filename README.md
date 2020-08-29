@@ -9,7 +9,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -124,13 +123,7 @@ npm install -D @types/yup
 You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object. When using es module syntax, yup exports everything as a named export
 
 ```js
-import * as yup from 'yup'; // for everything
-// or
-import { string, object } from 'yup'; // for only what you need
-```
-
-```js
-let yup = require('yup');
+import * as yup from 'yup';
 
 let schema = yup.object().shape({
   name: yup.string().required(),
@@ -159,6 +152,21 @@ schema.cast({
   createdOn: '2014-09-23T19:25:25Z',
 });
 // => { name: 'jimmy', age: 24, createdOn: Date }
+```
+
+The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
+If you need access to the actual schema classes, they are also exported:
+
+```js
+import {
+  BooleanSchema,
+  DateSchema,
+  MixedSchema,
+  NumberSchema,
+  ArraySchema,
+  ObjectSchema,
+  StringSchema,
+} from 'yup';
 ```
 
 > If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
@@ -1230,10 +1238,14 @@ utility or pattern that works with that pattern. The below demonstrates using th
 syntax since it's less verbose, but you absolutely aren't required to use it.
 
 ```js
-let DateSchema = yup.date;
+import { DateSchema } from 'yup';
+
 let invalidDate = new Date(''); // our failed to coerce value
 
 class MomentDateSchemaType extends DateSchema {
+  static create() {
+    return MomentDateSchemaType();
+  }
   constructor() {
     super();
     this._validFormats = [];
@@ -1261,7 +1273,7 @@ class MomentDateSchemaType extends DateSchema {
   }
 }
 
-let schema = new MomentDateSchemaType();
+let schema = MomentDateSchemaType.create();
 
 schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
 ```

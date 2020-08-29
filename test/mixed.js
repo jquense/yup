@@ -9,6 +9,7 @@ import {
   ref,
   string,
   ValidationError,
+  MixedSchema,
 } from '../src';
 import { ensureSync } from './helpers';
 
@@ -47,8 +48,8 @@ describe('Mixed Types ', () => {
     next.sub.should.equal(sub);
     inst.sub.should.equal(next.sub);
 
-    inst.should.be.an.instanceOf(mixed);
-    next.should.be.an.instanceOf(mixed);
+    inst.should.be.an.instanceOf(MixedSchema);
+    next.should.be.an.instanceOf(MixedSchema);
 
     return Promise.all([
       inst.isValid().should.eventually().equal(true),
