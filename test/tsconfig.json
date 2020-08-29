@@ -1,0 +1,8 @@
+{
+  "extends": "../",
+  "compilerOptions": {
+    "types": ["node", "jest"],
+    "rootDir": "../"
+  },
+  "include": ["../src", "."]
+}

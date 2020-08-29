@@ -5,7 +5,7 @@ module.exports = (api) => ({
       api.env() !== 'test'
         ? {
             ignoreBrowserslistConfig: true,
-            modules: api.env() === 'modules' ? false : 'commonjs',
+            modules: api.env() === 'esm' ? false : 'commonjs',
           }
         : {
             target: 'node',

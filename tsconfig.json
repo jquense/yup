@@ -1,0 +1,7 @@
+{
+  "extends": "@4c/tsconfig/web.json",
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}
