@@ -1,6 +1,8 @@
 import MixedSchema from './mixed';
 import { string as locale } from './locale';
 import isAbsent from './util/isAbsent';
+import Reference from './Reference';
+import { Message, Maybe } from './types';
 
 // eslint-disable-next-line
 let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i;
@@ -9,12 +11,20 @@ let rUrl = /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFD
 // eslint-disable-next-line
 let rUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-let isTrimmed = (value) => isAbsent(value) || value === value.trim();
+let isTrimmed = (value: Maybe<string>) =>
+  isAbsent(value) || value === value.trim();
+
+export type MatchOptions = {
+  excludeEmptyString?: boolean;
+  message: Message<{ regex: RegExp }>;
+  name?: string;
+};
+
+export function create() {
+  return new StringSchema();
+}
 
 export default class StringSchema extends MixedSchema {
-  static create() {
-    return new StringSchema();
-  }
   constructor() {
     super({ type: 'string' });
 
@@ -26,60 +36,67 @@ export default class StringSchema extends MixedSchema {
     });
   }
 
-  _typeCheck(value) {
+  protected _typeCheck(value: any): value is string {
     if (value instanceof String) value = value.valueOf();
 
     return typeof value === 'string';
   }
 
-  _isPresent(value) {
+  protected _isPresent(value: any) {
     return super._isPresent(value) && value.length > 0;
   }
 
-  length(length, message = locale.length) {
+  length(
+    length: number | Reference,
+    message: Message<{ length: number }> = locale.length,
+  ) {
     return this.test({
       message,
       name: 'length',
       exclusive: true,
       params: { length },
-      test(value) {
+      test(value: Maybe<string>) {
         return isAbsent(value) || value.length === this.resolve(length);
       },
     });
   }
 
-  min(min, message = locale.min) {
+  min(min: number | Reference, message: Message<{ min: number }> = locale.min) {
     return this.test({
       message,
       name: 'min',
       exclusive: true,
       params: { min },
-      test(value) {
+      test(value: Maybe<string>) {
         return isAbsent(value) || value.length >= this.resolve(min);
       },
     });
   }
 
-  max(max, message = locale.max) {
+  max(max: number | Reference, message: Message<{ max: number }> = locale.max) {
     return this.test({
       name: 'max',
       exclusive: true,
       message,
       params: { max },
-      test(value) {
+      test(value: Maybe<string>) {
         return isAbsent(value) || value.length <= this.resolve(max);
       },
     });
   }
 
-  matches(regex, options) {
+  matches(regex: RegExp, options: MatchOptions | MatchOptions['message']) {
     let excludeEmptyString = false;
     let message;
     let name;
 
     if (options) {
       if (typeof options === 'object') {
-        ({ excludeEmptyString, message, name } = options);
+        ({
+          excludeEmptyString = false,
+          message,
+          name,
+        } = options as MatchOptions);
       } else {
         message = options;
       }
@@ -89,7 +106,7 @@ export default class StringSchema extends MixedSchema {
       name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
-      test: (value) =>
+      test: (value: Maybe<string>) =>
         isAbsent(value) ||
         (value === '' && excludeEmptyString) ||
         value.search(regex) !== -1,
@@ -140,7 +157,8 @@ export default class StringSchema extends MixedSchema {
       message,
       name: 'string_case',
       exclusive: true,
-      test: (value) => isAbsent(value) || value === value.toLowerCase(),
+      test: (value: Maybe<string>) =>
+        isAbsent(value) || value === value.toLowerCase(),
     });
   }
 
@@ -151,7 +169,8 @@ export default class StringSchema extends MixedSchema {
       message,
       name: 'string_case',
       exclusive: true,
-      test: (value) => isAbsent(value) || value === value.toUpperCase(),
+      test: (value: Maybe<string>) =>
+        isAbsent(value) || value === value.toUpperCase(),
     });
   }
 }

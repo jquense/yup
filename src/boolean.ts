@@ -1,10 +1,10 @@
 import MixedSchema from './mixed';
 
-export default class BooleanSchema extends MixedSchema {
-  static create(options) {
-    return new BooleanSchema(options);
-  }
+export function create() {
+  return new BooleanSchema();
+}
 
+export default class BooleanSchema extends MixedSchema {
   constructor() {
     super({ type: 'boolean' });
 
@@ -18,7 +18,8 @@ export default class BooleanSchema extends MixedSchema {
       });
     });
   }
-  _typeCheck(v) {
+
+  protected _typeCheck(v: any) {
     if (v instanceof Boolean) v = v.valueOf();
 
     return typeof v === 'boolean';

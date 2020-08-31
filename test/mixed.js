@@ -903,6 +903,8 @@ describe('Mixed Types ', () => {
       meta: undefined,
       label: undefined,
       tests: [],
+      oneOf: [],
+      notOneOf: [],
       fields: {
         foo: {
           type: 'array',
@@ -914,10 +916,15 @@ describe('Mixed Types ', () => {
               params: undefined,
             },
           ],
+
+          oneOf: [],
+          notOneOf: [],
           innerType: {
             type: 'number',
             meta: undefined,
             label: undefined,
+            oneOf: [],
+            notOneOf: [],
             tests: [
               {
                 name: 'integer',

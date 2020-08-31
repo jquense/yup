@@ -1,7 +1,21 @@
 import ValidationError from '../ValidationError';
 import { once } from './async';
+import { TestOptions } from './createValidation';
+import { Callback } from '../types';
 
-export default function runTests(options, cb) {
+export type RunTest = (opts: TestOptions, cb: Callback) => void;
+
+export type TestRunOptions = {
+  endEarly?: boolean;
+  tests: RunTest[];
+  args?: TestOptions;
+  errors?: ValidationError[];
+  sort?: (a: ValidationError, b: ValidationError) => number;
+  path?: string;
+  value: any;
+  sync?: boolean;
+};
+export default function runTests(options: TestRunOptions, cb: Callback): void {
   let { endEarly, tests, args, value, errors, sort, path } = options;
 
   let callback = once(cb);
@@ -9,21 +23,21 @@ export default function runTests(options, cb) {
 
   if (!count) return callback(null, value);
 
-  const nestedErrors = [];
+  const nestedErrors = [] as ValidationError[];
   errors = errors ? errors : [];
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
 
-    test(args, function finishTestRun(err) {
+    test(args!, function finishTestRun(err) {
       if (err) {
         // always return early for non validation errors
         if (!ValidationError.isError(err)) {
-          return callback(err);
+          return callback(err, value);
         }
         if (endEarly) {
           err.value = value;
-          return callback(err);
+          return callback(err, value);
         }
         nestedErrors.push(err);
       }
@@ -33,12 +47,12 @@ export default function runTests(options, cb) {
           if (sort) nestedErrors.sort(sort);
 
           //show parent errors after the nested ones: name.first, name
-          if (errors.length) nestedErrors.push(...errors);
+          if (errors!.length) nestedErrors.push(...errors!);
           errors = nestedErrors;
         }
 
-        if (errors.length) {
-          callback(new ValidationError(errors, value, path));
+        if (errors!.length) {
+          callback(new ValidationError(errors!, value, path), value);
           return;
         }
 

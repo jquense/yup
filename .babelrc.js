@@ -10,10 +10,11 @@ module.exports = (api) => ({
         : {
             target: 'node',
 
-            debug: true,
+            // debug: true,
             targets: { node: 'current' },
           },
     ],
+    '@babel/preset-typescript',
   ],
   plugins: [
     api.env() === 'modules' && [

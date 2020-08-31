@@ -1,6 +1,53 @@
 import printValue from './util/printValue';
+import { Message } from './types';
 
-export let mixed = {
+export interface MixedLocale {
+  default?: Message;
+  required?: Message;
+  oneOf?: Message<{ values: any }>;
+  notOneOf?: Message<{ values: any }>;
+  notType?: Message;
+  defined?: Message;
+}
+
+export interface StringLocale {
+  length?: Message<{ length: number }>;
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+  matches?: Message<{ regex: RegExp }>;
+  email?: Message<{ regex: RegExp }>;
+  url?: Message<{ regex: RegExp }>;
+  uuid?: Message<{ regex: RegExp }>;
+  trim?: Message;
+  lowercase?: Message;
+  uppercase?: Message;
+}
+
+export interface NumberLocale {
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+  lessThan?: Message<{ less: number }>;
+  moreThan?: Message<{ more: number }>;
+  positive?: Message<{ more: number }>;
+  negative?: Message<{ less: number }>;
+  integer?: Message;
+}
+
+export interface DateLocale {
+  min?: Message<{ min: Date | string }>;
+  max?: Message<{ max: Date | string }>;
+}
+
+export interface ObjectLocale {
+  noUnknown?: Message;
+}
+
+export interface ArrayLocale {
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+}
+
+export let mixed: Required<MixedLocale> = {
   default: '${path} is invalid',
   required: '${path} is a required field',
   oneOf: '${path} must be one of the following values: ${values}',
@@ -23,7 +70,7 @@ export let mixed = {
   defined: '${path} must be defined',
 };
 
-export let string = {
+export let string: Required<StringLocale> = {
   length: '${path} must be exactly ${length} characters',
   min: '${path} must be at least ${min} characters',
   max: '${path} must be at most ${max} characters',
@@ -36,29 +83,28 @@ export let string = {
   uppercase: '${path} must be a upper case string',
 };
 
-export let number = {
+export let number: Required<NumberLocale> = {
   min: '${path} must be greater than or equal to ${min}',
   max: '${path} must be less than or equal to ${max}',
   lessThan: '${path} must be less than ${less}',
   moreThan: '${path} must be greater than ${more}',
-  notEqual: '${path} must be not equal to ${notEqual}',
   positive: '${path} must be a positive number',
   negative: '${path} must be a negative number',
   integer: '${path} must be an integer',
 };
 
-export let date = {
+export let date: Required<DateLocale> = {
   min: '${path} field must be later than ${min}',
   max: '${path} field must be at earlier than ${max}',
 };
 
 export let boolean = {};
 
-export let object = {
+export let object: Required<ObjectLocale> = {
   noUnknown: '${path} field has unspecified keys: ${unknown}',
 };
 
-export let array = {
+export let array: Required<ArrayLocale> = {
   min: '${path} field must have at least ${min} items',
   max: '${path} field must have less than or equal to ${max} items',
 };

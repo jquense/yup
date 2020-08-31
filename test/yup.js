@@ -187,8 +187,8 @@ describe('Yup', function () {
 
   it('should reach through lazy', async () => {
     let types = {
-      '1': object({ foo: string() }),
-      '2': object({ foo: number() }),
+      1: object({ foo: string() }),
+      2: object({ foo: number() }),
     };
 
     let err = await object({
@@ -205,7 +205,7 @@ describe('Yup', function () {
     err.message.should.match(/must be a `number` type/);
   });
 
-  describe('parallel', () => {
+  xdescribe('parallel', () => {
     it('returns results', (done) => {
       Async.parallel(
         [
@@ -245,7 +245,7 @@ describe('Yup', function () {
     });
   });
 
-  describe('settled', () => {
+  xdescribe('settled', () => {
     it('handles empty', (done) => {
       Async.settled([], (err, results) => {
         expect(results).to.eql([]);

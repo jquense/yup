@@ -4,12 +4,16 @@ import { split } from 'property-expr';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';
+import { MixedSchema } from '..';
 
-export default function sortFields(fields, excludes = []) {
-  let edges = [];
-  let nodes = [];
+export default function sortFields(
+  fields: Record<string, MixedSchema>,
+  excludes: string[] = [],
+) {
+  let edges = [] as Array<[string, string]>;
+  let nodes = [] as string[];
 
-  function addNode(depPath, key) {
+  function addNode(depPath: string, key: string) {
     var node = split(depPath)[0];
 
     if (!~nodes.indexOf(node)) nodes.push(node);
@@ -28,5 +32,5 @@ export default function sortFields(fields, excludes = []) {
         value._deps.forEach((path) => addNode(path, key));
     }
 
-  return toposort.array(nodes, edges).reverse();
+  return toposort.array(nodes, edges).reverse() as string[];
 }

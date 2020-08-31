@@ -1,18 +1,38 @@
 import has from 'lodash/has';
 import cloneDeepWith from 'lodash/cloneDeepWith';
-import toArray from 'lodash/toArray';
 
 import { mixed as locale } from './locale';
-import Condition from './Condition';
+import Condition, { ConditionOptions, ResolveOptions } from './Condition';
 import runTests from './util/runTests';
 import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
-import createValidation from './util/createValidation';
+import createValidation, {
+  TestFunction,
+  Test,
+  TestConfig,
+} from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
+import Reference from './Reference';
+import toArray from './util/toArray';
+import {
+  ValidateOptions,
+  TransformFunction,
+  Message,
+  Callback,
+  InternalOptions,
+} from './types';
+import Schema, {
+  CastOptions,
+  SchemaRefDescription,
+  SchemaDescription,
+} from './Schema';
 
 class RefSet {
+  list: Set<unknown>;
+  refs: Map<string, Reference>;
+
   constructor() {
     this.list = new Set();
     this.refs = new Map();
@@ -21,7 +41,7 @@ class RefSet {
     return this.list.size + this.refs.size;
   }
   describe() {
-    const description = [];
+    const description = [] as Array<unknown | SchemaRefDescription>;
 
     for (const item of this.list) description.push(item);
     for (const [, ref] of this.refs) description.push(ref.describe());
@@ -29,15 +49,15 @@ class RefSet {
     return description;
   }
   toArray() {
-    return toArray(this.list).concat(toArray(this.refs.values()));
+    return Array.from(this.list).concat(Array.from(this.refs.values()));
   }
-  add(value) {
+  add(value: unknown) {
     Ref.isRef(value) ? this.refs.set(value.key, value) : this.list.add(value);
   }
-  delete(value) {
+  delete(value: unknown) {
     Ref.isRef(value) ? this.refs.delete(value.key) : this.list.delete(value);
   }
-  has(value, resolve) {
+  has(value: unknown, resolve: (v: unknown) => unknown) {
     if (this.list.has(value)) return true;
 
     let item,
@@ -53,7 +73,7 @@ class RefSet {
     next.refs = new Map(this.refs);
     return next;
   }
-  merge(newItems, removeItems) {
+  merge(newItems: RefSet, removeItems: RefSet) {
     const next = this.clone();
     newItems.list.forEach((value) => next.add(value));
     newItems.refs.forEach((value) => next.add(value));
@@ -63,19 +83,58 @@ class RefSet {
   }
 }
 
-export default class MixedSchema {
-  static create(options) {
-    return new MixedSchema(options);
+export interface SchemaOptions<T extends Schema = Schema> {
+  default?: (this: T) => any;
+  type: string;
+}
+
+export function create(options?: SchemaOptions) {
+  return new MixedSchema(options);
+}
+
+export default class MixedSchema implements Schema {
+  private _deps: string[];
+
+  __isYupSchema__ = true;
+  protected _options: Partial<ValidateOptions>;
+  protected _exclusive: Record<string, unknown> = Object.create(null);
+
+  readonly type: string;
+  protected _whitelist: RefSet = new RefSet();
+  protected _blacklist: RefSet = new RefSet();
+
+  tests: Test[];
+  transforms: TransformFunction<this>[]; // TODO
+
+  private _mutate?: boolean;
+
+  protected _label?: string;
+  protected _meta: any;
+  private _default?: unknown;
+  private _nullable: boolean = false;
+  private _conditions: Condition[];
+  private _defaultDefault: ((this: this) => unknown) | undefined;
+
+  private _validating: boolean = false;
+  private _typeError?: Test;
+  private _whitelistError?: Test;
+  private _blacklistError?: Test;
+
+  private _strip: boolean = false;
+
+  optional!: () => MixedSchema;
+
+  static create<T extends MixedSchema>(
+    this: new (...args: any[]) => T,
+    ...args: any[]
+  ) {
+    return new this(...args);
   }
 
-  constructor(options = {}) {
+  constructor(options: SchemaOptions = { type: 'mixed' }) {
     this._deps = [];
     this._conditions = [];
     this._options = { abortEarly: true, recursive: true };
-    this._exclusive = Object.create(null);
-
-    this._whitelist = new RefSet();
-    this._blacklist = new RefSet();
 
     this.tests = [];
     this.transforms = [];
@@ -86,14 +145,21 @@ export default class MixedSchema {
 
     if (has(options, 'default')) this._defaultDefault = options.default;
 
-    this.type = options.type || 'mixed';
-    // TODO: remove
-    this._type = options.type || 'mixed';
+    this.type = options.type;
   }
 
-  __isYupSchema__ = true;
+  // TODO: remove
+  get _type() {
+    return this.type;
+  }
 
-  clone() {
+  protected _typeCheck(_: any) {
+    return true;
+  }
+
+  // __isYupSchema__ = true;
+
+  clone(): this {
     if (this._mutate) return this;
 
     // if the nested value is a schema we can skip cloning, since
@@ -103,13 +169,13 @@ export default class MixedSchema {
     });
   }
 
-  label(label) {
+  label(label: string) {
     var next = this.clone();
     next._label = label;
     return next;
   }
 
-  meta(obj) {
+  meta(obj: {}) {
     if (arguments.length === 0) return this._meta;
 
     var next = this.clone();
@@ -117,7 +183,7 @@ export default class MixedSchema {
     return next;
   }
 
-  withMutation(fn) {
+  withMutation<T>(fn: (schema: this) => T): T {
     let before = this._mutate;
     this._mutate = true;
     let result = fn(this);
@@ -125,15 +191,15 @@ export default class MixedSchema {
     return result;
   }
 
-  concat(schema) {
+  concat(schema: this) {
     if (!schema || schema === this) return this;
 
-    if (schema._type !== this._type && this._type !== 'mixed')
+    if (schema.type !== this.type && this.type !== 'mixed')
       throw new TypeError(
         `You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`,
       );
 
-    var next = prependDeep(schema.clone(), this);
+    var next = prependDeep(schema.clone() as any, this as any) as this;
 
     // new undefined default is overridden by old non-undefined one, revert
     if (has(schema, '_default')) next._default = schema._default;
@@ -163,12 +229,14 @@ export default class MixedSchema {
     return next;
   }
 
-  isType(v) {
+  // abstract ?(value: any): boolean;
+
+  isType(v: any) {
     if (this._nullable && v === null) return true;
-    return !this._typeCheck || this._typeCheck(v);
+    return this._typeCheck(v);
   }
 
-  resolve(options) {
+  resolve(options: ResolveOptions) {
     let schema = this;
 
     if (schema._conditions.length) {
@@ -194,7 +262,7 @@ export default class MixedSchema {
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value, options = {}) {
+  cast(value: any, options: CastOptions = {}) {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -226,7 +294,7 @@ export default class MixedSchema {
     return result;
   }
 
-  _cast(rawValue) {
+  protected _cast(rawValue: any, _options: CastOptions) {
     let value =
       rawValue === undefined
         ? rawValue
@@ -242,7 +310,11 @@ export default class MixedSchema {
     return value;
   }
 
-  _validate(_value, options = {}, cb) {
+  protected _validate(
+    _value: any,
+    options: InternalOptions = {},
+    cb: Callback,
+  ): void {
     let {
       sync,
       path,
@@ -276,7 +348,7 @@ export default class MixedSchema {
     if (this._whitelistError) initialTests.push(this._whitelistError);
     if (this._blacklistError) initialTests.push(this._blacklistError);
 
-    return runTests(
+    runTests(
       {
         args,
         value,
@@ -286,7 +358,7 @@ export default class MixedSchema {
         endEarly: abortEarly,
       },
       (err) => {
-        if (err) return void cb(err);
+        if (err) return void cb(err, value);
 
         runTests(
           {
@@ -303,7 +375,8 @@ export default class MixedSchema {
     );
   }
 
-  validate(value, options = {}, maybeCb) {
+  validate(value: any, options: ValidateOptions): Promise<any>;
+  validate(value: any, options: ValidateOptions = {}, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -317,7 +390,7 @@ export default class MixedSchema {
         );
   }
 
-  validateSync(value, options = {}) {
+  validateSync(value: any, options: ValidateOptions = {}) {
     let schema = this.resolve({ ...options, value });
     let result;
 
@@ -329,7 +402,7 @@ export default class MixedSchema {
     return result;
   }
 
-  isValid(value, options) {
+  isValid(value: any, options: ValidateOptions) {
     return this.validate(value, options)
       .then(() => true)
       .catch((err) => {
@@ -338,7 +411,7 @@ export default class MixedSchema {
       });
   }
 
-  isValidSync(value, options) {
+  isValidSync(value: any, options: ValidateOptions) {
     try {
       this.validateSync(value, options);
       return true;
@@ -353,7 +426,9 @@ export default class MixedSchema {
     return schema.default();
   }
 
-  default(def) {
+  default(): any; // FIXME(ts): typed default
+  default<TDefault = any>(def: TDefault | (() => TDefault)): this;
+  default<TDefault = any>(def?: TDefault | (() => TDefault)) {
     if (arguments.length === 0) {
       var defaultValue = has(this, '_default')
         ? this._default
@@ -375,7 +450,7 @@ export default class MixedSchema {
     return next;
   }
 
-  _isPresent(value) {
+  protected _isPresent(value: unknown) {
     return value != null;
   }
 
@@ -402,7 +477,7 @@ export default class MixedSchema {
     return next;
   }
 
-  transform(fn) {
+  transform(fn: TransformFunction<this>) {
     var next = this.clone();
     next.transforms.push(fn);
     return next;
@@ -421,8 +496,12 @@ export default class MixedSchema {
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(...args) {
-    let opts;
+  test(options: TestConfig): this;
+  test(test: TestFunction): this;
+  test(name: string, test: TestFunction): this;
+  test(name: string, message: Message, test: TestFunction): this;
+  test(...args: any[]) {
+    let opts: TestConfig;
 
     if (args.length === 1) {
       if (typeof args[0] === 'function') {
@@ -447,13 +526,14 @@ export default class MixedSchema {
     let isExclusive =
       opts.exclusive || (opts.name && next._exclusive[opts.name] === true);
 
-    if (opts.exclusive && !opts.name) {
-      throw new TypeError(
-        'Exclusive tests must provide a unique `name` identifying the test',
-      );
+    if (opts.exclusive) {
+      if (!opts.name)
+        throw new TypeError(
+          'Exclusive tests must provide a unique `name` identifying the test',
+        );
     }
 
-    next._exclusive[opts.name] = !!opts.exclusive;
+    if (opts.name) next._exclusive[opts.name] = !!opts.exclusive;
 
     next.tests = next.tests.filter((fn) => {
       if (fn.OPTIONS.name === opts.name) {
@@ -468,25 +548,30 @@ export default class MixedSchema {
     return next;
   }
 
-  when(keys, options) {
-    if (arguments.length === 1) {
+  when(options: ConditionOptions<this>): this;
+  when(keys: string | string[], options: ConditionOptions<this>): this;
+  when(
+    keys: string | string[] | ConditionOptions<this>,
+    options?: ConditionOptions<this>,
+  ) {
+    if (!Array.isArray(keys) && typeof keys !== 'string') {
       options = keys;
       keys = '.';
     }
 
-    var next = this.clone(),
-      deps = [].concat(keys).map((key) => new Ref(key));
+    let next = this.clone();
+    let deps = toArray(keys).map((key) => new Ref(key));
 
     deps.forEach((dep) => {
       if (dep.isSibling) next._deps.push(dep.key);
     });
 
-    next._conditions.push(new Condition(deps, options));
+    next._conditions.push(new Condition<this>(deps, options!));
 
     return next;
   }
 
-  typeError(message) {
+  typeError(message: Message) {
     var next = this.clone();
 
     next._typeError = createValidation({
@@ -505,7 +590,7 @@ export default class MixedSchema {
     return next;
   }
 
-  oneOf(enums, message = locale.oneOf) {
+  oneOf(enums: unknown[], message = locale.oneOf) {
     var next = this.clone();
 
     enums.forEach((val) => {
@@ -533,7 +618,7 @@ export default class MixedSchema {
     return next;
   }
 
-  notOneOf(enums, message = locale.notOneOf) {
+  notOneOf(enums: unknown[], message = locale.notOneOf) {
     var next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
@@ -564,25 +649,27 @@ export default class MixedSchema {
     return next;
   }
 
-  _option(key, overrides) {
+  protected _option<Key extends keyof ValidateOptions>(
+    key: Key,
+    overrides: ValidateOptions,
+  ) {
     return has(overrides, key) ? overrides[key] : this._options[key];
   }
 
   describe() {
     const next = this.clone();
-    const description = {
+    const description: SchemaDescription = {
       type: next._type,
       meta: next._meta,
       label: next._label,
+      oneOf: next._whitelist.describe(),
+      notOneOf: next._blacklist.describe(),
       tests: next.tests
         .map((fn) => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
         .filter(
           (n, idx, list) => list.findIndex((c) => c.name === n.name) === idx,
         ),
     };
-
-    if (next._whitelist.size) description.oneOf = next._whitelist.describe();
-    if (next._blacklist.size) description.notOneOf = next._blacklist.describe();
 
     return description;
   }
@@ -600,7 +687,11 @@ export default class MixedSchema {
 }
 
 for (const method of ['validate', 'validateSync'])
-  MixedSchema.prototype[`${method}At`] = function (path, value, options = {}) {
+  MixedSchema.prototype[`${method}At`] = function (
+    path: string,
+    value: any,
+    options: ValidateOptions = {},
+  ) {
     const { parent, parentPath, schema } = getIn(
       this,
       path,

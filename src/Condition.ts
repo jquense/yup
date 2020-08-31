@@ -1,8 +1,35 @@
 import has from 'lodash/has';
 import isSchema from './util/isSchema';
+import Reference from './Reference';
+import Schema from './Schema';
 
-class Condition {
-  constructor(refs, options) {
+export interface ConditionBuilder<T extends Schema> {
+  (this: T, value: any, schema: T): T;
+  (v1: any, v2: any, schema: T): T;
+  (v1: any, v2: any, v3: any, schema: T): T;
+  (v1: any, v2: any, v3: any, v4: any, schema: T): T;
+}
+
+export type ConditionConfig<T extends Schema> = {
+  is: any | ((...values: any[]) => boolean);
+  then?: T | ((schema: T) => T);
+  otherwise?: T | ((schema: T) => T);
+};
+
+export type ConditionOptions<T extends Schema> =
+  | ConditionBuilder<T>
+  | ConditionConfig<T>;
+
+export type ResolveOptions = {
+  value?: any;
+  parent?: any;
+  context?: any;
+};
+
+class Condition<T extends Schema = Schema> {
+  fn: ConditionBuilder<T>;
+
+  constructor(public refs: Reference[], options: ConditionOptions<T>) {
     this.refs = refs;
 
     if (typeof options === 'function') {
@@ -23,9 +50,9 @@ class Condition {
     let check =
       typeof is === 'function'
         ? is
-        : (...values) => values.every((value) => value === is);
+        : (...values: any[]) => values.every((value) => value === is);
 
-    this.fn = function (...args) {
+    this.fn = function (...args: any[]) {
       let options = args.pop();
       let schema = args.pop();
       let branch = check(...args) ? then : otherwise;
@@ -36,7 +63,7 @@ class Condition {
     };
   }
 
-  resolve(base, options) {
+  resolve(base: T, options: ResolveOptions) {
     let values = this.refs.map((ref) =>
       ref.getValue(options?.value, options?.parent, options?.context),
     );

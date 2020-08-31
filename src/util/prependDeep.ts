@@ -1,13 +1,22 @@
 import has from 'lodash/has';
 import isSchema from './isSchema';
 
-let isObject = obj => Object.prototype.toString.call(obj) === '[object Object]';
+// function has<T extends {}, Key extends PropertyKey>
+//   (obj: T, prop: Key): obj is T & Record<Key, unknown> {
+//   return has(obj, prop)
+// }
 
-export default function prependDeep(target, source) {
-  for (var key in source)
+let isObject = (obj: any): obj is {} =>
+  Object.prototype.toString.call(obj) === '[object Object]';
+
+export default function prependDeep(
+  target: Record<PropertyKey, unknown>,
+  source: Record<PropertyKey, unknown>,
+) {
+  for (let key in source)
     if (has(source, key)) {
-      var sourceVal = source[key],
-        targetVal = target[key];
+      let sourceVal = source[key];
+      let targetVal = (target as any)[key];
 
       if (targetVal === undefined) {
         target[key] = sourceVal;

@@ -5,8 +5,27 @@ const prefixes = {
   value: '.',
 };
 
+export type ReferenceOptions = {
+  map?: (value: unknown) => unknown;
+};
+
+export function create(key: string, options: ReferenceOptions) {
+  return new Reference(key, options);
+}
+
 export default class Reference {
-  constructor(key, options = {}) {
+  readonly key: string;
+  readonly isContext: boolean;
+  readonly isValue: boolean;
+  readonly isSibling: boolean;
+  readonly path: any;
+
+  readonly getter: (data: unknown) => unknown;
+  readonly map?: (value: unknown) => unknown;
+
+  readonly __isYupRef!: boolean;
+
+  constructor(key: string, options: ReferenceOptions = {}) {
     if (typeof key !== 'string')
       throw new TypeError('ref must be a string, got: ' + key);
 
@@ -29,7 +48,7 @@ export default class Reference {
     this.map = options.map;
   }
 
-  getValue(value, parent, context) {
+  getValue(value: any, parent?: {}, context?: {}) {
     let result = this.isContext ? context : this.isValue ? value : parent;
 
     if (this.getter) result = this.getter(result || {});
@@ -46,7 +65,7 @@ export default class Reference {
    * @param {Object=} options.context
    * @param {Object=} options.parent
    */
-  cast(value, options) {
+  cast(value: any, options?: { parent?: {}; context?: {} }) {
     return this.getValue(value, options?.parent, options?.context);
   }
 
@@ -65,9 +84,10 @@ export default class Reference {
     return `Ref(${this.key})`;
   }
 
-  static isRef(value) {
+  static isRef(value: any): value is Reference {
     return value && value.__isYupRef;
   }
 }
 
+// @ts-ignore
 Reference.prototype.__isYupRef = true;

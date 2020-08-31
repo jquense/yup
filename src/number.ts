@@ -1,14 +1,16 @@
 import MixedSchema from './mixed';
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
+import { Maybe } from './types';
+import Reference from './Reference';
 
-let isNaN = (value) => value != +value;
+let isNaN = (value: Maybe<number>) => value != +value!;
+
+export function create() {
+  return new NumberSchema();
+}
 
 export default class NumberSchema extends MixedSchema {
-  static create() {
-    return new NumberSchema();
-  }
-
   constructor() {
     super({ type: 'number' });
 
@@ -30,55 +32,55 @@ export default class NumberSchema extends MixedSchema {
     });
   }
 
-  _typeCheck(value) {
+  protected _typeCheck(value: any): value is number {
     if (value instanceof Number) value = value.valueOf();
 
     return typeof value === 'number' && !isNaN(value);
   }
 
-  min(min, message = locale.min) {
+  min(min: number | Reference, message = locale.min) {
     return this.test({
       message,
       name: 'min',
       exclusive: true,
       params: { min },
-      test(value) {
+      test(value: Maybe<number>) {
         return isAbsent(value) || value >= this.resolve(min);
       },
     });
   }
 
-  max(max, message = locale.max) {
+  max(max: number | Reference, message = locale.max) {
     return this.test({
       message,
       name: 'max',
       exclusive: true,
       params: { max },
-      test(value) {
+      test(value: Maybe<number>) {
         return isAbsent(value) || value <= this.resolve(max);
       },
     });
   }
 
-  lessThan(less, message = locale.lessThan) {
+  lessThan(less: number | Reference, message = locale.lessThan) {
     return this.test({
       message,
       name: 'max',
       exclusive: true,
       params: { less },
-      test(value) {
+      test(value: Maybe<number>) {
         return isAbsent(value) || value < this.resolve(less);
       },
     });
   }
 
-  moreThan(more, message = locale.moreThan) {
+  moreThan(more: number | Reference, message = locale.moreThan) {
     return this.test({
       message,
       name: 'min',
       exclusive: true,
       params: { more },
-      test(value) {
+      test(value: Maybe<number>) {
         return isAbsent(value) || value > this.resolve(more);
       },
     });
@@ -104,9 +106,9 @@ export default class NumberSchema extends MixedSchema {
     return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
   }
 
-  round(method) {
+  round(method: 'ceil' | 'floor' | 'round' | 'trunc') {
     var avail = ['ceil', 'floor', 'round', 'trunc'];
-    method = (method && method.toLowerCase()) || 'round';
+    method = (method?.toLowerCase() as any) || ('round' as const);
 
     // this exists for symemtry with the new Math.trunc
     if (method === 'trunc') return this.truncate();

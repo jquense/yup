@@ -6,12 +6,15 @@ import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
 import MixedSchema from './mixed';
-import { object as locale } from './locale.js';
+import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
+import Schema, { CastOptions, SchemaObjectDescription } from './Schema';
+import { InternalOptions, Callback } from './types';
+import { ValidationError } from '.';
 
-let isObject = (obj) =>
+let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
   Object.prototype.toString.call(obj) === '[object Object]';
 
 function unknown(ctx, value) {
@@ -19,21 +22,36 @@ function unknown(ctx, value) {
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
-export default class ObjectSchema extends MixedSchema {
-  static create(spec) {
-    return new ObjectSchema(spec);
-  }
-  constructor(spec) {
+type ObjectShape = Record<string, MixedSchema>;
+
+export function create<TShape extends ObjectShape>(spec?: TShape) {
+  return new ObjectSchema(spec);
+}
+
+export default class ObjectSchema<
+  TShape extends ObjectShape = ObjectShape
+> extends MixedSchema {
+  fields: TShape;
+
+  private _sortErrors: (
+    a: import('/Users/jquense/src/yup/src/ValidationError').default,
+    b: import('/Users/jquense/src/yup/src/ValidationError').default,
+  ) => number;
+  private _nodes: string[];
+  private _excludedEdges: string[];
+
+  constructor(spec?: TShape) {
     super({
       type: 'object',
-      default() {
+      default(this: ObjectSchema) {
         if (!this._nodes.length) return undefined;
 
-        let dft = {};
+        let dft = {} as Record<string, unknown>;
         this._nodes.forEach((key) => {
-          dft[key] = this.fields[key].default
-            ? this.fields[key].default()
-            : undefined;
+          dft[key] =
+            'default' in this.fields[key]
+              ? this.fields[key].default()
+              : undefined;
         });
         return dft;
       },
@@ -65,12 +83,12 @@ export default class ObjectSchema extends MixedSchema {
     });
   }
 
-  _typeCheck(value) {
+  protected _typeCheck(value: any): value is Record<string, unknown> {
     return isObject(value) || typeof value === 'function';
   }
 
-  _cast(_value, options = {}) {
-    let value = super._cast(_value);
+  protected _cast(_value: any, options: InternalOptions = {}) {
+    let value = super._cast(_value, options);
 
     //should ignore nulls here
     if (value === undefined) return this.default();
@@ -84,8 +102,8 @@ export default class ObjectSchema extends MixedSchema {
       Object.keys(value).filter((v) => this._nodes.indexOf(v) === -1),
     );
 
-    let intermediateValue = {}; // is filled during the transform below
-    let innerOptions = {
+    let intermediateValue: Record<string, unknown> = {}; // is filled during the transform below
+    let innerOptions: InternalOptions = {
       ...options,
       parent: intermediateValue,
       __validating: options.__validating || false,
@@ -98,13 +116,19 @@ export default class ObjectSchema extends MixedSchema {
 
       if (field) {
         let fieldValue;
-        let strict = field._options && field._options.strict;
+        let strict = field._options?.strict;
+
+        let inputValue = value[prop];
 
         // safe to mutate since this is fired in sequence
         innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
-        innerOptions.value = value[prop];
+        // innerOptions.value = value[prop];
 
-        field = field.resolve(innerOptions);
+        field = field.resolve({
+          value: inputValue,
+          context: options.context,
+          parent: intermediateValue,
+        });
 
         if (field._strip === true) {
           isChanged = isChanged || prop in value;
@@ -113,7 +137,8 @@ export default class ObjectSchema extends MixedSchema {
 
         fieldValue =
           !options.__validating || !strict
-            ? field.cast(value[prop], innerOptions)
+            ? // TODO: use _cast, this is double resolving
+              field.cast(value[prop], innerOptions)
             : value[prop];
 
         if (fieldValue !== undefined) {
@@ -131,32 +156,12 @@ export default class ObjectSchema extends MixedSchema {
     return isChanged ? intermediateValue : value;
   }
 
-  /**
-   * @typedef {Object} Ancestor
-   * @property {Object} schema - a string property of SpecialType
-   * @property {*} value - a number property of SpecialType
-   */
-
-  /**
-   *
-   * @param {*} _value
-   * @param {Object}       opts
-   * @param {string=}      opts.path
-   * @param {*=}           opts.parent
-   * @param {Object=}      opts.context
-   * @param {boolean=}     opts.sync
-   * @param {boolean=}     opts.stripUnknown
-   * @param {boolean=}     opts.strict
-   * @param {boolean=}     opts.recursive
-   * @param {boolean=}     opts.abortEarly
-   * @param {boolean=}     opts.__validating
-   * @param {Object=}      opts.originalValue
-   * @param {Ancestor[]=}  opts.from
-   * @param {Object}       [opts.from]
-   * @param {Function}     callback
-   */
-  _validate(_value, opts = {}, callback) {
-    let errors = [];
+  protected _validate(
+    _value: any,
+    opts: InternalOptions = {},
+    callback: Callback,
+  ) {
+    let errors = [] as ValidationError[];
     let {
       sync,
       from = [],
@@ -175,10 +180,10 @@ export default class ObjectSchema extends MixedSchema {
 
     super._validate(_value, opts, (err, value) => {
       if (err) {
-        if (abortEarly) return void callback(err);
-
+        if (!ValidationError.isError(err) || abortEarly) {
+          return void callback(err, value);
+        }
         errors.push(err);
-        value = err.value;
       }
 
       if (!recursive || !isObject(value)) {
@@ -188,7 +193,7 @@ export default class ObjectSchema extends MixedSchema {
 
       originalValue = originalValue || value;
 
-      let tests = this._nodes.map((key) => (_, cb) => {
+      let tests = this._nodes.map((key) => (_: any, cb: Callback) => {
         let path =
           key.indexOf('.') === -1
             ? (opts.path ? `${opts.path}.` : '') + key
@@ -197,7 +202,7 @@ export default class ObjectSchema extends MixedSchema {
         let field = this.fields[key];
 
         if (field && field.validate) {
-          field.validate(
+          (field as Schema).validate(
             value[key],
             {
               ...opts,
@@ -233,7 +238,7 @@ export default class ObjectSchema extends MixedSchema {
     });
   }
 
-  concat(schema) {
+  concat(schema: ObjectSchema) {
     var next = super.concat(schema);
 
     next._nodes = sortFields(next.fields, next._excludedEdges);
@@ -241,7 +246,10 @@ export default class ObjectSchema extends MixedSchema {
     return next;
   }
 
-  shape(schema, excludes = []) {
+  shape<TNextShape extends ObjectShape>(
+    schema: TNextShape,
+    excludes: [string, string][] = [],
+  ) {
     let next = this.clone();
     let fields = Object.assign(next.fields, schema);
 
@@ -249,7 +257,7 @@ export default class ObjectSchema extends MixedSchema {
     next._sortErrors = sortByKeyOrder(Object.keys(fields));
 
     if (excludes.length) {
-      if (!Array.isArray(excludes[0])) excludes = [excludes];
+      if (!Array.isArray(excludes[0])) excludes = [excludes as any];
 
       let keys = excludes.map(([first, second]) => `${first}-${second}`);
 
@@ -261,7 +269,7 @@ export default class ObjectSchema extends MixedSchema {
     return next;
   }
 
-  from(from, to, alias) {
+  from(from: string, to: keyof TShape, alias?: boolean) {
     let fromGetter = getter(from, true);
 
     return this.transform((obj) => {
@@ -308,7 +316,7 @@ export default class ObjectSchema extends MixedSchema {
     return this.noUnknown(!allow, message);
   }
 
-  transformKeys(fn) {
+  transformKeys(fn: (key: string) => string) {
     return this.transform((obj) => obj && mapKeys(obj, (_, key) => fn(key)));
   }
 
@@ -325,7 +333,7 @@ export default class ObjectSchema extends MixedSchema {
   }
 
   describe() {
-    let base = super.describe();
+    let base = super.describe() as SchemaObjectDescription;
     base.fields = mapValues(this.fields, (value) => value.describe());
     return base;
   }

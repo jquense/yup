@@ -1,20 +1,86 @@
 import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
+import {
+  ValidateOptions,
+  Message,
+  InternalOptions,
+  Callback,
+  MessageParams,
+  AnyMessageParams,
+  ExtraParams,
+} from '../types';
+import Schema from '../Schema';
 
-export default function createValidation(config) {
-  function validate(
-    { value, path, label, options, originalValue, sync, ...rest },
-    cb,
+export type CreateErrorOptions = {
+  path?: string;
+  message?: string;
+  params?: object;
+  type?: string;
+};
+
+export type TestContext = {
+  path: string;
+  options: ValidateOptions;
+  parent: any;
+  schema: any; // TODO: Schema<any>;
+  resolve: <T = any>(value: any) => T;
+  createError: (params?: CreateErrorOptions) => ValidationError;
+};
+
+export type TestFunction<T = unknown> = (
+  this: TestContext,
+  value: T,
+) => boolean | ValidationError | Promise<boolean | ValidationError>;
+
+export type TestOptions<TSchema extends Schema = Schema> = {
+  value: any;
+  path?: string;
+  label?: string;
+  options: InternalOptions;
+  originalValue: any;
+  schema: TSchema;
+  sync?: boolean;
+};
+
+export type TestConfig = {
+  name?: string;
+  message?: Message;
+  test: TestFunction;
+  params?: ExtraParams;
+  exclusive?: boolean;
+};
+
+export type Test = ((opts: TestOptions, cb: Callback) => void) & {
+  OPTIONS: TestConfig;
+};
+
+export default function createValidation(config: {
+  name?: string;
+  test: TestFunction;
+  params?: ExtraParams;
+  message?: Message;
+}) {
+  function validate<TSchema extends Schema = Schema>(
+    {
+      value,
+      path = '',
+      label,
+      options,
+      originalValue,
+      sync,
+      ...rest
+    }: TestOptions<TSchema>,
+    cb: Callback,
   ) {
     const { name, test, params, message } = config;
     let { parent, context } = options;
 
-    function resolve(item) {
+    function resolve(item: any) {
       return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
     }
 
-    function createError(overrides = {}) {
+    function createError(overrides: CreateErrorOptions = {}) {
       const nextParams = mapValues(
         {
           value,
@@ -65,7 +131,7 @@ export default function createValidation(config) {
     try {
       result = test.call(ctx, value);
 
-      if (typeof result?.then === 'function') {
+      if (typeof (result as any)?.then === 'function') {
         throw new Error(
           `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
             `This test will finish after the validate call has returned`,

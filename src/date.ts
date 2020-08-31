@@ -1,4 +1,5 @@
 import MixedSchema from './mixed';
+// @ts-ignore
 import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
@@ -6,12 +7,14 @@ import Ref from './Reference';
 
 let invalidDate = new Date('');
 
-let isDate = (obj) => Object.prototype.toString.call(obj) === '[object Date]';
+let isDate = (obj: any): obj is Date =>
+  Object.prototype.toString.call(obj) === '[object Date]';
+
+export function create() {
+  return new DateSchema();
+}
 
 export default class DateSchema extends MixedSchema {
-  static create() {
-    return new DateSchema();
-  }
   constructor() {
     super({ type: 'date' });
 
@@ -27,11 +30,11 @@ export default class DateSchema extends MixedSchema {
     });
   }
 
-  _typeCheck(v) {
+  protected _typeCheck(v: any) {
     return isDate(v) && !isNaN(v.getTime());
   }
 
-  min(min, message = locale.min) {
+  min(min: unknown | Ref, message = locale.min) {
     var limit = min;
 
     if (!Ref.isRef(limit)) {
@@ -47,13 +50,13 @@ export default class DateSchema extends MixedSchema {
       name: 'min',
       exclusive: true,
       params: { min },
-      test(value) {
-        return isAbsent(value) || value >= this.resolve(limit);
+      test(value: Date) {
+        return isAbsent(value) || value >= this.resolve<Date>(limit);
       },
     });
   }
 
-  max(max, message = locale.max) {
+  max(max: unknown | Ref, message = locale.max) {
     var limit = max;
 
     if (!Ref.isRef(limit)) {
@@ -69,8 +72,8 @@ export default class DateSchema extends MixedSchema {
       name: 'max',
       exclusive: true,
       params: { max },
-      test(value) {
-        return isAbsent(value) || value <= this.resolve(limit);
+      test(value: Date) {
+        return isAbsent(value) || value <= this.resolve<Date>(limit);
       },
     });
   }

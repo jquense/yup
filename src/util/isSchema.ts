@@ -1,1 +1,3 @@
-export default (obj: any): obj is MixedSchema => obj && obj.__isYupSchema__;
+import Schema from '../Schema';
+
+export default (obj: any): obj is Schema => obj && obj.__isYupSchema__;

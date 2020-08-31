@@ -58,7 +58,7 @@
     "roots": [
       "test"
     ],
-    "testRegex": "\\.js",
+    "testRegex": "\\.(j|t)s$",
     "testPathIgnorePatterns": [
       "helpers\\.js"
     ]
@@ -69,6 +69,7 @@
     "@4c/tsconfig": "^0.3.1",
     "@babel/cli": "7.10.5",
     "@babel/core": "7.11.4",
+    "@babel/preset-typescript": "^7.10.4",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.3.0",
@@ -101,6 +102,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",
+    "@types/lodash": "^4.14.161",
     "lodash": "^4.17.15",
     "lodash-es": "^4.17.11",
     "property-expr": "^2.0.2",
