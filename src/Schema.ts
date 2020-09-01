@@ -1,6 +1,5 @@
 import { ResolveOptions } from './Condition';
 import { ValidateOptions, Callback, MessageParams } from './types';
-import { Params } from './ValidationError';
 
 export interface CastOptions {
   parent?: any;

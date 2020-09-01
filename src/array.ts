@@ -80,8 +80,8 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
     let sync = options.sync;
     let path = options.path;
     let innerType = this.innerType;
-    let endEarly = this._option('abortEarly', options);
-    let recursive = this._option('recursive', options);
+    let endEarly = options.abortEarly ?? this.spec.abortEarly;
+    let recursive = options.recursive ?? this.spec.recursive;
 
     let originalValue =
       options.originalValue != null ? options.originalValue : _value;

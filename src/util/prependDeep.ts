@@ -9,7 +9,7 @@ import isSchema from './isSchema';
 let isObject = (obj: any): obj is {} =>
   Object.prototype.toString.call(obj) === '[object Object]';
 
-export default function prependDeep(
+export default function merge(
   target: Record<PropertyKey, unknown>,
   source: Record<PropertyKey, unknown>,
 ) {
@@ -25,8 +25,7 @@ export default function prependDeep(
       } else if (isSchema(targetVal)) {
         if (isSchema(sourceVal)) target[key] = sourceVal.concat(targetVal);
       } else if (isObject(targetVal)) {
-        if (isObject(sourceVal))
-          target[key] = prependDeep(targetVal, sourceVal);
+        if (isObject(sourceVal)) target[key] = merge(targetVal, sourceVal);
       } else if (Array.isArray(targetVal)) {
         if (Array.isArray(sourceVal)) target[key] = sourceVal.concat(targetVal);
       }

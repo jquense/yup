@@ -1,4 +1,4 @@
-import MixedSchema from './mixed';
+import MixedSchema, { SchemaSpec } from './mixed';
 import { string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Reference from './Reference';
@@ -25,6 +25,9 @@ export function create() {
 }
 
 export default class StringSchema extends MixedSchema {
+  _tsType!: string | undefined;
+  _tsValidate!: string | undefined;
+
   constructor() {
     super({ type: 'string' });
 
@@ -173,4 +176,56 @@ export default class StringSchema extends MixedSchema {
         isAbsent(value) || value === value.toUpperCase(),
     });
   }
+
+  // required(msg?: any): StringSchema<TType, TSpec & { required: true }> {
+  //   return super.required(msg) as any;
+  // }
+
+  // nullable(isNullable?: true): StringSchema<TType | null>;
+  // nullable(isNullable: false): StringSchema<Exclude<TType, null>>;
+  // nullable(isNullable?: boolean): StringSchema<Exclude<TType, null>> {
+  //   return super.nullable(isNullable);
+  // }
 }
+
+// export default interface StringSchema<
+//   TType extends Maybe<String> = string,
+//   TSpec extends SchemaSpec = SchemaSpec
+// > {
+//   nullable(isNullable?: true): StringSchema<TType | null>;
+//   nullable(isNullable: false): StringSchema<Exclude<TType, null>>;
+//   required(msg?: any): StringSchema<TType, TSpec & { required: true }>;
+
+//   // required(
+//   //   message?: TestOptionsMessage,
+//   // ): StringSchema<Exclude<T, undefined | null>>;
+//   // defined(): StringSchema<Exclude<T, undefined>>;
+//   // notRequired(): StringSchema<T | undefined>;
+//   // oneOf<U extends T>(
+//   //   arrayOfValues: ReadonlyArray<U | Ref>,
+//   //   message?: MixedLocale['oneOf'],
+//   // ): StringSchema<MaintainOptionality<T, U>>;
+//   // equals<U extends T>(
+//   //   arrayOfValues: ReadonlyArray<U | Ref>,
+//   //   message?: MixedLocale['oneOf'],
+//   // ): StringSchema<MaintainOptionality<T, U>>;
+//   // /*
+//   //     All TestFunction generics are intentionally T with (undefined | null) as previous .required / .defined / .nullable
+//   //     will narrow out those types, and tests run for (undefined | null) even if they're not allowed.
+//   // */
+//   // test(
+//   //   name: string,
+//   //   message: TestOptionsMessage,
+//   //   test: TestFunction<T | undefined | null>,
+//   // ): this;
+//   // test<U extends T = T>(
+//   //   name: string,
+//   //   message: TestOptionsMessage,
+//   //   test: AssertingTestFunction<U>,
+//   // ): StringSchema<U>;
+//   // test<U extends T = T>(
+//   //   options: AssertingTestOptions<U, Record<string, any>>,
+//   // ): StringSchema<U>;
+//   // test(options: TestOptions<Record<string, any>>): this;
+//   // optional(): StringSchema<T | undefined>;
+// }

@@ -1,10 +1,11 @@
 import has from 'lodash/has';
+// @ts-expect-error
 import toposort from 'toposort';
 import { split } from 'property-expr';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';
-import { MixedSchema } from '..';
+import type MixedSchema from '../mixed';
 
 export default function sortFields(
   fields: Record<string, MixedSchema>,
@@ -28,8 +29,8 @@ export default function sortFields(
       if (!~nodes.indexOf(key)) nodes.push(key);
 
       if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
-      else if (isSchema(value) && value._deps)
-        value._deps.forEach((path) => addNode(path, key));
+      else if (isSchema(value) && value.deps)
+        value.deps.forEach((path) => addNode(path, key));
     }
 
   return toposort.array(nodes, edges).reverse() as string[];

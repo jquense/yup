@@ -4,7 +4,7 @@ import cloneDeepWith from 'lodash/cloneDeepWith';
 import { mixed as locale } from './locale';
 import Condition, { ConditionOptions, ResolveOptions } from './Condition';
 import runTests from './util/runTests';
-import prependDeep from './util/prependDeep';
+import merge from './util/prependDeep';
 import isSchema from './util/isSchema';
 import createValidation, {
   TestFunction,
@@ -28,6 +28,7 @@ import Schema, {
   SchemaRefDescription,
   SchemaDescription,
 } from './Schema';
+import { ValidationError } from '.';
 
 class RefSet {
   list: Set<unknown>;
@@ -83,6 +84,22 @@ class RefSet {
   }
 }
 
+const UNSET = '@@UNSET_DEFAULT';
+
+export interface SchemaSpec<TDefault extends any = UNSET> {
+  hasDefault: boolean;
+  default: TDefault;
+  abortEarly: boolean;
+  nullable: boolean;
+  strip: boolean;
+  strict: boolean;
+  recursive: boolean;
+  noUnknown: boolean;
+  label: string | undefined;
+  required: boolean;
+  meta: any;
+}
+
 export interface SchemaOptions<T extends Schema = Schema> {
   default?: (this: T) => any;
   type: string;
@@ -92,16 +109,98 @@ export function create(options?: SchemaOptions) {
   return new MixedSchema(options);
 }
 
-export default class MixedSchema implements Schema {
-  private _deps: string[];
+// export type SchemaTypeSpec<
+//   Default = undefined,
+//   Nullable extends boolean = false,
+//   Strip extends boolean = false
+// > = { 1: Default; 2: Nullable; 3: Strip };
 
-  __isYupSchema__ = true;
-  protected _options: Partial<ValidateOptions>;
+// type ResolveNullable<TType, TSpec extends SchemaTypeSpec> = TSpec extends SchemaTypeSpec<infer D, infer N, infer S> ? TType extends null : never
+
+// export type OutputType<TType, TSpec extends SchemaTypeSpec> = ;
+//   TType = any,
+// TSpec extends SchemaTypeSpec = SchemaTypeSpec
+type UNSET = { 1: '@@UNSET_DEFAULT' };
+
+type ResolveNullable<
+  TType,
+  TSpec extends SchemaSpec
+> = TSpec['nullable'] extends true ? TType | null : TType;
+
+type ResolveDefault<TType, TSpec extends SchemaSpec> = TSpec extends SchemaSpec<
+  infer Default
+>
+  ? Default extends UNSET
+    ? TType
+    : Default extends undefined
+    ? TType & undefined
+    : Exclude<TType, undefined>
+  : never;
+
+// type TypeOfShape<Shape extends Record<string, MixedSchema>> = {
+//   [K in keyof Shape]: ReturnType<Shape[K]['cast']>;
+// };
+
+export type ResolveCast<TType, TSpec extends SchemaSpec> = ResolveDefault<
+  ResolveNullable<TType, TSpec>,
+  TSpec
+>;
+
+export type ResolveRequired<
+  TType,
+  TSpec extends SchemaSpec
+> = TSpec['required'] extends true ? NonNullable<TType> : TType;
+
+export type TypedSchema = { _tsType: any; _tsValidate: any };
+
+// type Keys<TShape extends Record<string, MixedSchema>> = { fields: TShape };
+
+// type CastChildren<T extends TypedSchema> = T extends Keys<infer TShape> ? { }
+
+export type TypeOf<T extends TypedSchema> = T extends { spec: infer TSpec }
+  ? TSpec extends SchemaSpec
+    ? ResolveCast<T['_tsType'], TSpec>
+    : never
+  : never;
+
+export type Asserts<T extends TypedSchema> = T extends { spec: infer TSpec }
+  ? TSpec extends SchemaSpec
+    ? ResolveRequired<ResolveCast<T['_tsValidate'], TSpec>, TSpec>
+    : never
+  : never;
+
+export default class MixedSchema implements Schema {
+  readonly type: string;
+
+  readonly _tsType!: any;
+  readonly _tsValidate!: any;
+
+  // readonly _tsType2!: TSpec['required'] extends true
+  //   ? NonNullable<TType>
+  //   : TType;
+
+  readonly __isYupSchema__ = true;
+
+  readonly deps: readonly string[] = [];
   protected _exclusive: Record<string, unknown> = Object.create(null);
 
-  readonly type: string;
   protected _whitelist: RefSet = new RefSet();
   protected _blacklist: RefSet = new RefSet();
+
+  spec: SchemaSpec = {
+    nullable: false,
+    default: undefined as any,
+    hasDefault: false,
+    strip: false,
+    strict: false,
+    abortEarly: true,
+    required: false,
+    recursive: true,
+    noUnknown: false,
+
+    label: undefined,
+    meta: undefined,
+  } as const;
 
   tests: Test[];
   transforms: TransformFunction<this>[]; // TODO
@@ -110,17 +209,13 @@ export default class MixedSchema implements Schema {
 
   protected _label?: string;
   protected _meta: any;
-  private _default?: unknown;
-  private _nullable: boolean = false;
-  private _conditions: Condition[];
-  private _defaultDefault: ((this: this) => unknown) | undefined;
+  private conditions: Condition[] = [];
+  // protected configuredDefault: ((this: this) => unknown) | undefined;
 
-  private _validating: boolean = false;
+  // private _validating: boolean = false;
   private _typeError?: Test;
   private _whitelistError?: Test;
   private _blacklistError?: Test;
-
-  private _strip: boolean = false;
 
   optional!: () => MixedSchema;
 
@@ -132,18 +227,12 @@ export default class MixedSchema implements Schema {
   }
 
   constructor(options: SchemaOptions = { type: 'mixed' }) {
-    this._deps = [];
-    this._conditions = [];
-    this._options = { abortEarly: true, recursive: true };
-
     this.tests = [];
     this.transforms = [];
 
     this.withMutation(() => {
       this.typeError(locale.notType);
     });
-
-    if (has(options, 'default')) this._defaultDefault = options.default;
 
     this.type = options.type;
   }
@@ -191,18 +280,21 @@ export default class MixedSchema implements Schema {
     return result;
   }
 
-  concat(schema: this) {
+  concat(schema: MixedSchema): MixedSchema {
+    // @ts-ignore
     if (!schema || schema === this) return this;
 
     if (schema.type !== this.type && this.type !== 'mixed')
       throw new TypeError(
-        `You cannot \`concat()\` schema's of different types: ${this._type} and ${schema._type}`,
+        `You cannot \`concat()\` schema's of different types: ${this.type} and ${schema.type}`,
       );
 
-    var next = prependDeep(schema.clone() as any, this as any) as this;
+    var next = merge(schema.clone() as any, this as any) as any;
 
     // new undefined default is overridden by old non-undefined one, revert
-    if (has(schema, '_default')) next._default = schema._default;
+    if (schema.spec.hasDefault) {
+      next.spec.default = schema.spec.default;
+    }
 
     next.tests = this.tests;
     next._exclusive = this._exclusive;
@@ -232,18 +324,18 @@ export default class MixedSchema implements Schema {
   // abstract ?(value: any): boolean;
 
   isType(v: any) {
-    if (this._nullable && v === null) return true;
+    if (this.spec.nullable && v === null) return true;
     return this._typeCheck(v);
   }
 
   resolve(options: ResolveOptions) {
     let schema = this;
 
-    if (schema._conditions.length) {
-      let conditions = schema._conditions;
+    if (schema.conditions.length) {
+      let conditions = schema.conditions;
 
       schema = schema.clone();
-      schema._conditions = [];
+      schema.conditions = [];
       schema = conditions.reduce(
         (schema, condition) => condition.resolve(schema, options),
         schema,
@@ -262,7 +354,7 @@ export default class MixedSchema implements Schema {
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions = {}) {
+  cast(value: any, options: CastOptions = {}): TypeOf<this> {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -303,7 +395,7 @@ export default class MixedSchema implements Schema {
             rawValue,
           );
 
-    if (value === undefined && has(this, '_default')) {
+    if (value === undefined && this.spec.default !== UNSET) {
       value = this.default();
     }
 
@@ -320,15 +412,15 @@ export default class MixedSchema implements Schema {
       path,
       from = [],
       originalValue = _value,
-      strict = this._options.strict,
-      abortEarly = this._options.abortEarly,
+      strict = this.spec.strict,
+      abortEarly = this.spec.abortEarly,
     } = options;
 
     let value = _value;
     if (!strict) {
-      this._validating = true;
+      // this._validating = true;
       value = this._cast(value, { assert: false, ...options });
-      this._validating = false;
+      // this._validating = false;
     }
     // value is cast, we can check if it meets type requirements
     let args = {
@@ -375,8 +467,12 @@ export default class MixedSchema implements Schema {
     );
   }
 
-  validate(value: any, options: ValidateOptions): Promise<any>;
-  validate(value: any, options: ValidateOptions = {}, maybeCb?: Callback) {
+  validate(value: any, options?: ValidateOptions): Promise<Asserts<this>>;
+  validate(
+    value: any,
+    options: ValidateOptions = {},
+    maybeCb?: Callback<Asserts<this>>,
+  ) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -390,9 +486,9 @@ export default class MixedSchema implements Schema {
         );
   }
 
-  validateSync(value: any, options: ValidateOptions = {}) {
+  validateSync(value: any, options: ValidateOptions = {}): Asserts<this> {
     let schema = this.resolve({ ...options, value });
-    let result;
+    let result: any;
 
     schema._validate(value, { ...options, sync: true }, (err, value) => {
       if (err) throw err;
@@ -402,21 +498,21 @@ export default class MixedSchema implements Schema {
     return result;
   }
 
-  isValid(value: any, options: ValidateOptions) {
+  isValid(value: any, options: ValidateOptions): Promise<boolean> {
     return this.validate(value, options)
       .then(() => true)
       .catch((err) => {
-        if (err.name === 'ValidationError') return false;
+        if (ValidationError.isError(err)) return false;
         throw err;
       });
   }
 
-  isValidSync(value: any, options: ValidateOptions) {
+  isValidSync(value: any, options: ValidateOptions): boolean {
     try {
       this.validateSync(value, options);
       return true;
     } catch (err) {
-      if (err.name === 'ValidationError') return false;
+      if (ValidationError.isError(err)) return false;
       throw err;
     }
   }
@@ -426,13 +522,17 @@ export default class MixedSchema implements Schema {
     return schema.default();
   }
 
-  default(): any; // FIXME(ts): typed default
-  default<TDefault = any>(def: TDefault | (() => TDefault)): this;
+  default(): this['spec']['default']; // FIXME(ts): typed default
+  default<TDefault = any>(
+    def: TDefault | (() => TDefault),
+  ): WithSpec<this, { default: TDefault; hasDefault: true }>;
   default<TDefault = any>(def?: TDefault | (() => TDefault)) {
     if (arguments.length === 0) {
-      var defaultValue = has(this, '_default')
-        ? this._default
-        : this._defaultDefault;
+      let defaultValue = this.spec.default;
+
+      if (defaultValue == null) {
+        return defaultValue;
+      }
 
       return typeof defaultValue === 'function'
         ? defaultValue.call(this)
@@ -440,13 +540,14 @@ export default class MixedSchema implements Schema {
     }
 
     var next = this.clone();
-    next._default = def;
+    next.spec.hasDefault = true;
+    next.spec.default = def;
     return next;
   }
 
   strict(isStrict = true) {
     var next = this.clone();
-    next._options.strict = isStrict;
+    next.spec.strict = isStrict;
     return next;
   }
 
@@ -454,7 +555,7 @@ export default class MixedSchema implements Schema {
     return value != null;
   }
 
-  required(message = locale.required) {
+  required(message = locale.required): WithSpec<this, { required: true }> {
     return this.test({
       message,
       name: 'required',
@@ -462,7 +563,7 @@ export default class MixedSchema implements Schema {
       test(value) {
         return this.schema._isPresent(value);
       },
-    });
+    }) as any;
   }
 
   notRequired() {
@@ -471,10 +572,12 @@ export default class MixedSchema implements Schema {
     return next;
   }
 
-  nullable(isNullable = true) {
+  nullable(isNullable?: true): WithSpec<this, { nullable: true }>;
+  nullable(isNullable: false): WithSpec<this, { nullable: false }>;
+  nullable(isNullable = true): this {
     var next = this.clone();
-    next._nullable = isNullable;
-    return next;
+    next.spec.nullable = isNullable;
+    return next as any;
   }
 
   transform(fn: TransformFunction<this>) {
@@ -563,10 +666,11 @@ export default class MixedSchema implements Schema {
     let deps = toArray(keys).map((key) => new Ref(key));
 
     deps.forEach((dep) => {
-      if (dep.isSibling) next._deps.push(dep.key);
+      // @ts-ignore
+      if (dep.isSibling) next.deps.push(dep.key);
     });
 
-    next._conditions.push(new Condition<this>(deps, options!));
+    next.conditions.push(new Condition<this>(deps, options!));
 
     return next;
   }
@@ -645,15 +749,8 @@ export default class MixedSchema implements Schema {
 
   strip(strip = true) {
     let next = this.clone();
-    next._strip = strip;
+    next.spec.strip = strip;
     return next;
-  }
-
-  protected _option<Key extends keyof ValidateOptions>(
-    key: Key,
-    overrides: ValidateOptions,
-  ) {
-    return has(overrides, key) ? overrides[key] : this._options[key];
   }
 
   describe() {
@@ -675,7 +772,7 @@ export default class MixedSchema implements Schema {
   }
 
   defined(message = locale.defined) {
-    return this.nullable().test({
+    return this.test({
       message,
       name: 'defined',
       exclusive: true,
@@ -705,8 +802,14 @@ for (const method of ['validate', 'validateSync'])
     });
   };
 
-for (const alias of ['equals', 'is'])
+for (const alias of ['equals', 'is'] as const)
   MixedSchema.prototype[alias] = MixedSchema.prototype.oneOf;
-for (const alias of ['not', 'nope'])
+
+for (const alias of ['not', 'nope'] as const)
   MixedSchema.prototype[alias] = MixedSchema.prototype.notOneOf;
+
 MixedSchema.prototype.optional = MixedSchema.prototype.notRequired;
+
+type WithSpec<T extends MixedSchema, TSpec extends Partial<SchemaSpec>> = T & {
+  spec: T['spec'] & TSpec;
+};

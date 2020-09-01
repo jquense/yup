@@ -5,8 +5,8 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import MixedSchema from './mixed';
-import { object as locale } from './locale';
+import MixedSchema, { SchemaSpec, Asserts, TypeOf, TypedSchema } from './mixed';
+import { object as locale, string } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
@@ -17,21 +17,68 @@ import { ValidationError } from '.';
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
   Object.prototype.toString.call(obj) === '[object Object]';
 
-function unknown(ctx, value) {
+function unknown(ctx: ObjectSchema, value: any) {
   let known = Object.keys(ctx.fields);
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
 type ObjectShape = Record<string, MixedSchema>;
 
+// type Obj = Record<string, unknown>;
+
 export function create<TShape extends ObjectShape>(spec?: TShape) {
   return new ObjectSchema(spec);
 }
+
+// export type ObjectSchemaSpec = ;
+
+type InferFromShape<TShape extends ObjectShape> = {
+  [K in keyof TShape]: TShape[K]['_tsType'];
+};
+
+type DefaultFromShape<TShape extends ObjectShape> = {
+  [K in keyof TShape]: TShape[K]['spec']['default'];
+};
+// type TypeOfShape<
+//   T extends TypedSchema,
+//   Shape extends ObjectShape,
+//   TT = Asserts<T>
+// > = TT extends {}
+//   ? TT &
+//       {
+//         [K in keyof Asserts<T>]: Shape extends Record<K, any>
+//           ? ReturnType<Shape[K]['cast']>
+//           : Asserts<T>[K];
+//       }
+//   : TT;
+
+export type TypeOfShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: ReturnType<Shape[K]['cast']>;
+};
+
+export type AssertsShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: ReturnType<Shape[K]['validateSync']>;
+};
+
+// export default interface ObjectSchema<TShape extends ObjectShape = ObjectShape>
+//   extends MixedSchema {
+//   cast(value: any, options?: any): TypeOfShape<this, ObjectShape>;
+
+//   // validate(value: any, options?: any): Promise<AssertsShape<ObjectShape>>;
+// }
 
 export default class ObjectSchema<
   TShape extends ObjectShape = ObjectShape
 > extends MixedSchema {
   fields: TShape;
+
+  _shape!: TShape;
+  _tsType!: TypeOfShape<TShape>;
+  _tsValidate!: AssertsShape<TShape>;
+
+  spec!: SchemaSpec<DefaultFromShape<TShape>> & {
+    noUnknown: boolean;
+  };
 
   private _sortErrors: (
     a: import('/Users/jquense/src/yup/src/ValidationError').default,
@@ -41,21 +88,7 @@ export default class ObjectSchema<
   private _excludedEdges: string[];
 
   constructor(spec?: TShape) {
-    super({
-      type: 'object',
-      default(this: ObjectSchema) {
-        if (!this._nodes.length) return undefined;
-
-        let dft = {} as Record<string, unknown>;
-        this._nodes.forEach((key) => {
-          dft[key] =
-            'default' in this.fields[key]
-              ? this.fields[key].default()
-              : undefined;
-        });
-        return dft;
-      },
-    });
+    super({ type: 'object' });
 
     this.fields = Object.create(null);
 
@@ -65,6 +98,19 @@ export default class ObjectSchema<
     this._excludedEdges = [];
 
     this.withMutation(() => {
+      this.spec.default = () => {
+        if (!this._nodes.length) return undefined;
+
+        let dft = {} as Record<string, unknown>;
+        this._nodes.forEach((key) => {
+          dft[key] =
+            'default' in this.fields[key]
+              ? this.fields[key].default()
+              : undefined;
+        });
+        return dft as any;
+      };
+
       this.transform(function coerce(value) {
         if (typeof value === 'string') {
           try {
@@ -97,7 +143,7 @@ export default class ObjectSchema<
 
     let fields = this.fields;
 
-    let strip = this._option('stripUnknown', options) === true;
+    let strip = options.stripUnknown ?? this.spec.noUnknown;
     let props = this._nodes.concat(
       Object.keys(value).filter((v) => this._nodes.indexOf(v) === -1),
     );
@@ -108,6 +154,8 @@ export default class ObjectSchema<
       parent: intermediateValue,
       __validating: options.__validating || false,
     };
+    // let endEarly = options.abortEarly ?? this.spec.abortEarly;
+    // let recursive = options.recursive ?? this.spec.recursive;
 
     let isChanged = false;
     for (const prop of props) {
@@ -116,7 +164,7 @@ export default class ObjectSchema<
 
       if (field) {
         let fieldValue;
-        let strict = field._options?.strict;
+        let strict = field.spec?.strict;
 
         let inputValue = value[prop];
 
@@ -130,7 +178,7 @@ export default class ObjectSchema<
           parent: intermediateValue,
         });
 
-        if (field._strip === true) {
+        if (field.spec?.strip) {
           isChanged = isChanged || prop in value;
           continue;
         }
@@ -166,8 +214,8 @@ export default class ObjectSchema<
       sync,
       from = [],
       originalValue = _value,
-      abortEarly = this._options.abortEarly,
-      recursive = this._options.recursive,
+      abortEarly = this.spec.abortEarly,
+      recursive = this.spec.recursive,
     } = opts;
 
     from = [{ schema: this, value: originalValue }, ...from];
@@ -238,8 +286,8 @@ export default class ObjectSchema<
     });
   }
 
-  concat(schema: ObjectSchema) {
-    var next = super.concat(schema);
+  concat(schema: ObjectSchema): ObjectSchema {
+    var next = super.concat(schema) as ObjectSchema;
 
     next._nodes = sortFields(next.fields, next._excludedEdges);
 
@@ -247,11 +295,11 @@ export default class ObjectSchema<
   }
 
   shape<TNextShape extends ObjectShape>(
-    schema: TNextShape,
+    additions: TNextShape,
     excludes: [string, string][] = [],
-  ) {
+  ): ObjectSchema<TShape & TNextShape> {
     let next = this.clone();
-    let fields = Object.assign(next.fields, schema);
+    let fields = Object.assign(next.fields, additions);
 
     next.fields = fields;
     next._sortErrors = sortByKeyOrder(Object.keys(fields));
@@ -266,7 +314,7 @@ export default class ObjectSchema<
 
     next._nodes = sortFields(fields, next._excludedEdges);
 
-    return next;
+    return next as any;
   }
 
   from(from: string, to: keyof TShape, alias?: boolean) {
@@ -307,7 +355,7 @@ export default class ObjectSchema<
       },
     });
 
-    next._options.stripUnknown = noAllow;
+    next.spec.noUnknown = noAllow;
 
     return next;
   }

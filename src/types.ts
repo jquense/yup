@@ -1,6 +1,6 @@
 import type Schema from './Schema';
 
-export type Callback = (err: Error | null, value?: any) => void;
+export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
 export type TransformFunction<T> = (
   this: T,
