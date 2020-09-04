@@ -968,7 +968,7 @@ describe('Mixed Types ', () => {
 
     it('should pass when value is null', async () => {
       let inst = object({
-        prop: string().defined(),
+        prop: string().nullable().defined(),
       });
 
       await inst.isValid({ prop: null }).should.eventually().equal(true);

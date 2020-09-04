@@ -6,6 +6,6 @@
   "testEnvironment": "node",
   "setupFilesAfterEnv": ["./test-setup.js"],
   "roots": ["test"],
-  "testRegex": "\\.js",
-  "testPathIgnorePatterns": ["helpers\\.js"]
+  "testRegex": "\\.(t|j)s$",
+  "testPathIgnorePatterns": ["helpers\\.js", "\\.eslintrc\\.js", "types\\.ts"]
 }

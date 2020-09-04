@@ -5,7 +5,7 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import MixedSchema, { SchemaSpec, Asserts, TypeOf, TypedSchema } from './mixed';
+import MixedSchema, { SchemaSpec } from './mixed';
 import { object as locale, string } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
@@ -32,13 +32,6 @@ export function create<TShape extends ObjectShape>(spec?: TShape) {
 
 // export type ObjectSchemaSpec = ;
 
-type InferFromShape<TShape extends ObjectShape> = {
-  [K in keyof TShape]: TShape[K]['_tsType'];
-};
-
-type DefaultFromShape<TShape extends ObjectShape> = {
-  [K in keyof TShape]: TShape[K]['spec']['default'];
-};
 // type TypeOfShape<
 //   T extends TypedSchema,
 //   Shape extends ObjectShape,
@@ -76,7 +69,7 @@ export default class ObjectSchema<
   _tsType!: TypeOfShape<TShape>;
   _tsValidate!: AssertsShape<TShape>;
 
-  spec!: SchemaSpec<DefaultFromShape<TShape>> & {
+  spec!: SchemaSpec & {
     noUnknown: boolean;
   };
 
