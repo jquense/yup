@@ -71,9 +71,6 @@ export default function SchemaType(options = {}) {
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
 
-  this._whitelist = new RefSet();
-  this._blacklist = new RefSet();
-
   this.tests = [];
   this.transforms = [];
 
@@ -92,6 +89,9 @@ const proto = (SchemaType.prototype = {
   __isYupSchema__: true,
 
   constructor: SchemaType,
+  
+  _whitelist: new RefSet(),
+  _blacklist: new RefSet(),
 
   clone() {
     if (this._mutate) return this;
