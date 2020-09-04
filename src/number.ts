@@ -3,6 +3,7 @@ import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import { Maybe } from './types';
 import Reference from './Reference';
+import { SetNullability, SetPresence, TypeDef } from './util/types';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -10,7 +11,11 @@ export function create() {
   return new NumberSchema();
 }
 
-export default class NumberSchema extends MixedSchema {
+export default class NumberSchema<
+  TType extends number,
+  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDefault extends Maybe<TType> = undefined
+> extends MixedSchema<TType, TDef, TDefault> {
   constructor() {
     super({ type: 'number' });
 
@@ -122,4 +127,26 @@ export default class NumberSchema extends MixedSchema {
       !isAbsent(value) ? Math[method](value) : value,
     );
   }
+}
+
+// @ts-ignore
+export default interface NumberSchema<
+  TType extends number,
+  TDef extends TypeDef,
+  TDefault extends Maybe<TType>
+> extends MixedSchema<TType, TDef> {
+  default(): TDefault;
+  default<TNextDefault extends Maybe<TType>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): NumberSchema<TType, TDef, TNextDefault>;
+
+  required(): NumberSchema<TType, SetPresence<TDef, 'required'>, TDefault>;
+  notRequired(): NumberSchema<TType, SetPresence<TDef, 'optional'>, TDefault>;
+
+  nullable(
+    isNullable?: true,
+  ): NumberSchema<TType, SetNullability<TDef, 'nullable'>, TDefault>;
+  nullable(
+    isNullable: false,
+  ): NumberSchema<TType, SetNullability<TDef, 'nonnullable'>, TDefault>;
 }

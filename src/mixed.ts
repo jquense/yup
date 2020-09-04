@@ -21,7 +21,8 @@ import {
   TransformFunction,
   Message,
   Callback,
-  InternalOptions,, Maybe
+  InternalOptions,
+  Maybe,
 } from './types';
 import Schema, {
   CastOptions,
@@ -29,7 +30,12 @@ import Schema, {
   SchemaDescription,
 } from './Schema';
 import { ValidationError } from '.';
-import { ResolveInput, ResolveOutput, SetNullability, TypeDef } from './util/types';
+import {
+  ResolveInput,
+  ResolveOutput,
+  SetNullability,
+  TypeDef,
+} from './util/types';
 
 class RefSet {
   list: Set<unknown>;
@@ -85,17 +91,9 @@ class RefSet {
   }
 }
 
-const UNSET = '@@UNSET_DEFAULT';
-
-// export type TypeDef<T extends any = any> = {
-//   nullable: boolean;
-//   required: boolean;
-//   default: T;
-// };
-
-export type SchemaSpec<TDefault = undefined> = {
+export type SchemaSpec<TDefault> = {
   nullable?: boolean;
-  default: TDefault;
+  default: TDefault | (() => TDefault);
   hasDefault?: boolean;
   abortEarly?: boolean;
   strip?: boolean;
@@ -105,9 +103,9 @@ export type SchemaSpec<TDefault = undefined> = {
   meta?: any;
 };
 
-export type SchemaOptions<TDefault = undefined> = {
+export type SchemaOptions<TDefault> = {
   type?: string;
-  spec: SchemaSpec<TDefault>;
+  spec?: SchemaSpec<TDefault>;
 };
 
 export function create() {
@@ -117,7 +115,7 @@ export function create() {
 export default class MixedSchema<
   TType = any,
   TDef extends TypeDef = 'optional' | 'nonnullable',
-  TDefault extends Maybe<TType> = undefined,
+  TDefault = any
 > implements Schema {
   readonly type: string;
 
@@ -149,7 +147,7 @@ export default class MixedSchema<
 
   optional!: () => MixedSchema;
 
-  spec: SchemaSpec<TDefault>;
+  spec: SchemaSpec<any>;
 
   // static create<T extends MixedSchema>(
   //   this: new (...args: any[]) => T,
@@ -158,7 +156,7 @@ export default class MixedSchema<
   //   return new this(...args);
   // }
 
-  constructor(options?: SchemaOptions<TDefault>) {
+  constructor(options?: SchemaOptions<any>) {
     this.tests = [];
     this.transforms = [];
 
@@ -344,7 +342,7 @@ export default class MixedSchema<
             rawValue,
           );
 
-    if (value === undefined && this.spec.default !== UNSET) {
+    if (value === undefined) {
       value = this.default();
     }
 
@@ -476,7 +474,7 @@ export default class MixedSchema<
   default(): TDefault; // FIXME(ts): typed default
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
-  ): MixedSchema<TType, TDef, TNextDefault>
+  ): MixedSchema<TType, TDef, TNextDefault>;
   default<TDefault = any>(def?: TDefault | (() => TDefault)) {
     if (arguments.length === 0) {
       let defaultValue = this.spec.default;

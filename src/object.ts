@@ -11,8 +11,16 @@ import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
 import Schema, { CastOptions, SchemaObjectDescription } from './Schema';
-import { InternalOptions, Callback } from './types';
+import { InternalOptions, Callback, Maybe } from './types';
 import { ValidationError } from '.';
+import {
+  ResolveInput,
+  ResolveOutput,
+  TypeDef,
+  SetNullability,
+  SetPresence,
+  TypedSchema,
+} from './util/types';
 
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
   Object.prototype.toString.call(obj) === '[object Object]';
@@ -22,35 +30,36 @@ function unknown(ctx: ObjectSchema, value: any) {
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
-type ObjectShape = Record<string, MixedSchema>;
+type ObjectShape = Record<string, TypedSchema>;
 
 // type Obj = Record<string, unknown>;
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
-  return new ObjectSchema(spec);
+  return new ObjectSchema<TShape>(spec);
 }
 
-// export type ObjectSchemaSpec = ;
+export type TypeFromShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: Shape[K] extends MixedSchema<infer TType> ? TType : never;
+};
 
-// type TypeOfShape<
-//   T extends TypedSchema,
-//   Shape extends ObjectShape,
-//   TT = Asserts<T>
-// > = TT extends {}
-//   ? TT &
-//       {
-//         [K in keyof Asserts<T>]: Shape extends Record<K, any>
-//           ? ReturnType<Shape[K]['cast']>
-//           : Asserts<T>[K];
-//       }
-//   : TT;
+export type DefaultFromShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: Shape[K] extends MixedSchema<
+    infer _,
+    infer __,
+    infer TDefault
+  >
+    ? TDefault extends undefined
+      ? never
+      : TDefault
+    : never;
+};
 
 export type TypeOfShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: ReturnType<Shape[K]['cast']>;
+  [K in keyof Shape]: Shape[K]['__inputType'];
 };
 
 export type AssertsShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: ReturnType<Shape[K]['validateSync']>;
+  [K in keyof Shape]: Shape[K]['__outputType'];
 };
 
 // export default interface ObjectSchema<TShape extends ObjectShape = ObjectShape>
@@ -61,27 +70,46 @@ export type AssertsShape<Shape extends ObjectShape> = {
 // }
 
 export default class ObjectSchema<
-  TShape extends ObjectShape = ObjectShape
-> extends MixedSchema {
+  TShape extends ObjectShape = ObjectShape,
+  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDefault extends Maybe<TypeFromShape<TShape>> = undefined
+> extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
   fields: TShape;
 
-  _shape!: TShape;
-  _tsType!: TypeOfShape<TShape>;
-  _tsValidate!: AssertsShape<TShape>;
+  __inputType!: ResolveInput<TypeOfShape<TShape>, TDef, TDefault>;
+  __outputType!: ResolveOutput<AssertsShape<TShape>, TDef, TDefault>;
 
-  spec!: SchemaSpec & {
-    noUnknown: boolean;
-  };
+  // _shape!: TShape;
+  // _tsType!: TypeOfShape<TShape>;
+  // _tsValidate!: AssertsShape<TShape>;
 
-  private _sortErrors: (
-    a: import('/Users/jquense/src/yup/src/ValidationError').default,
-    b: import('/Users/jquense/src/yup/src/ValidationError').default,
-  ) => number;
+  // spec!: SchemaSpec & {
+  //   noUnknown: boolean;
+  // };
+
+  private _sortErrors: (a: ValidationError, b: ValidationError) => number;
   private _nodes: string[];
   private _excludedEdges: string[];
 
   constructor(spec?: TShape) {
-    super({ type: 'object' });
+    super({
+      type: 'object',
+      spec: {
+        noUnknown: false,
+        default(this: ObjectSchema<any>) {
+          if (!this._nodes.length) return undefined;
+
+          let dft = {} as Record<string, unknown>;
+          this._nodes.forEach((key) => {
+            dft[key] =
+              'default' in this.fields[key]
+                ? this.fields[key].default()
+                : undefined;
+          });
+          return dft as any;
+        },
+      },
+    });
 
     this.fields = Object.create(null);
 
@@ -91,18 +119,7 @@ export default class ObjectSchema<
     this._excludedEdges = [];
 
     this.withMutation(() => {
-      this.spec.default = () => {
-        if (!this._nodes.length) return undefined;
-
-        let dft = {} as Record<string, unknown>;
-        this._nodes.forEach((key) => {
-          dft[key] =
-            'default' in this.fields[key]
-              ? this.fields[key].default()
-              : undefined;
-        });
-        return dft as any;
-      };
+      // this.spec.default = () => {};
 
       this.transform(function coerce(value) {
         if (typeof value === 'string') {
@@ -378,4 +395,28 @@ export default class ObjectSchema<
     base.fields = mapValues(this.fields, (value) => value.describe());
     return base;
   }
+}
+
+type AnyObject = Record<string, any>;
+
+// @ts-ignore
+export default interface ObjectSchema<
+  TShape extends ObjectShape,
+  TDef extends TypeDef,
+  TDefault extends Maybe<TypeFromShape<TShape>> = undefined
+> extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
+  default(): TDefault;
+  default<TNextDefault extends Maybe<AnyObject>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): ObjectSchema<TShape, TDef, TNextDefault>;
+
+  required(): ObjectSchema<TShape, SetPresence<TDef, 'required'>>;
+  notRequired(): ObjectSchema<TShape, SetPresence<TDef, 'optional'>>;
+
+  nullable(
+    isNullable?: true,
+  ): ObjectSchema<TShape, SetNullability<TDef, 'nullable'>>;
+  nullable(
+    isNullable: false,
+  ): ObjectSchema<TShape, SetNullability<TDef, 'nonnullable'>>;
 }

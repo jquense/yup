@@ -35,7 +35,7 @@ export type ResolveDefault<TType, TDefault extends Maybe<TType> = undefined> =
 export type ResolveInput<
   TType,
   Def extends TypeDef,
-  TDefault extends Maybe<TType> = undefined
+  TDefault = undefined
 > = Def extends 'nullable'
   ? TType | null | TDefault
   : StrictNonNullable<TType | TDefault>;
@@ -43,12 +43,23 @@ export type ResolveInput<
 export type ResolveOutput<
   TType,
   Def extends TypeDef,
-  TDefault extends Maybe<TType> = undefined
+  TDefault = undefined
 > = Pluck<Def, 'required'> extends never
   ? ResolveInput<TType, Def, TDefault> //
   : NonNullable<ResolveInput<TType, Def>>;
 
-export type TypedSchema = { __inputType: any; __outputType: any };
+export type TypedSchema<
+  _TType = any,
+  _TDef extends TypeDef = any,
+  _TDefault = any
+> = {
+  __inputType: any;
+  __outputType: any;
+  cast(...args: any[]): any;
+  validateSync(...args: any[]): any;
+};
+
+// declare class Schema {}
 
 export type TypeOf<TSchema extends TypedSchema> = TSchema['__inputType'];
 

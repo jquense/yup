@@ -25,7 +25,6 @@ export function create() {
   return new StringSchema();
 }
 
-// @ts-ignore
 export default class StringSchema<
   TType extends string = string,
   TDef extends TypeDef = 'optional' | 'nonnullable',
@@ -35,7 +34,7 @@ export default class StringSchema<
   _tsValidate!: string | undefined;
 
   constructor() {
-    super({ type: 'string', spec: {} });
+    super({ type: 'string' });
 
     this.withMutation(() => {
       this.transform(function (value) {
@@ -205,55 +204,13 @@ export default interface StringSchema<
     def: TNextDefault | (() => TNextDefault),
   ): StringSchema<TType, TDef, TNextDefault>;
 
-  required(): StringSchema<TType, SetPresence<TDef, 'required'>>;
-  notRequired(): StringSchema<TType, SetPresence<TDef, 'optional'>>;
+  required(): StringSchema<TType, SetPresence<TDef, 'required'>, TDefault>;
+  notRequired(): StringSchema<TType, SetPresence<TDef, 'optional'>, TDefault>;
 
   nullable(
     isNullable?: true,
-  ): StringSchema<TType, SetNullability<TDef, 'nullable'>>;
+  ): StringSchema<TType, SetNullability<TDef, 'nullable'>, TDefault>;
   nullable(
     isNullable: false,
-  ): StringSchema<TType, SetNullability<TDef, 'nonnullable'>>;
+  ): StringSchema<TType, SetNullability<TDef, 'nonnullable'>, TDefault>;
 }
-
-// export default interface StringSchema<
-//   TType extends Maybe<String> = string,
-//   TSpec extends SchemaSpec = SchemaSpec
-// > {
-//   nullable(isNullable?: true): StringSchema<TType | null>;
-//   nullable(isNullable: false): StringSchema<Exclude<TType, null>>;
-//   required(msg?: any): StringSchema<TType, TSpec & { required: true }>;
-
-//   // required(
-//   //   message?: TestOptionsMessage,
-//   // ): StringSchema<Exclude<T, undefined | null>>;
-//   // defined(): StringSchema<Exclude<T, undefined>>;
-//   // notRequired(): StringSchema<T | undefined>;
-//   // oneOf<U extends T>(
-//   //   arrayOfValues: ReadonlyArray<U | Ref>,
-//   //   message?: MixedLocale['oneOf'],
-//   // ): StringSchema<MaintainOptionality<T, U>>;
-//   // equals<U extends T>(
-//   //   arrayOfValues: ReadonlyArray<U | Ref>,
-//   //   message?: MixedLocale['oneOf'],
-//   // ): StringSchema<MaintainOptionality<T, U>>;
-//   // /*
-//   //     All TestFunction generics are intentionally T with (undefined | null) as previous .required / .defined / .nullable
-//   //     will narrow out those types, and tests run for (undefined | null) even if they're not allowed.
-//   // */
-//   // test(
-//   //   name: string,
-//   //   message: TestOptionsMessage,
-//   //   test: TestFunction<T | undefined | null>,
-//   // ): this;
-//   // test<U extends T = T>(
-//   //   name: string,
-//   //   message: TestOptionsMessage,
-//   //   test: AssertingTestFunction<U>,
-//   // ): StringSchema<U>;
-//   // test<U extends T = T>(
-//   //   options: AssertingTestOptions<U, Record<string, any>>,
-//   // ): StringSchema<U>;
-//   // test(options: TestOptions<Record<string, any>>): this;
-//   // optional(): StringSchema<T | undefined>;
-// }

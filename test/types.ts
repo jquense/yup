@@ -1,5 +1,6 @@
 // import { Asserts } from '../src/mixed';
 import { string, object, mixed, number } from '../src';
+import { TypeOfShape } from '../src/object';
 import {
   Asserts,
   ResolveInput,
@@ -63,41 +64,50 @@ string().required().nullable();
   // $ExpectError number is not a MaybeString
   type _e1 = ResolveOutput<string, 'nullable' | 'optional', number>;
 }
+{
+  const strNullableRequired = string().nullable().required();
 
-const strNullableRequired = string().nullable().required();
+  // $ExpectType string | null | undefined
+  type _strNullableRequired1 = TypeOf<typeof strNullableRequired>;
 
-// $ExpectType string | null | undefined
-type _strNullableRequired1 = TypeOf<typeof strNullableRequired>;
+  // $ExpectType string
+  type _strNullableRequired2 = Asserts<typeof strNullableRequired>;
 
-// $ExpectType string
-type _strNullableRequired2 = Asserts<typeof strNullableRequired>;
+  const strNullable = string().nullable();
 
-const strNullable = string().nullable();
+  // $ExpectType string | null | undefined
+  type _strNullable = Asserts<typeof strNullable>;
 
-// $ExpectType string | null | undefined
-type _strNullable = Asserts<typeof strNullable>;
+  const strDefined = string().default('');
 
-const strDefined = string().default('');
+  // $ExpectType ""
+  const _strDefined = strDefined.default();
 
-// $ExpectType ""
-const _strDefined = strDefined.default();
+  const strDefault = string().nullable().default('');
 
-const strDefault = string().nullable().default('');
+  // $ExpectType string | null
+  type _strDefault1 = TypeOf<typeof strDefault>;
 
-// $ExpectType string | null
-type _strDefault1 = TypeOf<typeof strDefault>;
+  // $ExpectType string | null
+  type _strDefault2 = Asserts<typeof strDefault>;
 
-// $ExpectType string | null
-type _strDefault2 = Asserts<typeof strDefault>;
+  const strDefaultRequired = string().nullable().required().default('');
 
-const strDefaultRequired = string().nullable().required().default('');
+  // $ExpectType string | null
+  type _strDefaultRequired1 = TypeOf<typeof strDefaultRequired>;
 
-// $ExpectType string | null
-type _strDefaultRequired1 = TypeOf<typeof strDefaultRequired>;
+  // $ExpectType string
+  type _strDefaultRequired2 = Asserts<typeof strDefaultRequired>;
+}
 
-// $ExpectType string
-type _strDefaultRequired2 = Asserts<typeof strDefaultRequired>;
+{
+  const obj = object({
+    string: string().required(),
+    number: number().default(1),
+  });
 
+  type ia = TypeOf<typeof obj>;
+}
 // const strPlain = string();
 
 // type fff = typeof strPlain['spec']['hasDefault'];
