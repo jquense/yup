@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-expressions */
 // import { Asserts } from '../src/mixed';
 import { string, object, mixed, number } from '../src';
-import { TypeOfShape } from '../src/object';
+import { AssertsShape, DefaultFromShape, TypeOfShape } from '../src/object';
 import {
   Asserts,
   ResolveInput,
@@ -65,18 +66,25 @@ string().required().nullable();
   type _e1 = ResolveOutput<string, 'nullable' | 'optional', number>;
 }
 {
-  const strNullableRequired = string().nullable().required();
+  const strRequired = string().required();
 
+  // $ExpectType string | undefined
+  strRequired.cast(undefined);
+
+  //
+  const strNullableRequired = string().nullable().required();
   // $ExpectType string | null | undefined
-  type _strNullableRequired1 = TypeOf<typeof strNullableRequired>;
+  strNullableRequired.cast('');
 
   // $ExpectType string
-  type _strNullableRequired2 = Asserts<typeof strNullableRequired>;
+  strNullableRequired.validateSync('');
 
+  //
+  //
   const strNullable = string().nullable();
 
   // $ExpectType string | null | undefined
-  type _strNullable = Asserts<typeof strNullable>;
+  strNullable.validateSync('');
 
   const strDefined = string().default('');
 
@@ -86,28 +94,73 @@ string().required().nullable();
   const strDefault = string().nullable().default('');
 
   // $ExpectType string | null
-  type _strDefault1 = TypeOf<typeof strDefault>;
+  strDefault.cast('');
 
   // $ExpectType string | null
-  type _strDefault2 = Asserts<typeof strDefault>;
+  strDefault.validateSync('');
 
+  //
+  //
   const strDefaultRequired = string().nullable().required().default('');
 
   // $ExpectType string | null
-  type _strDefaultRequired1 = TypeOf<typeof strDefaultRequired>;
+  strDefaultRequired.cast('');
 
   // $ExpectType string
-  type _strDefaultRequired2 = Asserts<typeof strDefaultRequired>;
+  strDefaultRequired.validateSync(null);
 }
 
 {
   const obj = object({
     string: string().required(),
     number: number().default(1),
+    nest: object({
+      other: string(),
+    }),
   });
 
-  type ia = TypeOf<typeof obj>;
+  // const f = obj.cast({});
+  // f!.number;
+  // f!.string;
+  type ia = typeof obj['fields']['nest']['__inputType'];
+
+  // $ExpectType number
+  type _i1 = TypeOfShape<typeof obj['fields']>['number'];
+
+  // $ExpectType string | undefined
+  type _i2 = TypeOfShape<typeof obj['fields']>['string'];
+
+  // $ExpectType number
+  type _i3 = AssertsShape<typeof obj['fields']>['number'];
+
+  // $ExpectType string
+  type _i4 = AssertsShape<typeof obj['fields']>['string'];
+
+  const cast1 = obj.cast({});
+
+  // $ExpectType string | undefined
+  cast1!.nest!.other;
+
+  // $ExpectType string | undefined
+  cast1!.string;
+
+  // $ExpectType number
+  cast1!.number;
+
+  //
+  // Object Defaults
+  //
+  const dflt1 = obj.default();
+  // $ExpectType 1
+  dflt1.number;
+
+  // $ExpectType undefined
+  dflt1.string;
+
+  // $ExpectType undefined
+  dflt1.nest.other;
 }
+
 // const strPlain = string();
 
 // type fff = typeof strPlain['spec']['hasDefault'];

@@ -301,7 +301,7 @@ export default class MixedSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions = {}): ResolveInput<TType, TDef> {
+  cast(value: any, options: CastOptions = {}): this['__inputType'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -417,7 +417,7 @@ export default class MixedSchema<
   validate(
     value: any,
     options?: ValidateOptions,
-  ): Promise<ResolveOutput<TType, TDef>>;
+  ): Promise<this['__outputType']>;
   validate(value: any, options: ValidateOptions = {}, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
@@ -435,7 +435,7 @@ export default class MixedSchema<
   validateSync(
     value: any,
     options: ValidateOptions = {},
-  ): ResolveOutput<TType, TDef> {
+  ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 

@@ -6,7 +6,7 @@ import { Maybe } from '../types';
 export type Presence = 'required' | 'optional';
 export type Nullability = 'nullable' | 'nonnullable';
 
-type Pluck<T extends TypeDef, O extends TypeDef> = T extends O ? T : never;
+type Pluck<T, O> = T extends O ? T : never;
 
 type MaintainOptionality<T, U> = T extends undefined ? U | undefined : U;
 
@@ -37,7 +37,7 @@ export type ResolveInput<
   Def extends TypeDef,
   TDefault = undefined
 > = Def extends 'nullable'
-  ? TType | null | TDefault
+  ? TType | TDefault | null
   : StrictNonNullable<TType | TDefault>;
 
 export type ResolveOutput<

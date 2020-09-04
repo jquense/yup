@@ -39,18 +39,17 @@ export function create<TShape extends ObjectShape>(spec?: TShape) {
 }
 
 export type TypeFromShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends MixedSchema<infer TType> ? TType : never;
+  [K in keyof Shape]: Shape[K] extends MixedSchema<infer TType>
+    ? TType
+    : // not sure why this is necessary
+    Shape[K] extends ObjectSchema<infer TShape>
+    ? TypeFromShape<TShape>
+    : never;
 };
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends MixedSchema<
-    infer _,
-    infer __,
-    infer TDefault
-  >
-    ? TDefault extends undefined
-      ? never
-      : TDefault
+  [K in keyof Shape]: Shape[K] extends MixedSchema<any, any, infer TDefault>
+    ? TDefault
     : never;
 };
 
@@ -72,7 +71,7 @@ export type AssertsShape<Shape extends ObjectShape> = {
 export default class ObjectSchema<
   TShape extends ObjectShape = ObjectShape,
   TDef extends TypeDef = 'optional' | 'nonnullable',
-  TDefault extends Maybe<TypeFromShape<TShape>> = undefined
+  TDefault extends Maybe<TypeFromShape<TShape>> = DefaultFromShape<TShape>
 > extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
   fields: TShape;
 
@@ -403,20 +402,20 @@ type AnyObject = Record<string, any>;
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TDef extends TypeDef,
-  TDefault extends Maybe<TypeFromShape<TShape>> = undefined
+  TDefault extends Maybe<TypeFromShape<TShape>>
 > extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
   default(): TDefault;
-  default<TNextDefault extends Maybe<AnyObject>>(
+  default<TNextDefault extends Maybe<TypeFromShape<TShape>>>(
     def: TNextDefault | (() => TNextDefault),
   ): ObjectSchema<TShape, TDef, TNextDefault>;
 
-  required(): ObjectSchema<TShape, SetPresence<TDef, 'required'>>;
-  notRequired(): ObjectSchema<TShape, SetPresence<TDef, 'optional'>>;
+  required(): ObjectSchema<TShape, SetPresence<TDef, 'required'>, TDefault>;
+  notRequired(): ObjectSchema<TShape, SetPresence<TDef, 'optional'>, TDefault>;
 
   nullable(
     isNullable?: true,
-  ): ObjectSchema<TShape, SetNullability<TDef, 'nullable'>>;
+  ): ObjectSchema<TShape, SetNullability<TDef, 'nullable'>, TDefault>;
   nullable(
     isNullable: false,
-  ): ObjectSchema<TShape, SetNullability<TDef, 'nonnullable'>>;
+  ): ObjectSchema<TShape, SetNullability<TDef, 'nonnullable'>, TDefault>;
 }
