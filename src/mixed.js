@@ -70,6 +70,7 @@ export default function SchemaType(options = {}) {
   this._conditions = [];
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
+
   this._whitelist = new RefSet();
   this._blacklist = new RefSet();
 
@@ -97,7 +98,7 @@ const proto = (SchemaType.prototype = {
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, (value) => {
+    return cloneDeepWith(this, (value, key) => {
       if (isSchema(value) && value !== this) return value;
 
       // fix for ie11 when cloning Set and Map
