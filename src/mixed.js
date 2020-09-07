@@ -70,6 +70,9 @@ export default function SchemaType(options = {}) {
   this._conditions = [];
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
+  
+  this._whitelist = new RefSet();
+  this._blacklist = new RefSet();
 
   this.tests = [];
   this.transforms = [];
@@ -89,9 +92,6 @@ const proto = (SchemaType.prototype = {
   __isYupSchema__: true,
 
   constructor: SchemaType,
-  
-  _whitelist: new RefSet(),
-  _blacklist: new RefSet(),
 
   clone() {
     if (this._mutate) return this;
@@ -100,6 +100,11 @@ const proto = (SchemaType.prototype = {
     // they are already immutable
     return cloneDeepWith(this, (value) => {
       if (isSchema(value) && value !== this) return value;
+
+      // fix for ie11 when cloning Set and Map
+      if (key === '_whitelist' || key === '_blacklist') {
+        return value.clone();
+      }
     });
   },
 
