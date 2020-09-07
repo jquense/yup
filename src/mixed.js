@@ -70,7 +70,6 @@ export default function SchemaType(options = {}) {
   this._conditions = [];
   this._options = { abortEarly: true, recursive: true };
   this._exclusive = Object.create(null);
-  
   this._whitelist = new RefSet();
   this._blacklist = new RefSet();
 
