@@ -4,30 +4,56 @@ import printValue from './util/printValue';
 import MixedSchema from './mixed';
 import { array as locale } from './locale';
 import runTests, { RunTest } from './util/runTests';
-import Schema, { SchemaInnerTypeDescription } from './Schema';
-import { InternalOptions, Callback, Message } from './types';
+import { SchemaInnerTypeDescription } from './Schema';
+import { InternalOptions, Callback, Message, Maybe } from './types';
 import ValidationError from './ValidationError';
-import { Test } from './util/createValidation';
 import Reference from './Reference';
+import {
+  Asserts,
+  ResolveInput,
+  ResolveOutput,
+  SetNullability,
+  SetPresence,
+  TypeDef,
+  TypeOf,
+} from './util/types';
 
 type RefectorFn = (value: any, index: number, array: any[]) => boolean;
 
-export function create<TInner extends Schema>(type: TInner) {
+export function create<TInner extends MixedSchema = MixedSchema>(
+  type?: TInner,
+) {
   return new ArraySchema(type);
 }
 
-export default class ArraySchema<T extends Schema> extends MixedSchema {
+type Type<T extends MixedSchema> = T extends MixedSchema<infer TType>
+  ? TType
+  : never;
+
+export default class ArraySchema<
+  T extends MixedSchema = MixedSchema,
+  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDefault extends Maybe<Maybe<Type<T>>[]> = undefined
+> extends MixedSchema<
+  Type<T>[],
+  TDef,
+  TDefault,
+  ResolveInput<TypeOf<T>[], TDef, TDefault>,
+  ResolveOutput<Asserts<T>[], TDef, TDefault>
+> {
+  //
+
   private _subType?: T;
 
   innerType: T | undefined;
 
-  constructor(type: T) {
+  constructor(type?: T) {
     super({ type: 'array' });
 
     // `undefined` specifically means uninitialized, as opposed to
     // "no subtype"
-    this._subType = undefined;
-    this.innerType = undefined;
+    this._subType = type;
+    this.innerType = type;
 
     this.withMutation(() => {
       this.transform(function (values) {
@@ -40,8 +66,6 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
 
         return this.isType(values) ? values : null;
       });
-
-      if (type) this.of(type);
     });
   }
 
@@ -118,11 +142,12 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
         };
 
         tests[idx] = (_, cb) =>
-          // XXX: ???
-          // innerType!.validate
-          //   ?
-          innerType!.validate(item, innerOptions, cb);
-        // : cb(null);
+          innerType!.validate(
+            item,
+            innerOptions,
+            // @ts-expect-error
+            cb,
+          );
       }
 
       runTests(
@@ -143,7 +168,10 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
     return super._isPresent(value) && value.length > 0;
   }
 
-  of<TInner>(schema: TInner | false) {
+  of<TInner extends MixedSchema>(
+    schema: TInner | false,
+  ): ArraySchema<TInner, TDef, TDefault> {
+    // FIXME: this should return a new instance of array without the default to be
     var next = this.clone();
 
     if (schema !== false && !isSchema(schema))
@@ -156,7 +184,7 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
     next._subType = schema as any;
     next.innerType = schema as any;
 
-    return next;
+    return next as any;
   }
 
   min(min: number | Reference, message?: Message<{ min: number }>) {
@@ -189,7 +217,7 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
   }
 
   ensure() {
-    return this.default(() => []).transform((val, original) => {
+    return this.default(() => [] as Type<T>[]).transform((val, original) => {
       // We don't want to return `null` for nullable schema
       if (this._typeCheck(val)) return val;
       return original == null ? [] : [].concat(original);
@@ -211,4 +239,31 @@ export default class ArraySchema<T extends Schema> extends MixedSchema {
     if (this.innerType) base.innerType = this.innerType.describe();
     return base;
   }
+}
+
+export default interface ArraySchema<
+  T extends MixedSchema,
+  TDef extends TypeDef,
+  TDefault extends Maybe<Maybe<Type<T>>[]>
+> extends MixedSchema<
+    Type<T>[],
+    TDef,
+    TDefault,
+    ResolveInput<TypeOf<T>[], TDef, TDefault>,
+    ResolveOutput<Asserts<T>[], TDef, TDefault>
+  > {
+  default(): TDefault;
+  default<TNext extends any[] = any[]>(
+    def: TNext | (() => TNext),
+  ): ArraySchema<T, TDef, TNext>;
+
+  required(): ArraySchema<T, SetPresence<TDef, 'required'>, TDefault>;
+  notRequired(): ArraySchema<T, SetPresence<TDef, 'optional'>, TDefault>;
+
+  nullable(
+    isNullable?: true,
+  ): ArraySchema<T, SetNullability<TDef, 'nullable'>, TDefault>;
+  nullable(
+    isNullable: false,
+  ): ArraySchema<T, SetNullability<TDef, 'nonnullable'>, TDefault>;
 }

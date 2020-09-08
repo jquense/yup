@@ -1,4 +1,5 @@
 import { getter } from 'property-expr';
+import { SchemaRefDescription } from './Schema';
 
 const prefixes = {
   context: '$',
@@ -9,7 +10,7 @@ export type ReferenceOptions = {
   map?: (value: unknown) => unknown;
 };
 
-export function create(key: string, options: ReferenceOptions) {
+export function create(key: string, options?: ReferenceOptions) {
   return new Reference(key, options);
 }
 
@@ -73,7 +74,7 @@ export default class Reference {
     return this;
   }
 
-  describe() {
+  describe(): SchemaRefDescription {
     return {
       type: 'ref',
       key: this.key,

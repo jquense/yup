@@ -181,16 +181,6 @@ export default class StringSchema<
         isAbsent(value) || value === value.toUpperCase(),
     });
   }
-
-  // required(msg?: any): StringSchema<TType, TSpec & { required: true }> {
-  //   return super.required(msg) as any;
-  // }
-
-  // nullable(isNullable?: true): StringSchema<TType | null>;
-  // nullable(isNullable: false): StringSchema<Exclude<TType, null>>;
-  // nullable(isNullable?: boolean): StringSchema<Exclude<TType, null>> {
-  //   return super.nullable(isNullable);
-  // }
 }
 
 // @ts-ignore

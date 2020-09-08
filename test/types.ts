@@ -1,13 +1,8 @@
 /* eslint-disable no-unused-expressions */
 // import { Asserts } from '../src/mixed';
-import { string, object, mixed, number } from '../src';
+import { array, string, object, mixed, number, ref } from '../src';
 import { AssertsShape, DefaultFromShape, TypeOfShape } from '../src/object';
-import {
-  Asserts,
-  ResolveInput,
-  ResolveOutput,
-  TypeOf,
-} from '../src/util/types';
+import { ResolveInput, ResolveOutput } from '../src/util/types';
 
 // let schema = object({
 //   str: string().nullable(),
@@ -114,6 +109,7 @@ string().required().nullable();
   const obj = object({
     string: string().required(),
     number: number().default(1),
+    ref: ref('string'),
     nest: object({
       other: string(),
     }),
@@ -122,19 +118,23 @@ string().required().nullable();
   // const f = obj.cast({});
   // f!.number;
   // f!.string;
-  type ia = typeof obj['fields']['nest']['__inputType'];
+  // type ia = typeof obj['fields']['nest']['__inputType'];
 
+  type _d1 = DefaultFromShape<typeof obj['fields']>;
   // $ExpectType number
   type _i1 = TypeOfShape<typeof obj['fields']>['number'];
 
   // $ExpectType string | undefined
   type _i2 = TypeOfShape<typeof obj['fields']>['string'];
 
+  // $ExpectType unknown
+  type _i3 = TypeOfShape<typeof obj['fields']>['ref'];
+
   // $ExpectType number
-  type _i3 = AssertsShape<typeof obj['fields']>['number'];
+  type _i4 = AssertsShape<typeof obj['fields']>['number'];
 
   // $ExpectType string
-  type _i4 = AssertsShape<typeof obj['fields']>['string'];
+  type _i5 = AssertsShape<typeof obj['fields']>['string'];
 
   const cast1 = obj.cast({});
 
@@ -151,16 +151,85 @@ string().required().nullable();
   // Object Defaults
   //
   const dflt1 = obj.default();
+
   // $ExpectType 1
   dflt1.number;
+
+  // $ExpectType undefined
+  dflt1.ref;
 
   // $ExpectType undefined
   dflt1.string;
 
   // $ExpectType undefined
   dflt1.nest.other;
+
+  const merge = object({
+    field: string().required(),
+    other: string().default(''),
+  }).shape({
+    field: number(),
+  });
+
+  // $ExpectType number | undefined
+  merge.cast({}).field;
+
+  // $ExpectType string
+  merge.cast({}).other;
 }
 
+{
+  // $ExpectType (string | undefined)[] | undefined
+  array(string()).cast(null);
+
+  // $ExpectType string[] | undefined
+  array(string().required()).validateSync(null);
+
+  // $ExpectType string[]
+  array(string().default('')).required().validateSync(null);
+
+  // $ExpectType string[] | undefined
+  array(string().default('')).validateSync(null);
+
+  // $ExpectType (string | null)[] | undefined
+  array(string().nullable().default('')).validateSync(null);
+
+  // $ExpectType number[]
+  array()
+    .default([] as number[])
+    .default();
+
+  // $ExpectType string[] | (string | null)[] | null
+  array(string().nullable().default(''))
+    .nullable()
+    .default(() => [] as string[])
+    .validateSync(null);
+
+  // $ExpectType number[]
+  array(number())
+    .default<number[]>(() => [])
+    .default();
+
+  const a1 = object({
+    list: array(number().required()).required(),
+    nested: array(
+      object({
+        name: string().default(''),
+      }),
+    ),
+  })
+    .required()
+    .validateSync(undefined);
+
+  // $ExpectType number[]
+  a1.list;
+
+  // $ExpectType string | undefined
+  a1.nested?.[0].name;
+
+  // $ExpectType string
+  a1.nested![0].name;
+}
 // const strPlain = string();
 
 // type fff = typeof strPlain['spec']['hasDefault'];

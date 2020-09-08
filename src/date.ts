@@ -14,7 +14,7 @@ export function create() {
   return new DateSchema();
 }
 
-export default class DateSchema extends MixedSchema {
+export default class DateSchema extends MixedSchema<Date> {
   constructor() {
     super({ type: 'date' });
 
@@ -30,7 +30,7 @@ export default class DateSchema extends MixedSchema {
     });
   }
 
-  protected _typeCheck(v: any) {
+  protected _typeCheck(v: any): v is Date {
     return isDate(v) && !isNaN(v.getTime());
   }
 

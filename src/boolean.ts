@@ -4,7 +4,9 @@ export function create() {
   return new BooleanSchema();
 }
 
-export default class BooleanSchema extends MixedSchema {
+export default class BooleanSchema<TType extends boolean> extends MixedSchema<
+  TType
+> {
   constructor() {
     super({ type: 'boolean' });
 
@@ -19,7 +21,7 @@ export default class BooleanSchema extends MixedSchema {
     });
   }
 
-  protected _typeCheck(v: any) {
+  protected _typeCheck(v: any): v is TType {
     if (v instanceof Boolean) v = v.valueOf();
 
     return typeof v === 'boolean';

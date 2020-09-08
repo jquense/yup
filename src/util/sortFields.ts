@@ -6,9 +6,10 @@ import { split } from 'property-expr';
 import Ref from '../Reference';
 import isSchema from './isSchema';
 import type MixedSchema from '../mixed';
+import Reference from '../Reference';
 
 export default function sortFields(
-  fields: Record<string, MixedSchema>,
+  fields: Record<string, MixedSchema | Reference>,
   excludes: string[] = [],
 ) {
   let edges = [] as Array<[string, string]>;

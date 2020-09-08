@@ -115,12 +115,14 @@ export function create() {
 export default class MixedSchema<
   TType = any,
   TDef extends TypeDef = 'optional' | 'nonnullable',
-  TDefault = any
+  TDefault = any,
+  TInput = ResolveInput<TType, TDef, TDefault>,
+  TOutput = ResolveOutput<TType, TDef, TDefault>
 > implements Schema {
   readonly type: string;
 
-  readonly __inputType!: ResolveInput<TType, TDef, TDefault>;
-  readonly __outputType!: ResolveOutput<TType, TDef, TDefault>;
+  readonly __inputType!: TInput;
+  readonly __outputType!: TOutput;
 
   readonly __isYupSchema__ = true;
 
@@ -189,7 +191,7 @@ export default class MixedSchema<
     return this.type;
   }
 
-  protected _typeCheck(_: any) {
+  protected _typeCheck(v: any): v is TType {
     return true;
   }
 
@@ -211,11 +213,13 @@ export default class MixedSchema<
     return next;
   }
 
-  meta(obj: {}) {
-    if (arguments.length === 0) return this._meta;
+  meta(): Record<string, unknown> | undefined;
+  meta(obj: Record<string, unknown>): void;
+  meta(...args: [Record<string, unknown>?]) {
+    if (args.length === 0) return this._meta;
 
-    var next = this.clone();
-    next._meta = Object.assign(next._meta || {}, obj);
+    let next = this.clone();
+    next._meta = Object.assign(next._meta || {}, args[0]);
     return next;
   }
 
@@ -414,10 +418,7 @@ export default class MixedSchema<
     );
   }
 
-  validate(
-    value: any,
-    options?: ValidateOptions,
-  ): Promise<this['__outputType']>;
+  validate(value: any, options?: ValidateOptions): Promise<TOutput>;
   validate(value: any, options: ValidateOptions = {}, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
@@ -738,12 +739,29 @@ export default class MixedSchema<
   }
 }
 
-for (const method of ['validate', 'validateSync'])
-  MixedSchema.prototype[`${method}At`] = function (
+export default interface MixedSchema<
+  TType,
+  TDef extends TypeDef,
+  TDefault,
+  TInput,
+  TOutput
+> {
+  validateAt(
     path: string,
     value: any,
-    options: ValidateOptions = {},
-  ) {
+    options?: ValidateOptions,
+  ): Promise<TOutput>;
+  validateSyncAt(path: string, value: any, options?: ValidateOptions): TOutput;
+  equals: MixedSchema['oneOf'];
+  is: MixedSchema['oneOf'];
+  not: MixedSchema['notOneOf'];
+  nope: MixedSchema['notOneOf'];
+}
+
+for (const method of ['validate', 'validateSync'])
+  MixedSchema.prototype[
+    `${method}At` as 'validateAt' | 'validateSyncAt'
+  ] = function (path: string, value: any, options: ValidateOptions = {}) {
     const { parent, parentPath, schema } = getIn(
       this,
       path,
@@ -764,7 +782,3 @@ for (const alias of ['not', 'nope'] as const)
   MixedSchema.prototype[alias] = MixedSchema.prototype.notOneOf;
 
 MixedSchema.prototype.optional = MixedSchema.prototype.notRequired;
-
-type WithSpec<T extends MixedSchema, TSpec extends Partial<SchemaSpec>> = T & {
-  spec: T['spec'] & TSpec;
-};

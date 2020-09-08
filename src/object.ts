@@ -21,6 +21,7 @@ import {
   SetPresence,
   TypedSchema,
 } from './util/types';
+import Reference from './Reference';
 
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
   Object.prototype.toString.call(obj) === '[object Object]';
@@ -30,16 +31,23 @@ function unknown(ctx: ObjectSchema, value: any) {
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
-type ObjectShape = Record<string, TypedSchema>;
+type AnyObject = Record<string, unknown>;
 
-// type Obj = Record<string, unknown>;
+type ObjectShape = Record<string, MixedSchema | Reference>;
+
+type AssignShape<T extends ObjectShape, U extends ObjectShape> = {
+  [P in keyof T]: P extends keyof U ? U[P] : T[P];
+} &
+  U;
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
   return new ObjectSchema<TShape>(spec);
 }
 
 export type TypeFromShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends MixedSchema<infer TType>
+  [K in keyof Shape]: Shape[K] extends Reference
+    ? unknown
+    : Shape[K] extends MixedSchema<infer TType>
     ? TType
     : // not sure why this is necessary
     Shape[K] extends ObjectSchema<infer TShape>
@@ -50,41 +58,43 @@ export type TypeFromShape<Shape extends ObjectShape> = {
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends MixedSchema<any, any, infer TDefault>
     ? TDefault
+    : Shape[K] extends Reference
+    ? undefined
     : never;
 };
 
 export type TypeOfShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K]['__inputType'];
+  [K in keyof Shape]: Shape[K] extends MixedSchema
+    ? Shape[K]['__inputType']
+    : Shape[K] extends Reference
+    ? unknown
+    : never;
 };
 
 export type AssertsShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K]['__outputType'];
+  [K in keyof Shape]: Shape[K] extends MixedSchema
+    ? Shape[K]['__outputType']
+    : Shape[K] extends Reference
+    ? unknown
+    : never;
 };
-
-// export default interface ObjectSchema<TShape extends ObjectShape = ObjectShape>
-//   extends MixedSchema {
-//   cast(value: any, options?: any): TypeOfShape<this, ObjectShape>;
-
-//   // validate(value: any, options?: any): Promise<AssertsShape<ObjectShape>>;
-// }
 
 export default class ObjectSchema<
   TShape extends ObjectShape = ObjectShape,
   TDef extends TypeDef = 'optional' | 'nonnullable',
-  TDefault extends Maybe<TypeFromShape<TShape>> = DefaultFromShape<TShape>
-> extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
+  TDefault extends Maybe<Record<string, any>> = DefaultFromShape<TShape>
+> extends MixedSchema<
+  TypeFromShape<TShape>,
+  TDef,
+  TDefault,
+  ResolveInput<TypeOfShape<TShape>, TDef, TDefault>,
+  ResolveOutput<AssertsShape<TShape>, TDef, TDefault>
+> {
   fields: TShape;
 
-  __inputType!: ResolveInput<TypeOfShape<TShape>, TDef, TDefault>;
-  __outputType!: ResolveOutput<AssertsShape<TShape>, TDef, TDefault>;
-
-  // _shape!: TShape;
-  // _tsType!: TypeOfShape<TShape>;
-  // _tsValidate!: AssertsShape<TShape>;
-
-  // spec!: SchemaSpec & {
-  //   noUnknown: boolean;
-  // };
+  spec!: SchemaSpec<any> & {
+    noUnknown?: boolean;
+  };
 
   private _sortErrors: (a: ValidationError, b: ValidationError) => number;
   private _nodes: string[];
@@ -94,7 +104,6 @@ export default class ObjectSchema<
     super({
       type: 'object',
       spec: {
-        noUnknown: false,
         default(this: ObjectSchema<any>) {
           if (!this._nodes.length) return undefined;
 
@@ -138,7 +147,7 @@ export default class ObjectSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is Record<string, unknown> {
+  protected _typeCheck(value: any): value is TypeFromShape<TShape> {
     return isObject(value) || typeof value === 'function';
   }
 
@@ -172,8 +181,9 @@ export default class ObjectSchema<
       let exists = has(value, prop);
 
       if (field) {
+        let fieldSpec = 'spec' in field ? field.spec : undefined;
         let fieldValue;
-        let strict = field.spec?.strict;
+        let strict = fieldSpec?.strict;
 
         let inputValue = value[prop];
 
@@ -187,7 +197,7 @@ export default class ObjectSchema<
           parent: intermediateValue,
         });
 
-        if (field.spec?.strip) {
+        if (fieldSpec?.strip) {
           isChanged = isChanged || prop in value;
           continue;
         }
@@ -258,8 +268,8 @@ export default class ObjectSchema<
 
         let field = this.fields[key];
 
-        if (field && field.validate) {
-          (field as Schema).validate(
+        if (field && 'validate' in field) {
+          field.validate(
             value[key],
             {
               ...opts,
@@ -272,6 +282,7 @@ export default class ObjectSchema<
               parent: value,
               originalValue: originalValue[key],
             },
+            // @ts-expect-error
             cb,
           );
           return;
@@ -306,7 +317,7 @@ export default class ObjectSchema<
   shape<TNextShape extends ObjectShape>(
     additions: TNextShape,
     excludes: [string, string][] = [],
-  ): ObjectSchema<TShape & TNextShape> {
+  ): ObjectSchema<AssignShape<TShape, TNextShape>> {
     let next = this.clone();
     let fields = Object.assign(next.fields, additions);
 
@@ -396,16 +407,19 @@ export default class ObjectSchema<
   }
 }
 
-type AnyObject = Record<string, any>;
-
-// @ts-ignore
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TDef extends TypeDef,
-  TDefault extends Maybe<TypeFromShape<TShape>>
-> extends MixedSchema<TypeFromShape<TShape>, TDef, TDefault> {
+  TDefault extends Maybe<Record<string, any>>
+> extends MixedSchema<
+    TypeFromShape<TShape>,
+    TDef,
+    TDefault,
+    ResolveInput<TypeOfShape<TShape>, TDef, TDefault>,
+    ResolveOutput<AssertsShape<TShape>, TDef, TDefault>
+  > {
   default(): TDefault;
-  default<TNextDefault extends Maybe<TypeFromShape<TShape>>>(
+  default<TNextDefault extends Maybe<Record<string, any>>>(
     def: TNextDefault | (() => TNextDefault),
   ): ObjectSchema<TShape, TDef, TNextDefault>;
 

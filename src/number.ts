@@ -129,7 +129,7 @@ export default class NumberSchema<
   }
 }
 
-// @ts-ignore
+// @ts-expect-error
 export default interface NumberSchema<
   TType extends number,
   TDef extends TypeDef,
