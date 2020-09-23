@@ -102,7 +102,7 @@
     "@babel/runtime": "^7.10.5",
     "lodash": "^4.17.15",
     "lodash-es": "^4.17.11",
-    "property-expr": "^2.0.2",
+    "property-expr": "^2.0.4",
     "toposort": "^2.0.2"
   },
   "readme": "ERROR: No README data found!",
