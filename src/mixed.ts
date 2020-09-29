@@ -1,11 +1,9 @@
-import has from 'lodash/has';
-import cloneDeepWith from 'lodash/cloneDeepWith';
+// @ts-ignore
+import cloneDeep from 'nanoclone';
 
 import { mixed as locale } from './locale';
 import Condition, { ConditionOptions, ResolveOptions } from './Condition';
 import runTests from './util/runTests';
-import merge from './util/prependDeep';
-import isSchema from './util/isSchema';
 import createValidation, {
   TestFunction,
   Test,
@@ -75,12 +73,14 @@ class RefSet {
 
     return false;
   }
+
   clone() {
     const next = new RefSet();
     next.list = new Set(this.list);
     next.refs = new Map(this.refs);
     return next;
   }
+
   merge(newItems: RefSet, removeItems: RefSet) {
     const next = this.clone();
     newItems.list.forEach((value) => next.add(value));
@@ -114,7 +114,7 @@ export function create() {
 
 export default class MixedSchema<
   TType = any,
-  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDef extends TypeDef = '',
   TDefault = any,
   TInput = ResolveInput<TType, TDef, TDefault>,
   TOutput = ResolveOutput<TType, TDef, TDefault>
@@ -124,39 +124,28 @@ export default class MixedSchema<
   readonly __inputType!: TInput;
   readonly __outputType!: TOutput;
 
-  readonly __isYupSchema__ = true;
+  readonly __isYupSchema__!: boolean;
 
   readonly deps: readonly string[] = [];
-  protected _exclusive: Record<string, unknown> = Object.create(null);
-
-  protected _whitelist: RefSet = new RefSet();
-  protected _blacklist: RefSet = new RefSet();
 
   tests: Test[];
-  transforms: TransformFunction<this>[]; // TODO
+  transforms: TransformFunction<this>[];
+
+  private conditions: Condition[] = [];
 
   private _mutate?: boolean;
-
-  protected _label?: string;
-  protected _meta: any;
-  private conditions: Condition[] = [];
-  // protected configuredDefault: ((this: this) => unknown) | undefined;
-
-  // private _validating: boolean = false;
   private _typeError?: Test;
   private _whitelistError?: Test;
   private _blacklistError?: Test;
 
+  protected _whitelist: RefSet = new RefSet();
+  protected _blacklist: RefSet = new RefSet();
+
+  protected exclusiveTests: Record<string, boolean> = Object.create(null);
+
   optional!: () => MixedSchema;
 
   spec: SchemaSpec<any>;
-
-  // static create<T extends MixedSchema>(
-  //   this: new (...args: any[]) => T,
-  //   ...args: any[]
-  // ) {
-  //   return new this(...args);
-  // }
 
   constructor(options?: SchemaOptions<any>) {
     this.tests = [];
@@ -169,18 +158,13 @@ export default class MixedSchema<
     this.type = options?.type || ('mixed' as const);
 
     this.spec = {
-      // __def: null as any,
-      hasDefault: false,
       strip: false,
       strict: false,
       abortEarly: true,
       recursive: true,
-      // noUnknown: false,
-
       label: undefined,
       meta: undefined,
       nullable: false,
-      // required: false,
       default: undefined as any,
       ...options?.spec,
     };
@@ -191,35 +175,53 @@ export default class MixedSchema<
     return this.type;
   }
 
-  protected _typeCheck(v: any): v is TType {
+  protected _typeCheck(_value: any): _value is TType {
     return true;
   }
 
-  // __isYupSchema__ = true;
-
-  clone(): this {
-    if (this._mutate) return this;
+  clone(spec?: SchemaSpec<any>): this {
+    if (this._mutate) {
+      if (spec) Object.assign(this.spec, spec);
+      return this;
+    }
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, (value) => {
-      if (isSchema(value) && value !== this) return value;
-    });
+    const next: MixedSchema = Object.create(Object.getPrototypeOf(this));
+
+    // @ts-expect-error this is readonly
+    next.type = this.type;
+
+    next._typeError = this._typeError;
+    next._whitelistError = this._whitelistError;
+    next._blacklistError = this._blacklistError;
+    next._whitelist = this._whitelist.clone();
+    next._blacklist = this._blacklist.clone();
+    next.exclusiveTests = { ...this.exclusiveTests };
+
+    // @ts-expect-error this is readonly
+    next.deps = [...this.deps];
+    next.conditions = [...this.conditions];
+    next.tests = [...this.tests];
+    next.transforms = [...this.transforms];
+    next.spec = cloneDeep({ ...this.spec, ...spec });
+
+    return next as this;
   }
 
   label(label: string) {
     var next = this.clone();
-    next._label = label;
+    next.spec.label = label;
     return next;
   }
 
   meta(): Record<string, unknown> | undefined;
   meta(obj: Record<string, unknown>): void;
   meta(...args: [Record<string, unknown>?]) {
-    if (args.length === 0) return this._meta;
+    if (args.length === 0) return this.spec.meta;
 
     let next = this.clone();
-    next._meta = Object.assign(next._meta || {}, args[0]);
+    next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
     return next;
   }
 
@@ -232,7 +234,6 @@ export default class MixedSchema<
   }
 
   concat(schema: MixedSchema): MixedSchema {
-    // @ts-ignore
     if (!schema || schema === this) return this;
 
     if (schema.type !== this.type && this.type !== 'mixed')
@@ -240,39 +241,43 @@ export default class MixedSchema<
         `You cannot \`concat()\` schema's of different types: ${this.type} and ${schema.type}`,
       );
 
-    var next = merge(schema.clone() as any, this as any) as this;
+    let base = this;
+    let combined = schema.clone();
 
     // new undefined default is overridden by old non-undefined one, revert
     if (schema.spec.hasDefault) {
-      next.spec.default = schema.spec.default;
+      combined.spec.default = schema.spec.default;
     }
 
-    next.tests = this.tests;
-    next._exclusive = this._exclusive;
+    combined._typeError ||= base._typeError;
+    combined._whitelistError ||= base._whitelistError;
+    combined._blacklistError ||= base._blacklistError;
 
     // manually merge the blacklist/whitelist (the other `schema` takes
     // precedence in case of conflicts)
-    next._whitelist = this._whitelist.merge(
+    combined._whitelist = base._whitelist.merge(
       schema._whitelist,
       schema._blacklist,
     );
-    next._blacklist = this._blacklist.merge(
+    combined._blacklist = base._blacklist.merge(
       schema._blacklist,
       schema._whitelist,
     );
 
+    // start with the current tests
+    combined.tests = base.tests;
+    combined.exclusiveTests = base.exclusiveTests;
+
     // manually add the new tests to ensure
     // the deduping logic is consistent
-    next.withMutation((next) => {
+    combined.withMutation((next) => {
       schema.tests.forEach((fn) => {
         next.test(fn.OPTIONS);
       });
     });
 
-    return next;
+    return combined as any;
   }
-
-  // abstract ?(value: any): boolean;
 
   isType(v: any) {
     if (this.spec.nullable && v === null) return true;
@@ -380,7 +385,7 @@ export default class MixedSchema<
       options,
       originalValue,
       schema: this,
-      label: this._label,
+      label: this.spec.label,
       sync,
       from,
     };
@@ -486,7 +491,7 @@ export default class MixedSchema<
 
       return typeof defaultValue === 'function'
         ? defaultValue.call(this)
-        : cloneDeepWith(defaultValue);
+        : cloneDeep(defaultValue);
     }
 
     var next = this.clone();
@@ -583,7 +588,7 @@ export default class MixedSchema<
     let validate = createValidation(opts);
 
     let isExclusive =
-      opts.exclusive || (opts.name && next._exclusive[opts.name] === true);
+      opts.exclusive || (opts.name && next.exclusiveTests[opts.name] === true);
 
     if (opts.exclusive) {
       if (!opts.name)
@@ -592,7 +597,7 @@ export default class MixedSchema<
         );
     }
 
-    if (opts.name) next._exclusive[opts.name] = !!opts.exclusive;
+    if (opts.name) next.exclusiveTests[opts.name] = !!opts.exclusive;
 
     next.tests = next.tests.filter((fn) => {
       if (fn.OPTIONS.name === opts.name) {
@@ -711,10 +716,11 @@ export default class MixedSchema<
 
   describe() {
     const next = this.clone();
+    const { label, meta } = next.spec;
     const description: SchemaDescription = {
-      type: next._type,
-      meta: next._meta,
-      label: next._label,
+      meta,
+      label,
+      type: next.type,
       oneOf: next._whitelist.describe(),
       notOneOf: next._blacklist.describe(),
       tests: next.tests
@@ -757,6 +763,9 @@ export default interface MixedSchema<
   not: MixedSchema['notOneOf'];
   nope: MixedSchema['notOneOf'];
 }
+
+// @ts-expect-error
+MixedSchema.prototype.__isYupSchema__ = true;
 
 for (const method of ['validate', 'validateSync'])
   MixedSchema.prototype[

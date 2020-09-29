@@ -1,5 +1,10 @@
 import { ResolveOptions } from './Condition';
-import { ValidateOptions, Callback, MessageParams } from './types';
+import {
+  ValidateOptions,
+  Callback,
+  MessageParams,
+  AnyMessageParams,, ExtraParams
+} from './types';
 
 export interface CastOptions {
   parent?: any;
@@ -8,6 +13,18 @@ export interface CastOptions {
   // XXX: should be private?
   path?: string;
 }
+
+export type SchemaSpec<TDefault> = {
+  nullable?: boolean;
+  default: TDefault | (() => TDefault);
+  hasDefault?: boolean;
+  abortEarly?: boolean;
+  strip?: boolean;
+  strict?: boolean;
+  recursive?: boolean;
+  label?: string | undefined;
+  meta?: any;
+};
 
 export interface SchemaRefDescription {
   type: 'ref';
@@ -34,7 +51,7 @@ export interface SchemaDescription {
   meta: object;
   oneOf: unknown[];
   notOneOf: unknown[];
-  tests: Array<{ name?: string; params: MessageParams & Params }>;
+  tests: Array<{ name?: string; params: ExtraParams | undefined }>;
 }
 
 export default interface Schema {

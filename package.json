@@ -71,6 +71,7 @@
     "@4c/tsconfig": "^0.3.1",
     "@babel/cli": "7.10.5",
     "@babel/core": "7.11.4",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
     "@typescript-eslint/parser": "^4.0.1",
     "babel-core": "^7.0.0-bridge.0",
@@ -110,6 +111,7 @@
     "@types/lodash": "^4.14.161",
     "lodash": "^4.17.15",
     "lodash-es": "^4.17.11",
+    "nanoclone": "^0.2.1",
     "property-expr": "^2.0.2",
     "synchronous-promise": "^2.0.13",
     "toposort": "^2.0.2"

@@ -10,7 +10,7 @@ import Reference from '../Reference';
 
 export default function sortFields(
   fields: Record<string, MixedSchema | Reference>,
-  excludes: string[] = [],
+  excludes: readonly string[] = [],
 ) {
   let edges = [] as Array<[string, string]>;
   let nodes = [] as string[];

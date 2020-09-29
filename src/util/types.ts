@@ -12,7 +12,7 @@ type MaintainOptionality<T, U> = T extends undefined ? U | undefined : U;
 
 type StrictNonNullable<T> = T extends null ? never : T;
 
-export type TypeDef = Nullability | Presence;
+export type TypeDef = Nullability | Presence | '';
 
 export type SetNullability<
   Def extends TypeDef,
@@ -65,6 +65,28 @@ export type TypeOf<TSchema extends TypedSchema> = TSchema['__inputType'];
 
 export type Asserts<TSchema extends TypedSchema> = TSchema['__outputType'];
 
+export type MergePresence<T extends TypeDef, U extends TypeDef> = Pluck<
+  U,
+  Presence
+> extends never
+  ? Extract<T, Presence> | Extract<U, Presence>
+  : U;
+
+export type MergeNullability<T extends TypeDef, U extends TypeDef> = Pluck<
+  U,
+  Nullability
+> extends never
+  ? Extract<T, Nullability> | Extract<U, Nullability>
+  : U;
+
+export type MergeDef<T extends TypeDef, U extends TypeDef> =
+  | MergeNullability<T, U>
+  | MergePresence<T, U>
+  | '';
+
+// export type Concat<TSchema extends TypedSchema> = TSchema extends TypedSchema<infer TDef>
+// ?
+//   : never
 // type ResolveNullable<
 //   TType,
 //   TSpec extends SchemaSpec

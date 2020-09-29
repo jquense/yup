@@ -27,7 +27,7 @@ export function create() {
 
 export default class StringSchema<
   TType extends string = string,
-  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDef extends TypeDef = '',
   TDefault extends Maybe<TType> = undefined
 > extends MixedSchema<TType, TDef, TDefault> {
   _tsType!: string | undefined;
@@ -44,7 +44,7 @@ export default class StringSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is string {
+  protected _typeCheck(value: any): value is TType {
     if (value instanceof String) value = value.valueOf();
 
     return typeof value === 'string';
@@ -147,7 +147,9 @@ export default class StringSchema<
 
   //-- transforms --
   ensure() {
-    return this.default('').transform((val) => (val === null ? '' : val));
+    return this.default('' as TType).transform((val) =>
+      val === null ? '' : val,
+    );
   }
 
   trim(message = locale.trim) {

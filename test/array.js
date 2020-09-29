@@ -49,12 +49,14 @@ describe('Array types', () => {
     array().of(number()).cast(['1', '3']).should.eql([1, 3]);
   });
 
-  it('should concat subType correctly', () => {
-    expect(array().of(number()).concat(array())._subType).to.exist();
+  it('should concat subType correctly', async () => {
+    expect(array(number()).concat(array()).innerType).to.exist();
 
-    expect(array().of(number()).concat(array().of(false))._subType).to.equal(
-      false,
-    );
+    let merged = array(number()).concat(array(number().required()));
+
+    expect(merged.innerType.type).to.equal('number');
+
+    await expect(merged.validateAt('[0]', undefined)).to.be.rejected();
   });
 
   it('should pass options to children', () => {

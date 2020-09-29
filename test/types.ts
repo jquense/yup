@@ -2,7 +2,16 @@
 // import { Asserts } from '../src/mixed';
 import { array, string, object, mixed, number, ref } from '../src';
 import { AssertsShape, DefaultFromShape, TypeOfShape } from '../src/object';
-import { ResolveInput, ResolveOutput } from '../src/util/types';
+import {
+  ResolveInput,
+  ResolveOutput,
+  MergeDef,
+  MergePresence,
+  MergeNullability,
+  TypeDef,
+  SetPresence,
+  SetNullability,
+} from '../src/util/types';
 
 // let schema = object({
 //   str: string().nullable(),
@@ -18,8 +27,32 @@ string().required().nullable();
 
 /** Type utils */
 {
+  // $ExpectType string | undefined
+  type _d1 = ResolveInput<string, ''>;
+
+  // $ExpectType string | null | undefined
+  type _d2 = ResolveInput<string, '' | 'nullable'>;
+
+  // $ExpectType string | undefined
+  type _d3 = ResolveInput<
+    string,
+    SetNullability<SetNullability<'', 'nullable'>, 'nonnullable'>
+  >;
+
+  // $ExpectType string
+  type _d4 = ResolveOutput<
+    string,
+    SetPresence<SetNullability<'', 'nullable'>, 'required'>
+  >;
+
+  // $ExpectType string
+  type _d5 = ResolveOutput<
+    string,
+    SetPresence<SetPresence<'', 'optional'>, 'required'>
+  >;
+
   // $ExpectType string | null
-  type _i1 = ResolveInput<string, 'nullable' | 'optional', string>;
+  type _i1 = ResolveInput<string, 'nullable', string>;
 
   // $ExpectType string | undefined
   type _i2 = ResolveInput<string, 'nonnullable' | 'required'>;
@@ -59,6 +92,57 @@ string().required().nullable();
 
   // $ExpectError number is not a MaybeString
   type _e1 = ResolveOutput<string, 'nullable' | 'optional', number>;
+
+  // $ExpectType "nullable"
+  type _n1 = MergeNullability<'', 'nullable'>;
+
+  // $ExpectType "nullable"
+  type _n2 = MergeNullability<'nonnullable', 'nullable'>;
+
+  // $ExpectType "" | "nonnullable"
+  type _n3 = MergeNullability<'nullable' | 'optional', '' | 'nonnullable'>;
+
+  // type v = '' | 'foo' extends 'foo' ? true : false;
+
+  // $ExpectType "required"
+  type _p1 = MergePresence<'', 'required'>;
+
+  // $ExpectType "required"
+  type _p2 = MergePresence<'optional', 'required'>;
+
+  // $ExpectType "optional"
+  type _p3 = MergePresence<'required' | 'nullable', 'optional'>;
+
+  // type M<T extends TypeDef, U extends TypeDef> = Pluck<
+  //   T | U,
+  //   'required'
+  // > extends never
+  //   ? 'optional'
+  //   : 'required';
+
+  // $ExpectType "nullable" | "required"
+  type _m1 = MergeDef<'nullable' | 'optional', 'required'>;
+
+  // $ExpectType "required"
+  type _m2 = MergeDef<'', 'required'>;
+
+  // $ExpectType "optional"
+  type _m3 = MergeDef<'required', 'optional'>;
+
+  // $ExpectType "" | "nonnullable" | "required"
+  type _m4 = MergeDef<'required' | 'nullable', '' | 'nonnullable'>;
+
+  // $ExpectType "" | "nonnullable" | "required"
+  type _m5 = MergeDef<'' | 'required' | 'nullable', '' | 'nonnullable'>;
+
+  // $ExpectType "" | "nonnullable" | "optional"
+  type _m6 = MergeDef<'' | 'nullable', '' | 'optional' | 'nonnullable'>;
+
+  // $ExpectType "nullable"
+  type _m7 = MergeDef<'' | 'nullable', ''>;
+
+  // $ExpectType ""
+  type _m8 = MergeDef<'', ''>;
 }
 {
   const strRequired = string().required();
@@ -230,36 +314,3 @@ string().required().nullable();
   // $ExpectType string
   a1.nested![0].name;
 }
-// const strPlain = string();
-
-// type fff = typeof strPlain['spec']['hasDefault'];
-
-// // $ExpectType string | undefined
-// type _strPlain = Asserts<typeof strPlain>;
-
-// const strRequired = string().required();
-// // $ExpectType string
-// type _strRequired = Asserts<typeof strRequired>;
-
-// const strDefault = string().nullable().default(undefined);
-// const strDefault2 = string().nullable().default('');
-
-// // $ExpectType undefined
-// strDefault.default();
-
-// // $ExpectType string
-// strDefault2.default();
-
-// // $ExpectType string | null
-// strDefault2.cast(undefined);
-
-// // async function foo() {
-// //   ff = await str.validate(undefined, {});
-// //   ff = await str2.validate(null, {});
-// // }
-
-// let objWithDefault = object({
-//   str: string().nullable().default(''),
-//   num: number().default(3),
-//   num2: number(),
-// });

@@ -12,7 +12,8 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
 import Schema, { CastOptions, SchemaObjectDescription } from './Schema';
 import { InternalOptions, Callback, Maybe } from './types';
-import { ValidationError } from '.';
+import ValidationError from './ValidationError';
+import isSchema from './util/isSchema';
 import {
   ResolveInput,
   ResolveOutput,
@@ -30,8 +31,6 @@ function unknown(ctx: ObjectSchema, value: any) {
   let known = Object.keys(ctx.fields);
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
-
-type AnyObject = Record<string, unknown>;
 
 type ObjectShape = Record<string, MixedSchema | Reference>;
 
@@ -79,9 +78,15 @@ export type AssertsShape<Shape extends ObjectShape> = {
     : never;
 };
 
+type ObjectSchemaSpec = SchemaSpec<any> & {
+  noUnknown?: boolean;
+};
+
+const defaultSort = sortByKeyOrder([]);
+
 export default class ObjectSchema<
   TShape extends ObjectShape = ObjectShape,
-  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDef extends TypeDef = '',
   TDefault extends Maybe<Record<string, any>> = DefaultFromShape<TShape>
 > extends MixedSchema<
   TypeFromShape<TShape>,
@@ -90,15 +95,13 @@ export default class ObjectSchema<
   ResolveInput<TypeOfShape<TShape>, TDef, TDefault>,
   ResolveOutput<AssertsShape<TShape>, TDef, TDefault>
 > {
-  fields: TShape;
+  fields: TShape = Object.create(null);
 
-  spec!: SchemaSpec<any> & {
-    noUnknown?: boolean;
-  };
+  spec!: ObjectSchemaSpec;
 
-  private _sortErrors: (a: ValidationError, b: ValidationError) => number;
-  private _nodes: string[];
-  private _excludedEdges: string[];
+  private _sortErrors = defaultSort;
+  private _nodes: readonly string[] = [];
+  private _excludedEdges: readonly string[] = [];
 
   constructor(spec?: TShape) {
     super({
@@ -118,13 +121,6 @@ export default class ObjectSchema<
         },
       },
     });
-
-    this.fields = Object.create(null);
-
-    this._sortErrors = sortByKeyOrder([]);
-
-    this._nodes = [];
-    this._excludedEdges = [];
 
     this.withMutation(() => {
       // this.spec.default = () => {};
@@ -172,8 +168,6 @@ export default class ObjectSchema<
       parent: intermediateValue,
       __validating: options.__validating || false,
     };
-    // let endEarly = options.abortEarly ?? this.spec.abortEarly;
-    // let recursive = options.recursive ?? this.spec.recursive;
 
     let isChanged = false;
     for (const prop of props) {
@@ -181,10 +175,7 @@ export default class ObjectSchema<
       let exists = has(value, prop);
 
       if (field) {
-        let fieldSpec = 'spec' in field ? field.spec : undefined;
         let fieldValue;
-        let strict = fieldSpec?.strict;
-
         let inputValue = value[prop];
 
         // safe to mutate since this is fired in sequence
@@ -196,6 +187,9 @@ export default class ObjectSchema<
           context: options.context,
           parent: intermediateValue,
         });
+
+        let fieldSpec = 'spec' in field ? field.spec : undefined;
+        let strict = fieldSpec?.strict;
 
         if (fieldSpec?.strip) {
           isChanged = isChanged || prop in value;
@@ -306,12 +300,31 @@ export default class ObjectSchema<
     });
   }
 
-  concat(schema: ObjectSchema): ObjectSchema {
-    var next = super.concat(schema) as ObjectSchema;
-
-    next._nodes = sortFields(next.fields, next._excludedEdges);
+  clone(spec?: ObjectSchemaSpec): this {
+    const next = super.clone(spec);
+    next.fields = { ...this.fields };
+    next._nodes = this._nodes;
+    next._excludedEdges = this._excludedEdges;
+    next._sortErrors = this._sortErrors;
 
     return next;
+  }
+
+  concat<U extends TShape>(schema: ObjectSchema<U>): ObjectSchema<TShape & U>;
+  concat<U extends ObjectShape>(schema: ObjectSchema<U>): ObjectSchema {
+    let next = super.concat(schema) as ObjectSchema;
+
+    let nextFields = next.fields;
+    for (let [field, schemaOrRef] of Object.entries(this.fields)) {
+      const target = nextFields[field];
+      if (target === undefined) {
+        nextFields[field] = schemaOrRef;
+      } else if (isSchema(target) && isSchema(schemaOrRef)) {
+        nextFields[field] = schemaOrRef.concat(target);
+      }
+    }
+
+    return next.withMutation((next) => next.shape(nextFields));
   }
 
   shape<TNextShape extends ObjectShape>(

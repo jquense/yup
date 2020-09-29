@@ -4,7 +4,7 @@ import printValue from './util/printValue';
 import MixedSchema from './mixed';
 import { array as locale } from './locale';
 import runTests, { RunTest } from './util/runTests';
-import { SchemaInnerTypeDescription } from './Schema';
+import { SchemaInnerTypeDescription, SchemaSpec } from './Schema';
 import { InternalOptions, Callback, Message, Maybe } from './types';
 import ValidationError from './ValidationError';
 import Reference from './Reference';
@@ -32,7 +32,7 @@ type Type<T extends MixedSchema> = T extends MixedSchema<infer TType>
 
 export default class ArraySchema<
   T extends MixedSchema = MixedSchema,
-  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDef extends TypeDef = '',
   TDefault extends Maybe<Maybe<Type<T>>[]> = undefined
 > extends MixedSchema<
   Type<T>[],
@@ -43,8 +43,6 @@ export default class ArraySchema<
 > {
   //
 
-  private _subType?: T;
-
   innerType: T | undefined;
 
   constructor(type?: T) {
@@ -52,7 +50,6 @@ export default class ArraySchema<
 
     // `undefined` specifically means uninitialized, as opposed to
     // "no subtype"
-    this._subType = type;
     this.innerType = type;
 
     this.withMutation(() => {
@@ -67,6 +64,10 @@ export default class ArraySchema<
         return this.isType(values) ? values : null;
       });
     });
+  }
+
+  private get _subType() {
+    return this.innerType;
   }
 
   protected _typeCheck(v: any): v is any[] {
@@ -168,20 +169,38 @@ export default class ArraySchema<
     return super._isPresent(value) && value.length > 0;
   }
 
+  clone(spec?: SchemaSpec<any>) {
+    const next = super.clone(spec);
+    next.innerType = this.innerType;
+    return next;
+  }
+
+  concat(schema: ArraySchema): ArraySchema {
+    let next = super.concat(schema) as ArraySchema;
+
+    next.innerType = this.innerType;
+
+    if (schema.innerType)
+      next.innerType = next.innerType
+        ? next.innerType.concat(schema.innerType)
+        : schema.innerType;
+
+    return next;
+  }
+
   of<TInner extends MixedSchema>(
-    schema: TInner | false,
+    schema: TInner,
   ): ArraySchema<TInner, TDef, TDefault> {
     // FIXME: this should return a new instance of array without the default to be
     var next = this.clone();
 
-    if (schema !== false && !isSchema(schema))
+    if (!isSchema(schema))
       throw new TypeError(
-        '`array.of()` sub-schema must be a valid yup schema, or `false` to negate a current sub-schema. ' +
-          'not: ' +
+        '`array.of()` sub-schema must be a valid yup schema not: ' +
           printValue(schema),
       );
+
     // FIXME(ts):
-    next._subType = schema as any;
     next.innerType = schema as any;
 
     return next as any;

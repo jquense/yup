@@ -38,7 +38,7 @@ global.YUP_USE_SYNC &&
   });
 
 describe('Mixed Types ', () => {
-  it('should be immutable', () => {
+  xit('should be immutable', () => {
     let inst = mixed(),
       next;
     let sub = (inst.sub = mixed());

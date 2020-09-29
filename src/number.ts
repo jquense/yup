@@ -13,7 +13,7 @@ export function create() {
 
 export default class NumberSchema<
   TType extends number,
-  TDef extends TypeDef = 'optional' | 'nonnullable',
+  TDef extends TypeDef = '',
   TDefault extends Maybe<TType> = undefined
 > extends MixedSchema<TType, TDef, TDefault> {
   constructor() {
@@ -37,7 +37,7 @@ export default class NumberSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is number {
+  protected _typeCheck(value: any): value is TType {
     if (value instanceof Number) value = value.valueOf();
 
     return typeof value === 'number' && !isNaN(value);
