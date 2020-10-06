@@ -81,6 +81,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
   - [array](#array)
     - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
     - [`array.required(message?: string | function): Schema`](#arrayrequiredmessage-string--function-schema)
+    - [`array.allowEmpty(): Schema`](#arrayallowempty-schema)
     - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
     - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
     - [`array.ensure(): Schema`](#arrayensure-schema)
@@ -1015,6 +1016,10 @@ not validate its contents.
 #### `array.required(message?: string | function): Schema`
 
 The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
+
+#### `array.allowEmpty(): Schema`
+
+Allows empty array to be a valid value when used along `required`
 
 #### `array.min(limit: number | Ref, message?: string | function): Schema`
 
