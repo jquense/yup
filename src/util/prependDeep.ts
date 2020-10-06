@@ -1,5 +1,5 @@
 import has from 'lodash/has';
-import isSchema from './isSchema';
+import { MixedSchema } from '..';
 
 // function has<T extends {}, Key extends PropertyKey>
 //   (obj: T, prop: Key): obj is T & Record<Key, unknown> {
@@ -22,8 +22,8 @@ export default function merge(
         target[key] = sourceVal;
       } else if (targetVal === sourceVal) {
         continue;
-      } else if (isSchema(targetVal)) {
-        if (isSchema(sourceVal)) target[key] = sourceVal.concat(targetVal);
+      } else if (targetVal instanceof MixedSchema) {
+        if (sourceVal instanceof MixedSchema) target[key] = sourceVal.concat(targetVal);
       } else if (isObject(targetVal)) {
         if (isObject(sourceVal)) target[key] = merge(targetVal, sourceVal);
       } else if (Array.isArray(targetVal)) {
