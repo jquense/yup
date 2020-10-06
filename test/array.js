@@ -98,6 +98,21 @@ describe('Array types', () => {
       castSpy.should.have.been.calledOnce();
       string.prototype._cast.restore();
     });
+
+    it('should not allow empty arrays if required is set', async () => {
+      await array().required().isValid([]).should.become(false);
+    });
+
+    it('should allow empty arrays if required is set along with allowEmpty', async () => {
+      await array().required().allowEmpty().isValid([]).should.become(true);
+
+      await array()
+        .of(number())
+        .allowEmpty()
+        .required()
+        .isValid([])
+        .should.become(true);
+    });
   });
 
   it('should respect abortEarly', () => {

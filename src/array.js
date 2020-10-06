@@ -17,6 +17,7 @@ function ArraySchema(type) {
   // "no subtype"
   this._subType = undefined;
   this.innerType = undefined;
+  this._emptyAllowed = false;
 
   this.withMutation(() => {
     this.transform(function (values) {
@@ -129,8 +130,17 @@ inherits(ArraySchema, MixedSchema, {
 
   _isPresent(value) {
     return (
-      MixedSchema.prototype._isPresent.call(this, value) && value.length > 0
+      MixedSchema.prototype._isPresent.call(this, value) &&
+      (this._emptyAllowed || value.length > 0)
     );
+  },
+
+  allowEmpty() {
+    var next = this.clone();
+
+    next._emptyAllowed = true;
+
+    return next;
   },
 
   of(schema) {
