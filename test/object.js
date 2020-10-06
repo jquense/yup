@@ -153,7 +153,7 @@ describe('Object types', () => {
       err.message.should.match(/must be a `string` type/);
     });
 
-    it.only('should respect child schema with strict()', async () => {
+    it('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict(),
       });
@@ -888,7 +888,7 @@ describe('Object types', () => {
     expect(inst.nullable().cast(null)).to.equal(null);
   });
 
-  xit('should handle invalid shapes better', async () => {
+  it('should handle invalid shapes better', async () => {
     var schema = object().shape({
       permissions: undefined,
     });
