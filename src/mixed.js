@@ -4,7 +4,7 @@ import toArray from 'lodash/toArray';
 
 import { mixed as locale } from './locale';
 import Condition from './Condition';
-import runValidations from './util/runValidations';
+import runTests from './util/runTests';
 import prependDeep from './util/prependDeep';
 import isSchema from './util/isSchema';
 import createValidation from './util/createValidation';
@@ -55,10 +55,10 @@ class RefSet {
   }
   merge(newItems, removeItems) {
     const next = this.clone();
-    newItems.list.forEach(value => next.add(value));
-    newItems.refs.forEach(value => next.add(value));
-    removeItems.list.forEach(value => next.delete(value));
-    removeItems.refs.forEach(value => next.delete(value));
+    newItems.list.forEach((value) => next.add(value));
+    newItems.refs.forEach((value) => next.add(value));
+    removeItems.list.forEach((value) => next.delete(value));
+    removeItems.refs.forEach((value) => next.delete(value));
     return next;
   }
 }
@@ -98,7 +98,7 @@ const proto = (SchemaType.prototype = {
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, value => {
+    return cloneDeepWith(this, (value) => {
       if (isSchema(value) && value !== this) return value;
     });
   },
@@ -154,8 +154,8 @@ const proto = (SchemaType.prototype = {
 
     // manually add the new tests to ensure
     // the deduping logic is consistent
-    next.withMutation(next => {
-      schema.tests.forEach(fn => {
+    next.withMutation((next) => {
+      schema.tests.forEach((fn) => {
         next.test(fn.OPTIONS);
       });
     });
@@ -186,9 +186,21 @@ const proto = (SchemaType.prototype = {
 
     return schema;
   },
-
+  /**
+   *
+   * @param {*} value
+   * @param {Object} options
+   * @param {*=} options.parent
+   * @param {*=} options.context
+   */
   cast(value, options = {}) {
-    let resolvedSchema = this.resolve({ ...options, value });
+    let resolvedSchema = this.resolve({
+      value,
+      ...options,
+      // parent: options.parent,
+      // context: options.context,
+    });
+
     let result = resolvedSchema._cast(value, options);
 
     if (
@@ -199,8 +211,9 @@ const proto = (SchemaType.prototype = {
       let formattedValue = printValue(value);
       let formattedResult = printValue(result);
       throw new TypeError(
-        `The value of ${options.path ||
-          'field'} could not be cast to a value ` +
+        `The value of ${
+          options.path || 'field'
+        } could not be cast to a value ` +
           `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
           `attempted value: ${formattedValue} \n` +
           (formattedResult !== formattedValue
@@ -228,85 +241,97 @@ const proto = (SchemaType.prototype = {
     return value;
   },
 
-  _validate(_value, options = {}) {
+  _validate(_value, options = {}, cb) {
+    let {
+      sync,
+      path,
+      from = [],
+      originalValue = _value,
+      strict = this._options.strict,
+      abortEarly = this._options.abortEarly,
+    } = options;
+
     let value = _value;
-    let originalValue =
-      options.originalValue != null ? options.originalValue : _value;
-
-    let isStrict = this._option('strict', options);
-    let endEarly = this._option('abortEarly', options);
-
-    let sync = options.sync;
-    let path = options.path;
-    let label = this._label;
-
-    if (!isStrict) {
+    if (!strict) {
+      this._validating = true;
       value = this._cast(value, { assert: false, ...options });
+      this._validating = false;
     }
     // value is cast, we can check if it meets type requirements
-    let validationParams = {
+    let args = {
       value,
       path,
-      schema: this,
       options,
-      label,
       originalValue,
+      schema: this,
+      label: this._label,
       sync,
+      from,
     };
-
-    if (options.from) {
-      validationParams.from = options.from;
-    }
 
     let initialTests = [];
 
-    if (this._typeError) initialTests.push(this._typeError(validationParams));
+    if (this._typeError) initialTests.push(this._typeError);
+    if (this._whitelistError) initialTests.push(this._whitelistError);
+    if (this._blacklistError) initialTests.push(this._blacklistError);
 
-    if (this._whitelistError)
-      initialTests.push(this._whitelistError(validationParams));
-
-    if (this._blacklistError)
-      initialTests.push(this._blacklistError(validationParams));
-
-    return runValidations({
-      validations: initialTests,
-      endEarly,
-      value,
-      path,
-      sync,
-    }).then(value =>
-      runValidations({
+    return runTests(
+      {
+        args,
+        value,
         path,
         sync,
-        value,
-        endEarly,
-        validations: this.tests.map(fn => fn(validationParams)),
-      }),
+        tests: initialTests,
+        endEarly: abortEarly,
+      },
+      (err) => {
+        if (err) return void cb(err);
+
+        runTests(
+          {
+            tests: this.tests,
+            args,
+            path,
+            sync,
+            value,
+            endEarly: abortEarly,
+          },
+          cb,
+        );
+      },
     );
   },
 
-  validate(value, options = {}) {
+  validate(value, options = {}, maybeCb) {
     let schema = this.resolve({ ...options, value });
-    return schema._validate(value, options);
+
+    // callback case is for nested validations
+    return typeof maybeCb === 'function'
+      ? schema._validate(value, options, maybeCb)
+      : new Promise((resolve, reject) =>
+          schema._validate(value, options, (err, value) => {
+            if (err) reject(err);
+            else resolve(value);
+          }),
+        );
   },
 
   validateSync(value, options = {}) {
     let schema = this.resolve({ ...options, value });
-    let result, err;
+    let result;
 
-    schema
-      ._validate(value, { ...options, sync: true })
-      .then(r => (result = r))
-      .catch(e => (err = e));
+    schema._validate(value, { ...options, sync: true }, (err, value) => {
+      if (err) throw err;
+      result = value;
+    });
 
-    if (err) throw err;
     return result;
   },
 
   isValid(value, options) {
     return this.validate(value, options)
       .then(() => true)
-      .catch(err => {
+      .catch((err) => {
         if (err.name === 'ValidationError') return false;
         throw err;
       });
@@ -366,7 +391,7 @@ const proto = (SchemaType.prototype = {
 
   notRequired() {
     var next = this.clone();
-    next.tests = next.tests.filter(test => test.OPTIONS.name !== 'required');
+    next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next;
   },
 
@@ -429,7 +454,7 @@ const proto = (SchemaType.prototype = {
 
     next._exclusive[opts.name] = !!opts.exclusive;
 
-    next.tests = next.tests.filter(fn => {
+    next.tests = next.tests.filter((fn) => {
       if (fn.OPTIONS.name === opts.name) {
         if (isExclusive) return false;
         if (fn.OPTIONS.test === validate.OPTIONS.test) return false;
@@ -449,9 +474,9 @@ const proto = (SchemaType.prototype = {
     }
 
     var next = this.clone(),
-      deps = [].concat(keys).map(key => new Ref(key));
+      deps = [].concat(keys).map((key) => new Ref(key));
 
-    deps.forEach(dep => {
+    deps.forEach((dep) => {
       if (dep.isSibling) next._deps.push(dep.key);
     });
 
@@ -482,7 +507,7 @@ const proto = (SchemaType.prototype = {
   oneOf(enums, message = locale.oneOf) {
     var next = this.clone();
 
-    enums.forEach(val => {
+    enums.forEach((val) => {
       next._whitelist.add(val);
       next._blacklist.delete(val);
     });
@@ -509,7 +534,7 @@ const proto = (SchemaType.prototype = {
 
   notOneOf(enums, message = locale.notOneOf) {
     var next = this.clone();
-    enums.forEach(val => {
+    enums.forEach((val) => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
     });
@@ -549,15 +574,15 @@ const proto = (SchemaType.prototype = {
       meta: next._meta,
       label: next._label,
       tests: next.tests
-        .map(fn => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
+        .map((fn) => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
         .filter(
-          (n, idx, list) => list.findIndex(c => c.name === n.name) === idx,
+          (n, idx, list) => list.findIndex((c) => c.name === n.name) === idx,
         ),
-    }
+    };
 
     if (next._whitelist.size) description.oneOf = next._whitelist.describe();
     if (next._blacklist.size) description.notOneOf = next._blacklist.describe();
-    
+
     return description;
   },
 
@@ -574,7 +599,7 @@ const proto = (SchemaType.prototype = {
 });
 
 for (const method of ['validate', 'validateSync'])
-  proto[`${method}At`] = function(path, value, options = {}) {
+  proto[`${method}At`] = function (path, value, options = {}) {
     const { parent, parentPath, schema } = getIn(
       this,
       path,

@@ -10,7 +10,7 @@ import {
   lazy,
   reach,
 } from '../src';
-import { ensureSync } from './helpers';
+import { expect } from 'chai';
 
 describe('Object types', () => {
   describe('casting', () => {
@@ -29,11 +29,9 @@ describe('Object types', () => {
     });
 
     it('should parse json strings', () => {
-      object({ hello: number() })
-        .cast('{ "hello": "5" }')
-        .should.eql({
-          hello: 5,
-        });
+      object({ hello: number() }).cast('{ "hello": "5" }').should.eql({
+        hello: 5,
+      });
     });
 
     it('should return null for failed casts', () => {
@@ -103,10 +101,7 @@ describe('Object types', () => {
     });
 
     it('should run validations recursively', async () => {
-      await inst
-        .isValid()
-        .should.eventually()
-        .equal(true);
+      await inst.isValid().should.eventually().equal(true);
 
       let error = await inst.validate(obj).should.be.rejected();
 
@@ -153,14 +148,12 @@ describe('Object types', () => {
         }),
       });
 
-      let err = await inst
-        .validate({ obj: { field: 5 } })
-        .should.be.rejected();
+      let err = await inst.validate({ obj: { field: 5 } }).should.be.rejected();
 
       err.message.should.match(/must be a `string` type/);
     });
 
-    it('should respect child schema with strict()', async () => {
+    it.only('should respect child schema with strict()', async () => {
       inst = object({
         field: number().strict(),
       });
@@ -172,9 +165,7 @@ describe('Object types', () => {
       inst.cast({ field: '5' }).should.eql({ field: 5 });
 
       err = await object({
-        port: number()
-          .strict()
-          .integer(),
+        port: number().strict().integer(),
       })
         .validate({ port: 'asdad' })
         .should.be.rejected();
@@ -193,10 +184,10 @@ describe('Object types', () => {
       err.errors[0].should.equal('this oops');
     });
 
-    it('should not clone during validating', async function() {
+    it('should not clone during validating', async function () {
       let base = mixed.prototype.clone;
 
-      mixed.prototype.clone = function(...args) {
+      mixed.prototype.clone = function (...args) {
         if (!this._mutate) throw new Error('should not call clone');
 
         return base.apply(this, args);
@@ -220,7 +211,7 @@ describe('Object types', () => {
     });
   });
 
-  it('should pass options to children', function() {
+  it('should pass options to children', function () {
     object({
       names: object({
         first: string(),
@@ -306,10 +297,7 @@ describe('Object types', () => {
     });
 
     return Promise.all([
-      inst
-        .isValid({})
-        .should.eventually()
-        .equal(true),
+      inst.isValid({}).should.eventually().equal(true),
 
       inst
         .shape({ prop: mixed().required() })
@@ -330,7 +318,7 @@ describe('Object types', () => {
         .noUnknown('hi')
         .validate({ extra: 'field' }, { strict: true })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors[0].should.equal('hi');
         }),
 
@@ -338,7 +326,7 @@ describe('Object types', () => {
         .noUnknown()
         .validate({ extra: 'field' }, { strict: true })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors[0].should.be.a('string').that.include('extra');
         }),
     ]);
@@ -371,7 +359,7 @@ describe('Object types', () => {
       other: bool(),
       prop: mixed().when('other', {
         is: true,
-        then: s => s.strip(),
+        then: (s) => s.strip(),
       }),
     });
 
@@ -380,7 +368,7 @@ describe('Object types', () => {
     });
   });
 
-  it('should allow refs', async function() {
+  it('should allow refs', async function () {
     let schema = object({
       quz: ref('baz'),
       baz: ref('foo.bar'),
@@ -440,11 +428,7 @@ describe('Object types', () => {
     });
 
     it('should be validatable', async () => {
-      let inst = lazy(() =>
-        string()
-          .trim('trim me!')
-          .strict(),
-      );
+      let inst = lazy(() => string().trim('trim me!').strict());
 
       inst.validate.should.be.a('function');
 
@@ -463,17 +447,13 @@ describe('Object types', () => {
         }),
       });
 
-      reach(inst, 'nested')
-        .resolve({})
-        .should.equal(inst);
-      reach(inst, 'x.y')
-        .resolve({})
-        .should.equal(inst);
+      reach(inst, 'nested').resolve({}).should.equal(inst);
+      reach(inst, 'x.y').resolve({}).should.equal(inst);
     });
 
-    it('should be passed the value', done => {
+    it('should be passed the value', (done) => {
       let inst = object({
-        nested: lazy(value => {
+        nested: lazy((value) => {
           value.should.equal('foo');
           done();
           return string();
@@ -483,7 +463,7 @@ describe('Object types', () => {
       inst.cast({ nested: 'foo' });
     });
 
-    it('should be passed the options', done => {
+    it('should be passed the options', (done) => {
       let opts = {};
       let inst = lazy((_, options) => {
         options.should.equal(opts);
@@ -500,9 +480,7 @@ describe('Object types', () => {
 
     it('should set the correct path', async () => {
       let inst = object({
-        str: string()
-          .required()
-          .nullable(),
+        str: string().required().nullable(),
         nested: lazy(() => inst.default(undefined)),
       });
 
@@ -521,9 +499,7 @@ describe('Object types', () => {
 
     it('should set the correct path with dotted keys', async () => {
       let inst = object({
-        'dotted.str': string()
-          .required()
-          .nullable(),
+        'dotted.str': string().required().nullable(),
         nested: lazy(() => inst.default(undefined)),
       });
 
@@ -542,9 +518,7 @@ describe('Object types', () => {
 
     it('should resolve array sub types', async () => {
       let inst = object({
-        str: string()
-          .required()
-          .nullable(),
+        str: string().required().nullable(),
         nested: array().of(lazy(() => inst.default(undefined))),
       });
 
@@ -562,7 +536,7 @@ describe('Object types', () => {
     });
 
     it('should resolve for each array item', async () => {
-      let inst = array().of(lazy(value => types[typeof value]));
+      let inst = array().of(lazy((value) => types[typeof value]));
 
       let val = await inst.validate(['john', 4], { strict: true });
 
@@ -581,7 +555,7 @@ describe('Object types', () => {
       inst
         .validate({ nest: { str: '' } })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.value.should.eql({ nest: { str: '' } });
           err.errors.length.should.equal(1);
           err.errors.should.eql(['oops']);
@@ -592,7 +566,7 @@ describe('Object types', () => {
       inst
         .validate({ nest: { str: '' } }, { abortEarly: false })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.value.should.eql({ nest: { str: '' } });
           err.errors.length.should.equal(2);
           err.errors.should.eql(['nest.str is a required field', 'oops']);
@@ -630,14 +604,14 @@ describe('Object types', () => {
       inst
         .validate(val, { abortEarly: false })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors.length.should.equal(2);
         }),
 
       inst
         .validate(val, { abortEarly: false, recursive: false })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors.length.should.equal(1);
           err.errors.should.eql(['oops']);
         }),
@@ -686,13 +660,11 @@ describe('Object types', () => {
     let inst = object().shape({
       noteDate: number()
         .when('stats.isBig', { is: true, then: number().min(5) })
-        .when('other', function(v) {
+        .when('other', function (v) {
           if (v === 4) return this.max(6);
         }),
       stats: object({ isBig: bool() }),
-      other: number()
-        .min(1)
-        .when('stats', { is: 5, then: number() }),
+      other: number().min(1).when('stats', { is: 5, then: number() }),
     });
 
     return Promise.all([
@@ -765,51 +737,49 @@ describe('Object types', () => {
     ]);
   });
 
-  global.YUP_USE_SYNC &&
-    it('should handle conditionals synchronously', () => {
-      let inst = object().shape({
-        knownDependency: bool(),
-        value: number().when(['unknownDependency', 'knownDependency'], {
-          is: true,
-          then: number().required(),
-        }),
-      });
-
-      return Promise.all([
-        ensureSync(() =>
-          inst.validate({
-            unknownDependency: true,
-            knownDependency: true,
-            value: 1234,
-          }),
-        ).should.not.be.rejected(),
-        ensureSync(() =>
-          inst.validate({
-            unknownDependency: true,
-            knownDependency: true,
-          }),
-        ).should.be.rejectedWith(Error, /required/),
-      ]);
+  it('should handle conditionals synchronously', () => {
+    let inst = object().shape({
+      knownDependency: bool(),
+      value: number().when(['unknownDependency', 'knownDependency'], {
+        is: true,
+        then: number().required(),
+      }),
     });
 
+    // expect(() =>
+    //   inst.validateSync({
+    //     unknownDependency: true,
+    //     knownDependency: true,
+    //     value: 1234,
+    //   }),
+    // ).not.throw();
+
+    expect(() =>
+      inst.validateSync({
+        unknownDependency: true,
+        knownDependency: true,
+      }),
+    ).to.throw(/required/);
+  });
+
   it('should allow opt out of topo sort on specific edges', () => {
-    (function() {
+    (function () {
       object().shape({
-        orgID: number().when('location', function(v) {
+        orgID: number().when('location', function (v) {
           if (v == null) return this.required();
         }),
-        location: string().when('orgID', function(v) {
+        location: string().when('orgID', function (v) {
           if (v == null) return this.required();
         }),
       });
     }.should.throw('Cyclic dependency, node was:"location"'));
-    (function() {
+    (function () {
       object().shape(
         {
-          orgID: number().when('location', function(v) {
+          orgID: number().when('location', function (v) {
             if (v == null) return this.required();
           }),
-          location: string().when('orgID', function(v) {
+          location: string().when('orgID', function (v) {
             if (v == null) return this.required();
           }),
         },
@@ -847,21 +817,21 @@ describe('Object types', () => {
       inst
         .validate({ stats: undefined, other: true })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors[0].should.contain('required');
         }),
 
       inst
         .validate({ stats: { isBig: true, count: 3 }, other: true })
         .should.be.rejected()
-        .then(err => {
+        .then((err) => {
           err.errors[0].should.contain('must be greater than or equal to 5');
         }),
 
       inst
         .validate({ stats: { isBig: true, count: 10 }, other: true })
         .should.be.fulfilled()
-        .then(value => {
+        .then((value) => {
           value.should.deep.equal({
             stats: { isBig: true, count: 10 },
             other: true,
@@ -871,7 +841,7 @@ describe('Object types', () => {
       countSchema
         .validate(10, { context: { isBig: true } })
         .should.be.fulfilled()
-        .then(value => {
+        .then((value) => {
           value.should.deep.equal(10);
         }),
     ]);

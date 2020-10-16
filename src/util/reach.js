@@ -1,6 +1,6 @@
 import { forEach } from 'property-expr';
 
-let trim = part => part.substr(0, part.length - 1).substr(1);
+let trim = (part) => part.substr(0, part.length - 1).substr(1);
 
 export function getIn(schema, path, value, context = value) {
   let parent, lastPart, lastPartDebug;

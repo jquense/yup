@@ -6,8 +6,8 @@ import Ref from '../Reference';
 import isSchema from './isSchema';
 
 export default function sortFields(fields, excludes = []) {
-  var edges = [],
-    nodes = [];
+  let edges = [];
+  let nodes = [];
 
   function addNode(depPath, key) {
     var node = split(depPath)[0];
@@ -17,7 +17,7 @@ export default function sortFields(fields, excludes = []) {
     if (!~excludes.indexOf(`${key}-${node}`)) edges.push([key, node]);
   }
 
-  for (var key in fields)
+  for (const key in fields)
     if (has(fields, key)) {
       let value = fields[key];
 
@@ -25,7 +25,7 @@ export default function sortFields(fields, excludes = []) {
 
       if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
       else if (isSchema(value) && value._deps)
-        value._deps.forEach(path => addNode(path, key));
+        value._deps.forEach((path) => addNode(path, key));
     }
 
   return toposort.array(nodes, edges).reverse();

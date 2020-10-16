@@ -2,7 +2,7 @@ import * as TestHelpers from './helpers';
 
 import number from '../src/number';
 
-describe('Number types', function() {
+describe('Number types', function () {
   it('is newable', () => {
     let schema = new number();
     schema.integer().required();
@@ -15,10 +15,7 @@ describe('Number types', function() {
       }
     }
 
-    new MyNumber()
-      .foo()
-      .integer()
-      .required();
+    new MyNumber().foo().integer().required();
   });
 
   describe('casting', () => {
@@ -35,36 +32,18 @@ describe('Number types', function() {
     });
 
     it('should round', () => {
-      schema
-        .round('floor')
-        .cast(45.99999)
-        .should.equal(45);
-      schema
-        .round('ceIl')
-        .cast(45.1111)
-        .should.equal(46);
-      schema
-        .round()
-        .cast(45.444444)
-        .should.equal(45);
+      schema.round('floor').cast(45.99999).should.equal(45);
+      schema.round('ceIl').cast(45.1111).should.equal(46);
+      schema.round().cast(45.444444).should.equal(45);
 
-      expect(
-        schema
-          .nullable()
-          .integer()
-          .round()
-          .cast(null),
-      ).to.equal(null);
-      (function() {
+      expect(schema.nullable().integer().round().cast(null)).to.equal(null);
+      (function () {
         schema.round('fasf');
       }.should.throw(TypeError));
     });
 
     it('should truncate', () => {
-      schema
-        .truncate()
-        .cast(45.55)
-        .should.equal(45);
+      schema.truncate().cast(45.55).should.equal(45);
     });
 
     it('should return NaN for failed casts', () => {
@@ -74,18 +53,14 @@ describe('Number types', function() {
     });
   });
 
-  it('should handle DEFAULT', function() {
+  it('should handle DEFAULT', function () {
     var inst = number().default(0);
 
     inst.default().should.equal(0);
-    inst
-      .default(5)
-      .required()
-      .default()
-      .should.equal(5);
+    inst.default(5).required().default().should.equal(5);
   });
 
-  it('should type check', function() {
+  it('should type check', function () {
     var inst = number();
 
     inst.isType(5).should.equal(true);
@@ -94,55 +69,27 @@ describe('Number types', function() {
     inst.isType(false).should.equal(false);
     inst.isType(null).should.equal(false);
     inst.isType(NaN).should.equal(false);
-    inst
-      .nullable()
-      .isType(null)
-      .should.equal(true);
+    inst.nullable().isType(null).should.equal(true);
   });
 
-  it('should VALIDATE correctly', function() {
-    var inst = number()
-      .required()
-      .min(4);
+  it('should VALIDATE correctly', function () {
+    var inst = number().required().min(4);
 
     return Promise.all([
-      number()
-        .isValid(null)
-        .should.eventually()
-        .equal(false),
-      number()
-        .nullable()
-        .isValid(null)
-        .should.eventually()
-        .equal(true),
-      number()
-        .isValid(' ')
-        .should.eventually()
-        .equal(false),
-      number()
-        .isValid('12abc')
-        .should.eventually()
-        .equal(false),
-      number()
-        .isValid(0xff)
-        .should.eventually.equal(true),
-      number()
-        .isValid('0xff')
-        .should.eventually.equal(true),
+      number().isValid(null).should.eventually().equal(false),
+      number().nullable().isValid(null).should.eventually().equal(true),
+      number().isValid(' ').should.eventually().equal(false),
+      number().isValid('12abc').should.eventually().equal(false),
+      number().isValid(0xff).should.eventually.equal(true),
+      number().isValid('0xff').should.eventually.equal(true),
 
-      inst
-        .isValid(5)
-        .should.eventually()
-        .equal(true),
-      inst
-        .isValid(2)
-        .should.eventually()
-        .equal(false),
+      inst.isValid(5).should.eventually().equal(true),
+      inst.isValid(2).should.eventually().equal(false),
 
       inst
         .validate()
         .should.be.rejected()
-        .then(function(err) {
+        .then(function (err) {
           err.errors.length.should.equal(1);
           err.errors[0].should.contain('required');
         }),
@@ -215,47 +162,35 @@ describe('Number types', function() {
     });
   });
 
-  it('should check POSITIVE correctly', function() {
+  it('should check POSITIVE correctly', function () {
     var v = number().positive();
 
     return Promise.all([
-      v
-        .isValid(7)
-        .should.eventually()
-        .equal(true),
+      v.isValid(7).should.eventually().equal(true),
 
-      v
-        .isValid(0)
-        .should.eventually()
-        .equal(false),
+      v.isValid(0).should.eventually().equal(false),
 
       v
         .validate(0)
         .should.be.rejected()
-        .then(null, function(err) {
+        .then(null, function (err) {
           err.errors[0].should.contain('this must be a positive number');
         }),
     ]);
   });
 
-  it('should check NEGATIVE correctly', function() {
+  it('should check NEGATIVE correctly', function () {
     var v = number().negative();
 
     return Promise.all([
-      v
-        .isValid(-4)
-        .should.eventually()
-        .equal(true),
+      v.isValid(-4).should.eventually().equal(true),
 
-      v
-        .isValid(0)
-        .should.eventually()
-        .equal(false),
+      v.isValid(0).should.eventually().equal(false),
 
       v
         .validate(10)
         .should.be.rejected()
-        .then(null, function(err) {
+        .then(null, function (err) {
           err.errors[0].should.contain('this must be a negative number');
         }),
     ]);
