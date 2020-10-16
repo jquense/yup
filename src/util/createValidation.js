@@ -44,12 +44,13 @@ export default function createValidation(config) {
       createError,
       resolve,
       options,
+      originalValue,
       ...rest,
     };
 
     if (!sync) {
       try {
-        Promise.resolve(test.call(ctx, value)).then((validOrError) => {
+        Promise.resolve(test.call(ctx, value, ctx)).then((validOrError) => {
           if (ValidationError.isError(validOrError)) cb(validOrError);
           else if (!validOrError) cb(createError());
           else cb(null, validOrError);
@@ -63,7 +64,7 @@ export default function createValidation(config) {
 
     let result;
     try {
-      result = test.call(ctx, value);
+      result = test.call(ctx, value, ctx);
 
       if (typeof result?.then === 'function') {
         throw new Error(
