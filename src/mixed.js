@@ -98,8 +98,13 @@ const proto = (SchemaType.prototype = {
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    return cloneDeepWith(this, (value) => {
+    return cloneDeepWith(this, (value, key) => {
       if (isSchema(value) && value !== this) return value;
+
+      // fix for ie11 when cloning Set and Map
+      if (key === '_whitelist' || key === '_blacklist') {
+        return value.clone();
+      }
     });
   },
 
