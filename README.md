@@ -1314,7 +1314,12 @@ const personSchema = yup.object({
 You can derive the TypeScript type as follows:
 
 ```TypeScript
-type Person = yup.InferType<typeof personSchema>;
+interface Person extends yup.InferType<typeof personSchema> {};
+
+// You can also name it as a type, this is necessary for non-object schemas:
+type Person = yup.InferType<typeof personSchema> {};
+
+// Using the type variant can result in worse type info being presented by your tooling.
 ```
 
 Which is equivalent to the following TypeScript type alias:
