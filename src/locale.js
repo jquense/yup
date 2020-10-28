@@ -63,7 +63,7 @@ export let array = {
   max: '${path} field must have less than or equal to ${max} items',
 };
 
-export default {
+export default Object.assign(Object.create(null), {
   mixed,
   string,
   number,
@@ -71,4 +71,4 @@ export default {
   object,
   array,
   boolean,
-};
+});

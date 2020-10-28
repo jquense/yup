@@ -96,7 +96,8 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-size-snapshot": "^0.12.0",
     "sinon": "^9.2.0",
-    "sinon-chai": "^3.5.0"
+    "sinon-chai": "^3.5.0",
+    "synchronous-promise": "^2.0.15"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",
