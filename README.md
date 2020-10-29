@@ -692,14 +692,14 @@ In order to allow asynchronous custom validations _all_ (or no) tests are run as
 A consequence of this is that test execution order cannot be guaranteed.
 
 All tests must provide a `name`, an error `message` and a validation function that must return
-`true` or `false` or a `ValidationError`. To make a test async return a promise that resolves `true`
-or `false` or a `ValidationError`.
+`true` when the current `value` is valid and `false` or a `ValidationError` otherwise.
+To make a test async return a promise that resolves `true` or `false` or a `ValidationError`.
 
-for the `message` argument you can provide a string which will interpolate certain values
+For the `message` argument you can provide a string which will interpolate certain values
 if specified using the `${param}` syntax. By default all test messages are passed a `path` value
 which is valuable in nested schemas.
 
-the `test` function is called with the current `value`. For more advanced validations you can
+The `test` function is called with the current `value`. For more advanced validations you can
 use the alternate signature to provide more options (see below):
 
 ```js
@@ -720,7 +720,10 @@ await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
 ```
 
-test functions are called with a special context, or `this` value, that exposes some useful metadata and functions. Older versions just expose the `this` context using `function ()`, not arrow-func, but now it's exposed too as a second argument of the test functions. It's allow you decide which approach you prefer. 
+Test functions are called with a special context, or `this` value, that exposes some useful metadata
+and functions. Older versions just expose the `this` context using `function ()`, not arrow-func,
+but now it's exposed too as a second argument of the test functions. It's allow you decide which
+approach you prefer. 
 
 - `this.path`: the string path of the current validation
 - `this.schema`: the resolved schema object that the test is running against.
