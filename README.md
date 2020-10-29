@@ -706,14 +706,14 @@ use the alternate signature to provide more options (see below):
 let jimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  (value, context) => value === 'jimmy',
+  (context, value) => value === 'jimmy',
 );
 
 // or make it async by returning a promise
 let asyncJimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  async (value, context) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+  async (context, value) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
 });
 
 await schema.isValid('jimmy'); // => true
@@ -722,7 +722,7 @@ await schema.isValid('john'); // => false
 
 Test functions are called with a special context, or `this` value, that exposes some useful metadata
 and functions. Older versions just expose the `this` context using `function ()`, not arrow-func,
-but now it's exposed too as a second argument of the test functions. It's allow you decide which
+but now it's exposed too as an optional first argument of the test functions. It's allow you decide which
 approach you prefer. 
 
 - `this.path`: the string path of the current validation
