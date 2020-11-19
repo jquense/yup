@@ -1,6 +1,5 @@
 import reach, { getIn } from '../src/util/reach';
 import prependDeep from '../src/util/prependDeep';
-import * as Async from '../src/util/async';
 
 import { object, array, string, lazy, number, ValidationError } from '../src';
 

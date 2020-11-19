@@ -2,8 +2,7 @@ import { ResolveOptions } from './Condition';
 import {
   ValidateOptions,
   Callback,
-  MessageParams,
-  AnyMessageParams,, ExtraParams
+  ExtraParams
 } from './types';
 
 export interface CastOptions {

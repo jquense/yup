@@ -1,10 +1,6 @@
 import MixedSchema, {
   create as mixedCreate,
-  ResolveCast,
   SchemaSpec,
-  ResolveRequired,
-  Asserts,
-  TypeOf,
 } from './mixed';
 import BoolSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
