@@ -10,14 +10,20 @@ describe('String types', () => {
       valid: [
         [5, '5'],
         ['3', '3'],
-        //[new String('foo'), 'foo'],
+        // [new String('foo'), 'foo'],
         ['', ''],
         [true, 'true'],
         [false, 'false'],
         [0, '0'],
         [null, null, schema.nullable()],
+        [
+          {
+            toString: () => 'hey',
+          },
+          'hey',
+        ],
       ],
-      invalid: [null],
+      invalid: [null, {}, []],
     });
 
     describe('ensure', () => {
