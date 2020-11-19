@@ -9,7 +9,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -580,15 +579,19 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 
 #### `mixed.required(message?: string | function): Schema`
 
-Mark the schema as required. All field values apart from `undefined` and `null` meet this requirement.
+Mark the schema as required, which will not allow `undefined` or `null` as a value.
+Note that unless a schema is marked as `nullable()` a `null` value is treated as a type error, not a missing value. Mark a schema as `mixed().nullable().required()` treat `null` as missing.
 
-#### `mixed.notRequired(): Schema`
+> Watch out! [`string().required`](#stringrequiredmessage-string--function-schema)) works a little
+> different and additionally prevents empty string values (`''`) when required.
 
-Mark the schema as not required. Passing `undefined` as value will not fail validation.
+#### `mixed.notRequired(): Schema` Alias: `optional()`
+
+Mark the schema as not required. Passing `undefined` (or `null` for nullable schema) as value will not fail validation.
 
 #### `mixed.defined(): Schema`
 
-Mark the schema as required but nullable. All field values apart from `undefined` meet this requirement.
+Require a value for the schema. All field values apart from `undefined` meet this requirement.
 
 #### `mixed.typeError(message: string): Schema`
 
@@ -723,7 +726,7 @@ await schema.isValid('john'); // => false
 Test functions are called with a special context, or `this` value, that exposes some useful metadata
 and functions. Older versions just expose the `this` context using `function ()`, not arrow-func,
 but now it's exposed too as a second argument of the test functions. It's allow you decide which
-approach you prefer. 
+approach you prefer.
 
 - `this.path`: the string path of the current validation
 - `this.schema`: the resolved schema object that the test is running against.
@@ -824,7 +827,7 @@ Failed casts return the input value.
 
 #### `string.required(message?: string | function): Schema`
 
-The same as the `mixed()` schema required, except that empty strings are also considered 'missing' values.
+The same as the `mixed()` schema required, **except** that empty strings are also considered 'missing' values.
 
 #### `string.length(limit: number | Ref, message?: string | function): Schema`
 
@@ -1016,9 +1019,9 @@ Failed casts return: `null`;
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
 
-#### `array.required(message?: string | function): Schema`
+#### `array.length(length: number | Ref, message?: string | function): Schema`
 
-The same as the `mixed()` schema required, except that empty arrays are also considered 'missing' values.
+Set a specific length requirement for the array. The `${length}` interpolation can be used in the `message` argument.
 
 #### `array.min(limit: number | Ref, message?: string | function): Schema`
 
@@ -1288,8 +1291,7 @@ const personSchema = yup.object({
     .string()
     // Here we use `defined` instead of `required` to more closely align with
     // TypeScript. Both will have the same effect on the resulting type by
-    // excluding `undefined`, but `required` will also disallow other values
-    // such as empty strings.
+    // excluding `undefined`, but `required` will also disallow empty strings.
     .defined(),
   nickName: yup
     .string()
