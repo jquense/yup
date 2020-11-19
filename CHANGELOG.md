@@ -1,3 +1,32 @@
+# [0.30.0](https://github.com/jquense/yup/compare/v0.29.3...v0.30.0) (2020-11-19)
+
+
+### Bug Fixes
+
+* defined() so it doesn't mark a schema as nullable ([f08d507](https://github.com/jquense/yup/commit/f08d507))
+* IE11 clone() ([#1029](https://github.com/jquense/yup/issues/1029)) ([7fd80aa](https://github.com/jquense/yup/commit/7fd80aa))
+* security Fix for Prototype Pollution - huntr.dev ([#1088](https://github.com/jquense/yup/issues/1088)) ([15a0f43](https://github.com/jquense/yup/commit/15a0f43))
+* uuid's regexp ([#1112](https://github.com/jquense/yup/issues/1112)) ([57d42a8](https://github.com/jquense/yup/commit/57d42a8))
+
+
+### Features
+
+* exposes context on mixed.test function and add originalValue to context ([#1021](https://github.com/jquense/yup/issues/1021)) ([6096064](https://github.com/jquense/yup/commit/6096064))
+
+
+### Performance Improvements
+
+* reduce function calls for shallower stacks ([#1022](https://github.com/jquense/yup/issues/1022)) ([01da7e1](https://github.com/jquense/yup/commit/01da7e1))
+
+
+### BREAKING CHANGES
+
+* defined() now doesn't automatically allow null, this was a bug. to mimic the old behavior add nullable() to schema with defined()
+
+
+
+
+
 ## [0.29.3](https://github.com/jquense/yup/compare/v0.29.2...v0.29.3) (2020-08-04)
 
 

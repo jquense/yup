@@ -165,10 +165,6 @@ export default class ArraySchema<
     });
   }
 
-  _isPresent(value: any[]) {
-    return super._isPresent(value) && value.length > 0;
-  }
-
   clone(spec?: SchemaSpec<any>) {
     const next = super.clone(spec);
     next.innerType = this.innerType;
@@ -204,6 +200,21 @@ export default class ArraySchema<
     next.innerType = schema as any;
 
     return next as any;
+  }
+
+  length(
+    length: number | Reference,
+    message: Message<{ length: number }> = locale.length,
+  ) {
+    return this.test({
+      message,
+      name: 'length',
+      exclusive: true,
+      params: { length },
+      test(value: Maybe<T[]>) {
+        return isAbsent(value) || value.length === this.resolve(length);
+      },
+    });
   }
 
   min(min: number | Reference, message?: Message<{ min: number }>) {

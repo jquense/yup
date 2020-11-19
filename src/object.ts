@@ -3,6 +3,7 @@ import snakeCase from 'lodash/snakeCase';
 import camelCase from 'lodash/camelCase';
 import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
+import pick from 'lodash/pick';
 import { getter } from 'property-expr';
 
 import MixedSchema, { SchemaSpec } from './mixed';
@@ -348,6 +349,33 @@ export default class ObjectSchema<
     next._nodes = sortFields(fields, next._excludedEdges);
 
     return next as any;
+  }
+
+  pick<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): ObjectSchema<Pick<TShape, TKey>> {
+    const picked: any = {};
+    for (const key of keys) {
+      if (this.fields[key]) picked[key] = this.fields[key];
+    }
+
+    return this.clone().withMutation((next: any) => {
+      next.fields = {};
+      return next.shape(picked);
+    }) as any;
+  }
+
+  omit<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): ObjectSchema<Omit<TShape, TKey>> {
+    const next = this.clone() as any;
+    const fields = next.fields;
+    next.fields = {};
+    for (const key of keys) {
+      delete fields[key];
+    }
+
+    return next.withMutation((next) => next.shape(fields));
   }
 
   from(from: string, to: keyof TShape, alias?: boolean) {

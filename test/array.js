@@ -66,14 +66,39 @@ describe('Array types', () => {
   });
 
   describe('validation', () => {
+    test.each([
+      ['missing', undefined, array().defined()],
+      ['required', undefined, array().required()],
+      ['required', null, array().required()],
+      ['null', null, array()],
+      ['length', [1, 2, 3], array().length(2)],
+    ])('Basic validations fail: %s %p', async (type, value, schema) => {
+      expect(await schema.isValid(value)).to.equal(false);
+    });
+
+    test.each([
+      ['missing', [], array().defined()],
+      ['required', [], array().required()],
+      ['nullable', null, array().nullable()],
+      ['length', [1, 2, 3], array().length(3)],
+    ])('Basic validations pass: %s %p', async (type, value, schema) => {
+      expect(await schema.isValid(value)).to.equal(true);
+    });
+
     it('should allow undefined', async () => {
       await array().of(number().max(5)).isValid().should.become(true);
     });
 
-    it('should not allow null when not nullable', async () => {
-      await array().isValid(null).should.become(false);
+    it('max should replace earlier tests', async () => {
+      expect(await array().max(4).max(10).isValid(Array(5).fill(0))).to.equal(
+        true,
+      );
+    });
 
-      await array().nullable().isValid(null).should.become(true);
+    it('min should replace earlier tests', async () => {
+      expect(await array().min(10).min(4).isValid(Array(5).fill(0))).to.equal(
+        true,
+      );
     });
 
     it('should respect subtype validations', async () => {

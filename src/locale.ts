@@ -43,6 +43,7 @@ export interface ObjectLocale {
 }
 
 export interface ArrayLocale {
+  length?: Message<{ length: number }>;
   min?: Message<{ min: number }>;
   max?: Message<{ max: number }>;
 }
@@ -107,9 +108,10 @@ export let object: Required<ObjectLocale> = {
 export let array: Required<ArrayLocale> = {
   min: '${path} field must have at least ${min} items',
   max: '${path} field must have less than or equal to ${max} items',
+  length: '${path} must be have ${length} items',
 };
 
-export default {
+export default Object.assign(Object.create(null), {
   mixed,
   string,
   number,
@@ -117,4 +119,4 @@ export default {
   object,
   array,
   boolean,
-};
+});
