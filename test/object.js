@@ -468,7 +468,7 @@ describe('Object types', () => {
       let inst = lazy((_, options) => {
         options.should.equal(opts);
         done();
-        return string();
+        return object();
       });
 
       inst.cast({ nested: 'foo' }, opts);
@@ -863,15 +863,6 @@ describe('Object types', () => {
     expect(inst.nullable().cast(null)).to.equal(null);
   });
 
-  // it('should camelCase with leading underscore', () => {
-  //   let inst = object().camelCase()
-  //
-  //   inst
-  //     .cast({ CON_STAT: 5, __isNew: true, __IS_FUN: true })
-  //     .should
-  //     .eql({ conStat: 5, __isNew: true, __isFun: true })
-  // })
-
   it('should CONSTANT_CASE keys', () => {
     let inst = object()
       .shape({
@@ -886,6 +877,42 @@ describe('Object types', () => {
       .should.eql({ CON_STAT: 5, CASE_STATUS: 6, HI_JOHN: 4 });
 
     expect(inst.nullable().cast(null)).to.equal(null);
+  });
+
+  it('should pick', async () => {
+    let inst = object({
+      age: number().default(30).required(),
+      name: string().default('pat').required(),
+      color: string().default('red').required(),
+    });
+
+    expect(inst.pick(['age', 'name']).default()).to.eql({
+      age: 30,
+      name: 'pat',
+    });
+
+    expect(
+      await inst.pick(['age', 'name']).validate({ age: 24, name: 'Bill' }),
+    ).to.eql({
+      age: 24,
+      name: 'Bill',
+    });
+  });
+
+  it('should omit', async () => {
+    let inst = object({
+      age: number().default(30).required(),
+      name: string().default('pat').required(),
+      color: string().default('red').required(),
+    });
+
+    expect(inst.omit(['age', 'name']).default()).to.eql({
+      color: 'red',
+    });
+
+    expect(
+      await inst.omit(['age', 'name']).validate({ color: 'mauve' }),
+    ).to.eql({ color: 'mauve' });
   });
 
   xit('should handle invalid shapes better', async () => {
