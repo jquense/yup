@@ -56,8 +56,8 @@ describe('Number types', function () {
   it('should handle DEFAULT', function () {
     var inst = number().default(0);
 
-    inst.default().should.equal(0);
-    inst.default(5).required().default().should.equal(5);
+    inst.getDefault().should.equal(0);
+    inst.default(5).required().getDefault().should.equal(5);
   });
 
   it('should type check', function () {

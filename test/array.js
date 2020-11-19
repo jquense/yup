@@ -26,11 +26,11 @@ describe('Array types', () => {
   });
 
   it('should handle DEFAULT', () => {
-    expect(array().default()).to.equal(undefined);
+    expect(array().getDefault()).to.equal(undefined);
 
     array()
       .default(() => [1, 2, 3])
-      .default()
+      .getDefault()
       .should.eql([1, 2, 3]);
   });
 

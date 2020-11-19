@@ -663,7 +663,7 @@ describe('Mixed Types ', () => {
   it('concat should maintain undefined defaults', function () {
     let inst = string().default('hi');
 
-    expect(inst.concat(string().default(undefined)).default()).to.equal(
+    expect(inst.concat(string().default(undefined)).getDefault()).to.equal(
       undefined,
     );
   });
@@ -810,7 +810,7 @@ describe('Mixed Types ', () => {
       }),
     });
 
-    inst.default().should.eql({ prop: undefined });
+    inst.getDefault().should.eql({ prop: undefined });
   });
 
   it('should support self references in conditions', async function () {
