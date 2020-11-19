@@ -592,7 +592,7 @@ const proto = (SchemaType.prototype = {
   },
 
   defined(message = locale.defined) {
-    return this.nullable().test({
+    return this.test({
       message,
       name: 'defined',
       exclusive: true,
