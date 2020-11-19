@@ -127,12 +127,6 @@ inherits(ArraySchema, MixedSchema, {
     );
   },
 
-  _isPresent(value) {
-    return (
-      MixedSchema.prototype._isPresent.call(this, value) && value.length > 0
-    );
-  },
-
   of(schema) {
     var next = this.clone();
 
@@ -172,6 +166,19 @@ inherits(ArraySchema, MixedSchema, {
       params: { max },
       test(value) {
         return isAbsent(value) || value.length <= this.resolve(max);
+      },
+    });
+  },
+
+  length(length, message) {
+    message = message || locale.length;
+    return this.test({
+      message,
+      name: 'length',
+      exclusive: true,
+      params: { length },
+      test(value) {
+        return isAbsent(value) || value.length === this.resolve(length);
       },
     });
   },
