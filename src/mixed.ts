@@ -29,10 +29,11 @@ import Schema, {
 } from './Schema';
 import { ValidationError } from '.';
 import {
+  Nullability,
+  Presence,
   ResolveInput,
   ResolveOutput,
-  SetNullability,
-  TypeDef,
+  Unset,
 } from './util/types';
 
 class RefSet {
@@ -92,8 +93,9 @@ class RefSet {
 }
 
 export type SchemaSpec<TDefault> = {
-  nullable?: boolean;
-  default: TDefault | (() => TDefault);
+  nullability: Nullability;
+  presence: Presence;
+  default?: TDefault | (() => TDefault);
   hasDefault?: boolean;
   abortEarly?: boolean;
   strip?: boolean;
@@ -114,10 +116,11 @@ export function create() {
 
 export default class MixedSchema<
   TType = any,
-  TDef extends TypeDef = '',
   TDefault = any,
-  TInput = ResolveInput<TType, TDef, TDefault>,
-  TOutput = ResolveOutput<TType, TDef, TDefault>
+  TNullablity extends Nullability = Unset,
+  TPresence extends Presence = Unset,
+  TInput = ResolveInput<TType, TNullablity, TDefault>,
+  TOutput = ResolveOutput<TType, TNullablity, TPresence, TDefault>
 > implements Schema {
   readonly type: string;
 
@@ -164,8 +167,8 @@ export default class MixedSchema<
       recursive: true,
       label: undefined,
       meta: undefined,
-      nullable: false,
-      default: undefined as any,
+      nullability: 'unset',
+      presence: 'unset',
       ...options?.spec,
     };
   }
@@ -179,7 +182,7 @@ export default class MixedSchema<
     return true;
   }
 
-  clone(spec?: SchemaSpec<any>): this {
+  clone(spec?: Partial<SchemaSpec<any>>): this {
     if (this._mutate) {
       if (spec) Object.assign(this.spec, spec);
       return this;
@@ -244,10 +247,15 @@ export default class MixedSchema<
     let base = this;
     let combined = schema.clone();
 
-    // new undefined default is overridden by old non-undefined one, revert
-    if (schema.spec.hasDefault) {
-      combined.spec.default = schema.spec.default;
-    }
+    const mergedSpec = { ...base.spec, ...combined.spec };
+
+    if (combined.spec.nullability === 'unset')
+      mergedSpec.nullability = base.spec.nullability;
+
+    if (combined.spec.presence === 'unset')
+      mergedSpec.presence = base.spec.presence;
+
+    combined.spec = mergedSpec;
 
     combined._typeError ||= base._typeError;
     combined._whitelistError ||= base._whitelistError;
@@ -280,7 +288,7 @@ export default class MixedSchema<
   }
 
   isType(v: any) {
-    if (this.spec.nullable && v === null) return true;
+    if (this.spec.nullability === 'nullable' && v === null) return true;
     return this._typeCheck(v);
   }
 
@@ -472,31 +480,33 @@ export default class MixedSchema<
     }
   }
 
-  getDefault(options = {}) {
-    let schema = this.resolve(options);
-    return schema.default();
+  private _getDefault() {
+    let defaultValue = this.spec.default;
+
+    if (defaultValue == null) {
+      return defaultValue;
+    }
+    return typeof defaultValue === 'function'
+      ? defaultValue.call(this)
+      : cloneDeep(defaultValue);
   }
 
-  default(): TDefault; // FIXME(ts): typed default
+  getDefault(options?: ResolveOptions) {
+    let schema = this.resolve(options || {});
+    return schema._getDefault();
+  }
+
+  default(): TDefault;
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
-  ): MixedSchema<TType, TDef, TNextDefault>;
+  ): MixedSchema<TType, TNextDefault, TNullablity, TPresence>;
   default<TDefault = any>(def?: TDefault | (() => TDefault)) {
     if (arguments.length === 0) {
-      let defaultValue = this.spec.default;
-
-      if (defaultValue == null) {
-        return defaultValue;
-      }
-
-      return typeof defaultValue === 'function'
-        ? defaultValue.call(this)
-        : cloneDeep(defaultValue);
+      return this._getDefault();
     }
 
-    var next = this.clone();
-    next.spec.hasDefault = true;
-    next.spec.default = def as any;
+    let next = this.clone({ default: def });
+
     return next;
   }
 
@@ -512,32 +522,36 @@ export default class MixedSchema<
 
   required(
     message = locale.required,
-  ): MixedSchema<TType, Exclude<TDef, 'optional'> | 'required'> {
-    return this.test({
-      message,
-      name: 'required',
-      exclusive: true,
-      test(value) {
-        return this.schema._isPresent(value);
-      },
-    }) as any;
+  ): MixedSchema<TType, TDefault, TNullablity, 'required'> {
+    return this.clone({ presence: 'required' }).withMutation((s) =>
+      s.test({
+        message,
+        name: 'required',
+        exclusive: true,
+        test(value) {
+          return this.schema._isPresent(value);
+        },
+      }),
+    ) as any;
   }
 
-  notRequired(): MixedSchema<TType, Exclude<TDef, 'required'> | 'optional'> {
-    var next = this.clone();
+  notRequired(): MixedSchema<TType, TDefault, TNullablity, 'optional'> {
+    var next = this.clone({ presence: 'optional' });
     next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next as any;
   }
 
   nullable(
     isNullable?: true,
-  ): MixedSchema<TType, SetNullability<TDef, 'nullable'>, TDefault>;
+  ): MixedSchema<TType, TDefault, 'nullable', TPresence>;
   nullable(
     isNullable: false,
-  ): MixedSchema<TType, SetNullability<TDef, 'nonnullable'>, TDefault>;
-  nullable(isNullable = true): MixedSchema<TType, any, TDefault> {
-    var next = this.clone();
-    next.spec.nullable = isNullable;
+  ): MixedSchema<TType, TDefault, 'nonnullable', TPresence>;
+  nullable(isNullable = true): MixedSchema<TType, TDefault, any, any> {
+    var next = this.clone({
+      nullability: isNullable ? 'nullable' : 'nonnullable',
+    });
+
     return next as any;
   }
 
@@ -747,8 +761,9 @@ export default class MixedSchema<
 
 export default interface MixedSchema<
   TType,
-  TDef extends TypeDef,
   TDefault,
+  TNullablity extends Nullability,
+  TPresence extends Presence,
   TInput,
   TOutput
 > {

@@ -3,7 +3,7 @@ import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import { Maybe } from './types';
 import Reference from './Reference';
-import { SetNullability, SetPresence, TypeDef } from './util/types';
+import { Nullability, Presence, Unset } from './util/types';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -13,9 +13,10 @@ export function create() {
 
 export default class NumberSchema<
   TType extends number,
-  TDef extends TypeDef = '',
-  TDefault extends Maybe<TType> = undefined
-> extends MixedSchema<TType, TDef, TDefault> {
+  TDefault extends Maybe<TType> = undefined,
+  TNullablity extends Nullability = Unset,
+  TPresence extends Presence = Unset
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
   constructor() {
     super({ type: 'number' });
 
@@ -129,24 +130,24 @@ export default class NumberSchema<
   }
 }
 
-// @ts-expect-error
 export default interface NumberSchema<
   TType extends number,
-  TDef extends TypeDef,
-  TDefault extends Maybe<TType>
-> extends MixedSchema<TType, TDef> {
+  TDefault extends Maybe<TType>,
+  TNullablity extends Nullability,
+  TPresence extends Presence
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
   default(): TDefault;
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
-  ): NumberSchema<TType, TDef, TNextDefault>;
+  ): NumberSchema<TType, TNextDefault, TNullablity, TPresence>;
 
-  required(): NumberSchema<TType, SetPresence<TDef, 'required'>, TDefault>;
-  notRequired(): NumberSchema<TType, SetPresence<TDef, 'optional'>, TDefault>;
+  required(): NumberSchema<TType, TDefault, TNullablity, 'required'>;
+  notRequired(): NumberSchema<TType, TDefault, TNullablity, 'optional'>;
 
   nullable(
     isNullable?: true,
-  ): NumberSchema<TType, SetNullability<TDef, 'nullable'>, TDefault>;
+  ): NumberSchema<TType, TDefault, 'nullable', TPresence>;
   nullable(
     isNullable: false,
-  ): NumberSchema<TType, SetNullability<TDef, 'nonnullable'>, TDefault>;
+  ): NumberSchema<TType, TDefault, 'nonnullable', TPresence>;
 }

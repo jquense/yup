@@ -10,15 +10,17 @@ import ValidationError from './ValidationError';
 import Reference from './Reference';
 import {
   Asserts,
+  Nullability,
+  Presence,
   ResolveInput,
   ResolveOutput,
-  SetNullability,
-  SetPresence,
-  TypeDef,
   TypeOf,
+  Unset,
 } from './util/types';
 
 type RefectorFn = (value: any, index: number, array: any[]) => boolean;
+
+type MaybeArray<T> = Maybe<Maybe<T>[]>;
 
 export function create<TInner extends MixedSchema = MixedSchema>(
   type?: TInner,
@@ -32,14 +34,16 @@ type Type<T extends MixedSchema> = T extends MixedSchema<infer TType>
 
 export default class ArraySchema<
   T extends MixedSchema = MixedSchema,
-  TDef extends TypeDef = '',
-  TDefault extends Maybe<Maybe<Type<T>>[]> = undefined
+  TDefault extends MaybeArray<T> = undefined,
+  TNullablity extends Nullability = Unset,
+  TPresence extends Presence = Unset
 > extends MixedSchema<
   Type<T>[],
-  TDef,
   TDefault,
-  ResolveInput<TypeOf<T>[], TDef, TDefault>,
-  ResolveOutput<Asserts<T>[], TDef, TDefault>
+  TNullablity,
+  TPresence,
+  ResolveInput<TypeOf<T>[], TNullablity, TDefault>,
+  ResolveOutput<Asserts<T>[], TNullablity, TPresence, TDefault>
 > {
   //
 
@@ -186,7 +190,7 @@ export default class ArraySchema<
 
   of<TInner extends MixedSchema>(
     schema: TInner,
-  ): ArraySchema<TInner, TDef, TDefault> {
+  ): ArraySchema<TInner, undefined, TNullablity, TPresence> {
     // FIXME: this should return a new instance of array without the default to be
     var next = this.clone();
 
@@ -273,27 +277,27 @@ export default class ArraySchema<
 
 export default interface ArraySchema<
   T extends MixedSchema,
-  TDef extends TypeDef,
-  TDefault extends Maybe<Maybe<Type<T>>[]>
+  TDefault extends MaybeArray<T>,
+  TNullablity extends Nullability,
+  TPresence extends Presence
 > extends MixedSchema<
     Type<T>[],
-    TDef,
     TDefault,
-    ResolveInput<TypeOf<T>[], TDef, TDefault>,
-    ResolveOutput<Asserts<T>[], TDef, TDefault>
+    TNullablity,
+    TPresence,
+    ResolveInput<TypeOf<T>[], TNullablity, TDefault>,
+    ResolveOutput<Asserts<T>[], TNullablity, TPresence, TDefault>
   > {
   default(): TDefault;
-  default<TNext extends any[] = any[]>(
-    def: TNext | (() => TNext),
-  ): ArraySchema<T, TDef, TNext>;
+  default<TNextDefault extends any[] = any[]>(
+    def: TNextDefault | (() => TNextDefault),
+  ): ArraySchema<T, TNextDefault, TNullablity, TPresence>;
 
-  required(): ArraySchema<T, SetPresence<TDef, 'required'>, TDefault>;
-  notRequired(): ArraySchema<T, SetPresence<TDef, 'optional'>, TDefault>;
+  required(): ArraySchema<T, TDefault, TNullablity, 'required'>;
+  notRequired(): ArraySchema<T, TDefault, TNullablity, 'optional'>;
 
-  nullable(
-    isNullable?: true,
-  ): ArraySchema<T, SetNullability<TDef, 'nullable'>, TDefault>;
+  nullable(isNullable?: true): ArraySchema<T, TDefault, 'nullable', TPresence>;
   nullable(
     isNullable: false,
-  ): ArraySchema<T, SetNullability<TDef, 'nonnullable'>, TDefault>;
+  ): ArraySchema<T, TDefault, 'nonnullable', TPresence>;
 }

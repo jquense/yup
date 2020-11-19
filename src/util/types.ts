@@ -3,30 +3,13 @@
 import Schema from '../Schema';
 import { Maybe } from '../types';
 
-export type Presence = 'required' | 'optional';
-export type Nullability = 'nullable' | 'nonnullable';
-
-type Pluck<T, O> = T extends O ? T : never;
-
-type MaintainOptionality<T, U> = T extends undefined ? U | undefined : U;
+export type Unset = 'unset';
+export type Presence = 'required' | 'optional' | Unset;
+export type Nullability = 'nullable' | 'nonnullable' | Unset;
 
 type StrictNonNullable<T> = T extends null ? never : T;
 
 export type TypeDef = Nullability | Presence | '';
-
-export type SetNullability<
-  Def extends TypeDef,
-  TValue extends Nullability
-> = TValue extends 'nullable'
-  ? Exclude<Def, 'nonnullable'> | 'nullable'
-  : Exclude<Def, 'nullable'> | 'nonnullable';
-
-export type SetPresence<
-  Def extends TypeDef,
-  TValue extends Presence
-> = TValue extends 'required'
-  ? Exclude<Def, 'optional'> | 'required'
-  : Exclude<Def, 'required'> | 'optional';
 
 export type ResolveDefault<TType, TDefault extends Maybe<TType> = undefined> =
   | TType
@@ -34,29 +17,26 @@ export type ResolveDefault<TType, TDefault extends Maybe<TType> = undefined> =
 
 export type ResolveInput<
   TType,
-  Def extends TypeDef,
+  TNull = 'unset',
   TDefault = undefined
-> = Def extends 'nullable'
+> = TNull extends 'nullable'
   ? TType | TDefault | null
   : StrictNonNullable<TType | TDefault>;
 
 export type ResolveOutput<
   TType,
-  Def extends TypeDef,
+  TNull = 'unset',
+  TPresent = 'unset',
   TDefault = undefined
-> = Pluck<Def, 'required'> extends never
-  ? ResolveInput<TType, Def, TDefault> //
-  : NonNullable<ResolveInput<TType, Def>>;
+> = TPresent extends 'required'
+  ? NonNullable<ResolveInput<TType, TNull>>
+  : ResolveInput<TType, TNull, TDefault>; //
 
-export type TypedSchema<
-  _TType = any,
-  _TDef extends TypeDef = any,
-  _TDefault = any
-> = {
+export type TypedSchema = {
   __inputType: any;
   __outputType: any;
-  cast(...args: any[]): any;
-  validateSync(...args: any[]): any;
+  // cast(...args: any[]): any;
+  // validateSync(...args: any[]): any;
 };
 
 // declare class Schema {}
@@ -64,25 +44,6 @@ export type TypedSchema<
 export type TypeOf<TSchema extends TypedSchema> = TSchema['__inputType'];
 
 export type Asserts<TSchema extends TypedSchema> = TSchema['__outputType'];
-
-export type MergePresence<T extends TypeDef, U extends TypeDef> = Pluck<
-  U,
-  Presence
-> extends never
-  ? Extract<T, Presence> | Extract<U, Presence>
-  : U;
-
-export type MergeNullability<T extends TypeDef, U extends TypeDef> = Pluck<
-  U,
-  Nullability
-> extends never
-  ? Extract<T, Nullability> | Extract<U, Nullability>
-  : U;
-
-export type MergeDef<T extends TypeDef, U extends TypeDef> =
-  | MergeNullability<T, U>
-  | MergePresence<T, U>
-  | '';
 
 // export type Concat<TSchema extends TypedSchema> = TSchema extends TypedSchema<infer TDef>
 // ?

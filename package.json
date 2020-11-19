@@ -109,6 +109,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.5",
+    "@types/lodash": "^4.14.165",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.11",
     "nanoclone": "^0.2.1",

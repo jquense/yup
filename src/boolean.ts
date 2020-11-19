@@ -1,12 +1,17 @@
 import MixedSchema from './mixed';
+import { Maybe } from './types';
+import { Nullability, Presence } from './util/types';
 
 export function create() {
   return new BooleanSchema();
 }
 
-export default class BooleanSchema<TType extends boolean> extends MixedSchema<
-  TType
-> {
+export default class BooleanSchema<
+  TType extends boolean,
+  TDefault extends Maybe<TType>,
+  TNullablity extends Nullability,
+  TPresence extends Presence
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
   constructor() {
     super({ type: 'boolean' });
 
@@ -26,4 +31,26 @@ export default class BooleanSchema<TType extends boolean> extends MixedSchema<
 
     return typeof v === 'boolean';
   }
+}
+
+export default interface BooleanSchema<
+  TType extends boolean,
+  TDefault extends Maybe<TType>,
+  TNullablity extends Nullability,
+  TPresence extends Presence
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
+  default(): TDefault;
+  default<TNextDefault extends Maybe<TType>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): BooleanSchema<TType, TNextDefault, TNullablity, TPresence>;
+
+  required(): BooleanSchema<TType, TDefault, TNullablity, 'required'>;
+  notRequired(): BooleanSchema<TType, TDefault, TNullablity, 'optional'>;
+
+  nullable(
+    isNullable?: true,
+  ): BooleanSchema<TType, TDefault, 'nullable', TPresence>;
+  nullable(
+    isNullable: false,
+  ): BooleanSchema<TType, TDefault, 'nonnullable', TPresence>;
 }

@@ -1,5 +1,4 @@
 import ValidationError from '../ValidationError';
-import { once } from './async';
 import { TestOptions } from './createValidation';
 import { Callback } from '../types';
 
@@ -15,6 +14,16 @@ export type TestRunOptions = {
   value: any;
   sync?: boolean;
 };
+
+const once = <T extends (...args: any[]) => any>(cb: T) => {
+  let fired = false;
+  return (...args: Parameters<T>) => {
+    if (fired) return;
+    fired = true;
+    cb(...args);
+  };
+};
+
 export default function runTests(options: TestRunOptions, cb: Callback): void {
   let { endEarly, tests, args, value, errors, sort, path } = options;
 

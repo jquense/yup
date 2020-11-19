@@ -675,6 +675,18 @@ describe('Mixed Types ', () => {
     await inst.isValid('a').should.become(true);
   });
 
+  it('concat should maintain explicit nullability', async function () {
+    let inst = string().nullable().concat(string().default('hi'));
+
+    await inst.isValid(null).should.become(true);
+  });
+
+  it('concat should maintain explicit presence', async function () {
+    let inst = string().required().concat(string());
+
+    await inst.isValid(undefined).should.become(false);
+  });
+
   it('gives whitelist precedence to second in concat', async function () {
     let inst = string()
       .oneOf(['a', 'b', 'c'])

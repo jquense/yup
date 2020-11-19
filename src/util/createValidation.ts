@@ -31,6 +31,7 @@ export type TestContext = {
 export type TestFunction<T = unknown> = (
   this: TestContext,
   value: T,
+  context: TestContext,
 ) => boolean | ValidationError | Promise<boolean | ValidationError>;
 
 export type TestOptions<TSchema extends Schema = Schema> = {
