@@ -240,7 +240,7 @@ const proto = (SchemaType.prototype = {
           );
 
     if (value === undefined && has(this, '_default')) {
-      value = this.default();
+      value = this.getDefault();
     }
 
     return value;
@@ -352,20 +352,29 @@ const proto = (SchemaType.prototype = {
     }
   },
 
+  _getDefault() {
+    var defaultValue = has(this, '_default')
+      ? this._default
+      : this._defaultDefault;
+
+    return typeof defaultValue === 'function'
+      ? defaultValue.call(this)
+      : cloneDeepWith(defaultValue);
+  },
+
   getDefault(options = {}) {
     let schema = this.resolve(options);
-    return schema.default();
+    return schema._getDefault();
   },
 
   default(def) {
     if (arguments.length === 0) {
-      var defaultValue = has(this, '_default')
-        ? this._default
-        : this._defaultDefault;
+      console.warn(
+        'Calling `schema.default()` as a getter to retrieve a default is deprecated and will be removed in the next version. \n' +
+          'Use `schema.getDefault()` instead.',
+      );
 
-      return typeof defaultValue === 'function'
-        ? defaultValue.call(this)
-        : cloneDeepWith(defaultValue);
+      return this._getDefault();
     }
 
     var next = this.clone();

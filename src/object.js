@@ -31,7 +31,7 @@ export default function ObjectSchema(spec) {
       let dft = {};
       this._nodes.forEach((key) => {
         dft[key] = this.fields[key].default
-          ? this.fields[key].default()
+          ? this.fields[key].getDefault()
           : undefined;
       });
       return dft;
@@ -73,7 +73,7 @@ inherits(ObjectSchema, MixedSchema, {
     let value = MixedSchema.prototype._cast.call(this, _value);
 
     //should ignore nulls here
-    if (value === undefined) return this.default();
+    if (value === undefined) return this.getDefault();
 
     if (!this._typeCheck(value)) return value;
 

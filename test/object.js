@@ -251,7 +251,7 @@ describe('Object types', () => {
     });
 
     it('should expand objects by default', () => {
-      objSchema.default().should.eql({
+      objSchema.getDefault().should.eql({
         nest: { str: 'hi' },
       });
     });
@@ -259,7 +259,7 @@ describe('Object types', () => {
     it('should accept a user provided default', () => {
       objSchema = objSchema.default({ boom: 'hi' });
 
-      objSchema.default().should.eql({
+      objSchema.getDefault().should.eql({
         boom: 'hi',
       });
     });
@@ -269,7 +269,7 @@ describe('Object types', () => {
         str: string(),
         nest: object({ str: string() }),
       })
-        .default()
+        .getDefault()
         .should.eql({
           nest: { str: undefined },
           str: undefined,
@@ -793,9 +793,9 @@ describe('Object types', () => {
       other: bool(),
     }).default(undefined);
 
-    expect(inst.concat(object()).default()).to.equal(undefined);
+    expect(inst.concat(object()).getDefault()).to.equal(undefined);
 
-    expect(inst.concat(object().default({})).default()).to.eql({});
+    expect(inst.concat(object().default({})).getDefault()).to.eql({});
   });
 
   it('should handle nested conditionals', () => {
@@ -886,7 +886,7 @@ describe('Object types', () => {
       color: string().default('red').required(),
     });
 
-    expect(inst.pick(['age', 'name']).default()).to.eql({
+    expect(inst.pick(['age', 'name']).getDefault()).to.eql({
       age: 30,
       name: 'pat',
     });
@@ -906,7 +906,7 @@ describe('Object types', () => {
       color: string().default('red').required(),
     });
 
-    expect(inst.omit(['age', 'name']).default()).to.eql({
+    expect(inst.omit(['age', 'name']).getDefault()).to.eql({
       color: 'red',
     });
 
