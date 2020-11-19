@@ -261,6 +261,29 @@ inherits(ObjectSchema, MixedSchema, {
     return next;
   },
 
+  pick(keys) {
+    const picked = {};
+    for (const key of keys) {
+      if (this.fields[key]) picked[key] = this.fields[key];
+    }
+
+    return this.clone().withMutation((next) => {
+      next.fields = {};
+      return next.shape(picked);
+    });
+  },
+
+  omit(keys) {
+    const next = this.clone();
+    const fields = next.fields;
+    next.fields = {};
+    for (const key of keys) {
+      delete fields[key];
+    }
+
+    return next.withMutation((next) => next.shape(fields));
+  },
+
   from(from, to, alias) {
     let fromGetter = getter(from, true);
 

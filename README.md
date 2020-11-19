@@ -1152,6 +1152,36 @@ object({
 });
 ```
 
+#### `object.pick(keys: string[]): Schema`
+
+Create a new schema from a subset of the original's fields.
+
+```js
+const person = object({
+  age: number().default(30).required(),
+  name: string().default('pat').required(),
+  color: string().default('red').required(),
+});
+
+const nameAndAge = person.pick(['name', 'age']);
+nameAndAge.default(); // => { age: 30, name: 'pat'}
+```
+
+#### `object.omit(keys: string[]): Schema`
+
+Create a new schema with fields omitted.
+
+```js
+const person = object({
+  age: number().default(30).required(),
+  name: string().default('pat').required(),
+  color: string().default('red').required(),
+});
+
+const nameAndAge = person.omit('color']);
+nameAndAge.default(); // => { age: 30, name: 'pat'}
+```
+
 #### `object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
