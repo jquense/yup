@@ -577,9 +577,9 @@ yup.object.default(() => ({ number: 5 })); // this is cheaper
 yup.date.default(() => new Date()); // also helpful for defaults that change over time
 ```
 
-#### `mixed.default(): Any`
+#### `mixed.getDefault(options?: object): Any`
 
-Calling `default` with no arguments will return the current default value
+Retrieve a previously set default value. `getDefault` will resolve any conditions that may alter the default. Optionally pass `options` with `context` (for more info on `context` see `mixed.validate`).
 
 #### `mixed.nullable(isNullable: boolean = true): Schema`
 
@@ -1173,7 +1173,7 @@ const person = object({
 });
 
 const nameAndAge = person.pick(['name', 'age']);
-nameAndAge.default(); // => { age: 30, name: 'pat'}
+nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
 
 #### `object.omit(keys: string[]): Schema`
@@ -1188,7 +1188,7 @@ const person = object({
 });
 
 const nameAndAge = person.omit('color']);
-nameAndAge.default(); // => { age: 30, name: 'pat'}
+nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
 
 #### `object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`

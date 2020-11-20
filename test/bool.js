@@ -19,8 +19,8 @@ describe('Boolean types', () => {
   it('should handle DEFAULT', () => {
     let inst = bool();
 
-    expect(inst.default()).to.equal(undefined);
-    inst.default(true).required().default().should.equal(true);
+    expect(inst.getDefault()).to.equal(undefined);
+    inst.default(true).required().getDefault().should.equal(true);
   });
 
   it('should type check', () => {

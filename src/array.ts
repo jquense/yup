@@ -1,7 +1,7 @@
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
-import MixedSchema from './mixed';
+import MixedSchema, { AnyMixed } from './mixed';
 import { array as locale } from './locale';
 import runTests, { RunTest } from './util/runTests';
 import { SchemaInnerTypeDescription, SchemaSpec } from './Schema';
@@ -22,19 +22,17 @@ type RefectorFn = (value: any, index: number, array: any[]) => boolean;
 
 type MaybeArray<T> = Maybe<Maybe<T>[]>;
 
-export function create<TInner extends MixedSchema = MixedSchema>(
-  type?: TInner,
-) {
+export function create<TInner extends AnyMixed = AnyMixed>(type?: TInner) {
   return new ArraySchema(type);
 }
 
-type Type<T extends MixedSchema> = T extends MixedSchema<infer TType>
+type Type<T extends AnyMixed> = T extends MixedSchema<infer TType>
   ? TType
   : never;
 
 export default class ArraySchema<
-  T extends MixedSchema = MixedSchema,
-  TDefault extends MaybeArray<T> = undefined,
+  T extends AnyMixed = AnyMixed,
+  TDefault extends MaybeArray<Type<T>> = undefined,
   TNullablity extends Nullability = Unset,
   TPresence extends Presence = Unset
 > extends MixedSchema<
@@ -175,8 +173,19 @@ export default class ArraySchema<
     return next;
   }
 
-  concat(schema: ArraySchema): ArraySchema {
-    let next = super.concat(schema) as ArraySchema;
+  concat<TOther extends ArraySchema<T, any, any, any>>(
+    schema: TOther,
+  ): TOther extends ArraySchema<T, infer D, infer N, infer P>
+    ? ArraySchema<
+        T,
+        D,
+        N extends Unset ? TNullablity : N,
+        P extends Unset ? TPresence : P
+      >
+    : never;
+  concat(schema: any): any;
+  concat(schema: any): any {
+    let next = super.concat(schema);
 
     next.innerType = this.innerType;
 
@@ -276,8 +285,8 @@ export default class ArraySchema<
 }
 
 export default interface ArraySchema<
-  T extends MixedSchema,
-  TDefault extends MaybeArray<T>,
+  T extends AnyMixed,
+  TDefault extends MaybeArray<Type<T>>,
   TNullablity extends Nullability,
   TPresence extends Presence
 > extends MixedSchema<
@@ -288,11 +297,13 @@ export default interface ArraySchema<
     ResolveInput<TypeOf<T>[], TNullablity, TDefault>,
     ResolveOutput<Asserts<T>[], TNullablity, TPresence, TDefault>
   > {
-  default(): TDefault;
-  default<TNextDefault extends any[] = any[]>(
+  // concat(schema: any): any;
+
+  default<TNextDefault extends Type<T>[] | null | undefined>(
     def: TNextDefault | (() => TNextDefault),
   ): ArraySchema<T, TNextDefault, TNullablity, TPresence>;
 
+  defined(): ArraySchema<T, TDefault, TNullablity, 'required'>;
   required(): ArraySchema<T, TDefault, TNullablity, 'required'>;
   notRequired(): ArraySchema<T, TDefault, TNullablity, 'optional'>;
 

@@ -17,7 +17,7 @@ export type ResolveDefault<TType, TDefault extends Maybe<TType> = undefined> =
 
 export type ResolveInput<
   TType,
-  TNull = 'unset',
+  TNull = Unset,
   TDefault = undefined
 > = TNull extends 'nullable'
   ? TType | TDefault | null
@@ -25,8 +25,8 @@ export type ResolveInput<
 
 export type ResolveOutput<
   TType,
-  TNull = 'unset',
-  TPresent = 'unset',
+  TNull = Unset,
+  TPresent = Unset,
   TDefault = undefined
 > = TPresent extends 'required'
   ? NonNullable<ResolveInput<TType, TNull>>

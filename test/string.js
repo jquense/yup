@@ -63,7 +63,7 @@ describe('String types', () => {
   it('should handle DEFAULT', function () {
     var inst = string();
 
-    inst.default('my_value').required().default().should.equal('my_value');
+    inst.default('my_value').required().getDefault().should.equal('my_value');
   });
 
   it('should type check', function () {

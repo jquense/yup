@@ -1,5 +1,5 @@
 import MixedSchema from './mixed';
-import { string as locale } from './locale';
+import { MixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Reference from './Reference';
 import { Message, Maybe } from './types';
@@ -215,4 +215,9 @@ export default interface StringSchema<
   nullable(
     isNullable: false,
   ): StringSchema<TType, TDefault, 'nonnullable', TPresence>;
+
+  // oneOf<U extends TType>(
+  //   enums: U[],
+  //   message: MixedLocale['oneOf'],
+  // ): StringSchema<U, any, TNullablity, TPresence>;
 }

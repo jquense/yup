@@ -36,6 +36,8 @@ import {
   Unset,
 } from './util/types';
 
+const UNSET = 'unset' as const;
+
 class RefSet {
   list: Set<unknown>;
   refs: Map<string, Reference>;
@@ -110,13 +112,15 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export function create() {
-  return new MixedSchema();
+export type AnyMixed = MixedSchema<any, any, any, any, any, any>;
+
+export function create<TType = any>() {
+  return new MixedSchema<TType>();
 }
 
 export default class MixedSchema<
   TType = any,
-  TDefault = any,
+  TDefault = undefined,
   TNullablity extends Nullability = Unset,
   TPresence extends Presence = Unset,
   TInput = ResolveInput<TType, TNullablity, TDefault>,
@@ -167,8 +171,8 @@ export default class MixedSchema<
       recursive: true,
       label: undefined,
       meta: undefined,
-      nullability: 'unset',
-      presence: 'unset',
+      nullability: UNSET,
+      presence: UNSET,
       ...options?.spec,
     };
   }
@@ -190,7 +194,9 @@ export default class MixedSchema<
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    const next: MixedSchema = Object.create(Object.getPrototypeOf(this));
+    const next: MixedSchema<any, any> = Object.create(
+      Object.getPrototypeOf(this),
+    );
 
     // @ts-expect-error this is readonly
     next.type = this.type;
@@ -236,7 +242,18 @@ export default class MixedSchema<
     return result;
   }
 
-  concat(schema: MixedSchema): MixedSchema {
+  concat<TOther extends MixedSchema<TType, any, any, any>>(
+    schema: TOther,
+  ): TOther extends MixedSchema<TType, infer D, infer N, infer P>
+    ? MixedSchema<
+        TType,
+        D,
+        N extends Unset ? TNullablity : N,
+        P extends Unset ? TPresence : P
+      >
+    : never;
+  concat(schema: MixedSchema<any, any>): MixedSchema<any, any>;
+  concat(schema: MixedSchema<any, any>): MixedSchema<any, any> {
     if (!schema || schema === this) return this;
 
     if (schema.type !== this.type && this.type !== 'mixed')
@@ -249,10 +266,10 @@ export default class MixedSchema<
 
     const mergedSpec = { ...base.spec, ...combined.spec };
 
-    if (combined.spec.nullability === 'unset')
+    if (combined.spec.nullability === UNSET)
       mergedSpec.nullability = base.spec.nullability;
 
-    if (combined.spec.presence === 'unset')
+    if (combined.spec.presence === UNSET)
       mergedSpec.presence = base.spec.presence;
 
     combined.spec = mergedSpec;
@@ -360,7 +377,7 @@ export default class MixedSchema<
           );
 
     if (value === undefined) {
-      value = this.default();
+      value = this.getDefault();
     }
 
     return value;
@@ -480,7 +497,7 @@ export default class MixedSchema<
     }
   }
 
-  private _getDefault() {
+  protected _getDefault() {
     let defaultValue = this.spec.default;
 
     if (defaultValue == null) {
@@ -491,23 +508,21 @@ export default class MixedSchema<
       : cloneDeep(defaultValue);
   }
 
-  getDefault(options?: ResolveOptions) {
+  getDefault(options?: ResolveOptions): TDefault {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
 
-  default(): TDefault;
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
-  ): MixedSchema<TType, TNextDefault, TNullablity, TPresence>;
-  default<TDefault = any>(def?: TDefault | (() => TDefault)) {
+  ): MixedSchema<TType, TNextDefault, TNullablity, TPresence> {
     if (arguments.length === 0) {
       return this._getDefault();
     }
 
     let next = this.clone({ default: def });
 
-    return next;
+    return next as any;
   }
 
   strict(isStrict = true) {
@@ -669,7 +684,7 @@ export default class MixedSchema<
     return next;
   }
 
-  oneOf(enums: unknown[], message = locale.oneOf) {
+  oneOf<U extends TType>(enums: Maybe<U>[], message = locale.oneOf): this {
     var next = this.clone();
 
     enums.forEach((val) => {
@@ -694,10 +709,10 @@ export default class MixedSchema<
       },
     });
 
-    return next;
+    return next as any;
   }
 
-  notOneOf(enums: unknown[], message = locale.notOneOf) {
+  notOneOf<U extends TType>(enums: Maybe<U>[], message = locale.notOneOf) {
     var next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
@@ -747,7 +762,9 @@ export default class MixedSchema<
     return description;
   }
 
-  defined(message = locale.defined) {
+  defined(
+    message = locale.defined,
+  ): MixedSchema<TType, TDefault, TNullablity, 'required'> {
     return this.test({
       message,
       name: 'defined',
@@ -755,7 +772,7 @@ export default class MixedSchema<
       test(value) {
         return value !== undefined;
       },
-    });
+    }) as any;
   }
 }
 

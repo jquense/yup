@@ -5,7 +5,7 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import MixedSchema, { SchemaSpec } from './mixed';
+import MixedSchema, { AnyMixed, SchemaSpec } from './mixed';
 import { object as locale, string } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
@@ -33,7 +33,7 @@ function unknown(ctx: ObjectSchema, value: any) {
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
-type ObjectShape = Record<string, MixedSchema | Reference | Lazy<any>>;
+type ObjectShape = Record<string, AnyMixed | Reference | Lazy<any>>;
 
 type AssignShape<T extends ObjectShape, U extends ObjectShape> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
@@ -140,7 +140,7 @@ export default class ObjectSchema<
     let value = super._cast(_value, options);
 
     //should ignore nulls here
-    if (value === undefined) return this.default();
+    if (value === undefined) return this.getDefault();
 
     if (!this._typeCheck(value)) return value;
 
@@ -265,7 +265,6 @@ export default class ObjectSchema<
               parent: value,
               originalValue: originalValue[key],
             },
-            // @ts-expect-error
             cb,
           );
           return;
@@ -300,6 +299,7 @@ export default class ObjectSchema<
   }
 
   concat<U extends TShape>(schema: ObjectSchema<U>): ObjectSchema<TShape & U>;
+  concat(schema: AnyMixed): AnyMixed;
   concat<U extends ObjectShape>(schema: ObjectSchema<U>): ObjectSchema {
     let next = super.concat(schema) as ObjectSchema;
 
@@ -316,9 +316,10 @@ export default class ObjectSchema<
     return next.withMutation((next) => next.shape(nextFields));
   }
 
-  default(nextDefault?: any) {
-    if (arguments.length) return super.default(nextDefault);
-    if ('default' in this.spec) return super.default();
+  protected _getDefault() {
+    if ('default' in this.spec) {
+      return super._getDefault();
+    }
 
     // if there is no default set invent one
     if (!this._nodes.length) {
@@ -328,7 +329,7 @@ export default class ObjectSchema<
     let dft = {} as Record<string, unknown>;
     this._nodes.forEach((key) => {
       const field = this.fields[key];
-      dft[key] = 'default' in field ? field.default() : undefined;
+      dft[key] = 'default' in field ? field.getDefault() : undefined;
     });
     return dft as any;
   }
@@ -466,11 +467,11 @@ export default interface ObjectSchema<
     ResolveInput<TypeOfShape<TShape>, TNullablity, TDefault>,
     ResolveOutput<AssertsShape<TShape>, TNullablity, TPresence, TDefault>
   > {
-  default(): TDefault;
   default<TNextDefault extends Maybe<Record<string, any>>>(
     def: TNextDefault | (() => TNextDefault),
   ): ObjectSchema<TShape, TNextDefault, TNullablity, TPresence>;
 
+  defined(): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
   required(): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
   notRequired(): ObjectSchema<TShape, TDefault, TNullablity, 'optional'>;
 

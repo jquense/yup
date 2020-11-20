@@ -2,7 +2,7 @@
 // import { Asserts } from '../src/mixed';
 import { array, string, object, mixed, number, ref, lazy } from '../src';
 import { AssertsShape, DefaultFromShape, TypeOfShape } from '../src/object';
-import { ResolveInput, ResolveOutput } from '../src/util/types';
+import { ResolveInput, ResolveOutput, Unset } from '../src/util/types';
 
 // let schema = object({
 //   str: string().nullable(),
@@ -21,9 +21,6 @@ string().required().nullable();
   // $ExpectType string | undefined
   type _d1 = ResolveInput<string, ''>;
 
-  // type dd = GetNull<Config<'nullable', 'unset'>> extends 'nullable'
-  //   ? true
-  //   : false;
   // $ExpectType string | null | undefined
   type _d2 = ResolveInput<string, 'nullable'>;
 
@@ -34,7 +31,7 @@ string().required().nullable();
   type _d4 = ResolveOutput<string, 'nullable', 'required'>;
 
   // $ExpectType string
-  type _d5 = ResolveOutput<string, 'unset', 'required'>;
+  type _d5 = ResolveOutput<string, Unset, 'required'>;
 
   // $ExpectType string | null
   type _i1 = ResolveInput<string, 'nullable', string>;
@@ -61,7 +58,7 @@ string().required().nullable();
   type _o2 = ResolveOutput<string, 'nonnullable', 'optional'>;
 
   // $ExpectType string
-  type _o3 = ResolveOutput<string, 'nonnullable', 'unset', ''>;
+  type _o3 = ResolveOutput<string, 'nonnullable', Unset, ''>;
 
   // $ExpectType string
   type _o4 = ResolveOutput<string, 'nullable', 'required', null>;
@@ -101,7 +98,7 @@ string().required().nullable();
   const strDefined = string().default('');
 
   // $ExpectType ""
-  const _strDefined = strDefined.default();
+  const _strDefined = strDefined.getDefault();
 
   const strDefault = string().nullable().default('');
 
@@ -174,7 +171,7 @@ string().required().nullable();
   //
   // Object Defaults
   //
-  const dflt1 = obj.default();
+  const dflt1 = obj.getDefault();
 
   // $ExpectType 1
   dflt1.number;
@@ -221,10 +218,10 @@ string().required().nullable();
   // $ExpectType number[]
   array()
     .default([] as number[])
-    .default();
+    .getDefault();
 
   // $ExpectType string[] | (string | null)[] | null
-  array(string().nullable().default(''))
+  array(string().nullable())
     .nullable()
     .default(() => [] as string[])
     .validateSync(null);
@@ -232,7 +229,7 @@ string().required().nullable();
   // $ExpectType number[]
   array(number())
     .default<number[]>(() => [])
-    .default();
+    .getDefault();
 
   const a1 = object({
     list: array(number().required()).required(),
@@ -253,6 +250,11 @@ string().required().nullable();
 
   // $ExpectType string
   a1.nested![0].name;
+
+  // $ExpectType (number | undefined)[]
+  const _c1 = array(number())
+    .concat(array(number()).required())
+    .validateSync([]);
 }
 
 {
@@ -261,4 +263,18 @@ string().required().nullable();
 
   // $ExpectType string | number | undefined
   lazy((v) => (typeof v === 'string' ? string() : number())).cast(3);
+}
+//
+// CONCAT
+//
+{
+  // $ExpectType string
+  mixed<string>().required().concat(mixed<string>()).validateSync('');
+
+  let _f = mixed<string>().notRequired();
+  // $ExpectType string | undefined
+  const optional = mixed<string>().required().concat(_f).validateSync('');
+
+  // $ExpectType MixedSchema<number | "hi", any, "unset", "unset", any, any>
+  string().oneOf(['hi' as const, 1]);
 }

@@ -6,10 +6,11 @@ import { split } from 'property-expr';
 import Ref from '../Reference';
 import isSchema from './isSchema';
 import type MixedSchema from '../mixed';
-import Reference from '../Reference';
+import type Reference from '../Reference';
+import type Lazy from '../Lazy';
 
 export default function sortFields(
-  fields: Record<string, MixedSchema | Reference>,
+  fields: Record<string, MixedSchema | Reference | Lazy<any>>,
   excludes: readonly string[] = [],
 ) {
   let edges = [] as Array<[string, string]>;
