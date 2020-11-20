@@ -2,12 +2,12 @@ import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
 import MixedSchema, { AnyMixed } from './mixed';
-import { array as locale } from './locale';
+import { array as locale, MixedLocale } from './locale';
 import runTests, { RunTest } from './util/runTests';
-import { SchemaInnerTypeDescription, SchemaSpec } from './Schema';
-import { InternalOptions, Callback, Message, Maybe } from './types';
+import type { SchemaInnerTypeDescription, SchemaSpec } from './Schema';
+import type { InternalOptions, Callback, Message, Maybe } from './types';
 import ValidationError from './ValidationError';
-import Reference from './Reference';
+import type Reference from './Reference';
 import {
   Asserts,
   Nullability,
@@ -43,8 +43,6 @@ export default class ArraySchema<
   ResolveInput<TypeOf<T>[], TNullablity, TDefault>,
   ResolveOutput<Asserts<T>[], TNullablity, TPresence, TDefault>
 > {
-  //
-
   innerType: T | undefined;
 
   constructor(type?: T) {
@@ -185,7 +183,7 @@ export default class ArraySchema<
     : never;
   concat(schema: any): any;
   concat(schema: any): any {
-    let next = super.concat(schema);
+    let next = super.concat(schema) as this;
 
     next.innerType = this.innerType;
 
@@ -224,7 +222,7 @@ export default class ArraySchema<
       name: 'length',
       exclusive: true,
       params: { length },
-      test(value: Maybe<T[]>) {
+      test(value) {
         return isAbsent(value) || value.length === this.resolve(length);
       },
     });
@@ -239,7 +237,7 @@ export default class ArraySchema<
       exclusive: true,
       params: { min },
       // FIXME(ts): Array<typeof T>
-      test(value: any[]) {
+      test(value) {
         return isAbsent(value) || value.length >= this.resolve(min);
       },
     });
@@ -253,7 +251,7 @@ export default class ArraySchema<
       exclusive: true,
       params: { max },
       // FIXME(ts): Array<typeof T>
-      test(value: any[]) {
+      test(value) {
         return isAbsent(value) || value.length <= this.resolve(max);
       },
     });
@@ -303,9 +301,13 @@ export default interface ArraySchema<
     def: TNextDefault | (() => TNextDefault),
   ): ArraySchema<T, TNextDefault, TNullablity, TPresence>;
 
-  defined(): ArraySchema<T, TDefault, TNullablity, 'defined'>;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): ArraySchema<T, TDefault, TNullablity, 'defined'>;
 
-  required(): ArraySchema<T, TDefault, TNullablity, 'required'>;
+  required(
+    msg?: MixedLocale['required'],
+  ): ArraySchema<T, TDefault, TNullablity, 'required'>;
   notRequired(): ArraySchema<T, TDefault, TNullablity, 'optional'>;
 
   nullable(isNullable?: true): ArraySchema<T, TDefault, 'nullable', TPresence>;

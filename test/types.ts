@@ -282,7 +282,15 @@ string().required().nullable();
 
   let _f = mixed<string>().notRequired();
   // $ExpectType string | undefined
-  const optional = mixed<string>().required().concat(_f).validateSync('');
+  const _oo = mixed<string>().required().concat(_f).validateSync('');
+
+  const _o = object({
+    str: string(),
+  }).concat(
+    object({
+      name: string(),
+    }),
+  );
 
   // $ExpectType MixedSchema<number | "hi", any, "unset", "unset", any, any>
   // string().oneOf(['hi' as const]);

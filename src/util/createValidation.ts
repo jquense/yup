@@ -44,10 +44,10 @@ export type TestOptions<TSchema extends Schema = Schema> = {
   sync?: boolean;
 };
 
-export type TestConfig = {
+export type TestConfig<TValue = unknown> = {
   name?: string;
   message?: Message;
-  test: TestFunction;
+  test: TestFunction<TValue>;
   params?: ExtraParams;
   exclusive?: boolean;
 };

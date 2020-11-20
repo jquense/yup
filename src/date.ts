@@ -1,9 +1,11 @@
 import MixedSchema from './mixed';
 // @ts-ignore
 import isoParse from './util/isodate';
-import { date as locale } from './locale';
+import { date as locale, MixedLocale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
+import type { Maybe } from './types';
+import type { Nullability, Presence, Unset } from './util/types';
 
 let invalidDate = new Date('');
 
@@ -14,7 +16,12 @@ export function create() {
   return new DateSchema();
 }
 
-export default class DateSchema extends MixedSchema<Date> {
+export default class DateSchema<
+  TType extends Date,
+  TDefault extends Maybe<TType> = undefined,
+  TNullablity extends Nullability = Unset,
+  TPresence extends Presence = Unset
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
   constructor() {
     super({ type: 'date' });
 
@@ -30,7 +37,7 @@ export default class DateSchema extends MixedSchema<Date> {
     });
   }
 
-  protected _typeCheck(v: any): v is Date {
+  protected _typeCheck(v: any): v is TType {
     return isDate(v) && !isNaN(v.getTime());
   }
 
@@ -50,7 +57,7 @@ export default class DateSchema extends MixedSchema<Date> {
       name: 'min',
       exclusive: true,
       params: { min },
-      test(value: Date) {
+      test(value) {
         return isAbsent(value) || value >= this.resolve<Date>(limit);
       },
     });
@@ -72,9 +79,36 @@ export default class DateSchema extends MixedSchema<Date> {
       name: 'max',
       exclusive: true,
       params: { max },
-      test(value: Date) {
+      test(value) {
         return isAbsent(value) || value <= this.resolve<Date>(limit);
       },
     });
   }
+}
+
+export default interface DateSchema<
+  TType extends Date,
+  TDefault extends Maybe<TType>,
+  TNullablity extends Nullability,
+  TPresence extends Presence
+> extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
+  default<TNextDefault extends Maybe<TType>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): DateSchema<TType, TNextDefault, TNullablity, TPresence>;
+
+  defined(
+    msg?: MixedLocale['defined'],
+  ): DateSchema<TType, TDefault, TNullablity, 'defined'>;
+
+  required(
+    msg?: MixedLocale['required'],
+  ): DateSchema<TType, TDefault, TNullablity, 'required'>;
+  notRequired(): DateSchema<TType, TDefault, TNullablity, 'optional'>;
+
+  nullable(
+    isNullable?: true,
+  ): DateSchema<TType, TDefault, 'nullable', TPresence>;
+  nullable(
+    isNullable: false,
+  ): DateSchema<TType, TDefault, 'nonnullable', TPresence>;
 }

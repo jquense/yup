@@ -6,15 +6,14 @@ import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
 import MixedSchema, { AnyMixed, SchemaSpec } from './mixed';
-import { object as locale, string } from './locale';
+import { MixedLocale, object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
-import Schema, { CastOptions, SchemaObjectDescription } from './Schema';
+import { SchemaObjectDescription } from './Schema';
 import { InternalOptions, Callback, Maybe } from './types';
 import ValidationError from './ValidationError';
-import isSchema from './util/isSchema';
-import {
+import type {
   ResolveInput,
   ResolveOutput,
   Nullability,
@@ -22,7 +21,7 @@ import {
   Unset,
   TypedSchema,
 } from './util/types';
-import Reference from './Reference';
+import type Reference from './Reference';
 import Lazy, { LazyType } from './Lazy';
 
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
@@ -256,6 +255,7 @@ export default class ObjectSchema<
             value[key],
             {
               ...opts,
+              // @ts-ignore
               path,
               from,
               // inner fields are always strict:
@@ -298,22 +298,34 @@ export default class ObjectSchema<
     return next;
   }
 
-  concat<U extends TShape>(schema: ObjectSchema<U>): ObjectSchema<TShape & U>;
+  concat<TOther extends ObjectSchema<any, any, any, any>>(
+    schema: TOther,
+  ): TOther extends ObjectSchema<infer T, infer D, infer N, infer P>
+    ? ObjectSchema<
+        TShape & T,
+        D & TDefault,
+        N extends Unset ? TNullablity : N,
+        P extends Unset ? TPresence : P
+      >
+    : never;
   concat(schema: AnyMixed): AnyMixed;
-  concat<U extends ObjectShape>(schema: ObjectSchema<U>): ObjectSchema {
-    let next = super.concat(schema) as ObjectSchema;
+  concat(schema: any): any {
+    let next = super.concat(schema) as any;
 
     let nextFields = next.fields;
     for (let [field, schemaOrRef] of Object.entries(this.fields)) {
       const target = nextFields[field];
       if (target === undefined) {
         nextFields[field] = schemaOrRef;
-      } else if (isSchema(target) && isSchema(schemaOrRef)) {
+      } else if (
+        target instanceof MixedSchema &&
+        schemaOrRef instanceof MixedSchema
+      ) {
         nextFields[field] = schemaOrRef.concat(target);
       }
     }
 
-    return next.withMutation((next) => next.shape(nextFields));
+    return next.withMutation((next: any) => next.shape(nextFields));
   }
 
   protected _getDefault() {
@@ -471,8 +483,12 @@ export default interface ObjectSchema<
     def: TNextDefault | (() => TNextDefault),
   ): ObjectSchema<TShape, TNextDefault, TNullablity, TPresence>;
 
-  defined(): ObjectSchema<TShape, TDefault, TNullablity, 'defined'>;
-  required(): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): ObjectSchema<TShape, TDefault, TNullablity, 'defined'>;
+  required(
+    msg?: MixedLocale['required'],
+  ): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
   notRequired(): ObjectSchema<TShape, TDefault, TNullablity, 'optional'>;
 
   nullable(

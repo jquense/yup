@@ -28,7 +28,7 @@ import Schema, {
   SchemaDescription,
 } from './Schema';
 import { ValidationError } from '.';
-import {
+import type {
   Nullability,
   Presence,
   ResolveInput,
@@ -335,7 +335,7 @@ export default class MixedSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions = {}): this['__inputType'] {
+  cast(value: any, options: CastOptions = {}): TInput {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -463,10 +463,7 @@ export default class MixedSchema<
         );
   }
 
-  validateSync(
-    value: any,
-    options: ValidateOptions = {},
-  ): this['__outputType'] {
+  validateSync(value: any, options: ValidateOptions = {}): TOutput {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -589,10 +586,10 @@ export default class MixedSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig): this;
-  test(test: TestFunction): this;
-  test(name: string, test: TestFunction): this;
-  test(name: string, message: Message, test: TestFunction): this;
+  test(options: TestConfig<TInput>): this;
+  test(test: TestFunction<TInput>): this;
+  test(name: string, test: TestFunction<TInput>): this;
+  test(name: string, message: Message, test: TestFunction<TInput>): this;
   test(...args: any[]) {
     let opts: TestConfig;
 

@@ -20,7 +20,7 @@ Object.defineProperty(
 global.TestHelpers = require('./test/helpers');
 
 if (global.YUP_USE_SYNC) {
-  const MixedSchema = require('./src/mixed'); // eslint-disable-line global-require
+  const { MixedSchema } = require('./src'); // eslint-disable-line global-require
 
   const { validate } = MixedSchema.prototype;
 

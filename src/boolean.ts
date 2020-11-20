@@ -1,6 +1,7 @@
+import type { MixedLocale } from './locale';
 import MixedSchema from './mixed';
-import { Maybe } from './types';
-import { Nullability, Presence } from './util/types';
+import type { Maybe } from './types';
+import type { Nullability, Presence, Unset } from './util/types';
 
 export function create() {
   return new BooleanSchema();
@@ -8,9 +9,9 @@ export function create() {
 
 export default class BooleanSchema<
   TType extends boolean,
-  TDefault extends Maybe<TType>,
-  TNullablity extends Nullability,
-  TPresence extends Presence
+  TDefault extends Maybe<TType> = undefined,
+  TNullablity extends Nullability = Unset,
+  TPresence extends Presence = Unset
 > extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
   constructor() {
     super({ type: 'boolean' });
@@ -18,8 +19,8 @@ export default class BooleanSchema<
     this.withMutation(() => {
       this.transform(function (value) {
         if (!this.isType(value)) {
-          if (/^(true|1)$/i.test(value)) return true;
-          if (/^(false|0)$/i.test(value)) return false;
+          if (/^(true|1)$/i.test(String(value))) return true;
+          if (/^(false|0)$/i.test(String(value))) return false;
         }
         return value;
       });
@@ -39,14 +40,17 @@ export default interface BooleanSchema<
   TNullablity extends Nullability,
   TPresence extends Presence
 > extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
-  default(): TDefault;
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): BooleanSchema<TType, TNextDefault, TNullablity, TPresence>;
 
-  defined(): BooleanSchema<TType, TDefault, TNullablity, 'defined'>;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): BooleanSchema<TType, TDefault, TNullablity, 'defined'>;
 
-  required(): BooleanSchema<TType, TDefault, TNullablity, 'required'>;
+  required(
+    msg?: MixedLocale['required'],
+  ): BooleanSchema<TType, TDefault, TNullablity, 'required'>;
   notRequired(): BooleanSchema<TType, TDefault, TNullablity, 'optional'>;
 
   nullable(

@@ -1,5 +1,5 @@
 {
-  "extends": "@4c/tsconfig/web.json",
+  "extends": "@4c/tsconfig/web",
   "compilerOptions": {
     "allowJs": true,
     "rootDir": "src"

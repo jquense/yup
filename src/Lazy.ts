@@ -1,8 +1,7 @@
 import isSchema from './util/isSchema';
 import Schema, { CastOptions } from './Schema';
-import { Callback, ValidateOptions } from './types';
-import { ResolveOptions } from './Condition';
-import { ResolveInput, TypedSchema } from './util/types';
+import type { Callback, ValidateOptions } from './types';
+import type { ResolveOptions } from './Condition';
 import type MixedSchema from './mixed';
 
 export type LazyBuilder<T extends MixedSchema = any> = (

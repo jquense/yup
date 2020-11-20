@@ -1,15 +1,12 @@
-import MixedSchema, {
-  create as mixedCreate,
-  SchemaSpec,
-} from './mixed';
+import MixedSchema, { create as mixedCreate, SchemaSpec } from './mixed';
 import BoolSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
-import ObjectSchema, { create as objectCreate, AssertsShape } from './object';
+import ObjectSchema, { create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
-import Ref, { create as refCreate } from './Reference';
-import Lazy, { create as lazyCreate } from './Lazy';
+import { create as refCreate } from './Reference';
+import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
@@ -54,16 +51,3 @@ export {
   ObjectSchema,
   ArraySchema,
 };
-
-// type TypeOf<T extends MixedSchema> = T extends { spec: infer TSpec }
-//   ? TSpec extends SchemaSpec
-//     ? ResolveCast<T['_tsType'], TSpec>
-//     : never
-//   : never;
-
-// type Asserts<T extends MixedSchema> = TypeOf<T> &
-//   (T extends { spec: infer TSpec }
-//     ? TSpec extends SchemaSpec
-//       ? ResolveRequired<TypeOf<T>, TSpec>
-//       : never
-//     : never);

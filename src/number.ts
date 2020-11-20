@@ -1,9 +1,9 @@
 import MixedSchema from './mixed';
-import { number as locale } from './locale';
+import { MixedLocale, number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import { Maybe } from './types';
-import Reference from './Reference';
-import { Nullability, Presence, Unset } from './util/types';
+import type { Maybe } from './types';
+import type Reference from './Reference';
+import type { Nullability, Presence, Unset } from './util/types';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -140,9 +140,13 @@ export default interface NumberSchema<
     def: TNextDefault | (() => TNextDefault),
   ): NumberSchema<TType, TNextDefault, TNullablity, TPresence>;
 
-  defined(): NumberSchema<TType, TDefault, TNullablity, 'defined'>;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): NumberSchema<TType, TDefault, TNullablity, 'defined'>;
 
-  required(): NumberSchema<TType, TDefault, TNullablity, 'required'>;
+  required(
+    msg?: MixedLocale['required'],
+  ): NumberSchema<TType, TDefault, TNullablity, 'required'>;
   notRequired(): NumberSchema<TType, TDefault, TNullablity, 'optional'>;
 
   nullable(

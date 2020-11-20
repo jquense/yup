@@ -1,8 +1,9 @@
+import type { AnyMixed } from './mixed';
 import type Schema from './Schema';
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
-export type TransformFunction<T> = (
+export type TransformFunction<T extends AnyMixed> = (
   this: T,
   value: any,
   originalValue: any,
