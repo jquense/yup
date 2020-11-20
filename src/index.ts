@@ -11,6 +11,13 @@ import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
+import type {
+  TypeOf,
+  Asserts,
+  Nullability,
+  Presence,
+  Unset,
+} from './util/types';
 
 function addMethod(schemaType: any, name: string, fn: any) {
   if (!schemaType || !isSchema(schemaType.prototype))
@@ -23,6 +30,15 @@ function addMethod(schemaType: any, name: string, fn: any) {
 
   schemaType.prototype[name] = fn;
 }
+
+export type {
+  TypeOf,
+  Asserts,
+  Nullability,
+  Presence,
+  Unset,
+  Asserts as InferType,
+};
 
 export {
   mixedCreate as mixed,

@@ -9,6 +9,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -37,10 +38,10 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
     - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
     - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
-    - [`mixed.default(): Any`](#mixeddefault-any)
+    - [`mixed.getDefault(options?: object): Any`](#mixedgetdefaultoptions-object-any)
     - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
     - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
-    - [`mixed.notRequired(): Schema`](#mixednotrequired-schema)
+    - [`mixed.notRequired(): Schema` Alias: `optional()`](#mixednotrequired-schema-alias-optional)
     - [`mixed.defined(): Schema`](#mixeddefined-schema)
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
     - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
@@ -79,7 +80,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
   - [array](#array)
     - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
-    - [`array.required(message?: string | function): Schema`](#arrayrequiredmessage-string--function-schema)
+    - [`array.length(length: number | Ref, message?: string | function): Schema`](#arraylengthlength-number--ref-message-string--function-schema)
     - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
     - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
     - [`array.ensure(): Schema`](#arrayensure-schema)
@@ -87,6 +88,8 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
   - [object](#object)
     - [Object schema defaults](#object-schema-defaults)
     - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
+    - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`](#objectfromfromkey-string-tokey-string-alias-boolean--false-schema)
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
