@@ -44,6 +44,8 @@ export default interface BooleanSchema<
     def: TNextDefault | (() => TNextDefault),
   ): BooleanSchema<TType, TNextDefault, TNullablity, TPresence>;
 
+  defined(): BooleanSchema<TType, TDefault, TNullablity, 'defined'>;
+
   required(): BooleanSchema<TType, TDefault, TNullablity, 'required'>;
   notRequired(): BooleanSchema<TType, TDefault, TNullablity, 'optional'>;
 

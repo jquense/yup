@@ -206,6 +206,8 @@ export default interface StringSchema<
     def: TNextDefault | (() => TNextDefault),
   ): StringSchema<TType, TNextDefault, TNullablity, TPresence>;
 
+  defined(): StringSchema<TType, TDefault, TNullablity, 'defined'>;
+
   required(): StringSchema<TType, TDefault, TNullablity, 'required'>;
   notRequired(): StringSchema<TType, TDefault, TNullablity, 'optional'>;
 
@@ -215,9 +217,4 @@ export default interface StringSchema<
   nullable(
     isNullable: false,
   ): StringSchema<TType, TDefault, 'nonnullable', TPresence>;
-
-  // oneOf<U extends TType>(
-  //   enums: U[],
-  //   message: MixedLocale['oneOf'],
-  // ): StringSchema<U, any, TNullablity, TPresence>;
 }

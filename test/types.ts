@@ -58,6 +58,9 @@ string().required().nullable();
   type _o2 = ResolveOutput<string, 'nonnullable', 'optional'>;
 
   // $ExpectType string
+  type _o22 = ResolveOutput<string, 'nonnullable', 'defined'>;
+
+  // $ExpectType string
   type _o3 = ResolveOutput<string, 'nonnullable', Unset, ''>;
 
   // $ExpectType string
@@ -71,6 +74,12 @@ string().required().nullable();
 
   // $ExpectType string | null
   type _o7 = ResolveOutput<string, 'nullable', 'optional', ''>;
+
+  // $ExpectType string | null
+  type _o8 = ResolveOutput<string, 'nullable', 'defined', ''>;
+
+  // $ExpectType string
+  type _o9 = ResolveOutput<string, 'unset', 'defined', ''>;
 
   // $ExpectError number is not a MaybeString
   type _e1 = ResolveOutput<string, 'nullable', 'optional', number>;
@@ -221,7 +230,7 @@ string().required().nullable();
     .getDefault();
 
   // $ExpectType string[] | (string | null)[] | null
-  array(string().nullable())
+  array(string().nullable().default(''))
     .nullable()
     .default(() => [] as string[])
     .validateSync(null);
@@ -276,5 +285,5 @@ string().required().nullable();
   const optional = mixed<string>().required().concat(_f).validateSync('');
 
   // $ExpectType MixedSchema<number | "hi", any, "unset", "unset", any, any>
-  string().oneOf(['hi' as const, 1]);
+  // string().oneOf(['hi' as const]);
 }

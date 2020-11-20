@@ -471,7 +471,7 @@ export default interface ObjectSchema<
     def: TNextDefault | (() => TNextDefault),
   ): ObjectSchema<TShape, TNextDefault, TNullablity, TPresence>;
 
-  defined(): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
+  defined(): ObjectSchema<TShape, TDefault, TNullablity, 'defined'>;
   required(): ObjectSchema<TShape, TDefault, TNullablity, 'required'>;
   notRequired(): ObjectSchema<TShape, TDefault, TNullablity, 'optional'>;
 

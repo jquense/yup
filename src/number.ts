@@ -136,10 +136,11 @@ export default interface NumberSchema<
   TNullablity extends Nullability,
   TPresence extends Presence
 > extends MixedSchema<TType, TDefault, TNullablity, TPresence> {
-  default(): TDefault;
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): NumberSchema<TType, TNextDefault, TNullablity, TPresence>;
+
+  defined(): NumberSchema<TType, TDefault, TNullablity, 'defined'>;
 
   required(): NumberSchema<TType, TDefault, TNullablity, 'required'>;
   notRequired(): NumberSchema<TType, TDefault, TNullablity, 'optional'>;

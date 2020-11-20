@@ -299,11 +299,12 @@ export default interface ArraySchema<
   > {
   // concat(schema: any): any;
 
-  default<TNextDefault extends Type<T>[] | null | undefined>(
+  default<TNextDefault extends any[] | null | undefined>(
     def: TNextDefault | (() => TNextDefault),
   ): ArraySchema<T, TNextDefault, TNullablity, TPresence>;
 
-  defined(): ArraySchema<T, TDefault, TNullablity, 'required'>;
+  defined(): ArraySchema<T, TDefault, TNullablity, 'defined'>;
+
   required(): ArraySchema<T, TDefault, TNullablity, 'required'>;
   notRequired(): ArraySchema<T, TDefault, TNullablity, 'optional'>;
 

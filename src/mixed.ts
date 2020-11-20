@@ -242,11 +242,11 @@ export default class MixedSchema<
     return result;
   }
 
-  concat<TOther extends MixedSchema<TType, any, any, any>>(
+  concat<TOther extends AnyMixed>(
     schema: TOther,
-  ): TOther extends MixedSchema<TType, infer D, infer N, infer P>
+  ): TOther extends MixedSchema<infer T, infer D, infer N, infer P>
     ? MixedSchema<
-        TType,
+        T,
         D,
         N extends Unset ? TNullablity : N,
         P extends Unset ? TPresence : P
@@ -712,7 +712,10 @@ export default class MixedSchema<
     return next as any;
   }
 
-  notOneOf<U extends TType>(enums: Maybe<U>[], message = locale.notOneOf) {
+  notOneOf<U extends TType>(
+    enums: Maybe<U>[],
+    message = locale.notOneOf,
+  ): this {
     var next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
@@ -764,7 +767,7 @@ export default class MixedSchema<
 
   defined(
     message = locale.defined,
-  ): MixedSchema<TType, TDefault, TNullablity, 'required'> {
+  ): MixedSchema<TType, TDefault, TNullablity, 'defined'> {
     return this.test({
       message,
       name: 'defined',
