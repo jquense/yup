@@ -40,7 +40,7 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
     - [`mixed.default(): Any`](#mixeddefault-any)
     - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
     - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
-    - [`mixed.notRequired(): Schema`](#mixednotrequired-schema)
+    - [`mixed.notRequired(): Schema`](#mixednotrequired-schema-alias-optional)
     - [`mixed.defined(): Schema`](#mixeddefined-schema)
     - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
     - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
