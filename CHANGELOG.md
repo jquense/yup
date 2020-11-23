@@ -1,3 +1,38 @@
+# [0.31.0](https://github.com/jquense/yup/compare/v0.30.0...v0.31.0) (2020-11-23)
+
+
+### Bug Fixes
+
+* path params incorrectly mutated ([ba23eb7](https://github.com/jquense/yup/commit/ba23eb7)), closes [#1122](https://github.com/jquense/yup/issues/1122)
+
+
+### Features
+
+* add array.length() and treat empty arrays as valid for required() ([fbc158d](https://github.com/jquense/yup/commit/fbc158d))
+* add object.pick and object.omit ([425705a](https://github.com/jquense/yup/commit/425705a))
+* deprecate the getter overload of `default()` ([#1119](https://github.com/jquense/yup/issues/1119)) ([5dae837](https://github.com/jquense/yup/commit/5dae837))
+* more strictly coerce strings, exclude arrays and plain objects ([963d2e8](https://github.com/jquense/yup/commit/963d2e8))
+
+
+### BREAKING CHANGES
+
+* array().required() will no longer consider an empty array missing and required checks will pass.
+
+To maintain the old behavior change to:
+```js
+array().required().min(1)
+```
+* plain objects and arrays are no long cast to strings automatically
+
+to recreate the old behavior:
+```js
+string().transform((_, input) => input != null && input.toString ? input.toString() : value);
+```
+
+
+
+
+
 # [0.30.0](https://github.com/jquense/yup/compare/v0.29.3...v0.30.0) (2020-11-19)
 
 
