@@ -34,7 +34,8 @@ ValidationError.isError = function (err) {
 };
 
 ValidationError.formatError = function (message, params) {
-  params.path = params.label || params.path || 'this';
+  const path = params.label || params.path || 'this';
+  if (path !== params.path) params = { ...params, path };
 
   if (typeof message === 'string')
     return message.replace(strReg, (_, key) => printValue(params[key]));
