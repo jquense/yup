@@ -28,9 +28,8 @@ export function create() {
 }
 
 export default class StringSchema<
-  TType extends Maybe<string> = string | undefined,
-  TPresence extends Presence = Unset
-> extends BaseSchema<TType, TType, TPresence> {
+  TType extends Maybe<string> = string | undefined
+> extends BaseSchema<TType, TType> {
   constructor() {
     super({ type: 'string' });
 
@@ -157,7 +156,7 @@ export default class StringSchema<
   }
 
   //-- transforms --
-  ensure(): StringSchema<NonNullable<TType>, TPresence> {
+  ensure(): StringSchema<NonNullable<TType>> {
     return this.default('' as Defined<TType>).transform((val) =>
       val === null ? '' : val,
     ) as any;
@@ -196,23 +195,56 @@ export default class StringSchema<
   }
 }
 
-export default interface StringSchema<
-  TType extends Maybe<string>,
-  TPresence extends Presence
-> extends BaseSchema<TType, TType, TPresence> {
-  default<TNextDefault extends Maybe<TType>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? StringSchema<TType | undefined, TPresence>
-    : StringSchema<Defined<TType>, TPresence>;
+//
+// String Interfaces
+//
+interface DefinedStringSchema<TType extends Maybe<string>>
+  extends BaseSchema<TType, Defined<TType>> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): IIF<
+    D,
+    DefinedStringSchema<TType | undefined>,
+    DefinedStringSchema<Defined<TType>>
+  >;
 
-  defined(msg?: MixedLocale['defined']): StringSchema<TType, 'defined'>;
+  defined(msg?: MixedLocale['defined']): this;
+  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
+  notRequired(): StringSchema<TType>;
+  nullable(isNullable?: true): RequiredStringSchema<TType | null>;
+  nullable(isNullable: false): RequiredStringSchema<StrictNonNullable<TType>>;
+}
 
-  required(msg?: MixedLocale['required']): StringSchema<TType, 'required'>;
-  notRequired(): StringSchema<TType, 'optional'>;
+interface RequiredStringSchema<TType extends Maybe<string>>
+  extends BaseSchema<TType, NonNullable<TType>> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): IIF<
+    D,
+    RequiredStringSchema<TType | undefined>,
+    RequiredStringSchema<Defined<TType>>
+  >;
 
-  nullable(isNullable?: true): StringSchema<TType | null, TPresence>;
-  nullable(
-    isNullable: false,
-  ): StringSchema<StrictNonNullable<TType>, TPresence>;
+  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType>;
+  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
+  notRequired(): StringSchema<TType>;
+  nullable(isNullable?: true): RequiredStringSchema<TType | null>;
+  nullable(isNullable: false): RequiredStringSchema<StrictNonNullable<TType>>;
+}
+
+type Thunk<T> = T | (() => T);
+
+type IIF<T, Y, N> = T extends undefined ? Y : N;
+export default interface StringSchema<TType extends Maybe<string>>
+  extends BaseSchema<TType, TType> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): IIF<D, StringSchema<TType | undefined>, StringSchema<Defined<TType>>>;
+
+  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType>;
+  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
+  notRequired(): StringSchema<TType>;
+
+  nullable(isNullable?: true): StringSchema<TType | null>;
+  nullable(isNullable: false): StringSchema<StrictNonNullable<TType>>;
 }

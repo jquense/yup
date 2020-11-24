@@ -8,22 +8,24 @@ export function create<TType = any>() {
   return new MixedSchema<TType>();
 }
 
-export default class MixedSchema<
-  TType = any,
-  TPresence extends Presence = Unset
-> extends BaseSchema<TType, TType, TPresence> {}
+export default class MixedSchema<TType = any, TOut = TType> extends BaseSchema<
+  TType,
+  TType
+> {}
 
-export default interface MixedSchema<TType, TPresence extends Presence> {
+export default interface MixedSchema<TType, TOut> {
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
-    ? MixedSchema<TType | undefined, TPresence>
-    : MixedSchema<Defined<TType>, TPresence>;
+    ? MixedSchema<TType | undefined, TOut | undefined>
+    : MixedSchema<Defined<TType>, Defined<TOut>>;
 
-  defined(msg?: MixedLocale['defined']): MixedSchema<TType, 'defined'>;
-  required(msg?: MixedLocale['required']): MixedSchema<TType, 'required'>;
-  notRequired(): MixedSchema<TType, 'optional'>;
+  defined(msg?: MixedLocale['defined']): MixedSchema<TType, Defined<TOut>>;
+  required(
+    msg?: MixedLocale['required'],
+  ): MixedSchema<TType, NonNullable<TOut>>;
+  notRequired(): MixedSchema<TType>;
 
-  nullable(isNullable?: true): MixedSchema<TType | null, TPresence>;
-  nullable(isNullable: false): MixedSchema<StrictNonNullable<TType>, TPresence>;
+  nullable(isNullable?: true): MixedSchema<TType | null>;
+  nullable(isNullable: false): MixedSchema<StrictNonNullable<TType>>;
 }

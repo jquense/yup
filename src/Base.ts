@@ -47,7 +47,7 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnyBase<Type = any> = BaseSchema<Type, any, any>;
+export type AnyBase<Type = any> = BaseSchema<Type, any>;
 
 export interface CastOptions {
   parent?: any;
@@ -86,15 +86,11 @@ export interface SchemaDescription {
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
 }
 
-export default abstract class BaseSchema<
-  TCast = any,
-  TOutput = any,
-  TPresence extends Presence = Unset
-> {
+export default abstract class BaseSchema<TCast = any, TOutput = any> {
   readonly type: string;
 
   readonly __inputType!: TCast;
-  readonly __outputType!: ResolveOutput<TOutput, TPresence>;
+  readonly __outputType!: TOutput;
 
   readonly __isYupSchema__!: boolean;
 
@@ -731,11 +727,7 @@ export default abstract class BaseSchema<
   }
 }
 
-export default interface BaseSchema<
-  TCast,
-  TOutput,
-  TPresence extends Presence
-> {
+export default interface BaseSchema<TCast, TOutput> {
   validateAt(
     path: string,
     value: any,

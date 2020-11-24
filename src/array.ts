@@ -28,19 +28,22 @@ import BaseSchema, {
 
 type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
-export function create<TInner extends AnyBase = AnyBase>(type?: TInner) {
+export function create<TInner>(type?: BaseSchema<TInner, any>) {
   return new ArraySchema<TInner>(type);
 }
 
-export default class ArraySchema<
-  T extends AnyBase = AnyBase,
-  TType extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
-  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined,
-  TPresence extends Presence = Unset
-> extends BaseSchema<TType, TOut, TPresence> {
-  innerType: T | undefined;
+abstract class BaseArraySchema<E, TType extends Maybe<E[]>> extends BaseSchema<
+  TType,
+  TType
+> {}
 
-  constructor(type?: T) {
+export default class ArraySchema<TType> extends BaseArraySchema<
+  TType,
+  TType[] | undefined
+> {
+  innerType?: AnyBase<TType>;
+
+  constructor(type?: AnyBase<TType>) {
     super({ type: 'array' });
 
     // `undefined` specifically means uninitialized, as opposed to
@@ -61,7 +64,7 @@ export default class ArraySchema<
     });
   }
 
-  protected _typeCheck(v: any): v is NonNullable<TType> {
+  protected _typeCheck(v: any): v is TType[] {
     return Array.isArray(v);
   }
 
@@ -166,21 +169,21 @@ export default class ArraySchema<
     return next;
   }
 
-  concat<TOther extends ArraySchema<T, any, any, any>>(
-    schema: TOther,
-  ): TOther extends ArraySchema<infer TO, infer C, infer O, infer P>
-    ? // hoooo boy
-      ArraySchema<
-        T,
-        | (TypeOf<TO> & TypeOf<T>)[]
-        | PreserveOptionals<TType>
-        | PreserveOptionals<C>,
-        | (Asserts<TO> & Asserts<T>)[]
-        | PreserveOptionals<TOut>
-        | PreserveOptionals<O>,
-        P extends Unset ? TPresence : P
-      >
-    : never;
+  // concat<TOther extends ArraySchema<T, any, any, any>>(
+  //   schema: TOther,
+  // ): TOther extends ArraySchema<infer TO, infer C, infer O, infer P>
+  //   ? // hoooo boy
+  //     ArraySchema<
+  //       T,
+  //       | (TypeOf<TO> & TypeOf<T>)[]
+  //       | PreserveOptionals<TType>
+  //       | PreserveOptionals<C>,
+  //       | (Asserts<TO> & Asserts<T>)[]
+  //       | PreserveOptionals<TOut>
+  //       | PreserveOptionals<O>,
+  //       P extends Unset ? TPresence : P
+  //     >
+  //   : never;
   concat(schema: any): any;
   concat(schema: any): any {
     let next = super.concat(schema) as this;
@@ -195,14 +198,7 @@ export default class ArraySchema<
     return next;
   }
 
-  of<TInner extends AnyBase>(
-    schema: TInner,
-  ): ArraySchema<
-    TInner,
-    TypeOf<TInner>[] | PreserveOptionals<TType>,
-    Asserts<TInner>[] | PreserveOptionals<TOut>,
-    TPresence
-  > {
+  of<TInner>(schema: BaseSchema<TInner, any>): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
     var next = this.clone();
 
@@ -261,8 +257,8 @@ export default class ArraySchema<
     });
   }
 
-  ensure(): ArraySchema<T, NonNullable<TType>, NonNullable<TOut>, TPresence> {
-    return this.default<TypeOf<T>[]>(() => []).transform((val, original) => {
+  ensure(): RequiredArraySchema<TType> {
+    return this.default<TType[]>(() => []).transform((val, original) => {
       // We don't want to return `null` for nullable schema
       if (this._typeCheck(val)) return val;
       return original == null ? [] : [].concat(original);
@@ -286,34 +282,87 @@ export default class ArraySchema<
   }
 }
 
-export default interface ArraySchema<
-  T extends AnyBase,
-  TType extends Maybe<TypeOf<T>[]>,
-  TOut extends Maybe<Asserts<T>[]>,
-  TPresence extends Presence = Unset
-> extends BaseSchema<TType, TOut, TPresence> {
-  defined(msg?: MixedLocale['defined']): ArraySchema<T, TType, TOut, 'defined'>;
-  required(
-    msg?: MixedLocale['required'],
-  ): ArraySchema<T, TType, TOut, 'required'>;
-  notRequired(): ArraySchema<T, TType, TOut, 'optional'>;
+// export default interface ArraySchema<
+//   T extends AnyBase,
+//   TType extends Maybe<TypeOf<T>[]>,
+//   TOut extends Maybe<Asserts<T>[]>
+// > extends BaseSchema<TType, TOut> {
+//   defined(msg?: MixedLocale['defined']): ArraySchema<T, TType, TOut, 'defined'>;
+//   required(
+//     msg?: MixedLocale['required'],
+//   ): ArraySchema<T, TType, TOut, 'required'>;
+//   notRequired(): ArraySchema<T, TType, TOut, 'optional'>;
 
-  nullable(
-    isNullable?: true,
-  ): ArraySchema<T, TType | null, TOut | null, TPresence>;
-  nullable(
-    isNullable: false,
-  ): ArraySchema<
-    T,
-    StrictNonNullable<TType>,
-    StrictNonNullable<TOut>,
-    TPresence
-  >;
-  nullable(isNullable?: boolean): ArraySchema<T, TType, TOut, TPresence>;
+//   nullable(
+//     isNullable?: true,
+//   ): ArraySchema<T, TType | null, TOut | null, TPresence>;
+//   nullable(
+//     isNullable: false,
+//   ): ArraySchema<
+//     T,
+//     StrictNonNullable<TType>,
+//     StrictNonNullable<TOut>,
+//     TPresence
+//   >;
+//   nullable(isNullable?: boolean): ArraySchema<T, TType, TOut, TPresence>;
 
-  default<TNextDefault extends TypeOf<T>[] | null | undefined>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? ArraySchema<T, TType | undefined, TOut | undefined, TPresence>
-    : ArraySchema<T, Defined<TType>, Defined<TOut>, TPresence>;
+//   default<TNextDefault extends TypeOf<T>[] | null | undefined>(
+//     def: TNextDefault | (() => TNextDefault),
+//   ): TNextDefault extends undefined
+//     ? ArraySchema<T, TType | undefined, TOut | undefined, TPresence>
+//     : ArraySchema<T, Defined<TType>, Defined<TOut>, TPresence>;
+// }
+
+//
+// Interfaces
+//
+interface DefinedArraySchema<TType> extends BaseArraySchema<TType, TType[]> {
+  // default<D extends Maybe<TType>>(
+  //   def: Thunk<D>,
+  // ): IIF<
+  //   D,
+  //   DefinedArraySchema<TType | undefined>,
+  //   DefinedArraySchema<Defined<TType>>
+  // >;
+
+  defined(msg?: MixedLocale['defined']): this;
+  required(msg?: MixedLocale['required']): RequiredArraySchema<TType>;
+  notRequired(): ArraySchema<TType>;
+  nullable(isNullable?: true): RequiredArraySchema<TType | null>;
+  nullable(isNullable: false): RequiredArraySchema<StrictNonNullable<TType>>;
+}
+
+interface RequiredArraySchema<TType>
+  extends BaseArraySchema<TType, NonNullable<TType[]>> {
+  // default<D extends Maybe<TType>>(
+  //   def: Thunk<D>,
+  // ): IIF<
+  //   D,
+  //   RequiredArraySchema<TType | undefined>,
+  //   RequiredArraySchema<Defined<TType>>
+  // >;
+
+  defined(msg?: MixedLocale['defined']): DefinedArraySchema<TType>;
+  required(msg?: MixedLocale['required']): RequiredArraySchema<TType>;
+  notRequired(): ArraySchema<TType>;
+  nullable(isNullable?: true): RequiredArraySchema<TType | null>;
+  nullable(isNullable: false): RequiredArraySchema<StrictNonNullable<TType>>;
+}
+
+type Thunk<T> = T | (() => T);
+
+type IIF<T, Y, N> = T extends undefined ? Y : N;
+
+export default interface ArraySchema<TType>
+  extends BaseArraySchema<TType, TType[] | undefined> {
+  // default<D extends Maybe<TType>>(
+  //   def: Thunk<D>,
+  // ): IIF<D, ArraySchema<TType | undefined>, ArraySchema<Defined<TType>>>;
+
+  defined(msg?: MixedLocale['defined']): DefinedArraySchema<TType>;
+  required(msg?: MixedLocale['required']): RequiredArraySchema<TType>;
+  notRequired(): ArraySchema<TType>;
+
+  nullable(isNullable?: true): ArraySchema<TType | null>;
+  nullable(isNullable: false): ArraySchema<StrictNonNullable<TType>>;
 }
