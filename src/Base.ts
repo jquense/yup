@@ -12,7 +12,6 @@ import createValidation, {
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
-import Reference from './Reference';
 import toArray from './util/toArray';
 import {
   ValidateOptions,
@@ -21,87 +20,19 @@ import {
   Callback,
   InternalOptions,
   Maybe,
+  ExtraParams,
 } from './types';
-import Schema, {
-  CastOptions,
-  SchemaRefDescription,
-  SchemaDescription,
-} from './Schema';
+
 import { ValidationError } from '.';
-import type {
-  Default,
-  Defined,
-  Nullability,
-  Presence,
-  ResolveInput,
-  ResolveOutput,
-  StrictNonNullable,
-  Unset,
-} from './util/types';
+import type { Asserts, Presence, ResolveOutput, Unset } from './util/types';
+import ReferenceSet from './util/ReferenceSet';
 
 const UNSET = 'unset' as const;
 
-class RefSet {
-  list: Set<unknown>;
-  refs: Map<string, Reference>;
-
-  constructor() {
-    this.list = new Set();
-    this.refs = new Map();
-  }
-  get size() {
-    return this.list.size + this.refs.size;
-  }
-  describe() {
-    const description = [] as Array<unknown | SchemaRefDescription>;
-
-    for (const item of this.list) description.push(item);
-    for (const [, ref] of this.refs) description.push(ref.describe());
-
-    return description;
-  }
-  toArray() {
-    return Array.from(this.list).concat(Array.from(this.refs.values()));
-  }
-  add(value: unknown) {
-    Ref.isRef(value) ? this.refs.set(value.key, value) : this.list.add(value);
-  }
-  delete(value: unknown) {
-    Ref.isRef(value) ? this.refs.delete(value.key) : this.list.delete(value);
-  }
-  has(value: unknown, resolve: (v: unknown) => unknown) {
-    if (this.list.has(value)) return true;
-
-    let item,
-      values = this.refs.values();
-    while (((item = values.next()), !item.done))
-      if (resolve(item.value) === value) return true;
-
-    return false;
-  }
-
-  clone() {
-    const next = new RefSet();
-    next.list = new Set(this.list);
-    next.refs = new Map(this.refs);
-    return next;
-  }
-
-  merge(newItems: RefSet, removeItems: RefSet) {
-    const next = this.clone();
-    newItems.list.forEach((value) => next.add(value));
-    newItems.refs.forEach((value) => next.add(value));
-    removeItems.list.forEach((value) => next.delete(value));
-    removeItems.refs.forEach((value) => next.delete(value));
-    return next;
-  }
-}
-
 export type SchemaSpec<TDefault> = {
-  nullability: Nullability;
+  nullable: boolean;
   presence: Presence;
   default?: TDefault | (() => TDefault);
-  hasDefault?: boolean;
   abortEarly?: boolean;
   strip?: boolean;
   strict?: boolean;
@@ -117,11 +48,47 @@ export type SchemaOptions<TDefault> = {
 
 export type AnyBase = BaseSchema<any, any, any>;
 
+export interface CastOptions {
+  parent?: any;
+  context?: {};
+  assert?: boolean;
+  // XXX: should be private?
+  path?: string;
+}
+
+export interface SchemaRefDescription {
+  type: 'ref';
+  key: string;
+}
+
+export interface SchemaInnerTypeDescription extends SchemaDescription {
+  innerType?: SchemaFieldDescription;
+}
+
+export interface SchemaObjectDescription extends SchemaDescription {
+  fields: Record<string, SchemaFieldDescription>;
+}
+
+export type SchemaFieldDescription =
+  | SchemaDescription
+  | SchemaRefDescription
+  | SchemaObjectDescription
+  | SchemaInnerTypeDescription;
+
+export interface SchemaDescription {
+  type: string;
+  label?: string;
+  meta: object;
+  oneOf: unknown[];
+  notOneOf: unknown[];
+  tests: Array<{ name?: string; params: ExtraParams | undefined }>;
+}
+
 export default abstract class BaseSchema<
   TCast = any,
   TOutput = any,
   TPresence extends Presence = Unset
-> implements Schema {
+> {
   readonly type: string;
 
   readonly __inputType!: TCast;
@@ -141,12 +108,10 @@ export default abstract class BaseSchema<
   private _whitelistError?: Test;
   private _blacklistError?: Test;
 
-  protected _whitelist: RefSet = new RefSet();
-  protected _blacklist: RefSet = new RefSet();
+  protected _whitelist = new ReferenceSet();
+  protected _blacklist = new ReferenceSet();
 
   protected exclusiveTests: Record<string, boolean> = Object.create(null);
-
-  // optional!: () => MixedSchema;
 
   spec: SchemaSpec<any>;
 
@@ -167,7 +132,7 @@ export default abstract class BaseSchema<
       recursive: true,
       label: undefined,
       meta: undefined,
-      nullability: UNSET,
+      nullable: false,
       presence: UNSET,
       ...options?.spec,
     };
@@ -238,8 +203,8 @@ export default abstract class BaseSchema<
 
   concat<TOther extends AnyBase>(
     schema: TOther,
-  ): TOther extends BaseSchema<infer T, infer P>
-    ? BaseSchema<T, P extends Unset ? TPresence : P>
+  ): TOther extends BaseSchema<infer T, infer O, infer P>
+    ? BaseSchema<T, O, P extends Unset ? TPresence : P>
     : never;
   concat(schema: AnyBase): AnyBase;
   concat(schema: AnyBase): AnyBase {
@@ -255,8 +220,8 @@ export default abstract class BaseSchema<
 
     const mergedSpec = { ...base.spec, ...combined.spec };
 
-    if (combined.spec.nullability === UNSET)
-      mergedSpec.nullability = base.spec.nullability;
+    // if (combined.spec.nullable === UNSET)
+    //   mergedSpec.nullable = base.spec.nullable;
 
     if (combined.spec.presence === UNSET)
       mergedSpec.presence = base.spec.presence;
@@ -294,7 +259,7 @@ export default abstract class BaseSchema<
   }
 
   isType(v: any) {
-    if (this.spec.nullability === 'nullable' && v === null) return true;
+    if (this.spec.nullable && v === null) return true;
     return this._typeCheck(v);
   }
 
@@ -309,7 +274,7 @@ export default abstract class BaseSchema<
       schema = conditions.reduce(
         (schema, condition) => condition.resolve(schema, options),
         schema,
-      );
+      ) as this;
 
       schema = schema.resolve(options);
     }
@@ -470,16 +435,17 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  isValid(value: any, options: ValidateOptions): Promise<boolean> {
-    return this.validate(value, options)
-      .then(() => true)
-      .catch((err) => {
-        if (ValidationError.isError(err)) return false;
-        throw err;
-      });
+  async isValid(value: any, options: ValidateOptions): Promise<boolean> {
+    try {
+      await this.validate(value, options);
+      return true;
+    } catch (err) {
+      if (ValidationError.isError(err)) return false;
+      throw err;
+    }
   }
 
-  isValidSync(value: any, options: ValidateOptions): boolean {
+  isValidSync(value: any, options: ValidateOptions): value is Asserts<this> {
     try {
       this.validateSync(value, options);
       return true;
@@ -561,7 +527,7 @@ export default abstract class BaseSchema<
   nullable(isNullable: false): any;
   nullable(isNullable = true): any {
     var next = this.clone({
-      nullability: isNullable ? 'nullable' : 'nonnullable',
+      nullable: isNullable !== false,
     });
 
     return next as any;

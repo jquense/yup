@@ -6,15 +6,15 @@ const prefixes = {
   value: '.',
 };
 
-export type ReferenceOptions = {
-  map?: (value: unknown) => unknown;
+export type ReferenceOptions<TValue = unknown> = {
+  map?: (value: unknown) => TValue;
 };
 
 export function create(key: string, options?: ReferenceOptions) {
   return new Reference(key, options);
 }
 
-export default class Reference {
+export default class Reference<TValue = unknown> {
   readonly key: string;
   readonly isContext: boolean;
   readonly isValue: boolean;
@@ -22,11 +22,11 @@ export default class Reference {
   readonly path: any;
 
   readonly getter: (data: unknown) => unknown;
-  readonly map?: (value: unknown) => unknown;
+  readonly map?: (value: unknown) => TValue;
 
   readonly __isYupRef!: boolean;
 
-  constructor(key: string, options: ReferenceOptions = {}) {
+  constructor(key: string, options: ReferenceOptions<TValue> = {}) {
     if (typeof key !== 'string')
       throw new TypeError('ref must be a string, got: ' + key);
 
@@ -49,7 +49,7 @@ export default class Reference {
     this.map = options.map;
   }
 
-  getValue(value: any, parent?: {}, context?: {}) {
+  getValue(value: any, parent?: {}, context?: {}): TValue {
     let result = this.isContext ? context : this.isValue ? value : parent;
 
     if (this.getter) result = this.getter(result || {});

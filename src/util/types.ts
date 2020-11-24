@@ -4,6 +4,12 @@ export type Unset = 'unset';
 export type Presence = 'required' | 'defined' | 'optional' | Unset;
 export type Nullability = 'nullable' | 'nonnullable' | Unset;
 
+export type InferPresence<T> = T extends null
+  ? 'unset'
+  : T extends undefined
+  ? 'defined'
+  : 'required';
+
 export type StrictNonNullable<T> = T extends null ? never : T;
 
 export type Defined<T> = T extends undefined ? never : T;

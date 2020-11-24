@@ -49,7 +49,7 @@ export default class StringSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is TType {
+  protected _typeCheck(value: any): value is NonNullable<TType> {
     if (value instanceof String) value = value.valueOf();
 
     return typeof value === 'string';
@@ -60,7 +60,7 @@ export default class StringSchema<
   }
 
   length(
-    length: number | Reference,
+    length: number | Reference<number>,
     message: Message<{ length: number }> = locale.length,
   ) {
     return this.test({
@@ -74,7 +74,10 @@ export default class StringSchema<
     });
   }
 
-  min(min: number | Reference, message: Message<{ min: number }> = locale.min) {
+  min(
+    min: number | Reference<number>,
+    message: Message<{ min: number }> = locale.min,
+  ) {
     return this.test({
       message,
       name: 'min',
@@ -86,7 +89,10 @@ export default class StringSchema<
     });
   }
 
-  max(max: number | Reference, message: Message<{ max: number }> = locale.max) {
+  max(
+    max: number | Reference<number>,
+    message: Message<{ max: number }> = locale.max,
+  ) {
     return this.test({
       name: 'max',
       exclusive: true,
@@ -151,10 +157,10 @@ export default class StringSchema<
   }
 
   //-- transforms --
-  ensure() {
-    return this.default('' as TType).transform((val) =>
+  ensure(): StringSchema<NonNullable<TType>, TPresence> {
+    return this.default('' as Defined<TType>).transform((val) =>
       val === null ? '' : val,
-    );
+    ) as any;
   }
 
   trim(message = locale.trim) {

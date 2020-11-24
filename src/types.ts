@@ -1,5 +1,7 @@
 import type { AnyBase } from './Base';
-import type Schema from './Schema';
+import type Lazy from './Lazy';
+
+export type AnySchema = AnyBase | Lazy<AnyBase>;
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
@@ -60,6 +62,6 @@ export type AnyMessageParams = MessageParams & ExtraParams;
 
 export type Maybe<T> = T | null | undefined;
 
-type Preserve<T, U> = T extends U ? U : never;
+export type Preserve<T, U> = T extends U ? U : never;
 
 export type PreserveOptionals<T> = Preserve<T, null> | Preserve<T, undefined>;

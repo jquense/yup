@@ -1,22 +1,22 @@
 import has from 'lodash/has';
 import isSchema from './util/isSchema';
 import Reference from './Reference';
-import Schema from './Schema';
+import { AnySchema } from './types';
 
-export interface ConditionBuilder<T extends Schema> {
+export interface ConditionBuilder<T extends AnySchema> {
   (this: T, value: any, schema: T): T;
   (v1: any, v2: any, schema: T): T;
   (v1: any, v2: any, v3: any, schema: T): T;
   (v1: any, v2: any, v3: any, v4: any, schema: T): T;
 }
 
-export type ConditionConfig<T extends Schema> = {
+export type ConditionConfig<T extends AnySchema> = {
   is: any | ((...values: any[]) => boolean);
   then?: T | ((schema: T) => T);
   otherwise?: T | ((schema: T) => T);
 };
 
-export type ConditionOptions<T extends Schema> =
+export type ConditionOptions<T extends AnySchema> =
   | ConditionBuilder<T>
   | ConditionConfig<T>;
 
@@ -26,7 +26,7 @@ export type ResolveOptions = {
   context?: any;
 };
 
-class Condition<T extends Schema = Schema> {
+class Condition<T extends AnySchema = AnySchema> {
   fn: ConditionBuilder<T>;
 
   constructor(public refs: Reference[], options: ConditionOptions<T>) {

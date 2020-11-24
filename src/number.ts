@@ -43,13 +43,13 @@ export default class NumberSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is TType {
+  protected _typeCheck(value: any): value is NonNullable<TType> {
     if (value instanceof Number) value = value.valueOf();
 
     return typeof value === 'number' && !isNaN(value);
   }
 
-  min(min: number | Reference, message = locale.min) {
+  min(min: number | Reference<number>, message = locale.min) {
     return this.test({
       message,
       name: 'min',
@@ -61,7 +61,7 @@ export default class NumberSchema<
     });
   }
 
-  max(max: number | Reference, message = locale.max) {
+  max(max: number | Reference<number>, message = locale.max) {
     return this.test({
       message,
       name: 'max',
@@ -73,7 +73,7 @@ export default class NumberSchema<
     });
   }
 
-  lessThan(less: number | Reference, message = locale.lessThan) {
+  lessThan(less: number | Reference<number>, message = locale.lessThan) {
     return this.test({
       message,
       name: 'max',
@@ -85,7 +85,7 @@ export default class NumberSchema<
     });
   }
 
-  moreThan(more: number | Reference, message = locale.moreThan) {
+  moreThan(more: number | Reference<number>, message = locale.moreThan) {
     return this.test({
       message,
       name: 'min',

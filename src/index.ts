@@ -1,9 +1,9 @@
-import MixedSchema, { create as mixedCreate, SchemaSpec } from './mixed';
+import MixedSchema, { create as mixedCreate } from './mixed';
 import BoolSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
-import ObjectSchema, { create as objectCreate } from './object';
+import ObjectSchema, { create as objectCreate, ObjectSchemaOf } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
 import { create as refCreate } from './Reference';
 import { create as lazyCreate } from './Lazy';
@@ -38,6 +38,7 @@ export type {
   Presence,
   Unset,
   Asserts as InferType,
+  ObjectSchemaOf,
 };
 
 export {

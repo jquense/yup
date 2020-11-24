@@ -6,11 +6,10 @@ import {
   Message,
   InternalOptions,
   Callback,
-  MessageParams,
-  AnyMessageParams,
   ExtraParams,
 } from '../types';
 import Schema from '../Schema';
+import Reference from '../Reference';
 
 export type CreateErrorOptions = {
   path?: string;
@@ -24,7 +23,7 @@ export type TestContext = {
   options: ValidateOptions;
   parent: any;
   schema: any; // TODO: Schema<any>;
-  resolve: <T = any>(value: any) => T;
+  resolve: <T>(value: T | Reference<T>) => T;
   createError: (params?: CreateErrorOptions) => ValidationError;
 };
 
@@ -77,7 +76,7 @@ export default function createValidation(config: {
     const { name, test, params, message } = config;
     let { parent, context } = options;
 
-    function resolve(item: any) {
+    function resolve<T>(item: T | Reference<T>) {
       return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
     }
 
