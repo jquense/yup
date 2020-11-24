@@ -1,3 +1,3 @@
-import type { AnySchema } from '../types';
+import type { SchemaLike } from '../types';
 
-export default (obj: any): obj is AnySchema => obj && obj.__isYupSchema__;
+export default (obj: any): obj is SchemaLike => obj && obj.__isYupSchema__;

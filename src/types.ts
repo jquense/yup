@@ -1,7 +1,7 @@
 import type { AnyBase } from './Base';
 import type Lazy from './Lazy';
 
-export type AnySchema = AnyBase | Lazy<AnyBase>;
+export type SchemaLike = AnyBase | Lazy<AnyBase>;
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
@@ -40,7 +40,7 @@ export interface InternalOptions extends ValidateOptions {
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: Schema; value: any }[];
+  from?: { schema: AnyBase; value: any }[];
 }
 
 export interface MessageParams {

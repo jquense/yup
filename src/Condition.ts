@@ -1,22 +1,22 @@
 import has from 'lodash/has';
 import isSchema from './util/isSchema';
 import Reference from './Reference';
-import { AnySchema } from './types';
+import { SchemaLike } from './types';
 
-export interface ConditionBuilder<T extends AnySchema> {
-  (this: T, value: any, schema: T): T;
-  (v1: any, v2: any, schema: T): T;
-  (v1: any, v2: any, v3: any, schema: T): T;
-  (v1: any, v2: any, v3: any, v4: any, schema: T): T;
+export interface ConditionBuilder<T extends SchemaLike> {
+  (this: T, value: any, schema: T): SchemaLike;
+  (v1: any, v2: any, schema: T): SchemaLike;
+  (v1: any, v2: any, v3: any, schema: T): SchemaLike;
+  (v1: any, v2: any, v3: any, v4: any, schema: T): SchemaLike;
 }
 
-export type ConditionConfig<T extends AnySchema> = {
+export type ConditionConfig<T extends SchemaLike> = {
   is: any | ((...values: any[]) => boolean);
-  then?: T | ((schema: T) => T);
-  otherwise?: T | ((schema: T) => T);
+  then?: SchemaLike | ((schema: T) => SchemaLike);
+  otherwise?: SchemaLike | ((schema: T) => SchemaLike);
 };
 
-export type ConditionOptions<T extends AnySchema> =
+export type ConditionOptions<T extends SchemaLike> =
   | ConditionBuilder<T>
   | ConditionConfig<T>;
 
@@ -26,7 +26,7 @@ export type ResolveOptions = {
   context?: any;
 };
 
-class Condition<T extends AnySchema = AnySchema> {
+class Condition<T extends SchemaLike = SchemaLike> {
   fn: ConditionBuilder<T>;
 
   constructor(public refs: Reference[], options: ConditionOptions<T>) {

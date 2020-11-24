@@ -200,7 +200,7 @@ export default class ArraySchema<
   ): ArraySchema<
     TInner,
     TypeOf<TInner>[] | PreserveOptionals<TType>,
-    TypeOf<TInner>[] | PreserveOptionals<TOut>,
+    Asserts<TInner>[] | PreserveOptionals<TOut>,
     TPresence
   > {
     // FIXME: this should return a new instance of array without the default to be

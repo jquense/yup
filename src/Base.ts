@@ -26,6 +26,7 @@ import {
 import { ValidationError } from '.';
 import type { Asserts, Presence, ResolveOutput, Unset } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
+import Reference from './Reference';
 
 const UNSET = 'unset' as const;
 
@@ -46,12 +47,13 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnyBase = BaseSchema<any, any, any>;
+export type AnyBase<Type = any> = BaseSchema<Type, any, any>;
 
 export interface CastOptions {
   parent?: any;
   context?: {};
   assert?: boolean;
+  stripUnknown?: boolean;
   // XXX: should be private?
   path?: string;
 }
@@ -406,7 +408,7 @@ export default abstract class BaseSchema<
     value: any,
     options?: ValidateOptions,
   ): Promise<this['__outputType']>;
-  validate(value: any, options: ValidateOptions = {}, maybeCb?: Callback) {
+  validate(value: any, options?: ValidateOptions, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -420,10 +422,7 @@ export default abstract class BaseSchema<
         );
   }
 
-  validateSync(
-    value: any,
-    options: ValidateOptions = {},
-  ): this['__outputType'] {
+  validateSync(value: any, options?: ValidateOptions): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -435,7 +434,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  async isValid(value: any, options: ValidateOptions): Promise<boolean> {
+  async isValid(value: any, options?: ValidateOptions): Promise<boolean> {
     try {
       await this.validate(value, options);
       return true;
@@ -445,7 +444,7 @@ export default abstract class BaseSchema<
     }
   }
 
-  isValidSync(value: any, options: ValidateOptions): value is Asserts<this> {
+  isValidSync(value: any, options?: ValidateOptions): value is Asserts<this> {
     try {
       this.validateSync(value, options);
       return true;
@@ -647,7 +646,10 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  oneOf<U extends TCast>(enums: Maybe<U>[], message = locale.oneOf): this {
+  oneOf<U extends TCast>(
+    enums: Array<Maybe<U> | Reference>,
+    message = locale.oneOf,
+  ): this {
     var next = this.clone();
 
     enums.forEach((val) => {
@@ -676,7 +678,7 @@ export default abstract class BaseSchema<
   }
 
   notOneOf<U extends TCast>(
-    enums: Maybe<U>[],
+    enums: Array<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
     var next = this.clone();

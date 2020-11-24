@@ -11,6 +11,7 @@ import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
+import type { AnyBase as Schema } from './Base';
 import type {
   TypeOf,
   Asserts,
@@ -19,6 +20,16 @@ import type {
   Unset,
 } from './util/types';
 
+function addMethod<T extends Schema>(
+  schemaType: (...aarg: any[]) => T,
+  name: string,
+  fn: (this: T, ...args: any[]) => T,
+): void;
+function addMethod<T extends new (...args: any) => Schema>(
+  schemaType: T,
+  name: string,
+  fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
+): void;
 function addMethod(schemaType: any, name: string, fn: any) {
   if (!schemaType || !isSchema(schemaType.prototype))
     throw new TypeError('You must provide a yup schema constructor function');
@@ -39,6 +50,7 @@ export type {
   Unset,
   Asserts as InferType,
   ObjectSchemaOf,
+  Schema,
 };
 
 export {

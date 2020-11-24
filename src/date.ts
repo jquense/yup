@@ -5,7 +5,13 @@ import { date as locale, MixedLocale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 import type { Maybe } from './types';
-import type { Defined, Nullability, Presence, Unset } from './util/types';
+import type {
+  Defined,
+  Nullability,
+  Presence,
+  StrictNonNullable,
+  Unset,
+} from './util/types';
 import BaseSchema from './Base';
 
 let invalidDate = new Date('');
@@ -103,6 +109,6 @@ export default interface DateSchema<
   required(msg?: MixedLocale['required']): DateSchema<TType, 'required'>;
   notRequired(): DateSchema<TType, 'optional'>;
 
-  nullable(isNullable?: true): DateSchema<TType, TPresence>;
-  nullable(isNullable: false): DateSchema<TType, TPresence>;
+  nullable(isNullable?: true): DateSchema<TType | null, TPresence>;
+  nullable(isNullable: false): DateSchema<StrictNonNullable<TType>, TPresence>;
 }

@@ -2,7 +2,13 @@ import BaseSchema from './Base';
 import type { MixedLocale } from './locale';
 import MixedSchema from './mixed';
 import type { Maybe } from './types';
-import type { Defined, Nullability, Presence, Unset } from './util/types';
+import type {
+  Defined,
+  Nullability,
+  Presence,
+  StrictNonNullable,
+  Unset,
+} from './util/types';
 
 export function create() {
   return new BooleanSchema();
@@ -48,6 +54,8 @@ export default interface BooleanSchema<
   notRequired(): BooleanSchema<TType, 'optional'>;
   // optional(): BooleanSchema<TType, 'optional'>;
 
-  nullable(isNullable?: true): BooleanSchema<TType, TPresence>;
-  nullable(isNullable: false): BooleanSchema<TType, TPresence>;
+  nullable(isNullable?: true): BooleanSchema<TType | null, TPresence>;
+  nullable(
+    isNullable: false,
+  ): BooleanSchema<StrictNonNullable<TType>, TPresence>;
 }

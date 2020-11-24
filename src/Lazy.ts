@@ -1,9 +1,8 @@
 import isSchema from './util/isSchema';
-import Schema, { CastOptions } from './Schema';
 import type { Callback, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
-import { AnyBase } from './Base';
+import type { AnyBase, CastOptions } from './Base';
 import { TypedSchema, TypeOf } from './util/types';
 
 export type LazyBuilder<T extends AnyBase = any> = (
@@ -23,7 +22,7 @@ export type LazyType<T> = LazyReturnValue<T> extends TypedSchema
   ? TypeOf<LazyReturnValue<T>>
   : never;
 
-class Lazy<T extends AnyBase> implements Schema {
+class Lazy<T extends AnyBase> {
   type = 'lazy' as const;
 
   __isYupSchema__ = true;

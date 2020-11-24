@@ -35,12 +35,12 @@ import BaseSchema, {
 
 export type AnyObject = Record<string, any>;
 
+type ShapeOf<T> = {
+  [k in keyof T]: BaseSchema<Maybe<T[k]>, Maybe<T[k]>, InferPresence<T[k]>>;
+};
+
 export type ObjectSchemaOf<T extends Maybe<AnyObject>> = ObjectSchema<
-  {
-    [k in keyof T]: BaseSchema<Maybe<T[k]>, Maybe<T[k]>, InferPresence<T[k]>>;
-  },
-  Partial<T>,
-  Partial<T>
+  ShapeOf<T>
 >;
 
 export type ObjectShape = Record<string, AnyBase | Reference | Lazy<any>>;
