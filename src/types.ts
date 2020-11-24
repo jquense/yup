@@ -1,9 +1,9 @@
-import type { AnyMixed } from './mixed';
+import type { AnyBase } from './Base';
 import type Schema from './Schema';
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
-export type TransformFunction<T extends AnyMixed> = (
+export type TransformFunction<T extends AnyBase> = (
   this: T,
   value: any,
   originalValue: any,
@@ -59,3 +59,7 @@ export type ExtraParams = Record<string, unknown>;
 export type AnyMessageParams = MessageParams & ExtraParams;
 
 export type Maybe<T> = T | null | undefined;
+
+type Preserve<T, U> = T extends U ? U : never;
+
+export type PreserveOptionals<T> = Preserve<T, null> | Preserve<T, undefined>;

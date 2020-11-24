@@ -10,6 +10,7 @@ import type {
   StrictNonNullable,
   Unset,
 } from './util/types';
+import BaseSchema from './Base';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -20,7 +21,7 @@ export function create() {
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TPresence extends Presence = Unset
-> extends MixedSchema<TType, TPresence> {
+> extends BaseSchema<TType, TType, TPresence> {
   constructor() {
     super({ type: 'number' });
 
@@ -137,7 +138,7 @@ export default class NumberSchema<
 export default interface NumberSchema<
   TType extends Maybe<number>,
   TPresence extends Presence
-> extends MixedSchema<TType, TPresence> {
+> extends BaseSchema<TType, TType, TPresence> {
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined

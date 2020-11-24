@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 // import { Asserts } from '../src/mixed';
 import { array, string, object, mixed, number, ref, lazy } from '../src';
+import { Type } from '../src/array';
 import { AssertsShape, DefaultFromShape, TypeOfShape } from '../src/object';
 import { ResolveInput, ResolveOutput, Unset } from '../src/util/types';
 
@@ -209,6 +210,9 @@ string().required().nullable();
 }
 
 {
+  // const str = string();
+  // type f = Type<typeof str>;
+
   // $ExpectType (string | undefined)[] | undefined
   array(string()).cast(null);
 
@@ -224,7 +228,7 @@ string().required().nullable();
   // $ExpectType (string | null)[] | undefined
   array(string().nullable().default('')).validateSync(null);
 
-  // $ExpectType number[]
+  // $ExpectType any[]
   array()
     .default([] as number[])
     .getDefault();
@@ -235,10 +239,10 @@ string().required().nullable();
     .default(() => [] as string[])
     .validateSync(null);
 
+  const numList = [1, 2];
+
   // $ExpectType (number | undefined)[]
-  array(number())
-    .default<number[]>(() => [])
-    .getDefault();
+  array(number()).default(numList).getDefault();
 
   const a1 = object({
     list: array(number().required()).required(),

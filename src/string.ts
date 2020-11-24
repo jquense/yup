@@ -1,15 +1,9 @@
-import MixedSchema from './mixed';
 import { MixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe } from './types';
-import type {
-  Default,
-  Defined,
-  Presence,
-  StrictNonNullable,
-  Unset,
-} from './util/types';
+import type { Defined, Presence, StrictNonNullable, Unset } from './util/types';
+import BaseSchema from './Base';
 
 // eslint-disable-next-line
 let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i;
@@ -36,10 +30,7 @@ export function create() {
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
   TPresence extends Presence = Unset
-> extends MixedSchema<TType, TPresence> {
-  _tsType!: string | undefined;
-  _tsValidate!: string | undefined;
-
+> extends BaseSchema<TType, TType, TPresence> {
   constructor() {
     super({ type: 'string' });
 
@@ -202,7 +193,7 @@ export default class StringSchema<
 export default interface StringSchema<
   TType extends Maybe<string>,
   TPresence extends Presence
-> extends MixedSchema<TType, TPresence> {
+> extends BaseSchema<TType, TType, TPresence> {
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
