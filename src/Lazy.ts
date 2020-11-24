@@ -2,14 +2,14 @@ import isSchema from './util/isSchema';
 import Schema, { CastOptions } from './Schema';
 import type { Callback, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
-import type MixedSchema from './mixed';
+import MixedSchema, { AnyMixed } from './mixed';
 
-export type LazyBuilder<T extends MixedSchema = any> = (
+export type LazyBuilder<T extends AnyMixed = any> = (
   value: any,
   options: ResolveOptions,
 ) => T;
 
-export function create<T extends MixedSchema>(builder: LazyBuilder<T>) {
+export function create<T extends AnyMixed>(builder: LazyBuilder<T>) {
   return new Lazy(builder);
 }
 
@@ -21,7 +21,7 @@ export type LazyType<T> = LazyReturnValue<T> extends MixedSchema<infer TType>
   ? TType
   : never;
 
-class Lazy<T extends MixedSchema> implements Schema {
+class Lazy<T extends AnyMixed> implements Schema {
   type = 'lazy' as const;
 
   __isYupSchema__ = true;
@@ -43,7 +43,7 @@ class Lazy<T extends MixedSchema> implements Schema {
   resolve(options: ResolveOptions) {
     return this._resolve(options.value, options);
   }
-  cast(value: any, options?: CastOptions) {
+  cast(value: any, options?: CastOptions): T['__inputType'] {
     return this._resolve(value, options).cast(value, options);
   }
 

@@ -229,13 +229,13 @@ string().required().nullable();
     .default([] as number[])
     .getDefault();
 
-  // $ExpectType string[] | (string | null)[] | null
+  // $ExpectType (string | null)[] | null
   array(string().nullable().default(''))
     .nullable()
     .default(() => [] as string[])
     .validateSync(null);
 
-  // $ExpectType number[]
+  // $ExpectType (number | undefined)[]
   array(number())
     .default<number[]>(() => [])
     .getDefault();

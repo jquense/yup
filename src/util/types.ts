@@ -4,11 +4,13 @@ export type Unset = 'unset';
 export type Presence = 'required' | 'defined' | 'optional' | Unset;
 export type Nullability = 'nullable' | 'nonnullable' | Unset;
 
-type StrictNonNullable<T> = T extends null ? never : T;
+export type StrictNonNullable<T> = T extends null ? never : T;
 
-type Defined<T> = T extends undefined ? never : T;
+export type Defined<T> = T extends undefined ? never : T;
 
 export type TypeDef = Nullability | Presence | '';
+
+export type Default<T, D> = D extends undefined ? T | undefined : T;
 
 export type ResolveDefault<TType, TDefault extends Maybe<TType> = undefined> =
   | TType
@@ -19,19 +21,14 @@ export type ResolveInput<
   TNull = Unset,
   TDefault = undefined
 > = TNull extends 'nullable'
-  ? TType | TDefault | null
-  : StrictNonNullable<TType | TDefault>;
+  ? Default<TType, TDefault> | null
+  : StrictNonNullable<TType>;
 
-export type ResolveOutput<
-  TType,
-  TNull = Unset,
-  TPresent = Unset,
-  TDefault = undefined
-> = TPresent extends 'required'
-  ? NonNullable<ResolveInput<TType, TNull>>
+export type ResolveOutput<TType, TPresent = Unset> = TPresent extends 'required'
+  ? NonNullable<TType>
   : TPresent extends 'defined'
-  ? Defined<ResolveInput<TType, TNull>>
-  : ResolveInput<TType, TNull, TDefault>; //
+  ? Defined<TType>
+  : TType; //
 
 export type TypedSchema = {
   __inputType: any;

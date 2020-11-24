@@ -29,10 +29,12 @@ import Schema, {
 } from './Schema';
 import { ValidationError } from '.';
 import type {
+  Default,
   Nullability,
   Presence,
   ResolveInput,
   ResolveOutput,
+  StrictNonNullable,
   Unset,
 } from './util/types';
 
@@ -112,24 +114,21 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnyMixed = MixedSchema<any, any, any, any, any, any>;
+export type AnyMixed = MixedSchema<any, any, any>;
 
 export function create<TType = any>() {
   return new MixedSchema<TType>();
 }
 
 export default class MixedSchema<
-  TType = any,
-  TDefault = undefined,
-  TNullablity extends Nullability = Unset,
+  TCast = any,
   TPresence extends Presence = Unset,
-  TInput = ResolveInput<TType, TNullablity, TDefault>,
-  TOutput = ResolveOutput<TType, TNullablity, TPresence, TDefault>
+  TOutput = TCast
 > implements Schema {
   readonly type: string;
 
-  readonly __inputType!: TInput;
-  readonly __outputType!: TOutput;
+  readonly __inputType!: TCast;
+  readonly __outputType!: ResolveOutput<TOutput, TPresence>;
 
   readonly __isYupSchema__!: boolean;
 
@@ -150,7 +149,7 @@ export default class MixedSchema<
 
   protected exclusiveTests: Record<string, boolean> = Object.create(null);
 
-  optional!: () => MixedSchema;
+  // optional!: () => MixedSchema;
 
   spec: SchemaSpec<any>;
 
@@ -182,7 +181,7 @@ export default class MixedSchema<
     return this.type;
   }
 
-  protected _typeCheck(_value: any): _value is TType {
+  protected _typeCheck(_value: any): _value is TCast {
     return true;
   }
 
@@ -244,13 +243,8 @@ export default class MixedSchema<
 
   concat<TOther extends AnyMixed>(
     schema: TOther,
-  ): TOther extends MixedSchema<infer T, infer D, infer N, infer P>
-    ? MixedSchema<
-        T,
-        D,
-        N extends Unset ? TNullablity : N,
-        P extends Unset ? TPresence : P
-      >
+  ): TOther extends MixedSchema<infer T, infer P>
+    ? MixedSchema<T, P extends Unset ? TPresence : P>
     : never;
   concat(schema: MixedSchema<any, any>): MixedSchema<any, any>;
   concat(schema: MixedSchema<any, any>): MixedSchema<any, any> {
@@ -335,7 +329,7 @@ export default class MixedSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions = {}): TInput {
+  cast(value: any, options: CastOptions = {}): TCast {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -505,14 +499,16 @@ export default class MixedSchema<
       : cloneDeep(defaultValue);
   }
 
-  getDefault(options?: ResolveOptions): TDefault {
+  getDefault(options?: ResolveOptions): TCast {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
 
-  default<TNextDefault extends Maybe<TType>>(
+  default<TNextDefault extends Maybe<TCast>>(
     def: TNextDefault | (() => TNextDefault),
-  ): MixedSchema<TType, TNextDefault, TNullablity, TPresence> {
+  ): TNextDefault extends undefined
+    ? MixedSchema<TCast | undefined, TPresence>
+    : MixedSchema<Defined<TType>, TPresence> {
     if (arguments.length === 0) {
       return this._getDefault();
     }
@@ -532,9 +528,7 @@ export default class MixedSchema<
     return value != null;
   }
 
-  required(
-    message = locale.required,
-  ): MixedSchema<TType, TDefault, TNullablity, 'required'> {
+  required(message = locale.required): MixedSchema<TCast, 'required'> {
     return this.clone({ presence: 'required' }).withMutation((s) =>
       s.test({
         message,
@@ -547,19 +541,15 @@ export default class MixedSchema<
     ) as any;
   }
 
-  notRequired(): MixedSchema<TType, TDefault, TNullablity, 'optional'> {
+  notRequired(): MixedSchema<TCast, 'optional'> {
     var next = this.clone({ presence: 'optional' });
     next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next as any;
   }
 
-  nullable(
-    isNullable?: true,
-  ): MixedSchema<TType, TDefault, 'nullable', TPresence>;
-  nullable(
-    isNullable: false,
-  ): MixedSchema<TType, TDefault, 'nonnullable', TPresence>;
-  nullable(isNullable = true): MixedSchema<TType, TDefault, any, any> {
+  nullable(isNullable?: true): MixedSchema<TCast | null, TPresence>;
+  nullable(isNullable: false): MixedSchema<StrictNonNullable<TCast>, TPresence>;
+  nullable(isNullable = true): MixedSchema<TCast | null, TPresence> {
     var next = this.clone({
       nullability: isNullable ? 'nullable' : 'nonnullable',
     });
@@ -586,10 +576,10 @@ export default class MixedSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TInput>): this;
-  test(test: TestFunction<TInput>): this;
-  test(name: string, test: TestFunction<TInput>): this;
-  test(name: string, message: Message, test: TestFunction<TInput>): this;
+  test(options: TestConfig<TCast>): this;
+  test(test: TestFunction<TCast>): this;
+  test(name: string, test: TestFunction<TCast>): this;
+  test(name: string, message: Message, test: TestFunction<TCast>): this;
   test(...args: any[]) {
     let opts: TestConfig;
 
@@ -681,7 +671,7 @@ export default class MixedSchema<
     return next;
   }
 
-  oneOf<U extends TType>(enums: Maybe<U>[], message = locale.oneOf): this {
+  oneOf<U extends TCast>(enums: Maybe<U>[], message = locale.oneOf): this {
     var next = this.clone();
 
     enums.forEach((val) => {
@@ -709,7 +699,7 @@ export default class MixedSchema<
     return next as any;
   }
 
-  notOneOf<U extends TType>(
+  notOneOf<U extends TCast>(
     enums: Maybe<U>[],
     message = locale.notOneOf,
   ): this {
@@ -762,9 +752,7 @@ export default class MixedSchema<
     return description;
   }
 
-  defined(
-    message = locale.defined,
-  ): MixedSchema<TType, TDefault, TNullablity, 'defined'> {
+  defined(message = locale.defined): MixedSchema<TCast, 'defined'> {
     return this.test({
       message,
       name: 'defined',
@@ -777,11 +765,8 @@ export default class MixedSchema<
 }
 
 export default interface MixedSchema<
-  TType,
-  TDefault,
-  TNullablity extends Nullability,
+  TCast,
   TPresence extends Presence,
-  TInput,
   TOutput
 > {
   validateAt(
@@ -822,4 +807,4 @@ for (const alias of ['equals', 'is'] as const)
 for (const alias of ['not', 'nope'] as const)
   MixedSchema.prototype[alias] = MixedSchema.prototype.notOneOf;
 
-MixedSchema.prototype.optional = MixedSchema.prototype.notRequired;
+// MixedSchema.prototype.optional = MixedSchema.prototype.notRequired;
