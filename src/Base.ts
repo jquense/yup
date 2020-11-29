@@ -47,7 +47,7 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnyBase<Type = any> = BaseSchema<Type, any>;
+export type AnyBase<Type = any, TOut = any> = BaseSchema<Type, TOut>;
 
 export interface CastOptions {
   parent?: any;
