@@ -7,10 +7,13 @@ export default function runTests(options, cb) {
   let callback = once(cb);
   let count = tests.length;
 
-  if (!count) return callback(null, value);
-
   const nestedErrors = [];
   errors = errors ? errors : [];
+
+  if (!count)
+    return errors.length
+      ? callback(new ValidationError(errors, value, path))
+      : callback(null, value);
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
