@@ -9,31 +9,31 @@ import {
   ExtraParams,
 } from '../types';
 import Reference from '../Reference';
-import type { AnyBase } from '../Base';
+import type { Schema } from '../Base';
 
 export type CreateErrorOptions = {
   path?: string;
-  message?: string;
-  params?: object;
+  message?: Message;
+  params?: ExtraParams;
   type?: string;
 };
 
-export type TestContext = {
+export type TestContext<TContext = {}> = {
   path: string;
-  options: ValidateOptions;
+  options: ValidateOptions<TContext>;
   parent: any;
   schema: any; // TODO: Schema<any>;
   resolve: <T>(value: T | Reference<T>) => T;
   createError: (params?: CreateErrorOptions) => ValidationError;
 };
 
-export type TestFunction<T = unknown> = (
-  this: TestContext,
+export type TestFunction<T = unknown, TContext = {}> = (
+  this: TestContext<TContext>,
   value: T,
-  context: TestContext,
+  context: TestContext<TContext>,
 ) => boolean | ValidationError | Promise<boolean | ValidationError>;
 
-export type TestOptions<TSchema extends AnyBase = AnyBase> = {
+export type TestOptions<TSchema extends Schema = Schema> = {
   value: any;
   path?: string;
   label?: string;
@@ -43,10 +43,10 @@ export type TestOptions<TSchema extends AnyBase = AnyBase> = {
   sync?: boolean;
 };
 
-export type TestConfig<TValue = unknown> = {
+export type TestConfig<TValue = unknown, TContext = {}> = {
   name?: string;
   message?: Message;
-  test: TestFunction<TValue>;
+  test: TestFunction<TValue, TContext>;
   params?: ExtraParams;
   exclusive?: boolean;
 };
@@ -61,7 +61,7 @@ export default function createValidation(config: {
   params?: ExtraParams;
   message?: Message;
 }) {
-  function validate<TSchema extends AnyBase = AnyBase>(
+  function validate<TSchema extends Schema = Schema>(
     {
       value,
       path = '',

@@ -1,31 +1,46 @@
 import type { MixedLocale } from './locale';
 
-import { Maybe } from './types';
-import type { Defined, StrictNonNullable } from './util/types';
-import BaseSchema from './Base';
+import { AnyObject, Maybe, Optionals } from './types';
+import type { Defined } from './util/types';
+import BaseSchema, { Schema } from './Base';
 
 export function create<TType = any>() {
-  return new MixedSchema<TType>();
+  return new MixedSchema<TType | undefined>();
 }
 
-export default class MixedSchema<TType = any, TOut = TType> extends BaseSchema<
-  TType,
-  TType
-> {}
+export default class MixedSchema<
+  TType = any,
+  TContext = AnyObject,
+  TOut = TType
+> extends BaseSchema<TType, TContext, TOut> {}
 
-export default interface MixedSchema<TType, TOut> {
+export default interface MixedSchema<
+  TType = any,
+  TContext = AnyObject,
+  TOut = TType
+> {
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
-    ? MixedSchema<TType | undefined, TOut | undefined>
-    : MixedSchema<Defined<TType>, Defined<TOut>>;
+    ? MixedSchema<TType | undefined, TContext>
+    : MixedSchema<Defined<TType>, TContext>;
 
-  defined(msg?: MixedLocale['defined']): MixedSchema<TType, Defined<TOut>>;
+  concat(schema: this): this;
+  concat<IT, IC, IO>(
+    schema: BaseSchema<IT, IC, IO>,
+  ): MixedSchema<
+    TType | IT,
+    TContext & IC,
+    NonNullable<TOut> | IO | Optionals<IO>
+  >;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): MixedSchema<TType, TContext, Defined<TOut>>;
   required(
     msg?: MixedLocale['required'],
-  ): MixedSchema<TType, NonNullable<TOut>>;
-  notRequired(): MixedSchema<TType>;
+  ): MixedSchema<TType, TContext, NonNullable<TOut>>;
+  notRequired(): MixedSchema<TType, TContext>;
 
-  nullable(isNullable?: true): MixedSchema<TType | null>;
-  nullable(isNullable: false): MixedSchema<StrictNonNullable<TType>>;
+  nullable(isNullable?: true): MixedSchema<TType | null, TContext>;
+  nullable(isNullable: false): MixedSchema<Exclude<TType, null>, TContext>;
 }

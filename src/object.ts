@@ -11,33 +11,18 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
 import { InternalOptions, Callback, Maybe, Optionals, Preserve } from './types';
 import ValidationError from './ValidationError';
-import type {
-  Presence,
-  Unset,
-  TypedSchema,
-  Defined,
-  StrictNonNullable,
-  InferPresence,
-} from './util/types';
+import type { TypedSchema, Defined } from './util/types';
 import type Reference from './Reference';
-import Lazy, { LazyType } from './Lazy';
+import Lazy from './Lazy';
 import BaseSchema, {
-  AnyBase,
+  Schema,
   SchemaObjectDescription,
   SchemaSpec,
 } from './Base';
 
 export type AnyObject = Record<string, any>;
 
-type ShapeOf<T> = {
-  [k in keyof T]: BaseSchema<Maybe<T[k]>, any, Maybe<T[k]>>;
-};
-
-export type ObjectSchemaOf<T extends Maybe<AnyObject>> = ObjectSchema<
-  ShapeOf<T>
->;
-
-export type ObjectShape = Record<string, AnyBase | Reference | Lazy<any>>;
+export type ObjectShape = Record<string, Schema | Reference | Lazy<any>>;
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
   return new ObjectSchema<TShape>(spec);
@@ -53,7 +38,7 @@ export type DefaultFromShape<Shape extends ObjectShape> = {
     : undefined;
 };
 
-type AssignShape<T extends ObjectShape, U extends ObjectShape> = {
+type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
 } &
   U;
@@ -130,7 +115,7 @@ abstract class BaseObjectSchema<
     return isObject(value) || typeof value === 'function';
   }
 
-  protected _cast(_value: any, options: InternalOptions = {}) {
+  protected _cast(_value: any, options: InternalOptions<TContext> = {}) {
     let value = super._cast(_value, options);
 
     //should ignore nulls here
@@ -202,7 +187,7 @@ abstract class BaseObjectSchema<
 
   protected _validate(
     _value: any,
-    opts: InternalOptions = {},
+    opts: InternalOptions<TContext> = {},
     callback: Callback,
   ) {
     let errors = [] as ValidationError[];
@@ -295,14 +280,14 @@ abstract class BaseObjectSchema<
 
   concat<TOther extends ObjectSchema<any, any, any>>(
     schema: TOther,
-  ): TOther extends ObjectSchema<infer S, infer T, infer O>
+  ): TOther extends ObjectSchema<infer S, infer C, infer IType>
     ? ObjectSchema<
         TShape & S,
-        TypeOfShape<TShape & S> | Optionals<T & TIn>,
-        AssertsShape<TShape & S> | Optionals<O & TOut>
+        TContext & C,
+        TypeOfShape<TShape & S> | Optionals<IType>
       >
     : never;
-  concat(schema: AnyBase): AnyBase;
+  concat(schema: this): this;
   concat(schema: any): any {
     let next = super.concat(schema) as any;
 
@@ -346,7 +331,11 @@ abstract class BaseObjectSchema<
   shape<TNextShape extends ObjectShape>(
     additions: TNextShape,
     excludes: [string, string][] = [],
-  ): ObjectSchema<AssignShape<TShape, TNextShape>> {
+  ): ObjectSchema<
+    Assign<TShape, TNextShape>,
+    TContext,
+    TypeOfShape<Assign<TShape, TNextShape>> | Optionals<TIn>
+  > {
     let next = this.clone();
     let fields = Object.assign(next.fields, additions);
 
@@ -492,14 +481,15 @@ export default interface ObjectSchema<
 
   defined(msg?: MixedLocale['defined']): ObjectSchema<TShape, TContext, TIn>;
   required(msg?: MixedLocale['required']): ObjectSchema<TShape, TContext, TIn>;
+  optional(): this;
   notRequired(): this;
   nullable(isNullable?: true): ObjectSchema<TShape, TContext, TIn | null>;
   nullable(
     isNullable: false,
-  ): ObjectSchema<TShape, TContext, StrictNonNullable<TIn>>;
+  ): ObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 }
 
-interface DefinedObjectSchema<
+export interface DefinedObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>>
@@ -519,6 +509,8 @@ interface DefinedObjectSchema<
   required(
     msg?: MixedLocale['required'],
   ): RequiredObjectSchema<TShape, TContext, TIn>;
+
+  optional(): ObjectSchema<TShape, TContext, TIn>;
   notRequired(): ObjectSchema<TShape, TContext, TIn>;
   nullable(
     isNullable?: true,
@@ -528,7 +520,7 @@ interface DefinedObjectSchema<
   ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 }
 
-interface RequiredObjectSchema<
+export interface RequiredObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>>
@@ -543,6 +535,7 @@ interface RequiredObjectSchema<
     msg?: MixedLocale['defined'],
   ): DefinedObjectSchema<TShape, TContext, TIn>;
   required(msg?: MixedLocale['required']): this;
+  optional(): ObjectSchema<TShape, TContext, TIn>;
   notRequired(): ObjectSchema<TShape, TContext, TIn>;
   nullable(
     isNullable?: true,

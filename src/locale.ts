@@ -48,6 +48,10 @@ export interface ArrayLocale {
   max?: Message<{ max: number }>;
 }
 
+export interface BooleanLocale {
+  isValue?: Message;
+}
+
 export let mixed: Required<MixedLocale> = {
   default: '${path} is invalid',
   required: '${path} is a required field',
@@ -99,7 +103,7 @@ export let date: Required<DateLocale> = {
   max: '${path} field must be at earlier than ${max}',
 };
 
-export let boolean = {
+export let boolean: BooleanLocale = {
   isValue: '${path} field must be ${value}',
 };
 

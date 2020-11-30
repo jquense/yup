@@ -1,13 +1,13 @@
-import type { AnyBase } from './Base';
+import type { Schema } from './Base';
 import type Lazy from './Lazy';
 
 export type AnyObject = Record<string, any>;
 
-export type SchemaLike = AnyBase | Lazy<AnyBase>;
+export type SchemaLike = Schema | Lazy<any>;
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
-export type TransformFunction<T extends AnyBase> = (
+export type TransformFunction<T extends Schema> = (
   this: T,
   value: any,
   originalValue: any,
@@ -43,7 +43,7 @@ export interface InternalOptions<TContext = {}>
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: AnyBase; value: any }[];
+  from?: { schema: Schema; value: any }[];
 }
 
 export interface MessageParams {

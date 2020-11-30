@@ -9,7 +9,6 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Install](#install)
 - [Usage](#usage)
   - [Using a custom locale dictionary](#using-a-custom-locale-dictionary)
@@ -1194,7 +1193,13 @@ const nameAndAge = person.omit('color']);
 nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
 
-#### `object.from(fromKey: string, toKey: string, alias: boolean = false): Schema`
+#### `object.getDefaultFromShape(): Record<string, unknown>`
+
+Produces a default object value by walking the object shape and calling `default()`
+on each field. This is the default behavior of `getDefault()` but allows for
+building out an object skeleton regardless of the default().
+
+#### `object.from(fromKey: string, toKey: string, alias: boolean = false): this`
 
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
@@ -1321,15 +1326,25 @@ schema.format('YYYY-MM-DD').cast('It is 2012-05-25'); // => Fri May 25 2012 00:0
 
 ## TypeScript Support
 
-If you are using TypeScript installing the Yup typings is recommended:
+`yup` comes with robust typescript support! However, because of how dynamic `yup` is
+not everything can be statically typed safely, but for most cases it's "Good Enough".
 
-```sh
-npm install -D @types/yup
+Not that `yup` schema actually produce _two_ different types: the result of casting an input, and the value after validation.
+Why are these types different? Because a schema can produce a value via casting that
+would not pass validation!
+
+```js
+const schema = string().nullable().required();
+
+schema.cast(null); // -> null
+schema.validateSync(null); // ValidationError this is required!
 ```
 
-You can now infer a TypeScript type alias using the exported `InferType`. Given the following Yup schema:
+By itself this seems weird, but has it uses when handling user input. To get a
+TypeScript type that matches all possible `cast()` values, use `yup.TypeOf<typeof schema>`.
+To produce a type that matches a valid object for the schema use `yup.Asserts<typeof schema>>`
 
-```TypeScript
+```ts
 import * as yup from 'yup';
 
 const personSchema = yup.object({
@@ -1339,84 +1354,53 @@ const personSchema = yup.object({
     // TypeScript. Both will have the same effect on the resulting type by
     // excluding `undefined`, but `required` will also disallow empty strings.
     .defined(),
-  nickName: yup
-    .string()
-    .defined()
-    .nullable(),
+  // defaults also affect the possible output type!
+  // schema with default values won't produce `undefined` values. Remember object schema
+  // have a default value built in.
+  nickName: yup.string().default('').nullable(),
   gender: yup
     .mixed()
     // Note `as const`: this types the array as `["male", "female", "other"]`
     // instead of `string[]`.
     .oneOf(['male', 'female', 'other'] as const)
     .defined(),
-  email: yup
-    .string()
-    .nullable()
-    .notRequired()
-    .email(),
-  birthDate: yup
-    .date()
-    .nullable()
-    .notRequired()
-    .min(new Date(1900, 0, 1)),
-}).defined();
+  email: yup.string().nullable().notRequired().email(),
+  birthDate: yup.date().nullable().notRequired().min(new Date(1900, 0, 1)),
+});
 ```
 
 You can derive the TypeScript type as follows:
 
-```TypeScript
-type Person = yup.InferType<typeof personSchema>;
+```ts
+import type { Asserts, TypeOf } from 'yup'
+
+type parsed: Typeof<typeof personSchema> = personSchema.cast(json);
+
+const validated: Asserts<typeof personSchema> = personSchema.validateSync(parsed);
 ```
 
-Which is equivalent to the following TypeScript type alias:
+You can also go the other direction, specifying an interface and ensuring that a schema would match it:
 
-```TypeScript
+```ts
+import { string, object, number, SchemaOf } from 'yup';
+
 type Person = {
   firstName: string;
-  nickName: string | null;
-  gender: "male" | "female" | "other";
-  email?: string | null | undefined;
-  birthDate?: Date | null | undefined;
-}
-```
-
-Making the following objects valid both for TypeScript and Yup validation:
-
-```TypeScript
-const minimalPerson: Person = {
-    firstName: "Matt",
-    nickName: null,
-    gender: "male"
 };
-
-const fullPerson: Person = {
-    firstName: "Matt",
-    nickName: "The Hammer",
-    gender: "male",
-    email: "matt@the-hammer.com",
-    birthDate: new Date(1976, 9, 5)
-};
-```
-
-You can also go the other direction, specifying an interface and ensuring that a schema matches it:
-
-```TypeScript
-type Person = {
-  firstName: string;
-}
 
 // ✔️ compiles
-const goodPersonSchema: yup.ObjectSchema<Person> = yup.object({
-  firstName: yup.string().defined()
+const goodPersonSchema: SchemaOf<Person> = object({
+  firstName: string().defined(),
 }).defined();
 
 // ❌ errors:
 // "Type 'number | undefined' is not assignable to type 'string'."
-const badPersonSchema: yup.ObjectSchema<Person> = yup.object({
-  firstName: yup.number()
+const badPersonSchema: SchemaOf<Person> = object({
+  firstName: number(),
 });
 ```
 
-### TypeScript setting
+### TypeScript settings
 
-For `yup.InferType<T>` to work correctly with required and nullable types you have to set `strict: true` or `strictNullChecks: true` in your tsconfig.json.
+For type utilties to work correctly with required and nullable types you have
+to set `strict: true` or `strictNullChecks: true` in your tsconfig.json.

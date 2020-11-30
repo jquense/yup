@@ -19,7 +19,8 @@ export default class ValidationError extends Error {
     message: string | ((params: Params) => string) | unknown,
     params: Params,
   ) {
-    params.path = params.label || params.path || 'this';
+    const path = params.label || params.path || 'this';
+    if (path !== params.path) params = { ...params, path };
 
     if (typeof message === 'string')
       return message.replace(strReg, (_, key) => printValue(params[key]));

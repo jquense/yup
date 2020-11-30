@@ -20,10 +20,10 @@ export type ConditionOptions<T extends SchemaLike> =
   | ConditionBuilder<T>
   | ConditionConfig<T>;
 
-export type ResolveOptions = {
+export type ResolveOptions<TContext = any> = {
   value?: any;
   parent?: any;
-  context?: any;
+  context?: TContext;
 };
 
 class Condition<T extends SchemaLike = SchemaLike> {

@@ -3,7 +3,7 @@ import BoolSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
-import ObjectSchema, { create as objectCreate, ObjectSchemaOf } from './object';
+import ObjectSchema, { AnyObject, create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
 import { create as refCreate } from './Reference';
 import { create as lazyCreate } from './Lazy';
@@ -11,14 +11,9 @@ import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
-import type { AnyBase as Schema } from './Base';
-import type {
-  TypeOf,
-  Asserts,
-  Nullability,
-  Presence,
-  Unset,
-} from './util/types';
+import type { Schema } from './Base';
+import type { TypeOf, Asserts } from './util/types';
+import { Maybe } from './types';
 
 function addMethod<T extends Schema>(
   schemaType: (...aarg: any[]) => T,
@@ -42,16 +37,13 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
-export type {
-  TypeOf,
-  Asserts,
-  Nullability,
-  Presence,
-  Unset,
-  Asserts as InferType,
-  ObjectSchemaOf,
-  Schema,
-};
+type SchemaOf<T> = T extends AnyObject
+  ? ObjectSchema<{ [k in keyof T]: SchemaOf<T[k]> }>
+  : T extends Array<infer E>
+  ? ArraySchema<SchemaOf<E>>
+  : Schema<Maybe<T>, AnyObject, T>;
+
+export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, Schema };
 
 export {
   mixedCreate as mixed,
@@ -80,3 +72,11 @@ export {
   ObjectSchema,
   ArraySchema,
 };
+
+export type {
+  CreateErrorOptions,
+  TestContext,
+  TestFunction,
+  TestOptions,
+  TestConfig,
+} from './util/createValidation';

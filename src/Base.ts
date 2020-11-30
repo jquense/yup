@@ -25,15 +25,15 @@ import {
 } from './types';
 
 import { ValidationError } from '.';
-import type { Asserts, Presence, ResolveOutput, Unset } from './util/types';
+import type { Asserts } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 
-const UNSET = 'unset' as const;
+// const UNSET = 'unset' as const;
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
-  presence: Presence;
+  presence: 'required' | 'defined' | 'optional';
   default?: TDefault | (() => TDefault);
   abortEarly?: boolean;
   strip?: boolean;
@@ -48,11 +48,15 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnyBase<Type = any, TOut = any> = BaseSchema<Type, TOut>;
+export type Schema<Type = any, TContext = any, TOut = any> = BaseSchema<
+  Type,
+  TContext,
+  TOut
+>;
 
-export interface CastOptions {
+export interface CastOptions<TContext = {}> {
   parent?: any;
-  context?: {};
+  context?: TContext;
   assert?: boolean;
   stripUnknown?: boolean;
   // XXX: should be private?
@@ -136,7 +140,7 @@ export default abstract class BaseSchema<
       label: undefined,
       meta: undefined,
       nullable: false,
-      presence: UNSET,
+      presence: 'optional',
       ...options?.spec,
     };
   }
@@ -158,7 +162,7 @@ export default abstract class BaseSchema<
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    const next: AnyBase = Object.create(Object.getPrototypeOf(this));
+    const next: Schema = Object.create(Object.getPrototypeOf(this));
 
     // @ts-expect-error this is readonly
     next.type = this.type;
@@ -196,6 +200,14 @@ export default abstract class BaseSchema<
     return next;
   }
 
+  // withContext<TContext extends AnyObject>(): BaseSchema<
+  //   TCast,
+  //   TContext,
+  //   TOutput
+  // > {
+  //   return this as any;
+  // }
+
   withMutation<T>(fn: (schema: this) => T): T {
     let before = this._mutate;
     this._mutate = true;
@@ -204,13 +216,9 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  // concat<TOther extends AnyBase>(
-  //   schema: TOther,
-  // ): TOther extends BaseSchema<infer T, infer O, infer P>
-  //   ? BaseSchema<T, O, P extends Unset ? TPresence : P>
-  //   : never;
-  concat(schema: AnyBase): AnyBase;
-  concat(schema: AnyBase): AnyBase {
+  concat(schema: this): this;
+  concat(schema: Schema): Schema;
+  concat(schema: Schema): Schema {
     if (!schema || schema === this) return this;
 
     if (schema.type !== this.type && this.type !== 'mixed')
@@ -226,8 +234,8 @@ export default abstract class BaseSchema<
     // if (combined.spec.nullable === UNSET)
     //   mergedSpec.nullable = base.spec.nullable;
 
-    if (combined.spec.presence === UNSET)
-      mergedSpec.presence = base.spec.presence;
+    // if (combined.spec.presence === UNSET)
+    //   mergedSpec.presence = base.spec.presence;
 
     combined.spec = mergedSpec;
 
@@ -292,7 +300,7 @@ export default abstract class BaseSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions = {}): TCast {
+  cast(value: any, options: CastOptions<TContext> = {}): TCast {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -324,7 +332,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  protected _cast(rawValue: any, _options: CastOptions) {
+  protected _cast(rawValue: any, _options: CastOptions<TContext>) {
     let value =
       rawValue === undefined
         ? rawValue
@@ -342,7 +350,7 @@ export default abstract class BaseSchema<
 
   protected _validate(
     _value: any,
-    options: InternalOptions = {},
+    options: InternalOptions<TContext> = {},
     cb: Callback,
   ): void {
     let {
@@ -565,10 +573,14 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TCast>): this;
-  test(test: TestFunction<TCast>): this;
-  test(name: string, test: TestFunction<TCast>): this;
-  test(name: string, message: Message, test: TestFunction<TCast>): this;
+  test(options: TestConfig<TCast, TContext>): this;
+  test(test: TestFunction<TCast, TContext>): this;
+  test(name: string, test: TestFunction<TCast, TContext>): this;
+  test(
+    name: string,
+    message: Message,
+    test: TestFunction<TCast, TContext>,
+  ): this;
   test(...args: any[]) {
     let opts: TestConfig;
 
@@ -760,7 +772,7 @@ export default interface BaseSchema<TCast, TContext, TOutput> {
   is: BaseSchema['oneOf'];
   not: BaseSchema['notOneOf'];
   nope: BaseSchema['notOneOf'];
-  optional: BaseSchema['notRequired'];
+  optional(): any;
 }
 
 // @ts-expect-error

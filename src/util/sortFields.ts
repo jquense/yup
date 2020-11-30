@@ -5,12 +5,10 @@ import { split } from 'property-expr';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';
-import type MixedSchema from '../mixed';
-import type Reference from '../Reference';
-import type Lazy from '../Lazy';
+import { ObjectShape } from '../object';
 
 export default function sortFields(
-  fields: Record<string, MixedSchema | Reference | Lazy<any>>,
+  fields: ObjectShape,
   excludes: readonly string[] = [],
 ) {
   let edges = [] as Array<[string, string]>;
@@ -31,7 +29,7 @@ export default function sortFields(
       if (!~nodes.indexOf(key)) nodes.push(key);
 
       if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
-      else if (isSchema(value) && value.deps)
+      else if (isSchema(value) && 'deps' in value)
         value.deps.forEach((path) => addNode(path, key));
     }
 

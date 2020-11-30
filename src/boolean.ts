@@ -1,7 +1,9 @@
 import BaseSchema from './Base';
 import type { MixedLocale } from './locale';
-import type { AnyObject, Maybe } from './types';
-import type { Defined, StrictNonNullable } from './util/types';
+import type { AnyObject, Maybe, Optionals } from './types';
+import type { Defined } from './util/types';
+import { boolean as locale } from './locale';
+import isAbsent from './util/isAbsent';
 
 export function create() {
   return new BooleanSchema();
@@ -31,6 +33,34 @@ export default class BooleanSchema<
 
     return typeof v === 'boolean';
   }
+
+  isTrue(
+    message = locale.isValue,
+  ): BooleanSchema<TType | true, TContext, true | Optionals<TOut>> {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'true' },
+      test(value) {
+        return isAbsent(value) || value === true;
+      },
+    }) as any;
+  }
+
+  isFalse(
+    message = locale.isValue,
+  ): BooleanSchema<TType | false, TContext, false | Optionals<TOut>> {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'false' },
+      test(value) {
+        return isAbsent(value) || value === false;
+      },
+    }) as any;
+  }
 }
 
 export default interface BooleanSchema<
@@ -38,41 +68,47 @@ export default interface BooleanSchema<
   TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
 > extends BaseSchema<TType, TContext, TOut> {
+  concat<TOther extends BooleanSchema<any, any, any>>(schema: TOther): TOther;
+
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
-    ? BooleanSchema<TType | undefined>
-    : BooleanSchema<Defined<TType>>;
+    ? BooleanSchema<TType | undefined, TContext>
+    : BooleanSchema<Defined<TType>, TContext>;
 
-  defined(msg?: MixedLocale['defined']): BooleanSchema<TType>;
-  required(msg?: MixedLocale['required']): BooleanSchema<TType>;
+  defined(msg?: MixedLocale['defined']): DefinedBooleanSchema<TType, TContext>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredBooleanSchema<TType, TContext>;
+  optional(): BooleanSchema<TType, TContext>;
   notRequired(): BooleanSchema<TType, TContext>;
-  // optional(): BooleanSchema<TType, TContext>;
 
   nullable(isNullable?: true): BooleanSchema<TType | null>;
-  nullable(isNullable: false): BooleanSchema<StrictNonNullable<TType>>;
+  nullable(isNullable: false): BooleanSchema<Exclude<TType, null>>;
 }
 
-interface DefinedBooleanSchema<
+export interface DefinedBooleanSchema<
   TType extends Maybe<boolean>,
   TContext extends AnyObject = AnyObject
 > extends BooleanSchema<TType, TContext, Defined<TType>> {
   default<TNextDefault extends Maybe<TType>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
-    ? BooleanSchema<TType | undefined>
-    : BooleanSchema<Defined<TType>>;
+    ? BooleanSchema<TType | undefined, TContext>
+    : BooleanSchema<Defined<TType>, TContext>;
 
-  defined(msg?: MixedLocale['defined']): this;
-  required(msg?: MixedLocale['required']): RequiredBooleanSchema<TType>;
-  notRequired(): BooleanSchema<TType>;
-  // optional(): BooleanSchema<TType>;
+  defined(msg?: MixedLocale['defined']): DefinedBooleanSchema<TType, TContext>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredBooleanSchema<TType, TContext>;
+  optional(): BooleanSchema<TType, TContext>;
+  notRequired(): BooleanSchema<TType, TContext>;
 
   nullable(isNullable?: true): DefinedBooleanSchema<TType | null>;
-  nullable(isNullable: false): DefinedBooleanSchema<StrictNonNullable<TType>>;
+  nullable(isNullable: false): DefinedBooleanSchema<Exclude<TType, null>>;
 }
 
-interface RequiredBooleanSchema<
+export interface RequiredBooleanSchema<
   TType extends Maybe<boolean>,
   TContext extends AnyObject = AnyObject
 > extends BooleanSchema<TType, TContext, NonNullable<TType>> {
@@ -83,12 +119,14 @@ interface RequiredBooleanSchema<
     : BooleanSchema<Defined<TType>, TContext>;
 
   defined(msg?: MixedLocale['defined']): DefinedBooleanSchema<TType, TContext>;
-  required(msg?: MixedLocale['required']): this;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredBooleanSchema<TType, TContext>;
+  optional(): BooleanSchema<TType, TContext>;
   notRequired(): BooleanSchema<TType, TContext>;
-  // optional(): BooleanSchema<TType, 'optional'>;
 
   nullable(isNullable?: true): RequiredBooleanSchema<TType | null, TContext>;
   nullable(
     isNullable: false,
-  ): RequiredBooleanSchema<StrictNonNullable<TType>, TContext>;
+  ): RequiredBooleanSchema<Exclude<TType, null>, TContext>;
 }

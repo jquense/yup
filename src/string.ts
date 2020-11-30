@@ -1,15 +1,8 @@
-import { MixedLocale, string as locale, string } from './locale';
+import { MixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe, AnyObject } from './types';
-import type {
-  Defined,
-  If,
-  Presence,
-  StrictNonNullable,
-  Thunk,
-  Unset,
-} from './util/types';
+import type { Defined, If, Thunk } from './util/types';
 import BaseSchema from './Base';
 
 // eslint-disable-next-line
@@ -30,8 +23,8 @@ export type MatchOptions = {
 
 let objStringTag = {}.toString();
 
-export function create<C>() {
-  return new StringSchema<string | undefined, C>();
+export function create() {
+  return new StringSchema();
 }
 
 export default class StringSchema<
@@ -207,7 +200,7 @@ export default class StringSchema<
 //
 // String Interfaces
 //
-interface DefinedStringSchema<
+export interface DefinedStringSchema<
   TType extends Maybe<string>,
   TContext extends AnyObject = AnyObject
 > extends StringSchema<TType, TContext, Defined<TType>> {
@@ -215,18 +208,23 @@ interface DefinedStringSchema<
     def: Thunk<D>,
   ): If<
     D,
-    DefinedStringSchema<TType | undefined>,
-    DefinedStringSchema<Defined<TType>>
+    DefinedStringSchema<TType | undefined, TContext>,
+    DefinedStringSchema<Defined<TType>, TContext>
   >;
 
   defined(msg?: MixedLocale['defined']): this;
-  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
-  notRequired(): StringSchema<TType>;
-  nullable(isNullable?: true): RequiredStringSchema<TType | null>;
-  nullable(isNullable: false): RequiredStringSchema<StrictNonNullable<TType>>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredStringSchema<TType, TContext>;
+  optional(): StringSchema<TType, TContext>;
+  notRequired(): StringSchema<TType, TContext>;
+  nullable(isNullable?: true): RequiredStringSchema<TType | null, TContext>;
+  nullable(
+    isNullable: false,
+  ): RequiredStringSchema<Exclude<TType, null>, TContext>;
 }
 
-interface RequiredStringSchema<
+export interface RequiredStringSchema<
   TType extends Maybe<string>,
   TContext extends AnyObject = AnyObject
 > extends StringSchema<TType, TContext, NonNullable<TType>> {
@@ -234,15 +232,20 @@ interface RequiredStringSchema<
     def: Thunk<D>,
   ): If<
     D,
-    RequiredStringSchema<TType | undefined>,
-    RequiredStringSchema<Defined<TType>>
+    RequiredStringSchema<TType | undefined, TContext>,
+    RequiredStringSchema<Defined<TType>, TContext>
   >;
 
-  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType>;
-  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
-  notRequired(): StringSchema<TType>;
-  nullable(isNullable?: true): RequiredStringSchema<TType | null>;
-  nullable(isNullable: false): RequiredStringSchema<StrictNonNullable<TType>>;
+  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType, TContext>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredStringSchema<TType, TContext>;
+  optional(): StringSchema<TType, TContext>;
+  notRequired(): StringSchema<TType, TContext>;
+  nullable(isNullable?: true): RequiredStringSchema<TType | null, TContext>;
+  nullable(
+    isNullable: false,
+  ): RequiredStringSchema<Exclude<TType, null>, TContext>;
 }
 
 export default interface StringSchema<
@@ -250,6 +253,8 @@ export default interface StringSchema<
   TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
 > extends BaseSchema<TType, TContext, TOut> {
+  concat<TOther extends StringSchema<any, any, any>>(schema: TOther): TOther;
+
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
@@ -262,8 +267,13 @@ export default interface StringSchema<
   required(
     msg?: MixedLocale['required'],
   ): RequiredStringSchema<TType, TContext>;
-  notRequired(): StringSchema<TType>;
+  optional(): StringSchema<TType, TContext>;
+  notRequired(): StringSchema<TType, TContext>;
 
   nullable(isNullable?: true): StringSchema<TType | null, TContext>;
-  nullable(isNullable: false): StringSchema<StrictNonNullable<TType>, TContext>;
+  nullable(isNullable: false): StringSchema<Exclude<TType, null>, TContext>;
+  withContext<TNextContext extends TContext>(): StringSchema<
+    Exclude<TType, null>,
+    TNextContext
+  >;
 }

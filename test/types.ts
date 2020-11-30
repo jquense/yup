@@ -1,22 +1,21 @@
 /* eslint-disable no-unused-labels */
 /* eslint-disable no-unused-expressions */
 
-import { array, string, object, mixed, number, ref, lazy } from '../src';
+import {
+  array,
+  string,
+  object,
+  mixed,
+  number,
+  ref,
+  lazy,
+  SchemaOf,
+} from '../src';
 import type {
   AssertsShape,
   DefaultFromShape,
-  ObjectSchemaOf,
   TypeOfShape,
 } from '../src/object';
-import { ResolveOutput, Unset } from '../src/util/types';
-
-// let schema = object({
-//   str: string().nullable(),
-// }).shape({
-//   num: number(),
-// });
-
-// const fff = mixed().nullable();
 
 mixed().required().nullable();
 
@@ -24,42 +23,6 @@ string().required().nullable();
 
 /** Type utils */
 {
-  // $ExpectType string
-  type _d4 = ResolveOutput<string | null, 'required'>;
-
-  // $ExpectType string
-  type _d5 = ResolveOutput<string, 'required'>;
-
-  // $ExpectType string
-  type _o1 = ResolveOutput<string | null, 'required'>;
-
-  // $ExpectType string | undefined
-  type _o2 = ResolveOutput<string | undefined, 'optional'>;
-
-  // $ExpectType string
-  type _o22 = ResolveOutput<string | undefined, 'defined'>;
-
-  // $ExpectType string
-  type _o3 = ResolveOutput<string, Unset>;
-
-  // $ExpectType string
-  type _o4 = ResolveOutput<string | null, 'required'>;
-
-  // $ExpectType string
-  type _o5 = ResolveOutput<string | null, 'required'>;
-
-  // $ExpectType string | null | undefined
-  type _o6 = ResolveOutput<string | null | undefined, 'optional'>;
-
-  // $ExpectType string | null
-  type _o7 = ResolveOutput<string | null, 'optional'>;
-
-  // $ExpectType string | null
-  type _o8 = ResolveOutput<string | null, 'defined'>;
-
-  // $ExpectType string
-  type _o9 = ResolveOutput<string, 'defined'>;
-
   const strRequired = string().required();
 
   // $ExpectType string | undefined
@@ -67,7 +30,8 @@ string().required().nullable();
 
   //
   const strNullableRequired = string().nullable().required();
-  // $ExpectType string | null | undefined
+
+  // $ExpectType Maybe<string>
   strNullableRequired.cast('');
 
   // $ExpectType string
@@ -77,7 +41,7 @@ string().required().nullable();
   //
   const strNullable = string().nullable();
 
-  // $ExpectType string | null | undefined
+  // $ExpectType Maybe<string>
   strNullable.validateSync('');
 
   const strDefined = string().default('');
@@ -192,12 +156,12 @@ string().required().nullable();
   merge.cast({}).other;
 }
 
-ObjectSchemaOf: {
+SchemaOf: {
   type Person = {
     firstName: string;
   };
 
-  type PersonSchema = ObjectSchemaOf<Person>;
+  type PersonSchema = SchemaOf<Person>;
 
   const _t: PersonSchema = object({
     firstName: string().defined(),
@@ -278,12 +242,16 @@ ObjectSchemaOf: {
 //
 {
   // $ExpectType string
-  mixed<string>().required().concat(mixed<string>()).validateSync('');
+  mixed<string>().concat(mixed<string>().required()).validateSync('');
 
-  let _f = mixed<string>().notRequired();
+  let _f = mixed<string>();
 
-  // $ExpectType string | undefined
-  const _oo = mixed<string>().required().concat(_f).validateSync('');
+  // $ExpectType string | number | undefined
+  const _oo = mixed<number>()
+    .required()
+    .concat(_f)
+    .notRequired()
+    .validateSync('');
 
   const _o = object({
     str: string(),
@@ -296,3 +264,14 @@ ObjectSchemaOf: {
   // $ExpectType MixedSchema<number | "hi", any, "unset", "unset", any, any>
   // string().oneOf(['hi' as const]);
 }
+
+// Context: {
+//   type Context = { isCool: boolean };
+
+//   const schema = object({
+//     str: string().when('$isCool', {
+//       is: true,
+//       then: string().required(),
+//     }),
+//   });
+// }
