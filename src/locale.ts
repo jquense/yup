@@ -99,7 +99,9 @@ export let date: Required<DateLocale> = {
   max: '${path} field must be at earlier than ${max}',
 };
 
-export let boolean = {};
+export let boolean = {
+  isValue: '${path} field must be ${value}',
+};
 
 export let object: Required<ObjectLocale> = {
   noUnknown: '${path} field has unspecified keys: ${unknown}',

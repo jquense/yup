@@ -56,4 +56,34 @@ describe('Boolean types', () => {
         }),
     ]);
   });
+
+  it('should check isTrue correctly', () => {
+    return Promise.all([
+      bool()
+        .isTrue()
+        .isValid(true)
+        .should.eventually()
+        .equal(true),
+      bool()
+        .isTrue()
+        .isValid(false)
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
+
+  it('should check isFalse correctly', () => {
+    return Promise.all([
+      bool()
+        .isFalse()
+        .isValid(false)
+        .should.eventually()
+        .equal(true),
+      bool()
+        .isFalse()
+        .isValid(true)
+        .should.eventually()
+        .equal(false),
+    ]);
+  });
 });
