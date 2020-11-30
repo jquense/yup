@@ -15,6 +15,7 @@ import {
   Maybe,
   PreserveOptionals,
   Preserve,
+  AnyObject,
 } from './types';
 import ValidationError from './ValidationError';
 import type {
@@ -94,18 +95,19 @@ const defaultSort = sortByKeyOrder([]);
 
 type SameShape<T> = { [K in keyof T]: any };
 
-type ObjectShape<
-  T extends Maybe<AnyObject>,
-  TOut extends Maybe<SameShape<TType>>
-> = {
-  // This shouldn't be necessary because MixedSchema extends Schema, but type
-  // inference only works with it this way - otherwise when you use a mixed
-  // field in object schema, it will type as `unknown`. Not sure why that is -
-  // maybe some sort of inference depth limit?
-  [field in keyof T]: BaseSchema<T[field]> | Reference;
-};
+// type ObjectShape<
+//   T extends Maybe<AnyObject>,
+//   TOut extends Maybe<SameShape<TType>>
+// > = {
+//   // This shouldn't be necessary because MixedSchema extends Schema, but type
+//   // inference only works with it this way - otherwise when you use a mixed
+//   // field in object schema, it will type as `unknown`. Not sure why that is -
+//   // maybe some sort of inference depth limit?
+//   [field in keyof T]: BaseSchema<T[field]> | Reference;
+// };
 
 export default class ObjectSchema<
+  TShape extends ObjectShape = AnyObject,
   TType extends Maybe<AnyObject> = AnyObject | undefined,
   TOut extends Maybe<SameShape<TType>> = SameShape<TType> | undefined
 > extends BaseSchema<TType, TOut> {
