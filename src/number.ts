@@ -5,7 +5,8 @@ import type { Maybe } from './types';
 import type Reference from './Reference';
 import type {
   Defined,
-  Nullability,
+  If,
+  Thunk,
   Presence,
   StrictNonNullable,
   Unset,
@@ -20,8 +21,8 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TPresence extends Presence = Unset
-> extends BaseSchema<TType, TType, TPresence> {
+  TOut extends TType = TType
+> extends BaseSchema<TType, TOut> {
   constructor() {
     super({ type: 'number' });
 
@@ -135,23 +136,56 @@ export default class NumberSchema<
   }
 }
 
+//
+// Number Interfaces
+//
+interface DefinedNumberSchema<TType extends Maybe<number>>
+  extends NumberSchema<TType, Defined<TType>> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): If<
+    D,
+    DefinedNumberSchema<TType | undefined>,
+    DefinedNumberSchema<Defined<TType>>
+  >;
+
+  defined(msg?: MixedLocale['defined']): this;
+  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
+  notRequired(): NumberSchema<TType>;
+  nullable(isNullable?: true): RequiredNumberSchema<TType | null>;
+  nullable(isNullable: false): RequiredNumberSchema<StrictNonNullable<TType>>;
+}
+
+interface RequiredNumberSchema<TType extends Maybe<number>>
+  extends NumberSchema<TType, NonNullable<TType>> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): If<
+    D,
+    RequiredNumberSchema<TType | undefined>,
+    RequiredNumberSchema<Defined<TType>>
+  >;
+
+  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType>;
+  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
+  notRequired(): NumberSchema<TType>;
+  nullable(isNullable?: true): RequiredNumberSchema<TType | null>;
+  nullable(isNullable: false): RequiredNumberSchema<StrictNonNullable<TType>>;
+}
+
 export default interface NumberSchema<
-  TType extends Maybe<number>,
-  TPresence extends Presence
-> extends BaseSchema<TType, TType, TPresence> {
-  default<TNextDefault extends Maybe<TType>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? NumberSchema<TType | undefined, TPresence>
-    : NumberSchema<Defined<TType>, TPresence>;
+  TType extends Maybe<number> = number | undefined,
+  TOut extends TType = TType
+> extends BaseSchema<TType, TOut> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): If<D, NumberSchema<TType | undefined>, NumberSchema<Defined<TType>>>;
 
-  defined(msg?: MixedLocale['defined']): NumberSchema<TType, 'defined'>;
+  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType>;
 
-  required(msg?: MixedLocale['required']): NumberSchema<TType, 'required'>;
-  notRequired(): NumberSchema<TType, 'optional'>;
+  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
+  notRequired(): NumberSchema<TType>;
 
-  nullable(isNullable?: true): NumberSchema<TType | null, TPresence>;
-  nullable(
-    isNullable: false,
-  ): NumberSchema<StrictNonNullable<TType>, TPresence>;
+  nullable(isNullable?: true): NumberSchema<TType | null>;
+  nullable(isNullable: false): NumberSchema<StrictNonNullable<TType>>;
 }
