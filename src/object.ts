@@ -9,14 +9,7 @@ import { MixedLocale, object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
-import {
-  InternalOptions,
-  Callback,
-  Maybe,
-  PreserveOptionals,
-  Preserve,
-  AnyObject,
-} from './types';
+import { InternalOptions, Callback, Maybe, Optionals, Preserve } from './types';
 import ValidationError from './ValidationError';
 import type {
   Presence,
@@ -34,13 +27,15 @@ import BaseSchema, {
   SchemaSpec,
 } from './Base';
 
-// type ShapeOf<T> = {
-//   [k in keyof T]: BaseSchema<Maybe<T[k]>, Maybe<T[k]>, InferPresence<T[k]>>;
-// };
+export type AnyObject = Record<string, any>;
 
-// export type ObjectSchemaOf<T extends Maybe<AnyObject>> = ObjectSchema<
-//   ShapeOf<T>
-// >;
+type ShapeOf<T> = {
+  [k in keyof T]: BaseSchema<Maybe<T[k]>, any, Maybe<T[k]>>;
+};
+
+export type ObjectSchemaOf<T extends Maybe<AnyObject>> = ObjectSchema<
+  ShapeOf<T>
+>;
 
 export type ObjectShape = Record<string, AnyBase | Reference | Lazy<any>>;
 
@@ -48,15 +43,15 @@ export function create<TShape extends ObjectShape>(spec?: TShape) {
   return new ObjectSchema<TShape>(spec);
 }
 
-// export type DefaultFromShape<Shape extends ObjectShape> = {
-//   [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
-//     ? DefaultFromShape<TShape>
-//     : Shape[K] extends { getDefault: () => infer D }
-//     ? Preserve<D, undefined> extends never
-//       ? Defined<D>
-//       : Preserve<D, undefined>
-//     : undefined;
-// };
+export type DefaultFromShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
+    ? DefaultFromShape<TShape>
+    : Shape[K] extends { getDefault: () => infer D }
+    ? Preserve<D, undefined> extends never
+      ? Defined<D>
+      : Preserve<D, undefined>
+    : undefined;
+};
 
 type AssignShape<T extends ObjectShape, U extends ObjectShape> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
@@ -86,34 +81,20 @@ export type ObjectSchemaSpec = SchemaSpec<any> & {
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
   Object.prototype.toString.call(obj) === '[object Object]';
 
-function unknown(ctx: ObjectSchema, value: any) {
+function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
   let known = Object.keys(ctx.fields);
   return Object.keys(value).filter((key) => known.indexOf(key) === -1);
 }
 
 const defaultSort = sortByKeyOrder([]);
 
-type SameShape<T> = { [K in keyof T]: any };
-
-// type ObjectShape<
-//   T extends Maybe<AnyObject>,
-//   TOut extends Maybe<SameShape<TType>>
-// > = {
-//   // This shouldn't be necessary because MixedSchema extends Schema, but type
-//   // inference only works with it this way - otherwise when you use a mixed
-//   // field in object schema, it will type as `unknown`. Not sure why that is -
-//   // maybe some sort of inference depth limit?
-//   [field in keyof T]: BaseSchema<T[field]> | Reference;
-// };
-
-export default class ObjectSchema<
-  TShape extends ObjectShape = AnyObject,
-  TType extends Maybe<AnyObject> = AnyObject | undefined,
-  TOut extends Maybe<SameShape<TType>> = SameShape<TType> | undefined
-> extends BaseSchema<TType, TOut> {
-  fields: {
-    [k in keyof TType]: BaseSchema<TType[k], NonNullable<TOut>[k]>;
-  } = Object.create(null);
+abstract class BaseObjectSchema<
+  TShape extends ObjectShape,
+  TContext extends AnyObject,
+  TIn extends Maybe<AnyObject>,
+  TOut extends Maybe<AnyObject>
+> extends BaseSchema<TIn, TContext, TOut> {
+  fields: TShape = Object.create(null);
 
   spec!: ObjectSchemaSpec;
 
@@ -121,7 +102,7 @@ export default class ObjectSchema<
   private _nodes: readonly string[] = [];
   private _excludedEdges: readonly string[] = [];
 
-  constructor(spec?: ObjectShape<TType, TOut>) {
+  constructor(spec?: TShape) {
     super({
       type: 'object',
     });
@@ -145,7 +126,7 @@ export default class ObjectSchema<
     });
   }
 
-  protected _typeCheck(value: any): value is NonNullable<TType> {
+  protected _typeCheck(value: any): value is NonNullable<TIn> {
     return isObject(value) || typeof value === 'function';
   }
 
@@ -312,16 +293,15 @@ export default class ObjectSchema<
     return next;
   }
 
-  // concat<TOther extends ObjectSchema<any, any, any, any>>(
-  //   schema: TOther,
-  // ): TOther extends ObjectSchema<infer S, infer T, infer O, infer P>
-  //   ? ObjectSchema<
-  //       TShape & S,
-  //       TypeOfShape<TShape & S> | PreserveOptionals<T & TType>,
-  //       AssertsShape<TShape & S> | PreserveOptionals<O & TOut>,
-  //       P extends Unset ? TPresence : P
-  //     >
-  //   : never;
+  concat<TOther extends ObjectSchema<any, any, any>>(
+    schema: TOther,
+  ): TOther extends ObjectSchema<infer S, infer T, infer O>
+    ? ObjectSchema<
+        TShape & S,
+        TypeOfShape<TShape & S> | Optionals<T & TIn>,
+        AssertsShape<TShape & S> | Optionals<O & TOut>
+      >
+    : never;
   concat(schema: AnyBase): AnyBase;
   concat(schema: any): any {
     let next = super.concat(schema) as any;
@@ -342,14 +322,14 @@ export default class ObjectSchema<
     return next.withMutation((next: any) => next.shape(nextFields));
   }
 
-  // getDefaultFromShape(): DefaultFromShape<TShape> {
-  //   let dft = {} as Record<string, unknown>;
-  //   this._nodes.forEach((key) => {
-  //     const field = this.fields[key];
-  //     dft[key] = 'default' in field ? field.getDefault() : undefined;
-  //   });
-  //   return dft as any;
-  // }
+  getDefaultFromShape(): DefaultFromShape<TShape> {
+    let dft = {} as Record<string, unknown>;
+    this._nodes.forEach((key) => {
+      const field = this.fields[key];
+      dft[key] = 'default' in field ? field.getDefault() : undefined;
+    });
+    return dft as any;
+  }
 
   protected _getDefault() {
     if ('default' in this.spec) {
@@ -483,22 +463,91 @@ export default class ObjectSchema<
   }
 }
 
+export default class ObjectSchema<
+  TShape extends ObjectShape,
+  TContext extends AnyObject = AnyObject,
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+> extends BaseObjectSchema<
+  TShape,
+  TContext,
+  TIn,
+  AssertsShape<TShape> | Optionals<TIn>
+> {}
+
 export default interface ObjectSchema<
-  TType extends Maybe<AnyObject> = AnyObject | undefined,
-  TOut extends Maybe<SameShape<TType>> = SameShape<TType> | undefined
-> extends BaseSchema<TType, TOut> {
+  TShape extends ObjectShape,
+  TContext extends AnyObject = AnyObject,
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+> extends BaseObjectSchema<
+    TShape,
+    TContext,
+    TIn,
+    AssertsShape<TShape> | Optionals<TIn>
+  > {
   default<TNextDefault extends Maybe<Record<string, any>>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
-    ? ObjectSchema<TType | undefined, TOut | undefined>
-    : ObjectSchema<Defined<TType>, Defined<TOut>>;
+    ? ObjectSchema<TShape, TContext, TIn | undefined>
+    : ObjectSchema<TShape, TContext, Defined<TIn>>;
 
-  defined(msg?: MixedLocale['defined']): ObjectSchema<TType, TOut>;
-  required(msg?: MixedLocale['required']): ObjectSchema<TType, TOut>;
-  notRequired(): ObjectSchema<TType, TOut>;
-
-  nullable(isNullable?: true): ObjectSchema<TType | null, TOut | null>;
+  defined(msg?: MixedLocale['defined']): ObjectSchema<TShape, TContext, TIn>;
+  required(msg?: MixedLocale['required']): ObjectSchema<TShape, TContext, TIn>;
+  notRequired(): this;
+  nullable(isNullable?: true): ObjectSchema<TShape, TContext, TIn | null>;
   nullable(
     isNullable: false,
-  ): ObjectSchema<StrictNonNullable<TType>, StrictNonNullable<TOut>>;
+  ): ObjectSchema<TShape, TContext, StrictNonNullable<TIn>>;
+}
+
+interface DefinedObjectSchema<
+  TShape extends ObjectShape,
+  TContext extends AnyObject,
+  TIn extends Maybe<TypeOfShape<TShape>>
+> extends BaseObjectSchema<
+    TShape,
+    TContext,
+    TIn,
+    AssertsShape<TShape> | Extract<TIn, null>
+  > {
+  default<TNextDefault extends Maybe<Record<string, any>>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): TNextDefault extends undefined
+    ? DefinedObjectSchema<TShape, TContext, TIn | undefined>
+    : DefinedObjectSchema<TShape, TContext, Defined<TIn>>;
+
+  defined(msg?: MixedLocale['defined']): this;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredObjectSchema<TShape, TContext, TIn>;
+  notRequired(): ObjectSchema<TShape, TContext, TIn>;
+  nullable(
+    isNullable?: true,
+  ): DefinedObjectSchema<TShape, TContext, TIn | null>;
+  nullable(
+    isNullable: false,
+  ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
+}
+
+interface RequiredObjectSchema<
+  TShape extends ObjectShape,
+  TContext extends AnyObject,
+  TIn extends Maybe<TypeOfShape<TShape>>
+> extends BaseObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
+  default<TNextDefault extends Maybe<Record<string, any>>>(
+    def: TNextDefault | (() => TNextDefault),
+  ): TNextDefault extends undefined
+    ? RequiredObjectSchema<TShape, TContext, TIn | undefined>
+    : RequiredObjectSchema<TShape, TContext, Defined<TIn>>;
+
+  defined(
+    msg?: MixedLocale['defined'],
+  ): DefinedObjectSchema<TShape, TContext, TIn>;
+  required(msg?: MixedLocale['required']): this;
+  notRequired(): ObjectSchema<TShape, TContext, TIn>;
+  nullable(
+    isNullable?: true,
+  ): RequiredObjectSchema<TShape, TContext, TIn | null>;
+  nullable(
+    isNullable: false,
+  ): RequiredObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 }

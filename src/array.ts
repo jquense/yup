@@ -9,6 +9,8 @@ import type {
   Callback,
   Message,
   Maybe,
+  Preserve,
+  Optionals,
 } from './types';
 import ValidationError from './ValidationError';
 import type Reference from './Reference';
@@ -16,7 +18,6 @@ import {
   Asserts,
   Defined,
   If,
-  PreserveOptionality,
   StrictNonNullable,
   Thunk,
   TypeOf,
@@ -289,9 +290,8 @@ class BaseArraySchema<
 export default class ArraySchema<
   T extends AnyBase,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
-  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
-> extends BaseArraySchema<T, TContext, TIn, TOut> {}
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
+> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[] | Optionals<TIn>> {}
 
 //
 // Interfaces
@@ -301,7 +301,12 @@ interface DefinedArraySchema<
   T extends AnyBase,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOf<T>[]>
-> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[] | undefined> {
+> extends BaseArraySchema<
+    T,
+    TContext,
+    TIn,
+    Asserts<T>[] | Preserve<TIn, null>
+  > {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): If<
@@ -314,12 +319,7 @@ interface DefinedArraySchema<
   required(
     msg?: MixedLocale['required'],
   ): RequiredArraySchema<T, TContext, TIn>;
-  notRequired(): ArraySchema<
-    T,
-    TContext,
-    TIn,
-    PreserveOptionality<TIn, Asserts<T>[]>
-  >;
+  notRequired(): ArraySchema<T, TContext, TIn>;
   nullable(isNullable?: true): DefinedArraySchema<T, TContext, TIn | null>;
   nullable(
     isNullable: false,
@@ -341,12 +341,7 @@ interface RequiredArraySchema<
 
   defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
   required(msg?: MixedLocale['required']): this;
-  notRequired(): ArraySchema<
-    T,
-    TContext,
-    TIn,
-    PreserveOptionality<TIn, Asserts<T>[]>
-  >;
+  notRequired(): ArraySchema<T, TContext, TIn>;
   nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
   nullable(
     isNullable: false,
@@ -356,15 +351,14 @@ interface RequiredArraySchema<
 export default interface ArraySchema<
   T extends AnyBase,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
-  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
-> extends BaseArraySchema<T, TContext, TIn, TOut> {
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
+> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[] | Optionals<TIn>> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): If<
     D,
-    ArraySchema<T, TContext, TIn | undefined, TOut | undefined>,
-    ArraySchema<T, TContext, Defined<TIn>, Defined<TOut>>
+    ArraySchema<T, TContext, TIn | undefined>,
+    ArraySchema<T, TContext, Defined<TIn>>
   >;
 
   defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
@@ -373,18 +367,11 @@ export default interface ArraySchema<
   ): RequiredArraySchema<T, TContext, TIn>;
   notRequired(): this;
 
-  nullable(
-    isNullable?: true,
-  ): ArraySchema<T, TContext, TIn | null, TOut | null>;
-  nullable(
-    isNullable: false,
-  ): ArraySchema<T, TContext, StrictNonNullable<TIn>, StrictNonNullable<TIn>>;
+  nullable(isNullable?: true): ArraySchema<T, TContext, TIn | null>;
+  nullable(isNullable: false): ArraySchema<T, TContext, StrictNonNullable<TIn>>;
 }
 
-let s = create<{ foo: string }>(string().required())
-  .required()
-  .nullable()
-  .notRequired();
+let s = create(string().required()).required().nullable().notRequired();
 
 let c = s.cast('');
 

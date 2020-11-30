@@ -48,12 +48,3 @@ export type Asserts<TSchema extends TypedSchema> = TSchema['__outputType'];
 export type Thunk<T> = T | (() => T);
 
 export type If<T, Y, N> = T extends undefined ? Y : N;
-
-type Preserve<T, U> = T extends U ? U : never;
-
-export type PreserveOptionality<T, U> =
-  | U
-  | Preserve<T, undefined>
-  | Preserve<T, null>;
-
-type f = PreserveOptionality<number | null | undefined, string>;

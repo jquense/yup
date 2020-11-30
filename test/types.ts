@@ -124,8 +124,8 @@ string().required().nullable();
     lazy: lazy(() => number().required()),
   });
 
-  type F = StringSchema<string>;
-  type f = F extends TypedSchema ? F['__inputType'] : false;
+  // type F = StringSchema<string>;
+  // type f = F extends TypedSchema ? F['__inputType'] : false;
 
   // const f = obj.cast({});
   // f!.number;

@@ -67,4 +67,4 @@ export type Maybe<T> = T | null | undefined;
 
 export type Preserve<T, U> = T extends U ? U : never;
 
-export type PreserveOptionals<T> = Preserve<T, null> | Preserve<T, undefined>;
+export type Optionals<T> = Extract<T, null | undefined>;
