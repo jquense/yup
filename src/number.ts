@@ -1,7 +1,7 @@
 import MixedSchema from './mixed';
 import { MixedLocale, number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { Maybe } from './types';
+import type { AnyObject, Maybe } from './types';
 import type Reference from './Reference';
 import type {
   Defined,
@@ -21,8 +21,9 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
+  TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
-> extends BaseSchema<TType, TOut> {
+> extends BaseSchema<TType, TContext, TOut> {
   constructor() {
     super({ type: 'number' });
 
@@ -139,53 +140,72 @@ export default class NumberSchema<
 //
 // Number Interfaces
 //
-interface DefinedNumberSchema<TType extends Maybe<number>>
-  extends NumberSchema<TType, Defined<TType>> {
+interface DefinedNumberSchema<
+  TType extends Maybe<number>,
+  TContext extends AnyObject = AnyObject
+> extends NumberSchema<TType, TContext, Defined<TType>> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
     D,
-    DefinedNumberSchema<TType | undefined>,
-    DefinedNumberSchema<Defined<TType>>
+    DefinedNumberSchema<TType | undefined, TContext>,
+    DefinedNumberSchema<Defined<TType>, TContext>
   >;
 
   defined(msg?: MixedLocale['defined']): this;
-  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
-  notRequired(): NumberSchema<TType>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null>;
-  nullable(isNullable: false): RequiredNumberSchema<StrictNonNullable<TType>>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredNumberSchema<TType, TContext>;
+  notRequired(): NumberSchema<TType, TContext>;
+  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
+  nullable(
+    isNullable: false,
+  ): RequiredNumberSchema<StrictNonNullable<TType>, TContext>;
 }
 
-interface RequiredNumberSchema<TType extends Maybe<number>>
-  extends NumberSchema<TType, NonNullable<TType>> {
+interface RequiredNumberSchema<
+  TType extends Maybe<number>,
+  TContext extends AnyObject = AnyObject
+> extends NumberSchema<TType, TContext, NonNullable<TType>> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
     D,
-    RequiredNumberSchema<TType | undefined>,
-    RequiredNumberSchema<Defined<TType>>
+    RequiredNumberSchema<TType | undefined, TContext>,
+    RequiredNumberSchema<Defined<TType>, TContext>
   >;
 
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType>;
-  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
-  notRequired(): NumberSchema<TType>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null>;
-  nullable(isNullable: false): RequiredNumberSchema<StrictNonNullable<TType>>;
+  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredNumberSchema<TType, TContext>;
+  notRequired(): NumberSchema<TType, TContext>;
+  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
+  nullable(
+    isNullable: false,
+  ): RequiredNumberSchema<StrictNonNullable<TType>, TContext>;
 }
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
+  TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
-> extends BaseSchema<TType, TOut> {
+> extends BaseSchema<TType, TContext, TOut> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<D, NumberSchema<TType | undefined>, NumberSchema<Defined<TType>>>;
+  ): If<
+    D,
+    NumberSchema<TType | undefined, TContext>,
+    NumberSchema<Defined<TType>, TContext>
+  >;
 
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType>;
+  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
 
-  required(msg?: MixedLocale['required']): RequiredNumberSchema<TType>;
-  notRequired(): NumberSchema<TType>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredNumberSchema<TType, TContext>;
+  notRequired(): NumberSchema<TType, TContext>;
 
-  nullable(isNullable?: true): NumberSchema<TType | null>;
-  nullable(isNullable: false): NumberSchema<StrictNonNullable<TType>>;
+  nullable(isNullable?: true): NumberSchema<TType | null, TContext>;
+  nullable(isNullable: false): NumberSchema<StrictNonNullable<TType>, TContext>;
 }

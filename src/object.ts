@@ -466,7 +466,7 @@ abstract class BaseObjectSchema<
 export default class ObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
 > extends BaseObjectSchema<
   TShape,
   TContext,
@@ -477,7 +477,7 @@ export default class ObjectSchema<
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
 > extends BaseObjectSchema<
     TShape,
     TContext,

@@ -1,23 +1,14 @@
 /* eslint-disable no-unused-labels */
 /* eslint-disable no-unused-expressions */
 
-import {
-  array,
-  string,
-  object,
-  mixed,
-  number,
-  ref,
-  lazy,
-  StringSchema,
-} from '../src';
-import {
+import { array, string, object, mixed, number, ref, lazy } from '../src';
+import type {
   AssertsShape,
   DefaultFromShape,
   ObjectSchemaOf,
   TypeOfShape,
 } from '../src/object';
-import { ResolveOutput, TypedSchema, Unset } from '../src/util/types';
+import { ResolveOutput, Unset } from '../src/util/types';
 
 // let schema = object({
 //   str: string().nullable(),
@@ -151,6 +142,8 @@ string().required().nullable();
   // $ExpectType string
   type _i5 = AssertsShape<typeof obj['fields']>['string'];
 
+  // type __ = typeof obj['fields']['lazy']['__outputType'];
+
   // $ExpectType number
   type _i6 = AssertsShape<typeof obj['fields']>['lazy'];
 
@@ -279,6 +272,7 @@ ObjectSchemaOf: {
   // $ExpectType string | number | undefined
   lazy((v) => (typeof v === 'string' ? string() : number())).cast(3);
 }
+
 //
 // CONCAT
 //

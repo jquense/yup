@@ -1,7 +1,7 @@
 import type { MixedLocale } from './locale';
 
 import { Maybe } from './types';
-import type { Defined, Presence, StrictNonNullable, Unset } from './util/types';
+import type { Defined, StrictNonNullable } from './util/types';
 import BaseSchema from './Base';
 
 export function create<TType = any>() {
