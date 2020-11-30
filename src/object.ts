@@ -33,8 +33,6 @@ import BaseSchema, {
   SchemaSpec,
 } from './Base';
 
-export type AnyObject = Record<string, any>;
-
 // type ShapeOf<T> = {
 //   [k in keyof T]: BaseSchema<Maybe<T[k]>, Maybe<T[k]>, InferPresence<T[k]>>;
 // };

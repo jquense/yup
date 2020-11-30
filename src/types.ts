@@ -1,6 +1,8 @@
 import type { AnyBase } from './Base';
 import type Lazy from './Lazy';
 
+export type AnyObject = Record<string, any>;
+
 export type SchemaLike = AnyBase | Lazy<AnyBase>;
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
@@ -11,7 +13,7 @@ export type TransformFunction<T extends AnyBase> = (
   originalValue: any,
 ) => any;
 
-export interface ValidateOptions {
+export interface ValidateOptions<TContext = {}> {
   /**
    * Only validate the input, and skip and coercion or transformation. Default - false
    */
@@ -31,10 +33,11 @@ export interface ValidateOptions {
   /**
    * Any context needed for validating schema conditions (see: when())
    */
-  context?: object;
+  context?: TContext;
 }
 
-export interface InternalOptions extends ValidateOptions {
+export interface InternalOptions<TContext = {}>
+  extends ValidateOptions<TContext> {
   __validating?: boolean;
   originalValue?: any;
   parent?: any;

@@ -21,6 +21,7 @@ import {
   InternalOptions,
   Maybe,
   ExtraParams,
+  AnyObject,
 } from './types';
 
 import { ValidationError } from '.';
@@ -86,7 +87,11 @@ export interface SchemaDescription {
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
 }
 
-export default abstract class BaseSchema<TCast = any, TOutput = any> {
+export default abstract class BaseSchema<
+  TCast = any,
+  TContext = AnyObject,
+  TOutput = any
+> {
   readonly type: string;
 
   readonly __inputType!: TCast;
@@ -199,11 +204,11 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
     return result;
   }
 
-  concat<TOther extends AnyBase>(
-    schema: TOther,
-  ): TOther extends BaseSchema<infer T, infer O, infer P>
-    ? BaseSchema<T, O, P extends Unset ? TPresence : P>
-    : never;
+  // concat<TOther extends AnyBase>(
+  //   schema: TOther,
+  // ): TOther extends BaseSchema<infer T, infer O, infer P>
+  //   ? BaseSchema<T, O, P extends Unset ? TPresence : P>
+  //   : never;
   concat(schema: AnyBase): AnyBase;
   concat(schema: AnyBase): AnyBase {
     if (!schema || schema === this) return this;
@@ -402,9 +407,13 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
 
   validate(
     value: any,
-    options?: ValidateOptions,
+    options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']>;
-  validate(value: any, options?: ValidateOptions, maybeCb?: Callback) {
+  validate(
+    value: any,
+    options?: ValidateOptions<TContext>,
+    maybeCb?: Callback,
+  ) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -418,7 +427,10 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
         );
   }
 
-  validateSync(value: any, options?: ValidateOptions): this['__outputType'] {
+  validateSync(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -430,7 +442,10 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
     return result;
   }
 
-  async isValid(value: any, options?: ValidateOptions): Promise<boolean> {
+  async isValid(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): Promise<boolean> {
     try {
       await this.validate(value, options);
       return true;
@@ -440,7 +455,10 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
     }
   }
 
-  isValidSync(value: any, options?: ValidateOptions): value is Asserts<this> {
+  isValidSync(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): value is Asserts<this> {
     try {
       this.validateSync(value, options);
       return true;
@@ -727,13 +745,17 @@ export default abstract class BaseSchema<TCast = any, TOutput = any> {
   }
 }
 
-export default interface BaseSchema<TCast, TOutput> {
+export default interface BaseSchema<TCast, TContext, TOutput> {
   validateAt(
     path: string,
     value: any,
-    options?: ValidateOptions,
+    options?: ValidateOptions<TContext>,
   ): Promise<TOutput>;
-  validateSyncAt(path: string, value: any, options?: ValidateOptions): TOutput;
+  validateSyncAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): TOutput;
   equals: BaseSchema['oneOf'];
   is: BaseSchema['oneOf'];
   not: BaseSchema['notOneOf'];

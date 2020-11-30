@@ -1,7 +1,7 @@
 import { MixedLocale, string as locale, string } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
-import type { Message, Maybe } from './types';
+import type { Message, Maybe, AnyObject } from './types';
 import type {
   Defined,
   If,
@@ -30,14 +30,15 @@ export type MatchOptions = {
 
 let objStringTag = {}.toString();
 
-export function create() {
-  return new StringSchema();
+export function create<C>() {
+  return new StringSchema<string | undefined, C>();
 }
 
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
+  TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
-> extends BaseSchema<TType, TOut> {
+> extends BaseSchema<TType, TContext, TOut> {
   constructor() {
     super({ type: 'string' });
 
@@ -206,8 +207,10 @@ export default class StringSchema<
 //
 // String Interfaces
 //
-interface DefinedStringSchema<TType extends Maybe<string>>
-  extends StringSchema<TType, Defined<TType>> {
+interface DefinedStringSchema<
+  TType extends Maybe<string>,
+  TContext extends AnyObject = AnyObject
+> extends StringSchema<TType, TContext, Defined<TType>> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
@@ -223,8 +226,10 @@ interface DefinedStringSchema<TType extends Maybe<string>>
   nullable(isNullable: false): RequiredStringSchema<StrictNonNullable<TType>>;
 }
 
-interface RequiredStringSchema<TType extends Maybe<string>>
-  extends StringSchema<TType, NonNullable<TType>> {
+interface RequiredStringSchema<
+  TType extends Maybe<string>,
+  TContext extends AnyObject = AnyObject
+> extends StringSchema<TType, TContext, NonNullable<TType>> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
@@ -242,16 +247,23 @@ interface RequiredStringSchema<TType extends Maybe<string>>
 
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
+  TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
-> extends BaseSchema<TType, TOut> {
+> extends BaseSchema<TType, TContext, TOut> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<D, StringSchema<TType | undefined>, StringSchema<Defined<TType>>>;
+  ): If<
+    D,
+    StringSchema<TType | undefined, TContext>,
+    StringSchema<Defined<TType>, TContext>
+  >;
 
-  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType>;
-  required(msg?: MixedLocale['required']): RequiredStringSchema<TType>;
+  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType, TContext>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredStringSchema<TType, TContext>;
   notRequired(): StringSchema<TType>;
 
-  nullable(isNullable?: true): StringSchema<TType | null>;
-  nullable(isNullable: false): StringSchema<StrictNonNullable<TType>>;
+  nullable(isNullable?: true): StringSchema<TType | null, TContext>;
+  nullable(isNullable: false): StringSchema<StrictNonNullable<TType>, TContext>;
 }

@@ -4,7 +4,7 @@ import type { SchemaRefDescription } from './Base';
 const prefixes = {
   context: '$',
   value: '.',
-};
+} as const;
 
 export type ReferenceOptions<TValue = unknown> = {
   map?: (value: unknown) => TValue;
