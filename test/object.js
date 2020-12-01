@@ -591,6 +591,27 @@ describe('Object types', () => {
     ]);
   });
 
+  it('should sort errors by insertion order even when it matches partially', async () => {
+    let inst = object({
+      // use `when` to make sure it is validated second
+      foo: string().when('bar', () => string().min(5)),
+      bar: object({
+        foo: string().required(),
+      }),
+      barfoo: string().required(),
+    });
+
+    let err = await inst
+      .validate({ foo: 'foo' }, { abortEarly: false })
+      .should.rejected();
+
+    err.errors.should.eql([
+      'foo must be at least 5 characters',
+      'bar.foo is a required field',
+      'barfoo is a required field',
+    ]);
+  });
+
   it('should respect recursive', () => {
     let inst = object({
       nest: object({
