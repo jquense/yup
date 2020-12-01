@@ -54,6 +54,50 @@ inherits(DateSchema, MixedSchema, {
     });
   },
 
+  lessThan(lessThan, message = locale.lessThan) {
+    var limit = lessThan;
+
+    if (!Ref.isRef(limit)) {
+      limit = this.cast(lessThan);
+      if (!this._typeCheck(limit))
+        throw new TypeError(
+          '`lessThan` must be a Date or a value that can be `cast()` to a Date',
+        );
+    }
+
+    return this.test({
+      message,
+      name: 'lessThan',
+      exclusive: true,
+      params: { lessThan },
+      test(value) {
+        return isAbsent(value) || value < this.resolve(limit);
+      },
+    });
+  },
+
+  moreThan(moreThan, message = locale.moreThan) {
+    var limit = moreThan;
+
+    if (!Ref.isRef(limit)) {
+      limit = this.cast(moreThan);
+      if (!this._typeCheck(limit))
+        throw new TypeError(
+          '`moreThan` must be a Date or a value that can be `cast()` to a Date',
+        );
+    }
+
+    return this.test({
+      message,
+      name: 'moreThan',
+      exclusive: true,
+      params: { moreThan },
+      test(value) {
+        return isAbsent(value) || value > this.resolve(limit);
+      },
+    });
+  },
+
   max(max, message = locale.max) {
     var limit = max;
 

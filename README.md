@@ -78,6 +78,8 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
   - [date](#date)
     - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
     - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
+    - [`date.lessThan(limit: Date | string | Ref, message?: string | function): Schema`](#datelessthanlimit-date--string--ref-message-string--function-schema)
+    - [`date.moreThan(limit: Date | string | Ref, message?: string | function): Schema`](#datemorethanlimit-date--string--ref-message-string--function-schema)
   - [array](#array)
     - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
     - [`array.length(length: number | Ref, message?: string | function): Schema`](#arraylengthlength-number--ref-message-string--function-schema)
@@ -988,6 +990,16 @@ and use the result as the limit.
 #### `date.max(limit: Date | string | Ref, message?: string | function): Schema`
 
 Set the maximum date allowed, When a string is provided it will attempt to cast to a date first
+and use the result as the limit.
+
+#### `date.lessThan(limit: Date | string | Ref, message?: string | function): Schema`
+
+Value must be less than `limit`. When a string is provided it will attempt to cast to a date first
+and use the result as the limit.
+
+#### `date.moreThan(limit: Date | string | Ref, message?: string | function): Schema`
+
+Value must be more than `limit`. When a string is provided it will attempt to cast to a date first
 and use the result as the limit.
 
 ### array
