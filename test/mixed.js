@@ -9,6 +9,7 @@ import {
   ref,
   string,
   ValidationError,
+  setLocale,
 } from '../src';
 import { ensureSync } from './helpers';
 
@@ -309,6 +310,26 @@ describe('Mixed Types ', () => {
     inst.tests.length.should.equal(1);
     inst.tests[0].OPTIONS.test.should.equal(noop);
     inst.tests[0].OPTIONS.message.should.equal('${path} is invalid');
+  });
+
+  it('should search locale for default message for tests', async () => {
+    const locale = require('../src/locale').default;
+    const dict = {
+      mixed: {
+        myTestWithLocale: 'Fallback error message',
+      },
+    };
+
+    setLocale(dict);
+    try {
+      let inst = mixed().test('myTestWithLocale', () => false);
+
+      await inst
+        .validate('foo')
+        .should.be.rejectedWith(ValidationError, 'Fallback error message');
+    } finally {
+      setLocale(locale);
+    }
   });
 
   it('should fallback to default message', async () => {
