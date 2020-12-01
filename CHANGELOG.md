@@ -1,3 +1,19 @@
+## [0.31.1](https://github.com/jquense/yup/compare/v0.31.0...v0.31.1) (2020-12-01)
+
+
+### Bug Fixes
+
+* swallowed errors on nested schema with no tests ([5316ab9](https://github.com/jquense/yup/commit/5316ab9)), closes [#1127](https://github.com/jquense/yup/issues/1127)
+
+
+### Features
+
+* add `isTrue` and `isFalse` checks on boolean ([#910](https://github.com/jquense/yup/issues/910)) ([630a641](https://github.com/jquense/yup/commit/630a641))
+
+
+
+
+
 # [0.31.0](https://github.com/jquense/yup/compare/v0.30.0...v0.31.0) (2020-11-23)
 
 
