@@ -156,6 +156,30 @@ string().required().nullable();
   merge.cast({}).other;
 }
 
+ObjectPick: {
+  const schema = object({
+    age: number(),
+    name: string().required(),
+  })
+    .nullable()
+    .required();
+
+  // $ExpectType number | undefined
+  schema.pick(['age']).validateSync({ age: '1' }).age;
+}
+
+ObjectOmit: {
+  const schema = object({
+    age: number(),
+    name: string().required(),
+  })
+    .nullable()
+    .required();
+
+  // $ExpectType string
+  schema.omit(['age']).validateSync({ name: '1' }).name;
+}
+
 SchemaOf: {
   type Person = {
     firstName: string;

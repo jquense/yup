@@ -15,14 +15,19 @@ import type { TypedSchema, Defined } from './util/types';
 import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
-  Schema,
+  Schema as AnySchema,
   SchemaObjectDescription,
   SchemaSpec,
 } from './Base';
 
+export type Assign<T extends {}, U extends {}> = {
+  [P in keyof T]: P extends keyof U ? U[P] : T[P];
+} &
+  U;
+
 export type AnyObject = Record<string, any>;
 
-export type ObjectShape = Record<string, Schema | Reference | Lazy<any>>;
+export type ObjectShape = Record<string, AnySchema | Reference | Lazy<any>>;
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
   return new ObjectSchema<TShape>(spec);
@@ -37,11 +42,6 @@ export type DefaultFromShape<Shape extends ObjectShape> = {
       : Preserve<D, undefined>
     : undefined;
 };
-
-type Assign<T extends {}, U extends {}> = {
-  [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} &
-  U;
 
 export type TypeOfShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends TypedSchema
@@ -357,7 +357,12 @@ abstract class BaseObjectSchema<
 
   pick<TKey extends keyof TShape>(
     keys: TKey[],
-  ): ObjectSchema<Pick<TShape, TKey>> {
+  ): BaseObjectSchema<
+    Pick<TShape, TKey>,
+    TContext,
+    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>,
+    AssertsShape<Pick<TShape, TKey>> | Optionals<TOut>
+  > {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
@@ -371,7 +376,12 @@ abstract class BaseObjectSchema<
 
   omit<TKey extends keyof TShape>(
     keys: TKey[],
-  ): ObjectSchema<Omit<TShape, TKey>> {
+  ): BaseObjectSchema<
+    Omit<TShape, TKey>,
+    TContext,
+    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>,
+    AssertsShape<Omit<TShape, TKey>> | Optionals<TOut>
+  > {
     const next = this.clone() as any;
     const fields = next.fields;
     next.fields = {};
@@ -479,14 +489,33 @@ export default interface ObjectSchema<
     ? ObjectSchema<TShape, TContext, TIn | undefined>
     : ObjectSchema<TShape, TContext, Defined<TIn>>;
 
-  defined(msg?: MixedLocale['defined']): ObjectSchema<TShape, TContext, TIn>;
-  required(msg?: MixedLocale['required']): ObjectSchema<TShape, TContext, TIn>;
+  defined(
+    msg?: MixedLocale['defined'],
+  ): DefinedObjectSchema<TShape, TContext, TIn>;
+  required(
+    msg?: MixedLocale['required'],
+  ): RequiredObjectSchema<TShape, TContext, TIn>;
   optional(): this;
   notRequired(): this;
   nullable(isNullable?: true): ObjectSchema<TShape, TContext, TIn | null>;
   nullable(
     isNullable: false,
   ): ObjectSchema<TShape, TContext, Exclude<TIn, null>>;
+
+  pick<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): ObjectSchema<
+    Pick<TShape, TKey>,
+    TContext,
+    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
+  >;
+  omit<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): ObjectSchema<
+    Omit<TShape, TKey>,
+    TContext,
+    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
+  >;
 }
 
 export interface DefinedObjectSchema<
@@ -518,6 +547,21 @@ export interface DefinedObjectSchema<
   nullable(
     isNullable: false,
   ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
+
+  pick<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): DefinedObjectSchema<
+    Pick<TShape, TKey>,
+    TContext,
+    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
+  >;
+  omit<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): DefinedObjectSchema<
+    Omit<TShape, TKey>,
+    TContext,
+    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
+  >;
 }
 
 export interface RequiredObjectSchema<
@@ -543,4 +587,19 @@ export interface RequiredObjectSchema<
   nullable(
     isNullable: false,
   ): RequiredObjectSchema<TShape, TContext, Exclude<TIn, null>>;
+
+  pick<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): RequiredObjectSchema<
+    Pick<TShape, TKey>,
+    TContext,
+    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
+  >;
+  omit<TKey extends keyof TShape>(
+    keys: TKey[],
+  ): RequiredObjectSchema<
+    Omit<TShape, TKey>,
+    TContext,
+    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
+  >;
 }
