@@ -59,10 +59,11 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  lessThan(less, message = locale.lessThan) {
+  lessThan(less, message = locale.lessThan, overrides) {
+    overrides = overrides || {};
     return this.test({
       message,
-      name: 'max',
+      name: overrides.name || 'lessThan',
       exclusive: true,
       params: { less },
       test(value) {
@@ -71,10 +72,11 @@ inherits(NumberSchema, MixedSchema, {
     });
   },
 
-  moreThan(more, message = locale.moreThan) {
+  moreThan(more, message = locale.moreThan, overrides) {
+    overrides = overrides || {};
     return this.test({
       message,
-      name: 'min',
+      name: overrides.name || 'moreThan',
       exclusive: true,
       params: { more },
       test(value) {
@@ -84,11 +86,11 @@ inherits(NumberSchema, MixedSchema, {
   },
 
   positive(msg = locale.positive) {
-    return this.moreThan(0, msg);
+    return this.moreThan(0, msg, { name: 'positive' });
   },
 
   negative(msg = locale.negative) {
-    return this.lessThan(0, msg);
+    return this.lessThan(0, msg, { name: 'negative' });
   },
 
   integer(message = locale.integer) {
@@ -115,8 +117,8 @@ inherits(NumberSchema, MixedSchema, {
         'Only valid options for round() are: ' + avail.join(', '),
       );
 
-    return this.transform(
-      value => (!isAbsent(value) ? Math[method](value) : value),
+    return this.transform(value =>
+      !isAbsent(value) ? Math[method](value) : value,
     );
   },
 });
