@@ -1,6 +1,5 @@
 import MixedSchema from './mixed';
 import inherits from './util/inherits';
-import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
@@ -20,7 +19,7 @@ function DateSchema() {
     this.transform(function(value) {
       if (this.isType(value)) return value;
 
-      value = isoParse(value);
+      value = Date.parse(value);
       // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
       return !isNaN(value) ? new Date(value) : invalidDate;
     });
