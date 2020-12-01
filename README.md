@@ -1376,7 +1376,7 @@ You can derive the TypeScript type as follows:
 ```ts
 import type { Asserts, TypeOf } from 'yup'
 
-type parsed: Typeof<typeof personSchema> = personSchema.cast(json);
+const parsed: Typeof<typeof personSchema> = personSchema.cast(json);
 
 const validated: Asserts<typeof personSchema> = personSchema.validateSync(parsed);
 ```
