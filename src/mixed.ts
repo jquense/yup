@@ -2,7 +2,7 @@ import type { MixedLocale } from './locale';
 
 import { AnyObject, Maybe, Optionals } from './types';
 import type { Defined } from './util/types';
-import BaseSchema, { Schema } from './Base';
+import BaseSchema from './schema';
 
 export function create<TType = any>() {
   return new MixedSchema<TType | undefined>();
@@ -13,6 +13,8 @@ export default class MixedSchema<
   TContext = AnyObject,
   TOut = TType
 > extends BaseSchema<TType, TContext, TOut> {}
+
+create.prototype = MixedSchema.prototype;
 
 export default interface MixedSchema<
   TType = any,

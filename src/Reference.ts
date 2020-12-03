@@ -1,5 +1,5 @@
 import { getter } from 'property-expr';
-import type { SchemaRefDescription } from './Base';
+import type { SchemaRefDescription } from './schema';
 
 const prefixes = {
   context: '$',

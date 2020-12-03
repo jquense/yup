@@ -3,7 +3,7 @@ import isAbsent from './util/isAbsent';
 import type { AnyObject, Maybe } from './types';
 import type Reference from './Reference';
 import type { Defined, If, Thunk } from './util/types';
-import BaseSchema from './Base';
+import BaseSchema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -128,6 +128,8 @@ export default class NumberSchema<
     );
   }
 }
+
+create.prototype = NumberSchema.prototype;
 
 //
 // Number Interfaces

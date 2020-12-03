@@ -1,4 +1,4 @@
-import type { SchemaRefDescription } from '../Base';
+import type { SchemaRefDescription } from '../schema';
 import Reference from '../Reference';
 
 export default class ReferenceSet {

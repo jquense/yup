@@ -18,7 +18,7 @@ import BaseSchema, {
   Schema as AnySchema,
   SchemaObjectDescription,
   SchemaSpec,
-} from './Base';
+} from './schema';
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
@@ -28,10 +28,6 @@ export type Assign<T extends {}, U extends {}> = {
 export type AnyObject = Record<string, any>;
 
 export type ObjectShape = Record<string, AnySchema | Reference | Lazy<any>>;
-
-export function create<TShape extends ObjectShape>(spec?: TShape) {
-  return new ObjectSchema<TShape>(spec);
-}
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
@@ -73,11 +69,11 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
-abstract class BaseObjectSchema<
+export default class ObjectSchema<
   TShape extends ObjectShape,
-  TContext extends AnyObject,
-  TIn extends Maybe<AnyObject>,
-  TOut extends Maybe<AnyObject>
+  TContext extends AnyObject = AnyObject,
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
+  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
 > extends BaseSchema<TIn, TContext, TOut> {
   fields: TShape = Object.create(null);
 
@@ -357,7 +353,7 @@ abstract class BaseObjectSchema<
 
   pick<TKey extends keyof TShape>(
     keys: TKey[],
-  ): BaseObjectSchema<
+  ): ObjectSchema<
     Pick<TShape, TKey>,
     TContext,
     TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>,
@@ -376,7 +372,7 @@ abstract class BaseObjectSchema<
 
   omit<TKey extends keyof TShape>(
     keys: TKey[],
-  ): BaseObjectSchema<
+  ): ObjectSchema<
     Omit<TShape, TKey>,
     TContext,
     TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>,
@@ -462,27 +458,18 @@ abstract class BaseObjectSchema<
   }
 }
 
-export default class ObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
-> extends BaseObjectSchema<
-  TShape,
-  TContext,
-  TIn,
-  AssertsShape<TShape> | Optionals<TIn>
-> {}
+export function create<TShape extends ObjectShape>(spec?: TShape) {
+  return new ObjectSchema<TShape>(spec);
+}
+
+create.prototype = ObjectSchema.prototype;
 
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
-> extends BaseObjectSchema<
-    TShape,
-    TContext,
-    TIn,
-    AssertsShape<TShape> | Optionals<TIn>
-  > {
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
+  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
+> extends BaseSchema<TIn, TContext, TOut> {
   default<TNextDefault extends Maybe<Record<string, any>>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
@@ -522,7 +509,7 @@ export interface DefinedObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>>
-> extends BaseObjectSchema<
+> extends ObjectSchema<
     TShape,
     TContext,
     TIn,
@@ -568,7 +555,7 @@ export interface RequiredObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>>
-> extends BaseObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
+> extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
   default<TNextDefault extends Maybe<Record<string, any>>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined

@@ -675,11 +675,11 @@ describe('Mixed Types ', () => {
     await inst.isValid('a').should.become(true);
   });
 
-  it('concat should maintain explicit nullability', async function () {
-    let inst = string().nullable().concat(string().default('hi'));
+  // xit('concat should maintain explicit nullability', async function () {
+  //   let inst = string().nullable().concat(string().default('hi'));
 
-    await inst.isValid(null).should.become(true);
-  });
+  //   await inst.isValid(null).should.become(true);
+  // });
 
   it('concat should maintain explicit presence', async function () {
     let inst = string().required().concat(string());

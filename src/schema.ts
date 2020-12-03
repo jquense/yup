@@ -48,7 +48,7 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type Schema<Type = any, TContext = any, TOut = any> = BaseSchema<
+export type AnySchema<Type = any, TContext = any, TOut = any> = BaseSchema<
   Type,
   TContext,
   TOut
@@ -162,7 +162,7 @@ export default abstract class BaseSchema<
 
     // if the nested value is a schema we can skip cloning, since
     // they are already immutable
-    const next: Schema = Object.create(Object.getPrototypeOf(this));
+    const next: AnySchema = Object.create(Object.getPrototypeOf(this));
 
     // @ts-expect-error this is readonly
     next.type = this.type;
@@ -217,8 +217,8 @@ export default abstract class BaseSchema<
   }
 
   concat(schema: this): this;
-  concat(schema: Schema): Schema;
-  concat(schema: Schema): Schema {
+  concat(schema: AnySchema): AnySchema;
+  concat(schema: AnySchema): AnySchema {
     if (!schema || schema === this) return this;
 
     if (schema.type !== this.type && this.type !== 'mixed')
@@ -337,7 +337,7 @@ export default abstract class BaseSchema<
       rawValue === undefined
         ? rawValue
         : this.transforms.reduce(
-            (value, fn) => fn.call(this, value, rawValue),
+            (value, fn) => fn.call(this, value, rawValue, this),
             rawValue,
           );
 
@@ -450,17 +450,14 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  async isValid(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): Promise<boolean> {
-    try {
-      await this.validate(value, options);
-      return true;
-    } catch (err) {
-      if (ValidationError.isError(err)) return false;
-      throw err;
-    }
+  isValid(value: any, options?: ValidateOptions<TContext>): Promise<boolean> {
+    return this.validate(value, options).then(
+      () => true,
+      (err) => {
+        if (ValidationError.isError(err)) return false;
+        throw err;
+      },
+    );
   }
 
   isValidSync(

@@ -1,6 +1,22 @@
 import reach, { getIn } from '../src/util/reach';
 
-import { object, array, string, lazy, number, ValidationError } from '../src';
+import {
+  addMethod,
+  object,
+  array,
+  string,
+  lazy,
+  number,
+  boolean,
+  date,
+  ValidationError,
+  ObjectSchema,
+  ArraySchema,
+  StringSchema,
+  NumberSchema,
+  BoolSchema,
+  DateSchema,
+} from '../src';
 
 describe('Yup', function () {
   it('cast should not assert on undefined', () => {
@@ -172,5 +188,33 @@ describe('Yup', function () {
       })
       .should.be.rejected();
     err.message.should.match(/must be a `number` type/);
+  });
+
+  describe('addMethod', () => {
+    test.each([
+      ['object', object],
+      ['array', array],
+      ['string', string],
+      ['number', number],
+      ['boolean', boolean],
+      ['date', date],
+    ])('should work with factories: %s', (_msg, factory) => {
+      addMethod(factory, 'foo', () => 'here');
+
+      expect(factory().foo()).to.equal('here');
+    });
+
+    test.each([
+      ['object', ObjectSchema],
+      ['array', ArraySchema],
+      ['string', StringSchema],
+      ['number', NumberSchema],
+      ['boolean', BoolSchema],
+      ['date', DateSchema],
+    ])('should work with classes: %s', (_msg, ctor) => {
+      addMethod(ctor, 'foo', () => 'here');
+
+      expect(new ctor().foo()).to.equal('here');
+    });
   });
 });

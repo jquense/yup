@@ -11,16 +11,16 @@ import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
-import type { Schema } from './Base';
+import BaseSchema, { AnySchema } from './schema';
 import type { TypeOf, Asserts } from './util/types';
 import { Maybe } from './types';
 
-function addMethod<T extends Schema>(
-  schemaType: (...aarg: any[]) => T,
+function addMethod<T extends AnySchema>(
+  schemaType: (...arg: any[]) => T,
   name: string,
   fn: (this: T, ...args: any[]) => T,
 ): void;
-function addMethod<T extends new (...args: any) => Schema>(
+function addMethod<T extends new (...args: any) => AnySchema>(
   schemaType: T,
   name: string,
   fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
@@ -41,9 +41,9 @@ type SchemaOf<T> = T extends AnyObject
   ? ObjectSchema<{ [k in keyof T]: SchemaOf<T[k]> }>
   : T extends Array<infer E>
   ? ArraySchema<SchemaOf<E>>
-  : Schema<Maybe<T>, AnyObject, T>;
+  : BaseSchema<Maybe<T>, AnyObject, T>;
 
-export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, Schema };
+export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, AnySchema };
 
 export {
   mixedCreate as mixed,
@@ -64,6 +64,7 @@ export {
 };
 
 export {
+  BaseSchema,
   MixedSchema,
   BoolSchema,
   StringSchema,

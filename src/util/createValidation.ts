@@ -9,7 +9,7 @@ import {
   ExtraParams,
 } from '../types';
 import Reference from '../Reference';
-import type { Schema } from '../Base';
+import type { Schema } from '../schema';
 
 export type CreateErrorOptions = {
   path?: string;

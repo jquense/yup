@@ -49,7 +49,7 @@ string().required().nullable();
   // $ExpectType string
   const _strDefined = strDefined.getDefault();
 
-  const strDefault = string().nullable().default('');
+  const strDefault = string().nullable().default('').trim();
 
   // $ExpectType string | null
   strDefault.cast('');
@@ -59,7 +59,7 @@ string().required().nullable();
 
   //
   //
-  const strDefaultRequired = string().nullable().required().default('');
+  const strDefaultRequired = string().nullable().required().default('').trim();
 
   // $ExpectType string | null
   strDefaultRequired.cast('');

@@ -2,17 +2,17 @@ import isSchema from './util/isSchema';
 import type { Callback, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
-import type { Schema, CastOptions } from './Base';
+import type { AnySchema, CastOptions } from './schema';
 import { TypedSchema, TypeOf } from './util/types';
 
-type ContextOf<T> = T extends Schema<any, infer C> ? C : never;
+type ContextOf<T> = T extends AnySchema<any, infer C> ? C : never;
 
-export type LazyBuilder<T extends Schema = any> = (
+export type LazyBuilder<T extends AnySchema = any> = (
   value: any,
   options: ResolveOptions,
 ) => T;
 
-export function create<T extends Schema>(builder: LazyBuilder<T>) {
+export function create<T extends AnySchema>(builder: LazyBuilder<T>) {
   return new Lazy(builder);
 }
 
@@ -24,7 +24,8 @@ export type LazyType<T> = LazyReturnValue<T> extends TypedSchema
   ? TypeOf<LazyReturnValue<T>>
   : never;
 
-class Lazy<T extends Schema, TContext = ContextOf<T>> implements TypedSchema {
+class Lazy<T extends AnySchema, TContext = ContextOf<T>>
+  implements TypedSchema {
   type = 'lazy' as const;
 
   __isYupSchema__ = true;

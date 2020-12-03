@@ -6,7 +6,7 @@ import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 import type { AnyObject, Maybe } from './types';
 import type { Defined, If, Thunk } from './util/types';
-import BaseSchema from './Base';
+import BaseSchema from './schema';
 
 let invalidDate = new Date('');
 
@@ -22,6 +22,8 @@ export default class DateSchema<
   TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
 > extends BaseSchema<TType, TContext, TOut> {
+  static INVALID_DATE = invalidDate;
+
   constructor() {
     super({ type: 'date' });
 
@@ -88,6 +90,9 @@ export default class DateSchema<
     });
   }
 }
+
+create.prototype = DateSchema.prototype;
+create.INVALID_DATE = invalidDate;
 
 export default interface DateSchema<
   TType extends Maybe<Date>,

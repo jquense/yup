@@ -1,4 +1,4 @@
-import BaseSchema from './Base';
+import BaseSchema from './schema';
 import type { MixedLocale } from './locale';
 import type { AnyObject, Maybe, Optionals } from './types';
 import type { Defined } from './util/types';
@@ -62,6 +62,8 @@ export default class BooleanSchema<
     }) as any;
   }
 }
+
+create.prototype = BooleanSchema.prototype;
 
 export default interface BooleanSchema<
   TType extends Maybe<boolean>,

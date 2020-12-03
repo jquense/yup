@@ -16,25 +16,25 @@ import ValidationError from './ValidationError';
 import type Reference from './Reference';
 import { Asserts, Defined, If, Thunk, TypeOf } from './util/types';
 import BaseSchema, {
-  Schema,
+  AnySchema,
   SchemaInnerTypeDescription,
   SchemaSpec,
-} from './Base';
+} from './schema';
 
-type RejectorFn = (value: any, index: number, array: any[]) => boolean;
+export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
 export function create<
   C extends AnyObject = AnyObject,
-  T extends Schema = Schema
+  T extends AnySchema = AnySchema
 >(type?: T) {
-  return new ArraySchema<T, C>(type);
+  return new ArraySchema<T, C>(type) as OptionalArraySchema<T, C>;
 }
 
-class BaseArraySchema<
-  T extends Schema,
-  C extends AnyObject,
-  TIn extends Maybe<TypeOf<T>[]>,
-  TOut extends Maybe<Asserts<T>[]>
+export default class ArraySchema<
+  T extends AnySchema,
+  C extends AnyObject = AnyObject,
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
+  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
 > extends BaseSchema<TIn, C, TOut> {
   innerType?: T;
 
@@ -164,7 +164,7 @@ class BaseArraySchema<
     return next;
   }
 
-  concat<TOther extends BaseArraySchema<any, any, any, any>>(
+  concat<TOther extends ArraySchema<any, any, any, any>>(
     schema: TOther,
   ): TOther;
   concat(schema: any): any;
@@ -181,7 +181,7 @@ class BaseArraySchema<
     return next;
   }
 
-  of<TInner extends Schema>(schema: TInner): ArraySchema<TInner> {
+  of<TInner extends AnySchema>(schema: TInner): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
     var next = this.clone();
 
@@ -267,26 +267,17 @@ class BaseArraySchema<
   }
 }
 
-export default class ArraySchema<
-  T extends Schema,
-  TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
-> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[] | Optionals<TIn>> {}
+create.prototype = ArraySchema.prototype;
 
 //
 // Interfaces
 //
 
 export interface DefinedArraySchema<
-  T extends Schema,
+  T extends AnySchema,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOf<T>[]>
-> extends BaseArraySchema<
-    T,
-    TContext,
-    TIn,
-    Asserts<T>[] | Preserve<TIn, null>
-  > {
+> extends ArraySchema<T, TContext, TIn, Asserts<T>[] | Preserve<TIn, null>> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): If<
@@ -308,10 +299,10 @@ export interface DefinedArraySchema<
 }
 
 export interface RequiredArraySchema<
-  T extends Schema,
+  T extends AnySchema,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOf<T>[]>
-> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[]> {
+> extends ArraySchema<T, TContext, TIn, Asserts<T>[]> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): If<
@@ -330,11 +321,11 @@ export interface RequiredArraySchema<
   ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
 }
 
-export default interface ArraySchema<
-  T extends Schema,
+export interface OptionalArraySchema<
+  T extends AnySchema,
   TContext extends AnyObject = AnyObject,
   TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
-> extends BaseArraySchema<T, TContext, TIn, Asserts<T>[] | Optionals<TIn>> {
+> extends ArraySchema<T, TContext, TIn> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): If<
@@ -348,9 +339,11 @@ export default interface ArraySchema<
     msg?: MixedLocale['required'],
   ): RequiredArraySchema<T, TContext, TIn>;
 
-  optional(): this;
-  notRequired(): this;
+  optional(): ArraySchema<T, TContext, TIn>;
+  notRequired(): ArraySchema<T, TContext, TIn>;
 
-  nullable(isNullable?: true): ArraySchema<T, TContext, TIn | null>;
-  nullable(isNullable: false): ArraySchema<T, TContext, Exclude<TIn, null>>;
+  nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
+  nullable(
+    isNullable: false,
+  ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
 }

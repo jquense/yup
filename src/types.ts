@@ -1,16 +1,17 @@
-import type { Schema } from './Base';
+import type { AnySchema } from './schema';
 import type Lazy from './Lazy';
 
 export type AnyObject = Record<string, any>;
 
-export type SchemaLike = Schema | Lazy<any>;
+export type SchemaLike = AnySchema | Lazy<any>;
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
-export type TransformFunction<T extends Schema> = (
+export type TransformFunction<T extends AnySchema> = (
   this: T,
   value: any,
   originalValue: any,
+  schema: T,
 ) => any;
 
 export interface ValidateOptions<TContext = {}> {
@@ -43,7 +44,7 @@ export interface InternalOptions<TContext = {}>
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: Schema; value: any }[];
+  from?: { schema: AnySchema; value: any }[];
 }
 
 export interface MessageParams {
