@@ -342,8 +342,8 @@ export interface OptionalArraySchema<
   optional(): ArraySchema<T, TContext, TIn>;
   notRequired(): ArraySchema<T, TContext, TIn>;
 
-  nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
+  nullable(isNullable?: true): OptionalArraySchema<T, TContext, TIn | null>;
   nullable(
     isNullable: false,
-  ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
+  ): OptionalArraySchema<T, TContext, Exclude<TIn, null>>;
 }

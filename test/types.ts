@@ -208,6 +208,9 @@ SchemaOf: {
   // $ExpectType string[] | undefined
   array(string().default('')).validateSync(null);
 
+  // $ExpectType string[] | null | undefined
+  array(string().default('')).nullable().validateSync(null);
+
   // $ExpectType (string | null)[] | undefined
   array(string().nullable().default('')).validateSync(null);
 

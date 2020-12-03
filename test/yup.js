@@ -14,7 +14,7 @@ import {
   ArraySchema,
   StringSchema,
   NumberSchema,
-  BoolSchema,
+  BooleanSchema,
   DateSchema,
 } from '../src';
 
@@ -209,7 +209,7 @@ describe('Yup', function () {
       ['array', ArraySchema],
       ['string', StringSchema],
       ['number', NumberSchema],
-      ['boolean', BoolSchema],
+      ['boolean', BooleanSchema],
       ['date', DateSchema],
     ])('should work with classes: %s', (_msg, ctor) => {
       addMethod(ctor, 'foo', () => 'here');

@@ -9,7 +9,7 @@ import {
   ExtraParams,
 } from '../types';
 import Reference from '../Reference';
-import type { Schema } from '../schema';
+import type { AnySchema } from '../schema';
 
 export type CreateErrorOptions = {
   path?: string;
@@ -33,7 +33,7 @@ export type TestFunction<T = unknown, TContext = {}> = (
   context: TestContext<TContext>,
 ) => boolean | ValidationError | Promise<boolean | ValidationError>;
 
-export type TestOptions<TSchema extends Schema = Schema> = {
+export type TestOptions<TSchema extends AnySchema = AnySchema> = {
   value: any;
   path?: string;
   label?: string;
@@ -61,7 +61,7 @@ export default function createValidation(config: {
   params?: ExtraParams;
   message?: Message;
 }) {
-  function validate<TSchema extends Schema = Schema>(
+  function validate<TSchema extends AnySchema = AnySchema>(
     {
       value,
       path = '',

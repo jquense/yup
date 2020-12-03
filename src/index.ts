@@ -1,5 +1,5 @@
 import MixedSchema, { create as mixedCreate } from './mixed';
-import BoolSchema, { create as boolCreate } from './boolean';
+import BooleanSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
@@ -66,7 +66,7 @@ export {
 export {
   BaseSchema,
   MixedSchema,
-  BoolSchema,
+  BooleanSchema,
   StringSchema,
   NumberSchema,
   DateSchema,
