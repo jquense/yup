@@ -7,8 +7,8 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 ## Docs
 
 - [API](#api)
-- [Extending yup](docs/extending)
-- [TypeScript support](docs/typescript)
+- [Extending yup](docs/extending.md)
+- [TypeScript support](docs/typescript.md)
 - [Playground](https://runkit.com/jquense/yup#)
 
 ## Install
