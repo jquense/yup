@@ -1,7 +1,4 @@
-import string from '../src/string';
-import number from '../src/number';
-import object from '../src/object';
-import array from '../src/array';
+import { string, number, object, array, StringSchema } from '../src';
 
 describe('Array types', () => {
   describe('casting', () => {
@@ -52,12 +49,14 @@ describe('Array types', () => {
     array().of(number()).cast(['1', '3']).should.eql([1, 3]);
   });
 
-  it('should concat subType correctly', () => {
-    expect(array().of(number()).concat(array())._subType).to.exist();
+  it('should concat subType correctly', async () => {
+    expect(array(number()).concat(array()).innerType).to.exist();
 
-    expect(array().of(number()).concat(array().of(false))._subType).to.equal(
-      false,
-    );
+    let merged = array(number()).concat(array(number().required()));
+
+    expect(merged.innerType.type).to.equal('number');
+
+    await expect(merged.validateAt('[0]', undefined)).to.be.rejected();
   });
 
   it('should pass options to children', () => {
@@ -114,14 +113,14 @@ describe('Array types', () => {
     });
 
     it('should prevent recursive casting', async () => {
-      let castSpy = sinon.spy(string.prototype, '_cast');
+      let castSpy = sinon.spy(StringSchema.prototype, '_cast');
 
       let value = await array(string()).validate([5]);
 
       value[0].should.equal('5');
 
       castSpy.should.have.been.calledOnce();
-      string.prototype._cast.restore();
+      StringSchema.prototype._cast.restore();
     });
   });
 
@@ -131,14 +130,14 @@ describe('Array types', () => {
       .test('name', 'oops', () => false);
 
     return Promise.all([
-      // inst
-      //   .validate([{ str: '' }])
-      //   .should.be.rejected()
-      //   .then(err => {
-      //     err.value.should.eql([{ str: '' }]);
-      //     err.errors.length.should.equal(1);
-      //     err.errors.should.eql(['oops']);
-      //   }),
+      inst
+        .validate([{ str: '' }])
+        .should.be.rejected()
+        .then((err) => {
+          err.value.should.eql([{ str: '' }]);
+          err.errors.length.should.equal(1);
+          err.errors.should.eql(['oops']);
+        }),
       inst
         .validate([{ str: '' }], { abortEarly: false })
         .should.be.rejected()

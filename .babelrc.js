@@ -1,19 +1,23 @@
 module.exports = (api) => ({
   presets: [
     [
-      'jason',
+      'babel-preset-jason/esm',
       api.env() !== 'test'
         ? {
             ignoreBrowserslistConfig: true,
-            modules: api.env() === 'modules' ? false : 'commonjs',
+            modules: api.env() === 'esm' ? false : 'commonjs',
           }
         : {
             target: 'node',
+
+            // debug: true,
             targets: { node: 'current' },
           },
     ],
+    '@babel/preset-typescript',
   ],
   plugins: [
+    '@babel/plugin-proposal-logical-assignment-operators',
     api.env() === 'modules' && [
       'transform-rename-import',
       {

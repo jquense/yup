@@ -1,9 +1,9 @@
 import { forEach } from 'property-expr';
 
-let trim = (part) => part.substr(0, part.length - 1).substr(1);
+let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
-export function getIn(schema, path, value, context = value) {
-  let parent, lastPart, lastPartDebug;
+export function getIn(schema: any, path: string, value: any, context = value) {
+  let parent: any, lastPart: string, lastPartDebug: string;
 
   // root path: ''
   if (!path) return { parent, parentPath: path, schema };
@@ -47,10 +47,10 @@ export function getIn(schema, path, value, context = value) {
     lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
   });
 
-  return { schema, parent, parentPath: lastPart };
+  return { schema, parent, parentPath: lastPart! };
 }
 
-const reach = (obj, path, value, context) =>
+const reach = (obj: {}, path: string, value: any, context: any) =>
   getIn(obj, path, value, context).schema;
 
 export default reach;

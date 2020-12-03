@@ -1,8 +1,22 @@
 import reach, { getIn } from '../src/util/reach';
-import prependDeep from '../src/util/prependDeep';
-import * as Async from '../src/util/async';
 
-import { object, array, string, lazy, number, ValidationError } from '../src';
+import {
+  addMethod,
+  object,
+  array,
+  string,
+  lazy,
+  number,
+  boolean,
+  date,
+  ValidationError,
+  ObjectSchema,
+  ArraySchema,
+  StringSchema,
+  NumberSchema,
+  BoolSchema,
+  DateSchema,
+} from '../src';
 
 describe('Yup', function () {
   it('cast should not assert on undefined', () => {
@@ -20,35 +34,6 @@ describe('Yup', function () {
     (() => string().cast(null)).should.throw();
 
     (() => string().cast(null, { assert: false })).should.not.throw();
-  });
-
-  it('should prepend deeply', function () {
-    var a = { a: 4, c: [4, 5, 3], d: { b: 'hello' }, f: { c: 5 }, g: null };
-    var b = { a: 1, b: 'hello', c: [1, 2, 3], d: { a: /hi/ }, e: { b: 5 } };
-
-    prependDeep(a, b).should.deep.eql({
-      a: 4,
-      b: 'hello',
-      c: [1, 2, 3, 4, 5, 3],
-      d: {
-        a: /hi/,
-        b: 'hello',
-      },
-      e: { b: 5 },
-      f: { c: 5 },
-      g: null,
-    });
-  });
-
-  it('should not prepend needlesly', function () {
-    var schema = string();
-    var spy = sinon.spy(schema, 'concat');
-    var a = { schema };
-    var b = { schema };
-    var c = prependDeep(a, b);
-
-    c.schema.should.equal(schema);
-    spy.should.not.have.been.called();
   });
 
   it('should getIn correctly', async () => {
@@ -187,8 +172,8 @@ describe('Yup', function () {
 
   it('should reach through lazy', async () => {
     let types = {
-      '1': object({ foo: string() }),
-      '2': object({ foo: number() }),
+      1: object({ foo: string() }),
+      2: object({ foo: number() }),
     };
 
     let err = await object({
@@ -205,93 +190,31 @@ describe('Yup', function () {
     err.message.should.match(/must be a `number` type/);
   });
 
-  describe('parallel', () => {
-    it('returns results', (done) => {
-      Async.parallel(
-        [
-          (cb) => Async.asCallback(Promise.resolve(1), cb),
-          (cb) => Async.asCallback(Promise.resolve(2), cb),
-          (cb) => Async.asCallback(Promise.resolve(3), cb),
-          (cb) => Async.asCallback(Promise.resolve(4), cb),
-        ],
-        (err, results) => {
-          expect(results).to.eql([1, 2, 3, 4]);
-          done();
-        },
-      );
+  describe('addMethod', () => {
+    test.each([
+      ['object', object],
+      ['array', array],
+      ['string', string],
+      ['number', number],
+      ['boolean', boolean],
+      ['date', date],
+    ])('should work with factories: %s', (_msg, factory) => {
+      addMethod(factory, 'foo', () => 'here');
+
+      expect(factory().foo()).to.equal('here');
     });
 
-    it('fails fast', (done) => {
-      Async.parallel(
-        [
-          (cb) => Async.asCallback(Promise.resolve(1), cb),
-          (cb) => Async.asCallback(Promise.reject(2), cb),
-          (cb) => Async.asCallback(Promise.reject(3), cb),
-          (cb) => Async.asCallback(Promise.resolve(4), cb),
-        ],
-        (err, results) => {
-          expect(results).to.equal(undefined);
-          expect(err).to.equal(2);
-          done();
-        },
-      );
-    });
+    test.each([
+      ['object', ObjectSchema],
+      ['array', ArraySchema],
+      ['string', StringSchema],
+      ['number', NumberSchema],
+      ['boolean', BoolSchema],
+      ['date', DateSchema],
+    ])('should work with classes: %s', (_msg, ctor) => {
+      addMethod(ctor, 'foo', () => 'here');
 
-    it('handles empty', (done) => {
-      Async.parallel([], (err, results) => {
-        expect(results).to.eql([]);
-        done();
-      });
-    });
-  });
-
-  describe('settled', () => {
-    it('handles empty', (done) => {
-      Async.settled([], (err, results) => {
-        expect(results).to.eql([]);
-        done();
-      });
-    });
-
-    it('returns results', (done) => {
-      Async.settled(
-        [
-          (cb) => Async.asCallback(Promise.resolve(1), cb),
-          (cb) => Async.asCallback(Promise.resolve(2), cb),
-          (cb) => Async.asCallback(Promise.resolve(3), cb),
-          (cb) => Async.asCallback(Promise.resolve(4), cb),
-        ],
-        (err, results) => {
-          expect(results).to.eql([
-            { fulfilled: true, value: 1 },
-            { fulfilled: true, value: 2 },
-            { fulfilled: true, value: 3 },
-            { fulfilled: true, value: 4 },
-          ]);
-          done();
-        },
-      );
-    });
-
-    it('fails fast', (done) => {
-      Async.settled(
-        [
-          (cb) => Async.asCallback(Promise.resolve(1), cb),
-          (cb) => Async.asCallback(Promise.reject(2), cb),
-          (cb) => Async.asCallback(Promise.reject(3), cb),
-          (cb) => Async.asCallback(Promise.resolve(4), cb),
-        ],
-        (err, results) => {
-          expect(results).to.eql([
-            { fulfilled: true, value: 1 },
-            { fulfilled: false, value: 2 },
-            { fulfilled: false, value: 3 },
-            { fulfilled: true, value: 4 },
-          ]);
-          expect(err).to.equal(null);
-          done();
-        },
-      );
+      expect(new ctor().foo()).to.equal('here');
     });
   });
 });

@@ -1,12 +1,32 @@
 import { getter } from 'property-expr';
+import type { SchemaRefDescription } from './schema';
 
 const prefixes = {
   context: '$',
   value: '.',
+} as const;
+
+export type ReferenceOptions<TValue = unknown> = {
+  map?: (value: unknown) => TValue;
 };
 
-export default class Reference {
-  constructor(key, options = {}) {
+export function create(key: string, options?: ReferenceOptions) {
+  return new Reference(key, options);
+}
+
+export default class Reference<TValue = unknown> {
+  readonly key: string;
+  readonly isContext: boolean;
+  readonly isValue: boolean;
+  readonly isSibling: boolean;
+  readonly path: any;
+
+  readonly getter: (data: unknown) => unknown;
+  readonly map?: (value: unknown) => TValue;
+
+  readonly __isYupRef!: boolean;
+
+  constructor(key: string, options: ReferenceOptions<TValue> = {}) {
     if (typeof key !== 'string')
       throw new TypeError('ref must be a string, got: ' + key);
 
@@ -29,7 +49,7 @@ export default class Reference {
     this.map = options.map;
   }
 
-  getValue(value, parent, context) {
+  getValue(value: any, parent?: {}, context?: {}): TValue {
     let result = this.isContext ? context : this.isValue ? value : parent;
 
     if (this.getter) result = this.getter(result || {});
@@ -46,7 +66,7 @@ export default class Reference {
    * @param {Object=} options.context
    * @param {Object=} options.parent
    */
-  cast(value, options) {
+  cast(value: any, options?: { parent?: {}; context?: {} }) {
     return this.getValue(value, options?.parent, options?.context);
   }
 
@@ -54,7 +74,7 @@ export default class Reference {
     return this;
   }
 
-  describe() {
+  describe(): SchemaRefDescription {
     return {
       type: 'ref',
       key: this.key,
@@ -65,9 +85,10 @@ export default class Reference {
     return `Ref(${this.key})`;
   }
 
-  static isRef(value) {
+  static isRef(value: any): value is Reference {
     return value && value.__isYupRef;
   }
 }
 
+// @ts-ignore
 Reference.prototype.__isYupRef = true;

@@ -1,4 +1,4 @@
-import bool from '../src/boolean';
+import { bool } from '../src';
 
 describe('Boolean types', () => {
   it('should CAST correctly', () => {
