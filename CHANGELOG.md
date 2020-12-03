@@ -1,3 +1,20 @@
+# [0.32.0](https://github.com/jquense/yup/compare/v0.31.1...v0.32.0) (2020-12-03)
+
+
+### Features
+
+* typescript support ([#1134](https://github.com/jquense/yup/issues/1134)) ([b97c39d](https://github.com/jquense/yup/commit/b97c39d))
+
+
+### BREAKING CHANGES
+
+* `concat` doesn't check for "unset" nullable or presence when merging meaning the nullability and presence will always be the same as the schema passed to `concat()`. They can be overridden if needed after concatenation
+* schema factory functions are no longer constructors. The classes are now also exported for extension or whatever else. e.g. `import { StringSchema, string } from 'yup'`
+
+
+
+
+
 ## [0.31.1](https://github.com/jquense/yup/compare/v0.31.0...v0.31.1) (2020-12-01)
 
 
