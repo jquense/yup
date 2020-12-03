@@ -78,8 +78,12 @@ const badPersonSchema: SchemaOf<Person> = object({
 
 ### TypeScript settings
 
-For type utilties to work correctly with required and nullable types you have
-to set `strict: true` or `strictNullChecks: true` in your tsconfig.json.
+For type utilties to work correctly you have
+
+- `strictNullChecks: true` (or `strict)
+- `strictFunctionTypes: false`
+
+In your tsconfig.json.
 
 ### Extending built-in types
 
