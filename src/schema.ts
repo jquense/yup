@@ -24,7 +24,7 @@ import {
   AnyObject,
 } from './types';
 
-import { ValidationError } from '.';
+import ValidationError from './ValidationError';
 import type { Asserts } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
@@ -106,7 +106,7 @@ export default abstract class BaseSchema<
   readonly deps: readonly string[] = [];
 
   tests: Test[];
-  transforms: TransformFunction<this>[];
+  transforms: TransformFunction<AnySchema>[];
 
   private conditions: Condition[] = [];
 
@@ -332,7 +332,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  protected _cast(rawValue: any, _options: CastOptions<TContext>) {
+  protected _cast(rawValue: any, _options: CastOptions<TContext>): any {
     let value =
       rawValue === undefined
         ? rawValue
@@ -553,7 +553,7 @@ export default abstract class BaseSchema<
 
   transform(fn: TransformFunction<this>) {
     var next = this.clone();
-    next.transforms.push(fn);
+    next.transforms.push(fn as TransformFunction<any>);
     return next;
   }
 
@@ -645,7 +645,7 @@ export default abstract class BaseSchema<
       if (dep.isSibling) next.deps.push(dep.key);
     });
 
-    next.conditions.push(new Condition<this>(deps, options!));
+    next.conditions.push(new Condition(deps, options!) as Condition);
 
     return next;
   }
