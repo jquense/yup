@@ -13,7 +13,7 @@ import type { AnySchema } from '../schema';
 
 export type CreateErrorOptions = {
   path?: string;
-  message?: Message;
+  message?: Message<any>;
   params?: ExtraParams;
   type?: string;
 };
@@ -45,7 +45,7 @@ export type TestOptions<TSchema extends AnySchema = AnySchema> = {
 
 export type TestConfig<TValue = unknown, TContext = {}> = {
   name?: string;
-  message?: Message;
+  message?: Message<any>;
   test: TestFunction<TValue, TContext>;
   params?: ExtraParams;
   exclusive?: boolean;
@@ -59,7 +59,7 @@ export default function createValidation(config: {
   name?: string;
   test: TestFunction;
   params?: ExtraParams;
-  message?: Message;
+  message?: Message<any>;
 }) {
   function validate<TSchema extends AnySchema = AnySchema>(
     {

@@ -68,7 +68,7 @@ class Condition<T extends SchemaLike = SchemaLike> {
       ref.getValue(options?.value, options?.parent, options?.context),
     );
 
-    let schema = this.fn.apply(base, values.concat(base, options));
+    let schema = this.fn.apply(base, values.concat(base, options) as any);
 
     if (schema === undefined || schema === base) return base;
 

@@ -79,6 +79,9 @@ string().required().nullable();
     lazy: lazy(() => number().required()),
   });
 
+  const foo = object({
+    string: string().default(''),
+  });
   // type F = StringSchema<string>;
   // type f = F extends TypedSchema ? F['__inputType'] : false;
 

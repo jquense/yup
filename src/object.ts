@@ -27,7 +27,10 @@ export type Assign<T extends {}, U extends {}> = {
 
 export type AnyObject = Record<string, any>;
 
-export type ObjectShape = Record<string, AnySchema | Reference | Lazy<any>>;
+export type ObjectShape = Record<
+  string,
+  AnySchema | Reference | Lazy<any, any>
+>;
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
