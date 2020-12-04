@@ -1,3 +1,15 @@
+## [0.32.1](https://github.com/jquense/yup/compare/v0.32.0...v0.32.1) (2020-12-04)
+
+
+### Bug Fixes
+
+* cyclical import ([d5c5391](https://github.com/jquense/yup/commit/d5c5391)), closes [#1138](https://github.com/jquense/yup/issues/1138)
+* some strict fn type improvements ([8092218](https://github.com/jquense/yup/commit/8092218))
+
+
+
+
+
 # [0.32.0](https://github.com/jquense/yup/compare/v0.31.1...v0.32.0) (2020-12-03)
 
 
