@@ -3,7 +3,7 @@
 `yup` comes with robust typescript support! However, because of how dynamic `yup` is
 not everything can be statically typed safely, but for most cases it's "Good Enough".
 
-Not that `yup` schema actually produce _two_ different types: the result of casting an input, and the value after validation.
+Note that `yup` schema actually produce _two_ different types: the result of casting an input, and the value after validation.
 Why are these types different? Because a schema can produce a value via casting that
 would not pass validation!
 
@@ -14,7 +14,7 @@ schema.cast(null); // -> null
 schema.validateSync(null); // ValidationError this is required!
 ```
 
-By itself this seems weird, but has it uses when handling user input. To get a
+By itself this seems weird, but has it's uses when handling user input. To get a
 TypeScript type that matches all possible `cast()` values, use `yup.TypeOf<typeof schema>`.
 To produce a type that matches a valid object for the schema use `yup.Asserts<typeof schema>>`
 
@@ -80,7 +80,7 @@ const badPersonSchema: SchemaOf<Person> = object({
 
 For type utilties to work correctly you have
 
-- `strictNullChecks: true` (or `strict)
+- `strictNullChecks: true` (or `strict`)
 - `strictFunctionTypes: false`
 
 In your tsconfig.json.
