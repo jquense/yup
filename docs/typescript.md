@@ -43,16 +43,25 @@ const personSchema = yup.object({
 });
 ```
 
-You can derive the TypeScript type as follows:
+You can derive a type for the final validated object as follows:
 
 ```ts
-import type { Asserts, TypeOf } from 'yup';
+import type { Asserts } from 'yup';
 
-const parsed: Typeof<typeof personSchema> = personSchema.cast(json);
+// you can also use a type alias by this displays better in tooling
+interface Person extends Asserts<typeof personSchema> {}
 
-const validated: Asserts<typeof personSchema> = personSchema.validateSync(
-  parsed,
-);
+const validated: Person = personSchema.validateSync(parsed);
+```
+
+If you want the type produced by casting:
+
+```ts
+import type { TypeOf } from 'yup';
+
+interface PersonInput extends Typeof<typeof personSchema> {}
+
+const validated: PersonInput = personSchema.cast(json);
 ```
 
 You can also go the other direction, specifying an interface and ensuring that a schema would match it:
@@ -78,12 +87,19 @@ const badPersonSchema: SchemaOf<Person> = object({
 
 ### TypeScript settings
 
-For type utilties to work correctly you have
+For type utilties to work correctly you MUST have the `strictNullChecks` compiler option enabled.
+We also recommend settings `strictFunctionTypes` to `false`, because some schema
+typing doesn't currently work with it on (PRs welcome!).
 
-- `strictNullChecks: true` (or `strict`)
-- `strictFunctionTypes: false`
+Yes this reduces overall soundness, however TypeScript already disables this check
+anyway for methods and constructors (note from TS docs):
 
-In your tsconfig.json.
+> During development of this feature, we discovered a large number of inherently
+> unsafe class hierarchies, including some in the DOM. Because of this,
+> the setting only applies to functions written in function syntax, not to those in method syntax:
+
+Your mileage will vary, but we've found that this check doesn't prevent many of
+real bugs, while increasing the amount of onerous explicit type casting in apps.
 
 ### Extending built-in types
 
