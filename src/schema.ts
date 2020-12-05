@@ -1,7 +1,7 @@
 // @ts-ignore
 import cloneDeep from 'nanoclone';
 
-import { mixed as locale } from './locale';
+import { mixed as locale, string } from './locale';
 import Condition, { ConditionOptions, ResolveOptions } from './Condition';
 import runTests from './util/runTests';
 import createValidation, {
@@ -22,18 +22,26 @@ import {
   Maybe,
   ExtraParams,
   AnyObject,
+  Preserve,
 } from './types';
 
 import ValidationError from './ValidationError';
-import type { Asserts } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
+import isAbsent from './util/isAbsent';
+import { Defined } from './util/types';
 
 // const UNSET = 'unset' as const;
 
+export type DefaultedTag = { __type__: 'defaulted' };
+type Defaulted<T> = T & DefaultedTag;
+
+// export type Presence = 'required' | 'nullable' | 'nonnullable' | 'optional';
+
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
-  presence: 'required' | 'defined' | 'optional';
+  optional: boolean;
+  // presence: Presence;
   default?: TDefault | (() => TDefault);
   abortEarly?: boolean;
   strip?: boolean;
@@ -48,15 +56,11 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<Type = any, TContext = any, TOut = any> = BaseSchema<
-  Type,
-  TContext,
-  TOut
->;
+export type AnySchema<TCast = any, C = any, D = any> = BaseSchema<TCast, C, D>;
 
-export interface CastOptions<TContext = {}> {
+export interface CastOptions<C = {}> {
   parent?: any;
-  context?: TContext;
+  context?: C;
   assert?: boolean;
   stripUnknown?: boolean;
   // XXX: should be private?
@@ -67,6 +71,13 @@ export interface SchemaRefDescription {
   type: 'ref';
   key: string;
 }
+
+export type Cast<T, D> = T extends undefined
+  ? // if default is undefined then it won't affect T
+    D extends undefined
+    ? T
+    : Defined<T>
+  : T;
 
 export interface SchemaInnerTypeDescription extends SchemaDescription {
   innerType?: SchemaFieldDescription;
@@ -88,12 +99,14 @@ export interface SchemaDescription {
   meta: object;
   oneOf: unknown[];
   notOneOf: unknown[];
+  nullable: boolean;
+  optional: boolean;
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
 }
 
 export default abstract class BaseSchema<
   TCast = any,
-  TContext = AnyObject,
+  C = AnyObject,
   TOutput = any
 > {
   readonly type: string;
@@ -111,9 +124,8 @@ export default abstract class BaseSchema<
   private conditions: Condition[] = [];
 
   private _mutate?: boolean;
-  private _typeError?: Test;
-  private _whitelistError?: Test;
-  private _blacklistError?: Test;
+
+  private internalTests: Record<string, Test | null> = {};
 
   protected _whitelist = new ReferenceSet();
   protected _blacklist = new ReferenceSet();
@@ -140,9 +152,14 @@ export default abstract class BaseSchema<
       label: undefined,
       meta: undefined,
       nullable: false,
-      presence: 'optional',
+      optional: true,
+      // presence: 'nonnullable',
       ...options?.spec,
     };
+
+    this.withMutation((s) => {
+      s.nonNullable();
+    });
   }
 
   // TODO: remove
@@ -167,11 +184,9 @@ export default abstract class BaseSchema<
     // @ts-expect-error this is readonly
     next.type = this.type;
 
-    next._typeError = this._typeError;
-    next._whitelistError = this._whitelistError;
-    next._blacklistError = this._blacklistError;
     next._whitelist = this._whitelist.clone();
     next._blacklist = this._blacklist.clone();
+    next.internalTests = { ...this.internalTests };
     next.exclusiveTests = { ...this.exclusiveTests };
 
     // @ts-expect-error this is readonly
@@ -200,9 +215,9 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  // withContext<TContext extends AnyObject>(): BaseSchema<
+  // withContext<C extends AnyObject>(): BaseSchema<
   //   TCast,
-  //   TContext,
+  //   C,
   //   TOutput
   // > {
   //   return this as any;
@@ -238,10 +253,13 @@ export default abstract class BaseSchema<
     //   mergedSpec.presence = base.spec.presence;
 
     combined.spec = mergedSpec;
-
-    combined._typeError ||= base._typeError;
-    combined._whitelistError ||= base._whitelistError;
-    combined._blacklistError ||= base._blacklistError;
+    combined.internalTests = {
+      ...base.internalTests,
+      ...combined.internalTests,
+    };
+    // combined._typeError ||= base._typeError;
+    // combined._whitelistError ||= base._whitelistError;
+    // combined._blacklistError ||= base._blacklistError;
 
     // manually merge the blacklist/whitelist (the other `schema` takes
     // precedence in case of conflicts)
@@ -269,8 +287,13 @@ export default abstract class BaseSchema<
     return combined as any;
   }
 
-  isType(v: any) {
-    if (this.spec.nullable && v === null) return true;
+  isType(v: unknown): v is TCast {
+    if (v == null) {
+      if (this.spec.nullable && v === null) return true;
+      if (this.spec.optional && v === undefined) return true;
+      return false;
+    }
+
     return this._typeCheck(v);
   }
 
@@ -300,7 +323,7 @@ export default abstract class BaseSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions<TContext> = {}): TCast {
+  cast(value: any, options: CastOptions<C> = {}): TCast {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -310,11 +333,7 @@ export default abstract class BaseSchema<
 
     let result = resolvedSchema._cast(value, options);
 
-    if (
-      value !== undefined &&
-      options.assert !== false &&
-      resolvedSchema.isType(result) !== true
-    ) {
+    if (options.assert !== false && !resolvedSchema.isType(result)) {
       let formattedValue = printValue(value);
       let formattedResult = printValue(result);
       throw new TypeError(
@@ -332,7 +351,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  protected _cast(rawValue: any, _options: CastOptions<TContext>): any {
+  protected _cast(rawValue: any, _options: CastOptions<C>): any {
     let value =
       rawValue === undefined
         ? rawValue
@@ -350,7 +369,7 @@ export default abstract class BaseSchema<
 
   protected _validate(
     _value: any,
-    options: InternalOptions<TContext> = {},
+    options: InternalOptions<C> = {},
     cb: Callback,
   ): void {
     let {
@@ -381,10 +400,9 @@ export default abstract class BaseSchema<
     };
 
     let initialTests = [];
-
-    if (this._typeError) initialTests.push(this._typeError);
-    if (this._whitelistError) initialTests.push(this._whitelistError);
-    if (this._blacklistError) initialTests.push(this._blacklistError);
+    for (let test of Object.values(this.internalTests)) {
+      if (test) initialTests.push(test);
+    }
 
     runTests(
       {
@@ -413,15 +431,9 @@ export default abstract class BaseSchema<
     );
   }
 
-  validate(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): Promise<this['__outputType']>;
-  validate(
-    value: any,
-    options?: ValidateOptions<TContext>,
-    maybeCb?: Callback,
-  ) {
+  // validate<U extends TCast>(value: U, options?: ValidateOptions<C>): Promise<U>;
+  validate(value: any, options?: ValidateOptions<C>): Promise<TCast>;
+  validate(value: any, options?: ValidateOptions<C>, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -435,10 +447,9 @@ export default abstract class BaseSchema<
         );
   }
 
-  validateSync(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): this['__outputType'] {
+  // validateSync<U extends TCast>(value: U, options?: ValidateOptions<C>): U;
+  validateSync(value: any, options?: ValidateOptions<C>): TCast;
+  validateSync(value: any, options?: ValidateOptions<C>): TCast {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -450,7 +461,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  isValid(value: any, options?: ValidateOptions<TContext>): Promise<boolean> {
+  isValid(value: any, options?: ValidateOptions<C>): Promise<boolean> {
     return this.validate(value, options).then(
       () => true,
       (err) => {
@@ -460,10 +471,7 @@ export default abstract class BaseSchema<
     );
   }
 
-  isValidSync(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): value is Asserts<this> {
+  isValidSync(value: any, options?: ValidateOptions<C>): value is TCast {
     try {
       this.validateSync(value, options);
       return true;
@@ -489,9 +497,7 @@ export default abstract class BaseSchema<
     return schema._getDefault();
   }
 
-  default<TNextDefault extends Maybe<TCast>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): any {
+  default<TNext extends Maybe<TCast>>(def: TNext | (() => TNext)): any {
     if (arguments.length === 0) {
       return this._getDefault();
     }
@@ -507,48 +513,74 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  protected _isPresent(value: unknown) {
+  protected _isPresent(value: any) {
     return value != null;
   }
 
-  defined(message = locale.defined): any {
-    return this.test({
+  protected nullability(nullable: boolean, message?: Message<any>) {
+    const next = this.clone({ nullable });
+    next.internalTests['nullable'] = createValidation({
       message,
-      name: 'defined',
-      exclusive: true,
+      name: 'nullable',
       test(value) {
-        return value !== undefined;
+        return value === null ? this.schema.spec.nullable : true;
       },
     });
+    return next;
   }
 
-  required(message = locale.required): any {
-    return this.clone({ presence: 'required' }).withMutation((s) =>
-      s.test({
-        message,
-        name: 'required',
-        exclusive: true,
-        test(value) {
-          return this.schema._isPresent(value);
-        },
-      }),
+  protected optionality(optional: boolean, message?: Message<any>) {
+    const next = this.clone({ optional });
+    next.internalTests['optionality'] = createValidation({
+      message,
+      name: 'optionality',
+      test(value) {
+        return value === undefined ? this.schema.spec.optional : true;
+      },
+    });
+    return next;
+  }
+
+  optional(): any {
+    return this.optionality(true);
+  }
+  defined(message = locale.defined): any {
+    return this.optionality(false, message);
+  }
+
+  // nullable(message?: Message): any
+  // nullable(nullable: true): any
+  // nullable(nullable: false, message?: Message): any
+  nullable(): any {
+    return this.nullability(true);
+  }
+  nonNullable(message = locale.required): any {
+    return this.nullability(false, message);
+  }
+
+  required(message: Message<any> = locale.required): any {
+    return this.clone().withMutation((next) =>
+      next
+        .nonNullable(message)
+        .defined(message)
+        .test({
+          message,
+          name: 'required',
+          exclusive: true,
+          test(value: any) {
+            return this.schema._isPresent(value);
+          },
+        }),
     ) as any;
   }
 
   notRequired(): any {
-    var next = this.clone({ presence: 'optional' });
-    next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
-    return next as any;
-  }
-
-  nullable(isNullable?: true): any;
-  nullable(isNullable: false): any;
-  nullable(isNullable = true): any {
-    var next = this.clone({
-      nullable: isNullable !== false,
+    return this.clone().withMutation((next) => {
+      next.tests = next.tests.filter(
+        (test) => test.OPTIONS.name !== 'required',
+      );
+      return next.nullable().optional();
     });
-
-    return next as any;
   }
 
   transform(fn: TransformFunction<this>) {
@@ -570,14 +602,10 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TCast, TContext>): this;
-  test(test: TestFunction<TCast, TContext>): this;
-  test(name: string, test: TestFunction<TCast, TContext>): this;
-  test(
-    name: string,
-    message: Message,
-    test: TestFunction<TCast, TContext>,
-  ): this;
+  test(options: TestConfig<TCast, C>): this;
+  test(test: TestFunction<TCast, C>): this;
+  test(name: string, test: TestFunction<TCast, C>): this;
+  test(name: string, message: Message, test: TestFunction<TCast, C>): this;
   test(...args: any[]) {
     let opts: TestConfig;
 
@@ -653,11 +681,11 @@ export default abstract class BaseSchema<
   typeError(message: Message) {
     var next = this.clone();
 
-    next._typeError = createValidation({
+    next.internalTests['typeError'] = createValidation({
       message,
       name: 'typeError',
       test(value) {
-        if (value !== undefined && !this.schema.isType(value))
+        if (!isAbsent(value) && !this.schema._typeCheck(value))
           return this.createError({
             params: {
               type: this.schema._type,
@@ -680,7 +708,7 @@ export default abstract class BaseSchema<
       next._blacklist.delete(val);
     });
 
-    next._whitelistError = createValidation({
+    next.internalTests['whiteList'] = createValidation({
       message,
       name: 'oneOf',
       test(value) {
@@ -710,7 +738,7 @@ export default abstract class BaseSchema<
       next._whitelist.delete(val);
     });
 
-    next._blacklistError = createValidation({
+    next.internalTests['blacklist'] = createValidation({
       message,
       name: 'notOneOf',
       test(value) {
@@ -736,10 +764,12 @@ export default abstract class BaseSchema<
 
   describe() {
     const next = this.clone();
-    const { label, meta } = next.spec;
+    const { label, meta, optional, nullable } = next.spec;
     const description: SchemaDescription = {
       meta,
       label,
+      optional,
+      nullable,
       type: next.type,
       oneOf: next._whitelist.describe(),
       notOneOf: next._blacklist.describe(),
@@ -754,22 +784,17 @@ export default abstract class BaseSchema<
   }
 }
 
-export default interface BaseSchema<TCast, TContext, TOutput> {
+export default interface BaseSchema<TCast = any, C = AnyObject, TOutput = any> {
   validateAt(
     path: string,
     value: any,
-    options?: ValidateOptions<TContext>,
-  ): Promise<TOutput>;
-  validateSyncAt(
-    path: string,
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): TOutput;
+    options?: ValidateOptions<C>,
+  ): Promise<any>;
+  validateSyncAt(path: string, value: any, options?: ValidateOptions<C>): any;
   equals: BaseSchema['oneOf'];
   is: BaseSchema['oneOf'];
   not: BaseSchema['notOneOf'];
   nope: BaseSchema['notOneOf'];
-  optional(): any;
 }
 
 // @ts-expect-error
@@ -797,5 +822,3 @@ for (const alias of ['equals', 'is'] as const)
 
 for (const alias of ['not', 'nope'] as const)
   BaseSchema.prototype[alias] = BaseSchema.prototype.notOneOf;
-
-BaseSchema.prototype.optional = BaseSchema.prototype.notRequired;
