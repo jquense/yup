@@ -56,7 +56,7 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<TCast = any, C = any, D = any> = BaseSchema<TCast, C, D>;
+export type AnySchema<TType = any, C = any, D = any> = BaseSchema<TType, C, D>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -105,14 +105,14 @@ export interface SchemaDescription {
 }
 
 export default abstract class BaseSchema<
-  TCast = any,
+  TType = any,
   C = AnyObject,
-  TOutput = any
+  TOut = any
 > {
   readonly type: string;
 
-  readonly __inputType!: TCast;
-  readonly __outputType!: TOutput;
+  readonly __type!: TType;
+  readonly __outputType!: TOut;
 
   readonly __isYupSchema__!: boolean;
 
@@ -167,7 +167,7 @@ export default abstract class BaseSchema<
     return this.type;
   }
 
-  protected _typeCheck(_value: any): _value is NonNullable<TCast> {
+  protected _typeCheck(_value: any): _value is NonNullable<TType> {
     return true;
   }
 
@@ -216,9 +216,9 @@ export default abstract class BaseSchema<
   }
 
   // withContext<C extends AnyObject>(): BaseSchema<
-  //   TCast,
+  //   TType,
   //   C,
-  //   TOutput
+  //   TOut
   // > {
   //   return this as any;
   // }
@@ -287,7 +287,7 @@ export default abstract class BaseSchema<
     return combined as any;
   }
 
-  isType(v: unknown): v is TCast {
+  isType(v: unknown): v is TType {
     if (v == null) {
       if (this.spec.nullable && v === null) return true;
       if (this.spec.optional && v === undefined) return true;
@@ -323,7 +323,7 @@ export default abstract class BaseSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions<C> = {}): TCast {
+  cast(value: any, options: CastOptions<C> = {}): TOut {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -431,8 +431,8 @@ export default abstract class BaseSchema<
     );
   }
 
-  // validate<U extends TCast>(value: U, options?: ValidateOptions<C>): Promise<U>;
-  validate(value: any, options?: ValidateOptions<C>): Promise<TCast>;
+  // validate<U extends TType>(value: U, options?: ValidateOptions<C>): Promise<U>;
+  validate(value: any, options?: ValidateOptions<C>): Promise<TOut>;
   validate(value: any, options?: ValidateOptions<C>, maybeCb?: Callback) {
     let schema = this.resolve({ ...options, value });
 
@@ -447,9 +447,9 @@ export default abstract class BaseSchema<
         );
   }
 
-  // validateSync<U extends TCast>(value: U, options?: ValidateOptions<C>): U;
-  validateSync(value: any, options?: ValidateOptions<C>): TCast;
-  validateSync(value: any, options?: ValidateOptions<C>): TCast {
+  // validateSync<U extends TType>(value: U, options?: ValidateOptions<C>): U;
+  validateSync(value: any, options?: ValidateOptions<C>): TOut;
+  validateSync(value: any, options?: ValidateOptions<C>): TOut {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -471,7 +471,7 @@ export default abstract class BaseSchema<
     );
   }
 
-  isValidSync(value: any, options?: ValidateOptions<C>): value is TCast {
+  isValidSync(value: any, options?: ValidateOptions<C>): value is TOut {
     try {
       this.validateSync(value, options);
       return true;
@@ -492,12 +492,12 @@ export default abstract class BaseSchema<
       : cloneDeep(defaultValue);
   }
 
-  getDefault(options?: ResolveOptions): TCast {
+  getDefault(options?: ResolveOptions): TOut {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
 
-  default<TNext extends Maybe<TCast>>(def: TNext | (() => TNext)): any {
+  default<TNext extends Maybe<TType>>(def: TNext | (() => TNext)): any {
     if (arguments.length === 0) {
       return this._getDefault();
     }
@@ -508,9 +508,7 @@ export default abstract class BaseSchema<
   }
 
   strict(isStrict = true) {
-    var next = this.clone();
-    next.spec.strict = isStrict;
-    return next;
+    return this.clone({ strict: isStrict });
   }
 
   protected _isPresent(value: any) {
@@ -602,10 +600,10 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TCast, C>): this;
-  test(test: TestFunction<TCast, C>): this;
-  test(name: string, test: TestFunction<TCast, C>): this;
-  test(name: string, message: Message, test: TestFunction<TCast, C>): this;
+  test(options: TestConfig<TType, C>): this;
+  test(test: TestFunction<TType, C>): this;
+  test(name: string, test: TestFunction<TType, C>): this;
+  test(name: string, message: Message, test: TestFunction<TType, C>): this;
   test(...args: any[]) {
     let opts: TestConfig;
 
@@ -697,7 +695,7 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  oneOf<U extends TCast>(
+  oneOf<U extends TType>(
     enums: Array<Maybe<U> | Reference>,
     message = locale.oneOf,
   ): this {
@@ -728,7 +726,7 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  notOneOf<U extends TCast>(
+  notOneOf<U extends TType>(
     enums: Array<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
@@ -784,7 +782,7 @@ export default abstract class BaseSchema<
   }
 }
 
-export default interface BaseSchema<TCast = any, C = AnyObject, TOutput = any> {
+export default interface BaseSchema<TType = any, C = AnyObject, TOut = any> {
   validateAt(
     path: string,
     value: any,

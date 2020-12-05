@@ -202,80 +202,28 @@ create.prototype = StringSchema.prototype;
 //
 // String Interfaces
 //
-export interface DefinedStringSchema<
-  TType extends Maybe<string>,
-  TContext extends AnyObject = AnyObject
-> extends StringSchema<TType, TContext, Defined<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    DefinedStringSchema<TType | undefined, TContext>,
-    DefinedStringSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredStringSchema<TType, TContext>;
-  optional(): StringSchema<TType, TContext>;
-  notRequired(): StringSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredStringSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredStringSchema<Exclude<TType, null>, TContext>;
-}
-
-export interface RequiredStringSchema<
-  TType extends Maybe<string>,
-  TContext extends AnyObject = AnyObject
-> extends StringSchema<TType, TContext, NonNullable<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    RequiredStringSchema<TType | undefined, TContext>,
-    RequiredStringSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType, TContext>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredStringSchema<TType, TContext>;
-  optional(): StringSchema<TType, TContext>;
-  notRequired(): StringSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredStringSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredStringSchema<Exclude<TType, null>, TContext>;
-}
 
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
   TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
 > extends BaseSchema<TType, TContext, TOut> {
-  concat<TOther extends StringSchema<any, any, any>>(schema: TOther): TOther;
-
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): If<
     D,
-    StringSchema<TType | undefined, TContext>,
-    StringSchema<Defined<TType>, TContext>
+    StringSchema<TType, TContext>,
+    StringSchema<TType, TContext, Defined<TType>>
   >;
 
-  defined(msg?: MixedLocale['defined']): DefinedStringSchema<TType, TContext>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredStringSchema<TType, TContext>;
-  optional(): StringSchema<TType, TContext>;
-  notRequired(): StringSchema<TType, TContext>;
+  concat<TOther extends StringSchema<any, any, any>>(schema: TOther): TOther;
 
-  nullable(isNullable?: true): StringSchema<TType | null, TContext>;
-  nullable(isNullable: false): StringSchema<Exclude<TType, null>, TContext>;
-  withContext<TNextContext extends TContext>(): StringSchema<
-    Exclude<TType, null>,
-    TNextContext
-  >;
+  defined(msg?: Message<any>): StringSchema<Defined<TType>, TContext>;
+  optional(): StringSchema<TType | undefined, TContext>;
+
+  required(msg?: Message<any>): StringSchema<NonNullable<TType>, TContext>;
+  notRequired(): StringSchema<Maybe<TType>, TContext>;
+
+  nullable(msg?: Message<any>): StringSchema<TType | null, TContext>;
+  nonNullable(): StringSchema<Exclude<TType, null>, TContext>;
 }

@@ -16,7 +16,7 @@ export type TransformFunction<T extends AnySchema> = (
 
 export interface ValidateOptions<TContext = {}> {
   /**
-   * Only validate the input, and skip and coercion or transformation. Default - false
+   * Only validate the input, skipping type casting and transformation. Default - false
    */
   strict?: boolean;
   /**
@@ -55,7 +55,7 @@ export interface MessageParams {
   type: string;
 }
 
-export type Message<Extra extends Record<string, unknown> = {}> =
+export type Message<Extra extends Record<string, unknown> = any> =
   | string
   | ((params: Extra & MessageParams) => unknown)
   | Record<PropertyKey, unknown>;

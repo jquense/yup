@@ -25,17 +25,19 @@ string().required().nullable();
 {
   const strRequired = string().required();
 
-  // $ExpectType string | undefined
+  // string().default('hi').cast();
+
+  // $ExpectType string
   strRequired.cast(undefined);
 
   //
-  const strNullableRequired = string().nullable().required();
+  const strNullableOptional = string().nullable().optional();
 
   // $ExpectType Maybe<string>
-  strNullableRequired.cast('');
+  strNullableOptional.cast('');
 
   // $ExpectType string
-  strNullableRequired.validateSync('');
+  strNullableOptional.required().validateSync('');
 
   //
   //
@@ -61,7 +63,7 @@ string().required().nullable();
   //
   const strDefaultRequired = string().nullable().required().default('').trim();
 
-  // $ExpectType string | null
+  // $ExpectType string
   strDefaultRequired.cast('');
 
   // $ExpectType string
@@ -70,37 +72,35 @@ string().required().nullable();
 
 {
   const obj = object({
-    string: string().required(),
+    string: string().defined(),
     number: number().default(1),
     ref: ref('string'),
     nest: object({
       other: string(),
     }),
-    lazy: lazy(() => number().required()),
+    lazy: lazy(() => number().defined()),
   });
 
-  const foo = object({
-    string: string().default(''),
-  });
   // type F = StringSchema<string>;
-  // type f = F extends TypedSchema ? F['__inputType'] : false;
+  // type f = F extends TypedSchema ? F['__type'] : false;
 
   // const f = obj.cast({});
   // f!.number;
   // f!.string;
-  // type ia = typeof obj['fields']['nest']['__inputType'];
+  // type ia = typeof obj['fields']['nest']['__type'];
 
   type _d1 = DefaultFromShape<typeof obj['fields']>;
-  // $ExpectType number
+
+  // $ExpectType number | undefined
   type _i1 = TypeOfShape<typeof obj['fields']>['number'];
 
-  // $ExpectType string | undefined
+  // $ExpectType string
   type _i2 = TypeOfShape<typeof obj['fields']>['string'];
 
   // $ExpectType unknown
   type _i3 = TypeOfShape<typeof obj['fields']>['ref'];
 
-  // $ExpectType number | undefined
+  // $ExpectType number
   type _i33 = TypeOfShape<typeof obj['fields']>['lazy'];
 
   // $ExpectType number
@@ -119,7 +119,7 @@ string().required().nullable();
   // $ExpectType string | undefined
   cast1!.nest!.other;
 
-  // $ExpectType string | undefined
+  // $ExpectType string
   cast1!.string;
 
   // $ExpectType number

@@ -11,7 +11,7 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
 import { InternalOptions, Callback, Maybe, Optionals, Preserve } from './types';
 import ValidationError from './ValidationError';
-import type { TypedSchema, Defined } from './util/types';
+import type { TypedSchema, Defined, Thunk, If } from './util/types';
 import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
@@ -44,7 +44,7 @@ export type DefaultFromShape<Shape extends ObjectShape> = {
 
 export type TypeOfShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__inputType']
+    ? Shape[K]['__type']
     : Shape[K] extends Reference
     ? unknown
     : never;
@@ -75,10 +75,8 @@ const defaultSort = sortByKeyOrder([]);
 export default class ObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
-  TOut extends Maybe<AssertsShape<TShape>> =
-    | AssertsShape<TShape>
-    | Optionals<TIn>
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined,
+  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
 > extends BaseSchema<TIn, TContext, TOut> {
   fields: TShape = Object.create(null);
 
@@ -464,135 +462,53 @@ export default class ObjectSchema<
 }
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
-  return new ObjectSchema<TShape>(spec) as OptionalObjectSchema<TShape>;
+  return new ObjectSchema<TShape>(spec) as ObjectSchema<TShape>;
 }
 
 create.prototype = ObjectSchema.prototype;
 
-export interface OptionalObjectSchema<
+export default interface ObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
-> extends ObjectSchema<TShape, TContext, TIn> {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? ObjectSchema<TShape, TContext, TIn | undefined>
-    : ObjectSchema<TShape, TContext, Defined<TIn>>;
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined,
+  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
+> extends BaseSchema<TIn, TContext, TOut> {
+  default<D extends Maybe<TIn>>(
+    def: Thunk<D>,
+  ): If<
+    D,
+    ObjectSchema<TShape, TContext, TIn>,
+    ObjectSchema<TShape, TContext, TIn, Defined<TOut>>
+  >;
 
   defined(
     msg?: MixedLocale['defined'],
-  ): DefinedObjectSchema<TShape, TContext, TIn>;
+  ): ObjectSchema<TShape, TContext, Defined<TIn>>;
+  optional(): ObjectSchema<TShape, TContext, TIn | undefined>;
+
   required(
     msg?: MixedLocale['required'],
-  ): RequiredObjectSchema<TShape, TContext, TIn>;
-  optional(): this;
-  notRequired(): this;
-  nullable(
-    isNullable?: true,
-  ): OptionalObjectSchema<TShape, TContext, TIn | null>;
+  ): ObjectSchema<TShape, TContext, NonNullable<TIn>>;
+  notRequired(): ObjectSchema<TShape, TContext, Maybe<TIn>>;
+
+  nullable(isNullable?: true): ObjectSchema<TShape, TContext, TIn | null>;
   nullable(
     isNullable: false,
-  ): OptionalObjectSchema<TShape, TContext, Exclude<TIn, null>>;
+  ): ObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): OptionalObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): OptionalObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
-}
+  // pick<TKey extends keyof TShape>(
+  //   keys: TKey[],
+  // ): ObjectSchema<
+  //   Pick<TShape, TKey>,
+  //   TContext,
+  //   TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
+  // >;
 
-export interface DefinedObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
-> extends ObjectSchema<
-    TShape,
-    TContext,
-    TIn,
-    AssertsShape<TShape> | Extract<TIn, null>
-  > {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? DefinedObjectSchema<TShape, TContext, TIn | undefined>
-    : DefinedObjectSchema<TShape, TContext, Defined<TIn>>;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredObjectSchema<TShape, TContext, TIn>;
-
-  optional(): OptionalObjectSchema<TShape, TContext, TIn>;
-  notRequired(): OptionalObjectSchema<TShape, TContext, TIn>;
-  nullable(
-    isNullable?: true,
-  ): DefinedObjectSchema<TShape, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
-
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): DefinedObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): DefinedObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
-}
-
-export interface RequiredObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
-> extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? RequiredObjectSchema<TShape, TContext, TIn | undefined>
-    : RequiredObjectSchema<TShape, TContext, Defined<TIn>>;
-
-  defined(
-    msg?: MixedLocale['defined'],
-  ): DefinedObjectSchema<TShape, TContext, TIn>;
-  required(msg?: MixedLocale['required']): this;
-  optional(): OptionalObjectSchema<TShape, TContext, TIn>;
-  notRequired(): OptionalObjectSchema<TShape, TContext, TIn>;
-  nullable(
-    isNullable?: true,
-  ): RequiredObjectSchema<TShape, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): RequiredObjectSchema<TShape, TContext, Exclude<TIn, null>>;
-
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): RequiredObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): RequiredObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
+  // omit<TKey extends keyof TShape>(
+  //   keys: TKey[],
+  // ): ObjectSchema<
+  //   Omit<TShape, TKey>,
+  //   TContext,
+  //   TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
+  // >;
 }

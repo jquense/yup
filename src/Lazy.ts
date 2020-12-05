@@ -30,7 +30,7 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
 
   __isYupSchema__ = true;
 
-  readonly __inputType!: T['__inputType'];
+  readonly __type!: T['__type'];
   readonly __outputType!: T['__outputType'];
 
   constructor(private builder: LazyBuilder<T>) {}
@@ -50,7 +50,7 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
   resolve(options: ResolveOptions<TContext>) {
     return this._resolve(options.value, options);
   }
-  cast(value: any, options?: CastOptions<TContext>): T['__inputType'] {
+  cast(value: any, options?: CastOptions<TContext>): T['__type'] {
     return this._resolve(value, options).cast(value, options);
   }
 

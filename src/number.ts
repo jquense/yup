@@ -140,72 +140,22 @@ export default interface NumberSchema<
   TContext extends AnyObject = AnyObject,
   TOut extends TType = TType
 > extends BaseSchema<TType, TContext, TOut> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): If<
+    D,
+    NumberSchema<TType, TContext>,
+    NumberSchema<TType, TContext, Defined<TType>>
+  >;
+
   concat<TOther extends NumberSchema<any, any, any>>(schema: TOther): TOther;
 
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    NumberSchema<TType | undefined, TContext>,
-    NumberSchema<Defined<TType>, TContext>
-  >;
+  defined(msg?: Message<any>): NumberSchema<Defined<TType>, TContext>;
+  optional(): NumberSchema<TType | undefined, TContext>;
 
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
+  required(msg?: Message<any>): NumberSchema<NonNullable<TType>, TContext>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext>;
 
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
-
-  nullable(isNullable?: true): NumberSchema<TType | null, TContext>;
-  nullable(isNullable: false): NumberSchema<Exclude<TType, null>, TContext>;
-}
-
-export interface DefinedNumberSchema<
-  TType extends Maybe<number>,
-  TContext extends AnyObject = AnyObject
-> extends NumberSchema<TType, TContext, Defined<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    DefinedNumberSchema<TType | undefined, TContext>,
-    DefinedNumberSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredNumberSchema<Exclude<TType, null>, TContext>;
-}
-
-export interface RequiredNumberSchema<
-  TType extends Maybe<number>,
-  TContext extends AnyObject = AnyObject
-> extends NumberSchema<TType, TContext, NonNullable<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    RequiredNumberSchema<TType | undefined, TContext>,
-    RequiredNumberSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredNumberSchema<Exclude<TType, null>, TContext>;
+  nullable(msg?: Message<any>): NumberSchema<TType | null, TContext>;
+  nonNullable(): NumberSchema<Exclude<TType, null>, TContext>;
 }

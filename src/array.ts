@@ -27,7 +27,7 @@ export function create<
   C extends AnyObject = AnyObject,
   T extends AnySchema = AnySchema
 >(type?: T) {
-  return new ArraySchema<T, C>(type) as OptionalArraySchema<T, C>;
+  return new ArraySchema<T, C>(type) as ArraySchema<T, C>;
 }
 
 export default class ArraySchema<
@@ -240,7 +240,7 @@ export default class ArraySchema<
     });
   }
 
-  ensure(): RequiredArraySchema<T, C, TIn> {
+  ensure(): ArraySchema<T, C, TIn> {
     return this.default(() => ([] as any) as TIn).transform(
       (val: TIn, original: any) => {
         // We don't want to return `null` for nullable schema
@@ -273,77 +273,70 @@ create.prototype = ArraySchema.prototype;
 // Interfaces
 //
 
-export interface DefinedArraySchema<
+// export interface DefinedArraySchema<
+//   T extends AnySchema,
+//   TContext extends AnyObject,
+//   TIn extends Maybe<TypeOf<T>[]>
+// > extends ArraySchema<T, TContext, TIn, Asserts<T>[] | Preserve<TIn, null>> {
+//   default<D extends Maybe<TIn>>(
+//     def: Thunk<D>,
+//   ): If<
+//     D,
+//     DefinedArraySchema<T, TContext, TIn | undefined>,
+//     DefinedArraySchema<T, TContext, Defined<TIn>>
+//   >;
+
+//   defined(msg?: MixedLocale['defined']): this;
+//   required(
+//     msg?: MixedLocale['required'],
+//   ): RequiredArraySchema<T, TContext, TIn>;
+//   optional(): ArraySchema<T, TContext, TIn>;
+//   notRequired(): ArraySchema<T, TContext, TIn>;
+//   nullable(isNullable?: true): DefinedArraySchema<T, TContext, TIn | null>;
+//   nullable(
+//     isNullable: false,
+//   ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
+// }
+
+// export interface RequiredArraySchema<
+//   T extends AnySchema,
+//   TContext extends AnyObject,
+//   TIn extends Maybe<TypeOf<T>[]>
+// > extends ArraySchema<T, TContext, TIn, Asserts<T>[]> {
+//   default<D extends Maybe<TIn>>(
+//     def: Thunk<D>,
+//   ): If<
+//     D,
+//     RequiredArraySchema<T, TContext, TIn | undefined>,
+//     RequiredArraySchema<T, TContext, Defined<TIn>>
+//   >;
+
+//   defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
+//   required(msg?: MixedLocale['required']): this;
+//   optional(): ArraySchema<T, TContext, TIn>;
+//   notRequired(): ArraySchema<T, TContext, TIn>;
+//   nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
+//   nullable(
+//     isNullable: false,
+//   ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
+// }
+
+export default interface ArraySchema<
   T extends AnySchema,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOf<T>[]>
-> extends ArraySchema<T, TContext, TIn, Asserts<T>[] | Preserve<TIn, null>> {
+  C extends AnyObject = AnyObject,
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
+  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
+> extends BaseSchema<TIn, C, TOut> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    DefinedArraySchema<T, TContext, TIn | undefined>,
-    DefinedArraySchema<T, TContext, Defined<TIn>>
-  >;
+  ): If<D, ArraySchema<T, C, TIn>, ArraySchema<T, C, TIn, Defined<TOut>>>;
 
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredArraySchema<T, TContext, TIn>;
-  optional(): ArraySchema<T, TContext, TIn>;
-  notRequired(): ArraySchema<T, TContext, TIn>;
-  nullable(isNullable?: true): DefinedArraySchema<T, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
-}
+  defined(msg?: MixedLocale['defined']): ArraySchema<T, C, Defined<TIn>>;
+  optional(): ArraySchema<T, C, TIn | undefined>;
 
-export interface RequiredArraySchema<
-  T extends AnySchema,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOf<T>[]>
-> extends ArraySchema<T, TContext, TIn, Asserts<T>[]> {
-  default<D extends Maybe<TIn>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    RequiredArraySchema<T, TContext, TIn | undefined>,
-    RequiredArraySchema<T, TContext, Defined<TIn>>
-  >;
+  required(msg?: MixedLocale['required']): ArraySchema<T, C, NonNullable<TIn>>;
+  notRequired(): ArraySchema<T, C, Maybe<TIn>>;
 
-  defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
-  required(msg?: MixedLocale['required']): this;
-  optional(): ArraySchema<T, TContext, TIn>;
-  notRequired(): ArraySchema<T, TContext, TIn>;
-  nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
-}
-
-export interface OptionalArraySchema<
-  T extends AnySchema,
-  TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
-> extends ArraySchema<T, TContext, TIn> {
-  default<D extends Maybe<TIn>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    ArraySchema<T, TContext, TIn | undefined>,
-    ArraySchema<T, TContext, Defined<TIn>>
-  >;
-
-  defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredArraySchema<T, TContext, TIn>;
-
-  optional(): ArraySchema<T, TContext, TIn>;
-  notRequired(): ArraySchema<T, TContext, TIn>;
-
-  nullable(isNullable?: true): OptionalArraySchema<T, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): OptionalArraySchema<T, TContext, Exclude<TIn, null>>;
+  nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
+  nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
 }
