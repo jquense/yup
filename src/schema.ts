@@ -25,7 +25,7 @@ import {
 } from './types';
 
 import ValidationError from './ValidationError';
-import type { Asserts } from './util/types';
+import type { Asserts, Thunk } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 
@@ -489,9 +489,7 @@ export default abstract class BaseSchema<
     return schema._getDefault();
   }
 
-  default<TNextDefault extends Maybe<TCast>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): any {
+  default(def: Thunk<any>): any {
     if (arguments.length === 0) {
       return this._getDefault();
     }

@@ -460,7 +460,7 @@ export interface OptionalObjectSchema<
   TContext extends AnyObject = AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
 > extends ObjectSchema<TShape, TContext, TIn> {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
+  default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
     ? ObjectSchema<TShape, TContext, TIn | undefined>
@@ -507,7 +507,7 @@ export interface DefinedObjectSchema<
     TIn,
     AssertsShape<TShape> | Extract<TIn, null>
   > {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
+  default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
     ? DefinedObjectSchema<TShape, TContext, TIn | undefined>
@@ -548,7 +548,7 @@ export interface RequiredObjectSchema<
   TContext extends AnyObject,
   TIn extends Maybe<TypeOfShape<TShape>>
 > extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
-  default<TNextDefault extends Maybe<Record<string, any>>>(
+  default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),
   ): TNextDefault extends undefined
     ? RequiredObjectSchema<TShape, TContext, TIn | undefined>
