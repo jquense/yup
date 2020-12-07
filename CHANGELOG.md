@@ -1,3 +1,14 @@
+## [0.32.3](https://github.com/jquense/yup/compare/v0.32.2...v0.32.3) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** AnyObjectSchema anys ([1c54665](https://github.com/jquense/yup/commit/1c54665))
+
+
+
+
+
 ## [0.32.2](https://github.com/jquense/yup/compare/v0.32.1...v0.32.2) (2020-12-07)
 
 
