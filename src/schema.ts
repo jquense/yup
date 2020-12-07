@@ -267,9 +267,6 @@ export default abstract class BaseSchema<
       ...base.internalTests,
       ...combined.internalTests,
     };
-    // combined._typeError ||= base._typeError;
-    // combined._whitelistError ||= base._whitelistError;
-    // combined._blacklistError ||= base._blacklistError;
 
     // manually merge the blacklist/whitelist (the other `schema` takes
     // precedence in case of conflicts)
@@ -640,13 +637,16 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TType, TConfig['context']>): this;
-  test(test: TestFunction<TType, TConfig['context']>): this;
-  test(name: string, test: TestFunction<TType, TConfig['context']>): this;
+  test(options: TestConfig<this['__outputType'], TConfig['context']>): this;
+  test(test: TestFunction<this['__outputType'], TConfig['context']>): this;
+  test(
+    name: string,
+    test: TestFunction<this['__outputType'], TConfig['context']>,
+  ): this;
   test(
     name: string,
     message: Message,
-    test: TestFunction<TType, TConfig['context']>,
+    test: TestFunction<this['__outputType'], TConfig['context']>,
   ): this;
   test(...args: any[]) {
     let opts: TestConfig;

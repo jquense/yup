@@ -43,6 +43,8 @@ type SchemaOf<T> = T extends AnyObject
   ? ArraySchema<SchemaOf<E>>
   : BaseSchema<T, T, Config>;
 
+export type AnyObjectSchema = ObjectSchema<any, any, any>;
+
 export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, AnySchema };
 
 export {

@@ -243,7 +243,7 @@ export default class ArraySchema<
     });
   }
 
-  ensure(): ArraySchema<T, C, TIn> {
+  ensure(): ArraySchema<T, SetFlag<C, 'd'>, NonNullable<TIn>> {
     return this.default(() => ([] as any) as TIn).transform(
       (val: TIn, original: any) => {
         // We don't want to return `null` for nullable schema
