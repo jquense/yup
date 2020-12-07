@@ -1,3 +1,14 @@
+## [0.32.5](https://github.com/jquense/yup/compare/v0.32.4...v0.32.5) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** change base.default() to any ([01c6930](https://github.com/jquense/yup/commit/01c6930))
+
+
+
+
+
 ## [0.32.4](https://github.com/jquense/yup/compare/v0.32.3...v0.32.4) (2020-12-07)
 
 
