@@ -1,11 +1,18 @@
-import MixedSchema from './mixed';
 // @ts-ignore
 import isoParse from './util/isodate';
-import { date as locale, MixedLocale } from './locale';
+import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
-import type { AnyObject, Maybe } from './types';
-import type { Defined, If, Thunk } from './util/types';
+import type { Maybe, Message } from './types';
+import type {
+  Config,
+  Defined,
+  If,
+  NotNull,
+  SetFlag,
+  Thunk,
+  ToggleDefault,
+} from './util/types';
 import BaseSchema from './schema';
 
 let invalidDate = new Date('');
@@ -19,9 +26,8 @@ export function create() {
 
 export default class DateSchema<
   TType extends Maybe<Date> = Date | undefined,
-  TContext extends AnyObject = AnyObject,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+  TConfig extends Config<any, any> = Config
+> extends BaseSchema<TType, TType, TConfig> {
   static INVALID_DATE = invalidDate;
 
   constructor() {
@@ -96,69 +102,20 @@ create.INVALID_DATE = invalidDate;
 
 export default interface DateSchema<
   TType extends Maybe<Date>,
-  TContext extends AnyObject = AnyObject,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
-  concat<TOther extends DateSchema<any, any, any>>(schema: TOther): TOther;
-
+  TConfig extends Config<any, any> = Config
+> extends BaseSchema<TType, TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    DateSchema<TType | undefined, TContext>,
-    DateSchema<Defined<TType>, TContext>
-  >;
+  ): DateSchema<TType, ToggleDefault<TConfig, D>>;
 
-  defined(msg?: MixedLocale['defined']): DefinedDateSchema<TType, TContext>;
+  concat<TOther extends DateSchema<any, any>>(schema: TOther): TOther;
 
-  required(msg?: MixedLocale['required']): RequiredDateSchema<TType, TContext>;
-  optional(): DateSchema<TType, TContext>;
-  notRequired(): DateSchema<TType, TContext>;
+  defined(msg?: Message): DateSchema<Defined<TType>, TConfig>;
+  optional(): DateSchema<TType | undefined, TConfig>;
 
-  nullable(isNullable?: true): DateSchema<TType | null, TContext>;
-  nullable(isNullable: false): DateSchema<Exclude<TType, null>, TContext>;
-}
+  required(msg?: Message): DateSchema<NonNullable<TType>, TConfig>;
+  notRequired(): DateSchema<Maybe<TType>, TConfig>;
 
-export interface DefinedDateSchema<
-  TType extends Maybe<Date>,
-  TContext extends AnyObject = AnyObject
-> extends DateSchema<TType, TContext, Defined<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    DefinedDateSchema<TType | undefined, TContext>,
-    DefinedDateSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(msg?: MixedLocale['required']): RequiredDateSchema<TType, TContext>;
-  optional(): DateSchema<TType, TContext>;
-  notRequired(): DateSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredDateSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredDateSchema<Exclude<TType, null>, TContext>;
-}
-
-export interface RequiredDateSchema<
-  TType extends Maybe<Date>,
-  TContext extends AnyObject = AnyObject
-> extends DateSchema<TType, TContext, NonNullable<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    RequiredDateSchema<TType | undefined, TContext>,
-    RequiredDateSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): DefinedDateSchema<TType, TContext>;
-  required(msg?: MixedLocale['required']): RequiredDateSchema<TType, TContext>;
-  optional(): DateSchema<TType, TContext>;
-  notRequired(): DateSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredDateSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredDateSchema<Exclude<TType, null>, TContext>;
+  nullable(msg?: Message): DateSchema<TType | null, TConfig>;
+  nonNullable(): DateSchema<NotNull<TType>, TConfig>;
 }

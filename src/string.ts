@@ -2,7 +2,16 @@ import { MixedLocale, string as locale, string } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe, AnyObject } from './types';
-import type { Defined, If, SetFlag, Thunk } from './util/types';
+import type {
+  AnyConfig,
+  Defined,
+  If,
+  MergeConfig,
+  NotNull,
+  SetFlag,
+  Thunk,
+  ToggleDefault,
+} from './util/types';
 import BaseSchema, { Config } from './schema';
 
 // eslint-disable-next-line
@@ -23,15 +32,14 @@ export type MatchOptions = {
 
 let objStringTag = {}.toString();
 
-export function create() {
-  return new StringSchema();
+export function create<Context extends AnyObject>() {
+  return new StringSchema<string | undefined, Config<Context>>();
 }
 
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
-  TConfig extends Config<any, any> = Config,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TOut, TConfig> {
+  TConfig extends AnyConfig = Config
+> extends BaseSchema<TType, TType, TConfig> {
   constructor() {
     super({ type: 'string' });
 
@@ -205,29 +213,23 @@ create.prototype = StringSchema.prototype;
 
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
-  TConfig extends Config<any, any> = Config,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TOut, TConfig> {
+  TConfig extends AnyConfig = Config
+> extends BaseSchema<TType, TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<D, this, StringSchema<TType, SetFlag<TConfig, 'd'>>>;
+  ): StringSchema<TType, ToggleDefault<TConfig, D>>;
 
-  concat<TOther extends StringSchema<any, any, any>>(schema: TOther): TOther;
+  concat<T extends Maybe<string>, C extends AnyConfig>(
+    schema: StringSchema<T, C>,
+  ): StringSchema<NonNullable<TType> | T, MergeConfig<TConfig, C>>;
+  concat(schema: this): this;
 
-  defined(msg?: Message<any>): StringSchema<Defined<TType>, TConfig>;
+  defined(msg?: Message): StringSchema<Defined<TType>, TConfig>;
   optional(): StringSchema<TType | undefined, TConfig>;
 
-  required(
-    msg?: Message<any>,
-  ): StringSchema<NonNullable<TType>, TConfig, NonNullable<TOut>>;
-  notRequired(): StringSchema<Maybe<TType>, TConfig, Maybe<TType>>;
+  required(msg?: Message): StringSchema<NonNullable<TType>, TConfig>;
+  notRequired(): StringSchema<Maybe<TType>, TConfig>;
 
   nullable(msg?: Message<any>): StringSchema<TType | null, TConfig>;
-  nonNullable(): StringSchema<Exclude<TType, null>, TConfig>;
+  nonNullable(): StringSchema<NotNull<TType>, TConfig>;
 }
-
-const _f = create().default('').nullable();
-
-type _F = typeof _f;
-
-type _a = _F['__out'];

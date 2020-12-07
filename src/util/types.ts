@@ -7,16 +7,15 @@ export type NotNull<T> = T extends null ? never : T;
 export type TypedSchema = {
   __type: any;
   __outputType: any;
-  __out: any;
 };
 
 export type TypeOf<TSchema extends TypedSchema> = TSchema['__type'];
 
-export type Asserts<TSchema extends TypedSchema> = TSchema['__out'];
+export type Asserts<TSchema extends TypedSchema> = TSchema['__outputType'];
 
 export type Thunk<T> = T | (() => T);
 
-export type If<T, Y, N> = T extends undefined ? Y : N;
+export type If<T, Y, N> = Exclude<T, undefined> extends never ? Y : N;
 
 //
 // Schema Config
@@ -24,29 +23,40 @@ export type If<T, Y, N> = T extends undefined ? Y : N;
 
 export type Flags = 's' | 'd' | '';
 
-export type HasFlag<T, F extends Flags> = Preserve<T, F> extends never
-  ? never
-  : true;
-
 export interface Config<C = AnyObject, F extends Flags = ''> {
   context: C;
   flags: F;
 }
+export interface AnyConfig extends Config<any, any> {}
 
-export type SetFlag<C extends Config, F extends Flags> = C extends Config<
+export type MergeConfig<T extends AnyConfig, U extends AnyConfig> = Config<
+  T['context'] & U['context'],
+  T['flags'] | U['flags']
+>;
+
+export type SetFlag<C extends AnyConfig, F extends Flags> = C extends Config<
   infer Context,
   infer Old
 >
-  ? Config<Context, Old | F>
+  ? Config<Context, Exclude<Old, ''> | F>
   : never;
 
-export type UnsetFlag<C extends Config, F extends Flags> = C extends Config<
+export type UnsetFlag<C extends AnyConfig, F extends Flags> = C extends Config<
   infer Context,
   infer Old
 >
-  ? Config<Context, Exclude<Old, F>>
+  ? Exclude<Old, F> extends never
+    ? Config<Context, ''>
+    : Config<Context, Exclude<Old, F>>
   : never;
 
-export type ResolveFlags<T, F extends Flags> = Preserve<F, 'd'> extends never
-  ? T
-  : Defined<T>;
+export type ToggleDefault<C extends AnyConfig, D> = Preserve<
+  D,
+  undefined
+> extends never
+  ? SetFlag<C, 'd'>
+  : UnsetFlag<C, 'd'>;
+
+// type _s = ToggleDefault<Config<any, 'd'>, undefined>;
+
+// type _f = MergeConfig<Config<AnyObject, 'd'>, Config<AnyObject, ''>>;

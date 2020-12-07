@@ -16,9 +16,9 @@ import type {
   DefaultFromShape,
   TypeOfShape,
 } from '../src/object';
-import { Config } from '../src/schema';
+import type { Config, ResolveFlags } from '../src/schema';
 import { Preserve } from '../src/types';
-import { HasFlag, ResolveFlags } from '../src/util/types';
+// import { HasFlag } from '../src/util/types';
 
 mixed().required().nullable();
 
@@ -203,7 +203,7 @@ SchemaOf: {
   // type f = Type<typeof str>;
 
   type _b = Preserve<Config<any, '' | 's'>['flags'], 'd'>;
-  type _a = HasFlag<Config<any, '' | 's'>['flags'], 'd'>;
+  // type _a = HasFlag<Config<any, '' | 's'>['flags'], 'd'>;
   type _f = ResolveFlags<string | undefined, Config<any, ''>['flags']>;
 
   // $ExpectType (string | undefined)[] | undefined
@@ -281,13 +281,10 @@ SchemaOf: {
   // $ExpectType string
   mixed<string>().concat(mixed<string>().required()).validateSync('');
 
-  let _f = mixed<string>();
-
   // $ExpectType string | number | undefined
   const _oo = mixed<number>()
     .required()
-    .concat(_f)
-    .notRequired()
+    .concat(mixed<string>())
     .validateSync('');
 
   const _o = object({
@@ -298,8 +295,17 @@ SchemaOf: {
     }),
   );
 
-  // $ExpectType MixedSchema<number | "hi", any, "unset", "unset", any, any>
-  // string().oneOf(['hi' as const]);
+  // $ExpectType string
+  string().nullable().default('hi').concat(string()).cast('');
+
+  // $ExpectType number
+  number().nullable().default(1).concat(number()).cast('');
+
+  // $ExpectType string | null
+  string().default('hi').concat(string().nullable()).cast('');
+
+  // $ExpectType number | null
+  number().default(0).concat(number().nullable()).cast('');
 }
 
 // Context: {

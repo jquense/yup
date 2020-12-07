@@ -28,12 +28,22 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import { Config, Defined, ResolveFlags } from './util/types';
+import { Config, Defined, Flags } from './util/types';
 
-// const UNSET = 'unset' as const;
-
-// type hmm = HasFlag<'' | 'd', 'd'>
 export { Config };
+
+export type ConfigOf<T> = T extends AnySchema<any, any, infer C> ? C : never;
+
+export type ContextOf<T> = ConfigOf<T>['context'];
+export type FlagsOf<T> = ConfigOf<T>['flags'];
+
+export type ResolveFlags<T, F extends Flags> = Preserve<F, 'd'> extends never
+  ? T
+  : Defined<T>;
+
+export type HasFlag<T, F extends Flags> = Preserve<FlagsOf<T>, F> extends never
+  ? never
+  : true;
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
@@ -52,11 +62,11 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<TType = any, TOut = any, C = any> = BaseSchema<
-  TType,
-  TOut,
-  any
->;
+export type AnySchema<
+  TType = any,
+  TOut = any,
+  C extends Config = any
+> = BaseSchema<TType, TOut, C>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -112,8 +122,7 @@ export default abstract class BaseSchema<
   readonly type: string;
 
   readonly __type!: TType;
-  readonly __outputType!: TOut;
-  readonly __out!: ResolveFlags<TOut, TConfig['flags']>;
+  readonly __outputType!: ResolveFlags<TOut, TConfig['flags']>;
 
   readonly __isYupSchema__!: boolean;
 
@@ -327,7 +336,7 @@ export default abstract class BaseSchema<
   cast(
     value: any,
     options: CastOptions<TConfig['context']> = {},
-  ): this['__out'] {
+  ): this['__outputType'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -442,7 +451,7 @@ export default abstract class BaseSchema<
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): Promise<this['__out']>;
+  ): Promise<this['__outputType']>;
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
@@ -465,11 +474,11 @@ export default abstract class BaseSchema<
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): this['__out'];
+  ): this['__outputType'];
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): this['__out'] {
+  ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -497,7 +506,7 @@ export default abstract class BaseSchema<
   isValidSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): value is this['__out'] {
+  ): value is this['__outputType'] {
     try {
       this.validateSync(value, options);
       return true;
@@ -520,9 +529,10 @@ export default abstract class BaseSchema<
 
   getDefault(
     options?: ResolveOptions,
-    // this isn't the same as TOut but close
-  ): TType {
-    //Preserve<TConfig['flags'], 'd'> extends never ? TType : Defined<TType> {
+    // If schema is defaulted we know it's at least not undefined
+  ): Preserve<TConfig['flags'], 'd'> extends never
+    ? undefined
+    : Defined<TType> {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }

@@ -1,7 +1,15 @@
 import type { MixedLocale } from './locale';
 
-import { AnyObject, Maybe, Optionals } from './types';
-import type { Defined } from './util/types';
+import { AnyObject, Maybe, Message, Optionals } from './types';
+import type {
+  Config,
+  Defined,
+  If,
+  NotNull,
+  SetFlag,
+  Thunk,
+  ToggleDefault,
+} from './util/types';
 import BaseSchema from './schema';
 
 export function create<TType = any>() {
@@ -10,39 +18,33 @@ export function create<TType = any>() {
 
 export default class MixedSchema<
   TType = any,
-  TContext = AnyObject,
-  TOut = TType
-> extends BaseSchema<TType, TContext, TOut> {}
+  TConfig extends Config<any, any> = Config
+> extends BaseSchema<TType, TType, TConfig> {}
 
 create.prototype = MixedSchema.prototype;
 
 export default interface MixedSchema<
   TType = any,
-  TContext = AnyObject,
-  TOut = TType
+  TConfig extends Config<any, any> = Config
 > {
-  default<TNextDefault extends Maybe<TType>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? MixedSchema<TType | undefined, TContext>
-    : MixedSchema<Defined<TType>, TContext>;
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): MixedSchema<TType, ToggleDefault<TConfig, D>>;
 
+  concat<IT, IC extends Config<any, any>>(
+    schema: MixedSchema<IT, IC>,
+  ): MixedSchema<NonNullable<TType> | IT, TConfig & IC>;
+  concat<IT, IC extends Config<any, any>>(
+    schema: BaseSchema<IT, any, IC>,
+  ): MixedSchema<NonNullable<TType> | Optionals<IT>, TConfig & IC>;
   concat(schema: this): this;
-  concat<IT, IC, IO>(
-    schema: BaseSchema<IT, IC, IO>,
-  ): MixedSchema<
-    TType | IT,
-    TContext & IC,
-    NonNullable<TOut> | IO | Optionals<IO>
-  >;
-  defined(
-    msg?: MixedLocale['defined'],
-  ): MixedSchema<TType, TContext, Defined<TOut>>;
-  required(
-    msg?: MixedLocale['required'],
-  ): MixedSchema<TType, TContext, NonNullable<TOut>>;
-  notRequired(): MixedSchema<TType, TContext>;
 
-  nullable(isNullable?: true): MixedSchema<TType | null, TContext>;
-  nullable(isNullable: false): MixedSchema<Exclude<TType, null>, TContext>;
+  defined(msg?: Message): MixedSchema<Defined<TType>, TConfig>;
+  optional(): MixedSchema<TType | undefined, TConfig>;
+
+  required(msg?: Message): MixedSchema<NonNullable<TType>, TConfig>;
+  notRequired(): MixedSchema<Maybe<TType>, TConfig>;
+
+  nullable(msg?: Message): MixedSchema<TType | null, TConfig>;
+  nonNullable(): MixedSchema<Exclude<TType, null>, TConfig>;
 }

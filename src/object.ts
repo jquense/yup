@@ -5,13 +5,27 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import { MixedLocale, object as locale } from './locale';
+import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
-import { InternalOptions, Callback, Maybe, Optionals, Preserve } from './types';
+import {
+  InternalOptions,
+  Callback,
+  Maybe,
+  Optionals,
+  Preserve,
+  Message,
+} from './types';
 import ValidationError from './ValidationError';
-import type { TypedSchema, Defined, Thunk, If, Config } from './util/types';
+import type {
+  TypedSchema,
+  Defined,
+  Thunk,
+  Config,
+  NotNull,
+  ToggleDefault,
+} from './util/types';
 import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
@@ -52,7 +66,7 @@ export type TypeOfShape<Shape extends ObjectShape> = {
 
 export type AssertsShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__out']
+    ? Shape[K]['__outputType']
     : Shape[K] extends Reference
     ? unknown
     : never;
@@ -74,10 +88,9 @@ const defaultSort = sortByKeyOrder([]);
 
 export default class ObjectSchema<
   TShape extends ObjectShape,
-  TConfig extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined,
-  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
-> extends BaseSchema<TIn, TOut, TConfig> {
+  TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+> extends BaseSchema<TIn, AssertsShape<TShape> | Optionals<TIn>, TConfig> {
   fields: TShape = Object.create(null);
 
   spec!: ObjectSchemaSpec;
@@ -362,8 +375,7 @@ export default class ObjectSchema<
   ): ObjectSchema<
     Pick<TShape, TKey>,
     TConfig,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>,
-    AssertsShape<Pick<TShape, TKey>> | Optionals<TOut>
+    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
   > {
     const picked: any = {};
     for (const key of keys) {
@@ -381,8 +393,7 @@ export default class ObjectSchema<
   ): ObjectSchema<
     Omit<TShape, TKey>,
     TConfig,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>,
-    AssertsShape<Omit<TShape, TKey>> | Optionals<TOut>
+    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
   > {
     const next = this.clone() as any;
     const fields = next.fields;
@@ -472,46 +483,19 @@ create.prototype = ObjectSchema.prototype;
 
 export default interface ObjectSchema<
   TShape extends ObjectShape,
-  TConfig extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined,
-  TOut extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape>
-> extends BaseSchema<TIn, TOut, TConfig> {
+  TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
+> extends BaseSchema<TIn, AssertsShape<TShape> | Optionals<TIn>, TConfig> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    ObjectSchema<TShape, TConfig, TIn>,
-    ObjectSchema<TShape, TConfig, TIn, Defined<TOut>>
-  >;
+  ): ObjectSchema<TShape, ToggleDefault<TConfig, D>, TIn>;
 
-  defined(
-    msg?: MixedLocale['defined'],
-  ): ObjectSchema<TShape, TConfig, Defined<TIn>>;
+  defined(msg?: Message): ObjectSchema<TShape, TConfig, Defined<TIn>>;
   optional(): ObjectSchema<TShape, TConfig, TIn | undefined>;
 
-  required(
-    msg?: MixedLocale['required'],
-  ): ObjectSchema<TShape, TConfig, NonNullable<TIn>>;
+  required(msg?: Message): ObjectSchema<TShape, TConfig, NonNullable<TIn>>;
   notRequired(): ObjectSchema<TShape, TConfig, Maybe<TIn>>;
 
   nullable(isNullable?: true): ObjectSchema<TShape, TConfig, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): ObjectSchema<TShape, TConfig, Exclude<TIn, null>>;
-
-  // pick<TKey extends keyof TShape>(
-  //   keys: TKey[],
-  // ): ObjectSchema<
-  //   Pick<TShape, TKey>,
-  //   TContext,
-  //   TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  // >;
-
-  // omit<TKey extends keyof TShape>(
-  //   keys: TKey[],
-  // ): ObjectSchema<
-  //   Omit<TShape, TKey>,
-  //   TContext,
-  //   TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  // >;
+  nullable(isNullable: false): ObjectSchema<TShape, TConfig, NotNull<TIn>>;
 }

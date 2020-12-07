@@ -12,7 +12,7 @@ import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
 import BaseSchema, { AnySchema } from './schema';
-import type { TypeOf, Asserts } from './util/types';
+import type { TypeOf, Asserts, Config } from './util/types';
 import { Maybe } from './types';
 
 function addMethod<T extends AnySchema>(
@@ -41,7 +41,7 @@ type SchemaOf<T> = T extends AnyObject
   ? ObjectSchema<{ [k in keyof T]: SchemaOf<T[k]> }>
   : T extends Array<infer E>
   ? ArraySchema<SchemaOf<E>>
-  : BaseSchema<Maybe<T>, AnyObject, T>;
+  : BaseSchema<T, T, Config>;
 
 export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, AnySchema };
 

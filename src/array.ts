@@ -19,8 +19,10 @@ import {
   Config,
   Defined,
   If,
+  NotNull,
   SetFlag,
   Thunk,
+  ToggleDefault,
   TypeOf,
 } from './util/types';
 import BaseSchema, {
@@ -28,6 +30,7 @@ import BaseSchema, {
   SchemaInnerTypeDescription,
   SchemaSpec,
 } from './schema';
+import Lazy from './Lazy';
 
 export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
@@ -39,11 +42,10 @@ export function create<
 }
 
 export default class ArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   C extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
-  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
-> extends BaseSchema<TIn, TOut, C> {
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
+> extends BaseSchema<TIn, Asserts<T>[] | Optionals<TIn>, C> {
   innerType?: T;
 
   constructor(type?: T) {
@@ -143,13 +145,7 @@ export default class ArraySchema<
           originalValue: originalValue[idx],
         };
 
-        tests[idx] = (_, cb) =>
-          innerType!.validate(
-            item,
-            innerOptions,
-            // @ts-expect-error
-            cb,
-          );
+        tests[idx] = (_, cb) => innerType!.validate(item, innerOptions, cb);
       }
 
       runTests(
@@ -172,9 +168,7 @@ export default class ArraySchema<
     return next;
   }
 
-  concat<TOther extends ArraySchema<any, any, any, any>>(
-    schema: TOther,
-  ): TOther;
+  concat<TOther extends ArraySchema<any, any, any>>(schema: TOther): TOther;
   concat(schema: any): any;
   concat(schema: any): any {
     let next = super.concat(schema) as this;
@@ -183,7 +177,8 @@ export default class ArraySchema<
 
     if (schema.innerType)
       next.innerType = next.innerType
-        ? next.innerType.concat(schema.innerType)
+        ? // @ts-expect-error Lazy doesn't have concat and will break
+          next.innerType.concat(schema.innerType)
         : schema.innerType;
 
     return next;
@@ -282,14 +277,13 @@ create.prototype = ArraySchema.prototype;
 //
 
 export default interface ArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   C extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
-  TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
-> extends BaseSchema<TIn, TOut, C> {
+  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
+> extends BaseSchema<TIn, Asserts<T>[] | Optionals<TIn>, C> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): If<D, this, ArraySchema<T, SetFlag<C, 'd'>, TIn>>;
+  ): ArraySchema<T, ToggleDefault<C, D>, TIn>;
 
   defined(msg?: Message): ArraySchema<T, C, Defined<TIn>>;
   optional(): ArraySchema<T, C, TIn | undefined>;
@@ -298,5 +292,5 @@ export default interface ArraySchema<
   notRequired(): ArraySchema<T, C, Maybe<TIn>>;
 
   nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
-  nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
+  nullable(isNullable: false): ArraySchema<T, C, NotNull<TIn>>;
 }

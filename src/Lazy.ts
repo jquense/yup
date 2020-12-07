@@ -2,10 +2,8 @@ import isSchema from './util/isSchema';
 import type { Callback, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
-import type { AnySchema, CastOptions } from './schema';
-import { TypedSchema, TypeOf } from './util/types';
-
-type ContextOf<T> = T extends AnySchema<any, infer C> ? C : never;
+import type { AnySchema, CastOptions, ConfigOf } from './schema';
+import { Config, TypedSchema, TypeOf } from './util/types';
 
 export type LazyBuilder<T extends AnySchema = any> = (
   value: any,
@@ -24,20 +22,20 @@ export type LazyType<T> = LazyReturnValue<T> extends TypedSchema
   ? TypeOf<LazyReturnValue<T>>
   : never;
 
-class Lazy<T extends AnySchema, TContext = ContextOf<T>>
+class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
   implements TypedSchema {
   type = 'lazy' as const;
 
   __isYupSchema__ = true;
 
   readonly __type!: T['__type'];
-  readonly __out!: T['__out'];
+  readonly __outputType!: T['__outputType'];
 
   constructor(private builder: LazyBuilder<T>) {}
 
   private _resolve = (
     value: any,
-    options: ResolveOptions<TContext> = {},
+    options: ResolveOptions<TConfig['context']> = {},
   ): T => {
     let schema = this.builder(value, options);
 
@@ -47,10 +45,10 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
     return schema.resolve(options);
   };
 
-  resolve(options: ResolveOptions<TContext>) {
+  resolve(options: ResolveOptions<TConfig['context']>) {
     return this._resolve(options.value, options);
   }
-  cast(value: any, options?: CastOptions<TContext>): T['__type'] {
+  cast(value: any, options?: CastOptions<TConfig['context']>): T['__type'] {
     return this._resolve(value, options).cast(value, options);
   }
 
@@ -58,21 +56,28 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
     value: any,
     options?: ValidateOptions,
     maybeCb?: Callback,
-  ): T['__out'] {
+  ): T['__outputType'] {
     // @ts-expect-error missing public callback on type
     return this._resolve(value, options).validate(value, options, maybeCb);
   }
 
-  validateSync(value: any, options?: ValidateOptions<TContext>): T['__out'] {
+  validateSync(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): T['__outputType'] {
     return this._resolve(value, options).validateSync(value, options);
   }
-  validateAt(path: string, value: any, options?: ValidateOptions<TContext>) {
+  validateAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ) {
     return this._resolve(value, options).validateAt(path, value, options);
   }
   validateSyncAt(
     path: string,
     value: any,
-    options?: ValidateOptions<TContext>,
+    options?: ValidateOptions<TConfig['context']>,
   ) {
     return this._resolve(value, options).validateSyncAt(path, value, options);
   }
