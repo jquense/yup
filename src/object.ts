@@ -356,14 +356,7 @@ export default class ObjectSchema<
     return next as any;
   }
 
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): ObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>,
-    AssertsShape<Pick<TShape, TKey>> | Optionals<TOut>
-  > {
+  pick(keys: string[]) {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
@@ -375,14 +368,7 @@ export default class ObjectSchema<
     }) as any;
   }
 
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): ObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>,
-    AssertsShape<Omit<TShape, TKey>> | Optionals<TOut>
-  > {
+  omit(keys: string[]): any {
     const next = this.clone() as any;
     const fields = next.fields;
     next.fields = {};
