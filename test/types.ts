@@ -228,6 +228,9 @@ SchemaOf: {
     .default(() => [] as string[])
     .validateSync(null);
 
+  // $ExpectType string[] | undefined
+  array(lazy(() => string().default(''))).validateSync(null);
+
   const numList = [1, 2];
 
   // $ExpectType (number | undefined)[]

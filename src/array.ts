@@ -20,18 +20,19 @@ import BaseSchema, {
   SchemaInnerTypeDescription,
   SchemaSpec,
 } from './schema';
+import Lazy from './Lazy';
 
 export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
 export function create<
   C extends AnyObject = AnyObject,
-  T extends AnySchema = AnySchema
+  T extends AnySchema | Lazy<any, any> = AnySchema
 >(type?: T) {
   return new ArraySchema<T, C>(type) as OptionalArraySchema<T, C>;
 }
 
 export default class ArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   C extends AnyObject = AnyObject,
   TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
   TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
@@ -135,13 +136,7 @@ export default class ArraySchema<
           originalValue: originalValue[idx],
         };
 
-        tests[idx] = (_, cb) =>
-          innerType!.validate(
-            item,
-            innerOptions,
-            // @ts-expect-error
-            cb,
-          );
+        tests[idx] = (_, cb) => innerType!.validate(item, innerOptions, cb);
       }
 
       runTests(
@@ -175,7 +170,8 @@ export default class ArraySchema<
 
     if (schema.innerType)
       next.innerType = next.innerType
-        ? next.innerType.concat(schema.innerType)
+        ? // @ts-expect-error Lazy doesn't have concat()
+          next.innerType.concat(schema.innerType)
         : schema.innerType;
 
     return next;
@@ -274,7 +270,7 @@ create.prototype = ArraySchema.prototype;
 //
 
 export interface DefinedArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOf<T>[]>
 > extends ArraySchema<T, TContext, TIn, Asserts<T>[] | Preserve<TIn, null>> {
@@ -299,7 +295,7 @@ export interface DefinedArraySchema<
 }
 
 export interface RequiredArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   TContext extends AnyObject,
   TIn extends Maybe<TypeOf<T>[]>
 > extends ArraySchema<T, TContext, TIn, Asserts<T>[]> {
@@ -322,7 +318,7 @@ export interface RequiredArraySchema<
 }
 
 export interface OptionalArraySchema<
-  T extends AnySchema,
+  T extends AnySchema | Lazy<any, any>,
   TContext extends AnyObject = AnyObject,
   TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
 > extends ArraySchema<T, TContext, TIn> {
