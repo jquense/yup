@@ -1,3 +1,19 @@
+## [0.32.4](https://github.com/jquense/yup/compare/v0.32.3...v0.32.4) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** rm base pick/omit types as they conflict with more specific ones ([14e2c8c](https://github.com/jquense/yup/commit/14e2c8c))
+
+
+### Features
+
+* add additional functions to Lazy class ([#1148](https://github.com/jquense/yup/issues/1148)) ([ecad1a3](https://github.com/jquense/yup/commit/ecad1a3))
+
+
+
+
+
 ## [0.32.3](https://github.com/jquense/yup/compare/v0.32.2...v0.32.3) (2020-12-07)
 
 
