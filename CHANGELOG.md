@@ -1,3 +1,14 @@
+## [0.32.2](https://github.com/jquense/yup/compare/v0.32.1...v0.32.2) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** array type with lazy ([ba92dfc](https://github.com/jquense/yup/commit/ba92dfc)), closes [#1146](https://github.com/jquense/yup/issues/1146)
+
+
+
+
+
 ## [0.32.1](https://github.com/jquense/yup/compare/v0.32.0...v0.32.1) (2020-12-04)
 
 
