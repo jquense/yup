@@ -1,9 +1,9 @@
-import { MixedLocale, string as locale } from './locale';
+import { MixedLocale, string as locale, string } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe, AnyObject } from './types';
-import type { Defined, If, Thunk } from './util/types';
-import BaseSchema from './schema';
+import type { Defined, If, SetFlag, Thunk } from './util/types';
+import BaseSchema, { Config } from './schema';
 
 // eslint-disable-next-line
 let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i;
@@ -29,9 +29,9 @@ export function create() {
 
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
-  TContext extends AnyObject = AnyObject,
+  TConfig extends Config<any, any> = Config,
   TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+> extends BaseSchema<TType, TOut, TConfig> {
   constructor() {
     super({ type: 'string' });
 
@@ -205,25 +205,29 @@ create.prototype = StringSchema.prototype;
 
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
-  TContext extends AnyObject = AnyObject,
+  TConfig extends Config<any, any> = Config,
   TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+> extends BaseSchema<TType, TOut, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    StringSchema<TType, TContext>,
-    StringSchema<TType, TContext, Defined<TType>>
-  >;
+  ): If<D, this, StringSchema<TType, SetFlag<TConfig, 'd'>>>;
 
   concat<TOther extends StringSchema<any, any, any>>(schema: TOther): TOther;
 
-  defined(msg?: Message<any>): StringSchema<Defined<TType>, TContext>;
-  optional(): StringSchema<TType | undefined, TContext>;
+  defined(msg?: Message<any>): StringSchema<Defined<TType>, TConfig>;
+  optional(): StringSchema<TType | undefined, TConfig>;
 
-  required(msg?: Message<any>): StringSchema<NonNullable<TType>, TContext>;
-  notRequired(): StringSchema<Maybe<TType>, TContext>;
+  required(
+    msg?: Message<any>,
+  ): StringSchema<NonNullable<TType>, TConfig, NonNullable<TOut>>;
+  notRequired(): StringSchema<Maybe<TType>, TConfig, Maybe<TType>>;
 
-  nullable(msg?: Message<any>): StringSchema<TType | null, TContext>;
-  nonNullable(): StringSchema<Exclude<TType, null>, TContext>;
+  nullable(msg?: Message<any>): StringSchema<TType | null, TConfig>;
+  nonNullable(): StringSchema<Exclude<TType, null>, TConfig>;
 }
+
+const _f = create().default('').nullable();
+
+type _F = typeof _f;
+
+type _a = _F['__out'];

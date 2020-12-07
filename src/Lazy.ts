@@ -31,7 +31,7 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
   __isYupSchema__ = true;
 
   readonly __type!: T['__type'];
-  readonly __outputType!: T['__outputType'];
+  readonly __out!: T['__out'];
 
   constructor(private builder: LazyBuilder<T>) {}
 
@@ -58,15 +58,12 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
     value: any,
     options?: ValidateOptions,
     maybeCb?: Callback,
-  ): T['__outputType'] {
+  ): T['__out'] {
     // @ts-expect-error missing public callback on type
     return this._resolve(value, options).validate(value, options, maybeCb);
   }
 
-  validateSync(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): T['__outputType'] {
+  validateSync(value: any, options?: ValidateOptions<TContext>): T['__out'] {
     return this._resolve(value, options).validateSync(value, options);
   }
   validateAt(path: string, value: any, options?: ValidateOptions<TContext>) {

@@ -2,7 +2,7 @@ import { MixedLocale, number as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
-import type { Defined, If, Thunk } from './util/types';
+import type { Config, Defined, If, SetFlag, Thunk } from './util/types';
 import BaseSchema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
@@ -13,9 +13,9 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TContext extends AnyObject = AnyObject,
+  TConfig extends Config<any, any> = Config,
   TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+> extends BaseSchema<TType, TOut, TConfig> {
   constructor() {
     super({ type: 'number' });
 
@@ -137,25 +137,21 @@ create.prototype = NumberSchema.prototype;
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TContext extends AnyObject = AnyObject,
+  TConfig extends Config<any, any> = Config,
   TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+> extends BaseSchema<TType, TOut, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    NumberSchema<TType, TContext>,
-    NumberSchema<TType, TContext, Defined<TType>>
-  >;
+  ): If<D, this, NumberSchema<TType, SetFlag<TConfig, 'd'>>>;
 
   concat<TOther extends NumberSchema<any, any, any>>(schema: TOther): TOther;
 
-  defined(msg?: Message<any>): NumberSchema<Defined<TType>, TContext>;
-  optional(): NumberSchema<TType | undefined, TContext>;
+  defined(msg?: Message<any>): NumberSchema<Defined<TType>, TConfig>;
+  optional(): NumberSchema<TType | undefined, TConfig>;
 
-  required(msg?: Message<any>): NumberSchema<NonNullable<TType>, TContext>;
-  notRequired(): NumberSchema<Maybe<TType>, TContext>;
+  required(msg?: Message<any>): NumberSchema<NonNullable<TType>, TConfig>;
+  notRequired(): NumberSchema<Maybe<TType>, TConfig>;
 
-  nullable(msg?: Message<any>): NumberSchema<TType | null, TContext>;
-  nonNullable(): NumberSchema<Exclude<TType, null>, TContext>;
+  nullable(msg?: Message<any>): NumberSchema<TType | null, TConfig>;
+  nonNullable(): NumberSchema<Exclude<TType, null>, TConfig>;
 }

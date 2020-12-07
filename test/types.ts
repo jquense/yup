@@ -16,6 +16,9 @@ import type {
   DefaultFromShape,
   TypeOfShape,
 } from '../src/object';
+import { Config } from '../src/schema';
+import { Preserve } from '../src/types';
+import { HasFlag, ResolveFlags } from '../src/util/types';
 
 mixed().required().nullable();
 
@@ -51,7 +54,7 @@ string().required().nullable();
   // $ExpectType string
   const _strDefined = strDefined.getDefault();
 
-  const strDefault = string().nullable().default('').trim();
+  const strDefault = string().nullable().default('').nullable().trim();
 
   // $ExpectType string | null
   strDefault.cast('');
@@ -198,6 +201,10 @@ SchemaOf: {
 {
   // const str = string();
   // type f = Type<typeof str>;
+
+  type _b = Preserve<Config<any, '' | 's'>['flags'], 'd'>;
+  type _a = HasFlag<Config<any, '' | 's'>['flags'], 'd'>;
+  type _f = ResolveFlags<string | undefined, Config<any, ''>['flags']>;
 
   // $ExpectType (string | undefined)[] | undefined
   array(string()).cast(null);

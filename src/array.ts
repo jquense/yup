@@ -14,7 +14,15 @@ import type {
 } from './types';
 import ValidationError from './ValidationError';
 import type Reference from './Reference';
-import { Asserts, Defined, If, Thunk, TypeOf } from './util/types';
+import {
+  Asserts,
+  Config,
+  Defined,
+  If,
+  SetFlag,
+  Thunk,
+  TypeOf,
+} from './util/types';
 import BaseSchema, {
   AnySchema,
   SchemaInnerTypeDescription,
@@ -27,15 +35,15 @@ export function create<
   C extends AnyObject = AnyObject,
   T extends AnySchema = AnySchema
 >(type?: T) {
-  return new ArraySchema<T, C>(type) as ArraySchema<T, C>;
+  return new ArraySchema<T, Config<C>>(type);
 }
 
 export default class ArraySchema<
   T extends AnySchema,
-  C extends AnyObject = AnyObject,
+  C extends Config<any, any> = Config,
   TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
   TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
-> extends BaseSchema<TIn, C, TOut> {
+> extends BaseSchema<TIn, TOut, C> {
   innerType?: T;
 
   constructor(type?: T) {
@@ -273,68 +281,20 @@ create.prototype = ArraySchema.prototype;
 // Interfaces
 //
 
-// export interface DefinedArraySchema<
-//   T extends AnySchema,
-//   TContext extends AnyObject,
-//   TIn extends Maybe<TypeOf<T>[]>
-// > extends ArraySchema<T, TContext, TIn, Asserts<T>[] | Preserve<TIn, null>> {
-//   default<D extends Maybe<TIn>>(
-//     def: Thunk<D>,
-//   ): If<
-//     D,
-//     DefinedArraySchema<T, TContext, TIn | undefined>,
-//     DefinedArraySchema<T, TContext, Defined<TIn>>
-//   >;
-
-//   defined(msg?: MixedLocale['defined']): this;
-//   required(
-//     msg?: MixedLocale['required'],
-//   ): RequiredArraySchema<T, TContext, TIn>;
-//   optional(): ArraySchema<T, TContext, TIn>;
-//   notRequired(): ArraySchema<T, TContext, TIn>;
-//   nullable(isNullable?: true): DefinedArraySchema<T, TContext, TIn | null>;
-//   nullable(
-//     isNullable: false,
-//   ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
-// }
-
-// export interface RequiredArraySchema<
-//   T extends AnySchema,
-//   TContext extends AnyObject,
-//   TIn extends Maybe<TypeOf<T>[]>
-// > extends ArraySchema<T, TContext, TIn, Asserts<T>[]> {
-//   default<D extends Maybe<TIn>>(
-//     def: Thunk<D>,
-//   ): If<
-//     D,
-//     RequiredArraySchema<T, TContext, TIn | undefined>,
-//     RequiredArraySchema<T, TContext, Defined<TIn>>
-//   >;
-
-//   defined(msg?: MixedLocale['defined']): DefinedArraySchema<T, TContext, TIn>;
-//   required(msg?: MixedLocale['required']): this;
-//   optional(): ArraySchema<T, TContext, TIn>;
-//   notRequired(): ArraySchema<T, TContext, TIn>;
-//   nullable(isNullable?: true): RequiredArraySchema<T, TContext, TIn | null>;
-//   nullable(
-//     isNullable: false,
-//   ): RequiredArraySchema<T, TContext, Exclude<TIn, null>>;
-// }
-
 export default interface ArraySchema<
   T extends AnySchema,
-  C extends AnyObject = AnyObject,
+  C extends Config<any, any> = Config,
   TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined,
   TOut extends Maybe<Asserts<T>[]> = Asserts<T>[] | Optionals<TIn>
-> extends BaseSchema<TIn, C, TOut> {
+> extends BaseSchema<TIn, TOut, C> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): If<D, ArraySchema<T, C, TIn>, ArraySchema<T, C, TIn, Defined<TOut>>>;
+  ): If<D, this, ArraySchema<T, SetFlag<C, 'd'>, TIn>>;
 
-  defined(msg?: MixedLocale['defined']): ArraySchema<T, C, Defined<TIn>>;
+  defined(msg?: Message): ArraySchema<T, C, Defined<TIn>>;
   optional(): ArraySchema<T, C, TIn | undefined>;
 
-  required(msg?: MixedLocale['required']): ArraySchema<T, C, NonNullable<TIn>>;
+  required(msg?: Message): ArraySchema<T, C, NonNullable<TIn>>;
   notRequired(): ArraySchema<T, C, Maybe<TIn>>;
 
   nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;

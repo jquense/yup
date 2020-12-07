@@ -21,7 +21,6 @@ import {
   InternalOptions,
   Maybe,
   ExtraParams,
-  AnyObject,
   Preserve,
 } from './types';
 
@@ -29,19 +28,16 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import { Defined } from './util/types';
+import { Config, Defined, ResolveFlags } from './util/types';
 
 // const UNSET = 'unset' as const;
 
-export type DefaultedTag = { __type__: 'defaulted' };
-type Defaulted<T> = T & DefaultedTag;
-
-// export type Presence = 'required' | 'nullable' | 'nonnullable' | 'optional';
+// type hmm = HasFlag<'' | 'd', 'd'>
+export { Config };
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
   optional: boolean;
-  // presence: Presence;
   default?: TDefault | (() => TDefault);
   abortEarly?: boolean;
   strip?: boolean;
@@ -56,7 +52,11 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<TType = any, C = any, D = any> = BaseSchema<TType, C, D>;
+export type AnySchema<TType = any, TOut = any, C = any> = BaseSchema<
+  TType,
+  TOut,
+  any
+>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -106,13 +106,14 @@ export interface SchemaDescription {
 
 export default abstract class BaseSchema<
   TType = any,
-  C = AnyObject,
-  TOut = any
+  TOut = any,
+  TConfig extends Config<any, any> = Config
 > {
   readonly type: string;
 
   readonly __type!: TType;
   readonly __outputType!: TOut;
+  readonly __out!: ResolveFlags<TOut, TConfig['flags']>;
 
   readonly __isYupSchema__!: boolean;
 
@@ -323,7 +324,10 @@ export default abstract class BaseSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(value: any, options: CastOptions<C> = {}): TOut {
+  cast(
+    value: any,
+    options: CastOptions<TConfig['context']> = {},
+  ): this['__out'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -351,7 +355,10 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  protected _cast(rawValue: any, _options: CastOptions<C>): any {
+  protected _cast(
+    rawValue: any,
+    _options: CastOptions<TConfig['context']>,
+  ): any {
     let value =
       rawValue === undefined
         ? rawValue
@@ -369,7 +376,7 @@ export default abstract class BaseSchema<
 
   protected _validate(
     _value: any,
-    options: InternalOptions<C> = {},
+    options: InternalOptions<TConfig['context']> = {},
     cb: Callback,
   ): void {
     let {
@@ -431,9 +438,16 @@ export default abstract class BaseSchema<
     );
   }
 
-  // validate<U extends TType>(value: U, options?: ValidateOptions<C>): Promise<U>;
-  validate(value: any, options?: ValidateOptions<C>): Promise<TOut>;
-  validate(value: any, options?: ValidateOptions<C>, maybeCb?: Callback) {
+  // validate<U extends TType>(value: U, options?: ValidateOptions<TConfig['context']>): Promise<U>;
+  validate(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): Promise<this['__out']>;
+  validate(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+    maybeCb?: Callback,
+  ) {
     let schema = this.resolve({ ...options, value });
 
     // callback case is for nested validations
@@ -447,9 +461,15 @@ export default abstract class BaseSchema<
         );
   }
 
-  // validateSync<U extends TType>(value: U, options?: ValidateOptions<C>): U;
-  validateSync(value: any, options?: ValidateOptions<C>): TOut;
-  validateSync(value: any, options?: ValidateOptions<C>): TOut {
+  // validateSync<U extends TType>(value: U, options?: ValidateOptions<TConfig['context']>): U;
+  validateSync(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): this['__out'];
+  validateSync(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): this['__out'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -461,7 +481,10 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  isValid(value: any, options?: ValidateOptions<C>): Promise<boolean> {
+  isValid(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): Promise<boolean> {
     return this.validate(value, options).then(
       () => true,
       (err) => {
@@ -471,7 +494,10 @@ export default abstract class BaseSchema<
     );
   }
 
-  isValidSync(value: any, options?: ValidateOptions<C>): value is TOut {
+  isValidSync(
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): value is this['__out'] {
     try {
       this.validateSync(value, options);
       return true;
@@ -492,7 +518,11 @@ export default abstract class BaseSchema<
       : cloneDeep(defaultValue);
   }
 
-  getDefault(options?: ResolveOptions): TOut {
+  getDefault(
+    options?: ResolveOptions,
+    // this isn't the same as TOut but close
+  ): TType {
+    //Preserve<TConfig['flags'], 'd'> extends never ? TType : Defined<TType> {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
@@ -600,10 +630,14 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<TType, C>): this;
-  test(test: TestFunction<TType, C>): this;
-  test(name: string, test: TestFunction<TType, C>): this;
-  test(name: string, message: Message, test: TestFunction<TType, C>): this;
+  test(options: TestConfig<TType, TConfig['context']>): this;
+  test(test: TestFunction<TType, TConfig['context']>): this;
+  test(name: string, test: TestFunction<TType, TConfig['context']>): this;
+  test(
+    name: string,
+    message: Message,
+    test: TestFunction<TType, TConfig['context']>,
+  ): this;
   test(...args: any[]) {
     let opts: TestConfig;
 
@@ -782,13 +816,21 @@ export default abstract class BaseSchema<
   }
 }
 
-export default interface BaseSchema<TType = any, C = AnyObject, TOut = any> {
+export default interface BaseSchema<
+  TType = any,
+  TOut = any,
+  TConfig extends Config<any, any> = Config
+> {
   validateAt(
     path: string,
     value: any,
-    options?: ValidateOptions<C>,
+    options?: ValidateOptions<TConfig['context']>,
   ): Promise<any>;
-  validateSyncAt(path: string, value: any, options?: ValidateOptions<C>): any;
+  validateSyncAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TConfig['context']>,
+  ): any;
   equals: BaseSchema['oneOf'];
   is: BaseSchema['oneOf'];
   not: BaseSchema['notOneOf'];
