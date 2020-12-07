@@ -89,9 +89,6 @@ class Lazy<T extends AnySchema, TContext = ContextOf<T>>
   isValidSync(value: any, options?: ValidateOptions<TContext>) {
     return this._resolve(value, options).isValidSync(value, options);
   }
-  isType(value: any) {
-    return this._resolve(value).isType(value);
-  }
 }
 
 export default Lazy;
