@@ -343,31 +343,41 @@ export default class ObjectSchema<
     return this.getDefaultFromShape();
   }
 
-  shape<TNextShape extends ObjectShape>(
-    additions: TNextShape,
-    excludes: [string, string][] = [],
-  ): ObjectSchema<
-    Assign<TShape, TNextShape>,
-    TConfig,
-    TypeOfShape<Assign<TShape, TNextShape>> | Optionals<TIn>
-  > {
-    let next = this.clone();
-    let fields = Object.assign(next.fields, additions);
-
-    next.fields = fields;
-    next._sortErrors = sortByKeyOrder(Object.keys(fields));
+  private setFields<S extends ObjectShape>(
+    shape: S,
+    excludes: readonly string[] = [],
+  ): ObjectSchema<S, TConfig, TypeOfShape<S> | Optionals<TIn>> {
+    let next = this.clone() as any;
+    next.fields = shape;
+    next._sortErrors = sortByKeyOrder(Object.keys(shape));
 
     if (excludes.length) {
       if (!Array.isArray(excludes[0])) excludes = [excludes as any];
-
       let keys = excludes.map(([first, second]) => `${first}-${second}`);
-
       next._excludedEdges = next._excludedEdges.concat(keys);
     }
+    next._nodes = sortFields(shape, next._excludedEdges);
+    return next;
+  }
 
-    next._nodes = sortFields(fields, next._excludedEdges);
+  shape<TNextShape extends ObjectShape>(
+    additions: TNextShape,
+    excludes: [string, string][] = [],
+  ) {
+    return this.clone().withMutation((next) => {
+      let edges = next._excludedEdges;
+      if (excludes.length) {
+        if (!Array.isArray(excludes[0])) excludes = [excludes as any];
+        let keys = excludes.map(([first, second]) => `${first}-${second}`);
+        edges = edges.concat(keys);
+      }
 
-    return next as any;
+      // XXX: excludes here is wrong
+      return next.setFields(
+        Object.assign(next.fields, additions) as Assign<TShape, TNextShape>,
+        edges,
+      );
+    });
   }
 
   pick<TKey extends keyof TShape>(
