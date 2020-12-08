@@ -1,3 +1,14 @@
+## [0.32.6](https://github.com/jquense/yup/compare/v0.32.5...v0.32.6) (2020-12-08)
+
+
+### Bug Fixes
+
+* mixed() is the the base class ([7f8591d](https://github.com/jquense/yup/commit/7f8591d)), closes [#1156](https://github.com/jquense/yup/issues/1156)
+
+
+
+
+
 ## [0.32.5](https://github.com/jquense/yup/compare/v0.32.4...v0.32.5) (2020-12-07)
 
 
