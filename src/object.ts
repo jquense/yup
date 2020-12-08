@@ -72,6 +72,10 @@ export type AssertsShape<Shape extends ObjectShape> = {
     : never;
 };
 
+export type PartialSchema<S extends ObjectShape> = {
+  [K in keyof S]: S[K] extends BaseSchema ? ReturnType<S[K]['optional']> : S[K];
+};
+
 export type ObjectSchemaSpec = SchemaSpec<any> & {
   noUnknown?: boolean;
 };
@@ -380,39 +384,37 @@ export default class ObjectSchema<
     });
   }
 
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): ObjectSchema<
-    Pick<TShape, TKey>,
+  partial(): ObjectSchema<
+    PartialSchema<TShape>,
     TConfig,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
+    TypeOfShape<PartialSchema<TShape>> | Optionals<TIn>
   > {
+    return '' as any;
+  }
+
+  pick<TKey extends keyof TShape>(keys: TKey[]) {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
     }
 
-    return this.clone().withMutation((next: any) => {
-      next.fields = {};
-      return next.shape(picked);
-    }) as any;
+    return this.setFields(picked as Pick<TShape, TKey>);
+
+    // return this.clone().withMutation((next: any) => {
+    //   next.fields = {};
+    //   return next.shape(picked);
+    // }) as any;
   }
 
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): ObjectSchema<
-    Omit<TShape, TKey>,
-    TConfig,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  > {
-    const next = this.clone() as any;
-    const fields = next.fields;
-    next.fields = {};
+  omit<TKey extends keyof TShape>(keys: TKey[]) {
+    const fields = { ...this.fields };
     for (const key of keys) {
       delete fields[key];
     }
 
-    return next.withMutation((next: any) => next.shape(fields));
+    return this.setFields(fields as Omit<TShape, TKey>);
+
+    // return next.withMutation((next: any) => next.shape(fields));
   }
 
   from(from: string, to: keyof TShape, alias?: boolean) {
