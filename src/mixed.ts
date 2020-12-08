@@ -1,15 +1,5 @@
-import type { MixedLocale } from './locale';
-
-import { AnyObject, Maybe, Message, Optionals } from './types';
-import type {
-  Config,
-  Defined,
-  If,
-  NotNull,
-  SetFlag,
-  Thunk,
-  ToggleDefault,
-} from './util/types';
+import { Maybe, Message, Optionals } from './types';
+import type { Config, Defined, Thunk, ToggleDefault } from './util/types';
 import BaseSchema from './schema';
 
 export function create<TType = any>() {

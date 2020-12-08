@@ -25,6 +25,7 @@ import type {
   Config,
   NotNull,
   ToggleDefault,
+  _,
 } from './util/types';
 import type Reference from './Reference';
 import Lazy from './Lazy';
@@ -46,6 +47,11 @@ export type ObjectShape = Record<
   AnySchema | Reference | Lazy<any, any>
 >;
 
+type FieldType<
+  T extends AnySchema | Reference | Lazy<any, any>,
+  F extends '__type' | '__outputType'
+> = T extends TypedSchema ? T[F] : T extends Reference ? unknown : never;
+
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
     ? DefaultFromShape<TShape>
@@ -57,11 +63,7 @@ export type DefaultFromShape<Shape extends ObjectShape> = {
 };
 
 export type TypeOfShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__type']
-    : Shape[K] extends Reference
-    ? unknown
-    : never;
+  [K in keyof Shape]: FieldType<Shape[K], '__type'>;
 };
 
 export type AssertsShape<Shape extends ObjectShape> = {
@@ -74,6 +76,14 @@ export type AssertsShape<Shape extends ObjectShape> = {
 
 export type PartialSchema<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends BaseSchema ? ReturnType<S[K]['optional']> : S[K];
+};
+
+export type DeepPartialSchema<S extends ObjectShape> = {
+  [K in keyof S]: S[K] extends ObjectSchema<any, any, any>
+    ? ReturnType<S[K]['deepPartial']>
+    : S[K] extends BaseSchema
+    ? ReturnType<S[K]['optional']>
+    : S[K];
 };
 
 export type ObjectSchemaSpec = SchemaSpec<any> & {
@@ -323,16 +333,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation((next: any) => next.shape(nextFields));
-  }
-
-  getDefaultFromShape(): DefaultFromShape<TShape> {
-    let dft = {} as Record<string, unknown>;
-    this._nodes.forEach((key) => {
-      const field = this.fields[key];
-      dft[key] = 'default' in field ? field.getDefault() : undefined;
-    });
-    return dft as any;
+    return next.withMutation((next: any) => next.setFields(nextFields));
   }
 
   protected _getDefault() {
@@ -345,6 +346,15 @@ export default class ObjectSchema<
       return undefined;
     }
     return this.getDefaultFromShape();
+  }
+
+  getDefaultFromShape(): _<DefaultFromShape<TShape>> {
+    let dft = {} as Record<string, unknown>;
+    this._nodes.forEach((key) => {
+      const field = this.fields[key];
+      dft[key] = 'default' in field ? field.getDefault() : undefined;
+    });
+    return dft as any;
   }
 
   private setFields<S extends ObjectShape>(
@@ -393,6 +403,22 @@ export default class ObjectSchema<
     return this.setFields(partial as PartialSchema<TShape>);
   }
 
+  deepPartial(): ObjectSchema<
+    DeepPartialSchema<TShape>,
+    TConfig,
+    Optionals<TIn> | undefined | TypeOfShape<DeepPartialSchema<TShape>>
+  > {
+    const partial: any = {};
+    for (const [key, schema] of Object.entries(this.fields)) {
+      if (schema instanceof ObjectSchema) partial[key] = schema.deepPartial();
+      else
+        partial[key] =
+          schema instanceof BaseSchema ? schema.optional() : schema;
+    }
+
+    return this.setFields(partial as DeepPartialSchema<TShape>);
+  }
+
   pick<TKey extends keyof TShape>(keys: TKey[]) {
     const picked: any = {};
     for (const key of keys) {
@@ -400,11 +426,6 @@ export default class ObjectSchema<
     }
 
     return this.setFields(picked as Pick<TShape, TKey>);
-
-    // return this.clone().withMutation((next: any) => {
-    //   next.fields = {};
-    //   return next.shape(picked);
-    // }) as any;
   }
 
   omit<TKey extends keyof TShape>(keys: TKey[]) {
@@ -414,8 +435,6 @@ export default class ObjectSchema<
     }
 
     return this.setFields(fields as Omit<TShape, TKey>);
-
-    // return next.withMutation((next: any) => next.shape(fields));
   }
 
   from(from: string, to: keyof TShape, alias?: boolean) {
@@ -499,7 +518,7 @@ export default interface ObjectSchema<
   TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
   TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
 > extends BaseSchema<TIn, AssertsShape<TShape> | Optionals<TIn>, TConfig> {
-  default<D extends Maybe<TIn>>(
+  default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
   ): ObjectSchema<TShape, ToggleDefault<TConfig, D>, TIn>;
 

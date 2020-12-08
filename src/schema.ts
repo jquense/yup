@@ -1,7 +1,7 @@
 // @ts-ignore
 import cloneDeep from 'nanoclone';
 
-import { mixed as locale, string } from './locale';
+import { mixed as locale } from './locale';
 import Condition, { ConditionOptions, ResolveOptions } from './Condition';
 import runTests from './util/runTests';
 import createValidation, {
@@ -28,7 +28,7 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import { Config, Defined, Flags } from './util/types';
+import { Config, Defined, Flags, Thunk, _ } from './util/types';
 
 export { Config };
 
@@ -333,7 +333,7 @@ export default abstract class BaseSchema<
   cast(
     value: any,
     options: CastOptions<TConfig['context']> = {},
-  ): this['__outputType'] {
+  ): _<this['__outputType']> {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -448,7 +448,7 @@ export default abstract class BaseSchema<
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): Promise<this['__outputType']>;
+  ): Promise<_<this['__outputType']>>;
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
@@ -471,11 +471,11 @@ export default abstract class BaseSchema<
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): this['__outputType'];
+  ): _<this['__outputType']>;
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): this['__outputType'] {
+  ): _<this['__outputType']> {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -534,7 +534,7 @@ export default abstract class BaseSchema<
     return schema._getDefault();
   }
 
-  default<TNext extends Maybe<TType>>(def: TNext | (() => TNext)): any {
+  default(def: Thunk<any>): any {
     if (arguments.length === 0) {
       return this._getDefault();
     }
@@ -711,7 +711,7 @@ export default abstract class BaseSchema<
     let deps = toArray(keys).map((key) => new Ref(key));
 
     deps.forEach((dep) => {
-      // @ts-ignore
+      // @ts-ignore readonly array
       if (dep.isSibling) next.deps.push(dep.key);
     });
 

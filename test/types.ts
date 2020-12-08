@@ -185,13 +185,13 @@ ObjectPartial: {
   // $ExpectType string
   partial.validateSync({})!.address!.line1;
 
-  // const deepPartial = schema.deepPartial();
+  const deepPartial = schema.deepPartial();
 
-  // // $ExpectType string | undefined
-  // deepPartial.validateSync({ age: '1' })!.name;
+  // $ExpectType string | undefined
+  deepPartial.validateSync({ age: '1' })!.name;
 
-  // // $ExpectType string
-  // deepPartial.validateSync({})!.address!.line1;
+  // $ExpectType string | undefined
+  deepPartial.validateSync({})!.address!.line1;
 }
 
 ObjectPick: {
@@ -216,6 +216,9 @@ ObjectOmit: {
 
   // $ExpectType string
   schema.omit(['age']).validateSync({ name: '1' }).name;
+
+  // $ExpectType string | undefined
+  schema.omit(['age']).partial().validateSync({ name: '1' }).name;
 }
 
 SchemaOf: {
