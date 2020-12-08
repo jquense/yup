@@ -162,6 +162,38 @@ string().required().nullable();
   merge.cast({}).other;
 }
 
+ObjectPartial: {
+  const schema = object({
+    // age: number(),
+    name: string().required(),
+    address: object()
+      .shape({
+        line1: string().required(),
+        zip: number().required(),
+      })
+      .default(undefined),
+  }).nullable();
+
+  const partial = schema.partial();
+
+  // $ExpectType string | undefined
+  partial.validateSync({ age: '1' })!.name;
+
+  // $ExpectType StringSchema<string | undefined, Config<Record<string, any>, "">>
+  partial.fields.name;
+
+  // $ExpectType string
+  partial.validateSync({})!.address!.line1;
+
+  // const deepPartial = schema.deepPartial();
+
+  // // $ExpectType string | undefined
+  // deepPartial.validateSync({ age: '1' })!.name;
+
+  // // $ExpectType string
+  // deepPartial.validateSync({})!.address!.line1;
+}
+
 ObjectPick: {
   const schema = object({
     age: number(),

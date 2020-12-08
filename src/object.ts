@@ -384,12 +384,13 @@ export default class ObjectSchema<
     });
   }
 
-  partial(): ObjectSchema<
-    PartialSchema<TShape>,
-    TConfig,
-    TypeOfShape<PartialSchema<TShape>> | Optionals<TIn>
-  > {
-    return '' as any;
+  partial() {
+    const partial: any = {};
+    for (const [key, schema] of Object.entries(this.fields)) {
+      partial[key] = schema instanceof BaseSchema ? schema.optional() : schema;
+    }
+
+    return this.setFields(partial as PartialSchema<TShape>);
   }
 
   pick<TKey extends keyof TShape>(keys: TKey[]) {
