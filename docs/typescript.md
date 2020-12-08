@@ -118,3 +118,13 @@ declare module 'yup' {
 > Watch out!: If your method needs to adjust schema generics, you likely
 > need to also extend the Required*, and Defined* interfaces associated with
 > each basic type. Consult the core types for examples on how to do this
+
+Be careful of the yup type hierarchy as it's a bit tricky. All schema (including `mixed`)
+extend the abstract `BaseSchema` class.
+
+### Special note about MixedSchema and BaseSchema
+
+As far as typescript is concerned, `mixed` schema inherit from `BaseSchema` like other schema; all other schema do **not** extend `MixedSchema`. **In actuality** Mixed is an alias for BaseSchema, meaning `addMethod(mixed)` will add a new method to all schema.
+
+This means that type extensions to `mixed` should generally be put on `BaseSchema` if
+you want the method to be available to all sub classes.

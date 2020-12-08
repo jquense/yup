@@ -16,6 +16,8 @@ import {
   NumberSchema,
   BooleanSchema,
   DateSchema,
+  mixed,
+  MixedSchema,
 } from '../src';
 
 describe('Yup', function () {
@@ -191,6 +193,18 @@ describe('Yup', function () {
   });
 
   describe('addMethod', () => {
+    it('extending mixed should make method accessible everywhere', () => {
+      addMethod(mixed, 'foo', () => 'here');
+
+      expect(string().foo()).to.equal('here');
+    });
+
+    it('extending Mixed should make method accessible everywhere', () => {
+      addMethod(MixedSchema, 'foo', () => 'here');
+
+      expect(string().foo()).to.equal('here');
+    });
+
     test.each([
       ['object', object],
       ['array', array],

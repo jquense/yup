@@ -40,7 +40,7 @@ function parseDateFromFormats(formats, parseStrict) {
 yup.addMethod(yup.date, 'format', parseDateFromFormats);
 ```
 
-Note that `addMethod` isn't really magic, it mutates the prototype of the passed in schema.
+Note that `addMethod` isn't magic, it mutates the prototype of the passed in schema.
 
 > Note: if you are using TypeScript you also need to adjust the class or interface
 > see the [typescript](./typescript) docs for details.
@@ -49,7 +49,7 @@ Note that `addMethod` isn't really magic, it mutates the prototype of the passed
 
 If you're use case calls for creating an entirely new type. inheriting from
 and existing schema class may be best: Generally you should not inheriting from
-the abstract `Schema` unless you know what you are doing. The other types are fair game though.
+the abstract `BaseSchema` unless you know what you are doing. The other types are fair game though.
 
 You should keep in mind some basic guidelines when extending schemas:
 
