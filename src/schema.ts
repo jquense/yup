@@ -740,7 +740,7 @@ export default abstract class BaseSchema<
   }
 
   oneOf<U extends TType>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: ReadonlyArray<U | Reference>,
     message = locale.oneOf,
   ): this {
     var next = this.clone();

@@ -75,7 +75,7 @@ string().required().nullable();
 
 {
   const obj = object({
-    string: string().defined(),
+    string: string<'foo'>().defined(),
     number: number().default(1),
     ref: ref('string'),
     nest: object({
@@ -83,14 +83,6 @@ string().required().nullable();
     }),
     lazy: lazy(() => number().defined()),
   });
-
-  // type F = StringSchema<string>;
-  // type f = F extends TypedSchema ? F['__type'] : false;
-
-  // const f = obj.cast({});
-  // f!.number;
-  // f!.string;
-  // type ia = typeof obj['fields']['nest']['__type'];
 
   type _d1 = DefaultFromShape<typeof obj['fields']>;
 
@@ -353,3 +345,13 @@ SchemaOf: {
 //     }),
 //   });
 // }
+
+// interface LoginFormValues {
+//   readonly user: string;
+//   readonly password: string;
+// }
+
+// export const loginValidatorValid: SchemaOf<LoginFormValues> = object({
+//   user: string().required(),
+//   password: string().required()
+// });

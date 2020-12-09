@@ -1,7 +1,7 @@
 import { MixedLocale, string as locale, string } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
-import type { Message, Maybe, AnyObject } from './types';
+import type { Message, Maybe, AnyObject, Optionals } from './types';
 import type {
   AnyConfig,
   Defined,
@@ -13,6 +13,7 @@ import type {
   ToggleDefault,
 } from './util/types';
 import BaseSchema, { Config } from './schema';
+import { String } from 'lodash';
 
 // eslint-disable-next-line
 let rEmail = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i;
@@ -32,9 +33,16 @@ export type MatchOptions = {
 
 let objStringTag = {}.toString();
 
-export function create<Context extends AnyObject>() {
-  return new StringSchema<string | undefined, Config<Context>>();
+function create(): StringSchema;
+function create<T extends string, TContext = AnyObject>(): StringSchema<
+  T | undefined,
+  Config<TContext>
+>;
+function create() {
+  return new StringSchema();
 }
+
+export { create };
 
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
@@ -218,6 +226,11 @@ export default interface StringSchema<
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): StringSchema<TType, ToggleDefault<TConfig, D>>;
+
+  // oneOf<U extends TType>(
+  //   arrayOfValues: ReadonlyArray<U | Reference>,
+  //   message?: MixedLocale['oneOf'],
+  // ): StringSchema<U | Optionals<TType>, TConfig>;
 
   concat<T extends Maybe<string>, C extends AnyConfig>(
     schema: StringSchema<T, C>,

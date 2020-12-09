@@ -1,9 +1,9 @@
-import { Maybe, Message, Optionals } from './types';
+import { AnyObject, Maybe, Message, Optionals } from './types';
 import type { Config, Defined, Thunk, ToggleDefault } from './util/types';
 import BaseSchema from './schema';
 
-export function create<TType = any>() {
-  return new MixedSchema<TType | undefined>();
+export function create<TType = any, TContext = AnyObject>() {
+  return new MixedSchema<TType | undefined, Config<TContext>>();
 }
 
 export default class MixedSchema<

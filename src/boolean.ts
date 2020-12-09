@@ -13,6 +13,11 @@ import type {
 import { boolean as locale } from './locale';
 import isAbsent from './util/isAbsent';
 
+export function create(): BooleanSchema;
+export function create<
+  T extends boolean,
+  TContext = AnyObject
+>(): BooleanSchema<T | undefined, Config<TContext>>;
 export function create() {
   return new BooleanSchema();
 }

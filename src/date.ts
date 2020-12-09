@@ -3,7 +3,7 @@ import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
-import type { Maybe, Message } from './types';
+import type { AnyObject, Maybe, Message } from './types';
 import type {
   Config,
   Defined,
@@ -20,6 +20,11 @@ let invalidDate = new Date('');
 let isDate = (obj: any): obj is Date =>
   Object.prototype.toString.call(obj) === '[object Date]';
 
+export function create(): DateSchema;
+export function create<T extends Date, TContext = AnyObject>(): DateSchema<
+  T | undefined,
+  Config<TContext>
+>;
 export function create() {
   return new DateSchema();
 }

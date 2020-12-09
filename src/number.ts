@@ -17,6 +17,11 @@ import BaseSchema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
+export function create(): NumberSchema;
+export function create<T extends number, TContext = AnyObject>(): NumberSchema<
+  T | undefined,
+  Config<TContext>
+>;
 export function create() {
   return new NumberSchema();
 }

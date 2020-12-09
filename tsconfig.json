@@ -2,8 +2,8 @@
   "extends": "@4c/tsconfig/web",
   "compilerOptions": {
     "allowJs": true,
-    "rootDir": "src",
-    "strictFunctionTypes": true
+    "rootDir": "src"
+    // "strictFunctionTypes": true
   },
   "include": ["src"]
 }
