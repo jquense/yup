@@ -75,18 +75,6 @@ type Strip<K, V> = V extends AnySchema
     : never
   : K;
 
-type PickByType<T, U> = {
-  [k in keyof T]: T[k];
-};
-
-type _a = PickByType<
-  {
-    name: string;
-    age: number;
-  },
-  string
->;
-
 export type AssertsShape<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends TypedSchema
     ? S[K]['__outputType']

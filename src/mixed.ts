@@ -2,10 +2,10 @@ import { Maybe, Message, Optionals } from './types';
 import type { Config, Defined, Thunk, ToggleDefault } from './util/types';
 import BaseSchema from './schema';
 
-declare class MixedSchema<
+export declare class MixedSchema<
   TType = any,
   TConfig extends Config<any, any> = Config
-> {
+> extends BaseSchema<TType, TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): MixedSchema<TType, ToggleDefault<TConfig, D>>;

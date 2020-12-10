@@ -36,7 +36,7 @@ string().required().nullable();
   //
   const strNullableOptional = string().nullable().optional();
 
-  // $ExpectType Maybe<string>
+  // $ExpectType string | null | undefined
   strNullableOptional.cast('');
 
   // $ExpectType string
@@ -46,7 +46,7 @@ string().required().nullable();
   //
   const strNullable = string().nullable();
 
-  // $ExpectType Maybe<string>
+  // $ExpectType string | null | undefined
   strNullable.validateSync('');
 
   const strDefined = string().default('');
