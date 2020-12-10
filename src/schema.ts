@@ -191,7 +191,7 @@ export default abstract class BaseSchema<
   }
 
   meta(): Record<string, unknown> | undefined;
-  meta(obj: Record<string, unknown>): void;
+  meta(obj: Record<string, unknown>): this;
   meta(...args: [Record<string, unknown>?]) {
     if (args.length === 0) return this.spec.meta;
 
