@@ -38,7 +38,7 @@ function addMethod(schemaType: any, name: string, fn: any) {
 }
 
 type SchemaOf<T> = T extends AnyObject
-  ? ObjectSchema<{ [k in keyof T]: SchemaOf<T[k]> }, Config<any, 'd'>>
+  ? ObjectSchema<{ [k in keyof T]-?: SchemaOf<T[k]> }, Config<any, 'd'>>
   : T extends Array<infer E>
   ? ArraySchema<SchemaOf<E>>
   : BaseSchema<T, T, Config>;

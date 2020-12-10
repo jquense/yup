@@ -5,7 +5,7 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import { object as locale, string } from './locale';
+import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
@@ -36,6 +36,7 @@ import BaseSchema, {
   SchemaObjectDescription,
   SchemaSpec,
 } from './schema';
+import string from './string';
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
@@ -68,17 +69,23 @@ export type TypeOfShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: FieldType<Shape[K], '__type'>;
 };
 
-type Strip<K, V> = V extends AnySchema ? HasFlag<V, 's'> extends never ? K : never : K;
-
+type Strip<K, V> = V extends AnySchema
+  ? HasFlag<V, 's'> extends never
+    ? K
+    : never
+  : K;
 
 type PickByType<T, U> = {
-  [k in keyof T as T[k] extends U ? k : never]: T[k]
-}
+  [k in keyof T as T[k] extends U ? k : never]: T[k];
+};
 
-type _a = PickByType<{
-  name: string,
-  age: number
-}, string>
+type _a = PickByType<
+  {
+    name: string;
+    age: number;
+  },
+  string
+>;
 
 export type AssertsShape<S extends ObjectShape> = {
   [K in keyof S as Strip<K, S[K]>]: S[K] extends TypedSchema
@@ -522,7 +529,7 @@ export default class ObjectSchema<
 }
 
 export function create<TShape extends ObjectShape>(spec?: TShape) {
-  return new ObjectSchema<TShape>(spec) as ObjectSchema<TShape>;
+  return new ObjectSchema<TShape>(spec);
 }
 
 create.prototype = ObjectSchema.prototype;
