@@ -40,19 +40,19 @@ function addMethod(schemaType: any, name: string, fn: any) {
 type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
   {
     [k in keyof T]-?: T[k] extends Array<infer E>
-      ? ArraySchema<SchemaOf<E>>
+      ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k]>
+        ObjectSchemaOf<T[k]> | ObjectSchemaOf<Lazy<T[k]>>
       : BaseSchema<Maybe<T[k]>, AnyObject, T[k]>;
   }
 >;
 
 type SchemaOf<T> = T extends Array<infer E>
-    ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
-    : T extends AnyObject
-    ? ObjectSchemaOf<T>
-    : BaseSchema<Maybe<T>, AnyObject, T>;
+  ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
+  : T extends AnyObject
+  ? ObjectSchemaOf<T>
+  : BaseSchema<Maybe<T>, AnyObject, T>;
 
 export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
 
