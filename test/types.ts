@@ -186,12 +186,16 @@ ObjectOmit: {
 SchemaOf: {
   type Person = {
     firstName: string;
+    title: string | undefined;
+    age?: number;
   };
 
   type PersonSchema = SchemaOf<Person>;
 
   const _t: PersonSchema = object({
     firstName: string().defined(),
+    title: string(),
+    age: number(),
   });
 }
 
