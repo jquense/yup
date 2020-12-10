@@ -84,6 +84,13 @@ class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
   describe() {
     return null as any;
   }
+
+  isValid(value: any, options?: ValidateOptions<TContext>) {
+    return this._resolve(value, options).isValid(value, options);
+  }
+  isValidSync(value: any, options?: ValidateOptions<TContext>) {
+    return this._resolve(value, options).isValidSync(value, options);
+  }
 }
 
 export default Lazy;

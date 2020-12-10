@@ -76,7 +76,7 @@ type Strip<K, V> = V extends AnySchema
   : K;
 
 type PickByType<T, U> = {
-  [k in keyof T as T[k] extends U ? k : never]: T[k];
+  [k in keyof T]: T[k];
 };
 
 type _a = PickByType<
@@ -88,7 +88,7 @@ type _a = PickByType<
 >;
 
 export type AssertsShape<S extends ObjectShape> = {
-  [K in keyof S as Strip<K, S[K]>]: S[K] extends TypedSchema
+  [K in keyof S]: S[K] extends TypedSchema
     ? S[K]['__outputType']
     : S[K] extends Reference
     ? unknown
@@ -451,6 +451,7 @@ export default class ObjectSchema<
 
   omit<TKey extends keyof TShape>(keys: TKey[]) {
     const fields = { ...this.fields };
+
     for (const key of keys) {
       delete fields[key];
     }

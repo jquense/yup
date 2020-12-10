@@ -36,7 +36,7 @@ export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
 export function create<
   C extends AnyObject = AnyObject,
-  T extends AnySchema = AnySchema
+  T extends AnySchema | Lazy<any, any> = AnySchema
 >(type?: T) {
   return new ArraySchema<T, Config<C>>(type);
 }

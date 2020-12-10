@@ -121,7 +121,7 @@ export default class StringSchema<
     });
   }
 
-  matches(regex: RegExp, options: MatchOptions | MatchOptions['message']) {
+  matches(regex: RegExp, options?: MatchOptions | MatchOptions['message']) {
     let excludeEmptyString = false;
     let message;
     let name;

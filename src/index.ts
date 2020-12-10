@@ -37,8 +37,19 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
+type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
+  {
+    [k in keyof T]-?: T[k] extends AnyObject
+      ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
+        ObjectSchemaOf<T[k]>
+      : T[k] extends Array<infer E>
+      ? ArraySchema<SchemaOf<E>>
+      : BaseSchema<Maybe<T[k]>, AnyObject, T[k]>;
+  }
+>;
+
 type SchemaOf<T> = T extends AnyObject
-  ? ObjectSchema<{ [k in keyof T]-?: SchemaOf<T[k]> }, Config<any, 'd'>>
+  ? ObjectSchemaOf<T>
   : T extends Array<infer E>
   ? ArraySchema<SchemaOf<E>>
   : BaseSchema<T, T, Config>;

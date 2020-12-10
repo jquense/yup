@@ -1,19 +1,8 @@
-import { AnyObject, Maybe, Message, Optionals } from './types';
+import { Maybe, Message, Optionals } from './types';
 import type { Config, Defined, Thunk, ToggleDefault } from './util/types';
 import BaseSchema from './schema';
 
-export function create<TType = any, TContext = AnyObject>() {
-  return new MixedSchema<TType | undefined, Config<TContext>>();
-}
-
-export default class MixedSchema<
-  TType = any,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {}
-
-create.prototype = MixedSchema.prototype;
-
-export default interface MixedSchema<
+declare class MixedSchema<
   TType = any,
   TConfig extends Config<any, any> = Config
 > {
@@ -38,3 +27,13 @@ export default interface MixedSchema<
   nullable(msg?: Message): MixedSchema<TType | null, TConfig>;
   nonNullable(): MixedSchema<Exclude<TType, null>, TConfig>;
 }
+
+const Mixed: typeof MixedSchema = BaseSchema as any;
+
+export default Mixed;
+
+export function create<TType = any>() {
+  return new Mixed<TType | undefined>();
+}
+// XXX: this is using the Base schema so that `addMethod(mixed)` works as a base class
+create.prototype = Mixed.prototype;

@@ -217,12 +217,16 @@ ObjectOmit: {
 SchemaOf: {
   type Person = {
     firstName: string;
+    title: string | undefined;
+    age?: number;
   };
 
   type PersonSchema = SchemaOf<Person>;
 
   const _t: PersonSchema = object({
     firstName: string().defined(),
+    title: string(),
+    age: number(),
   });
 }
 
@@ -262,6 +266,9 @@ SchemaOf: {
     .nullable()
     .default(() => [] as string[])
     .validateSync(null);
+
+  // $ExpectType string[] | undefined
+  array(lazy(() => string().default(''))).validateSync(null);
 
   const numList = [1, 2];
 

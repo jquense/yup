@@ -1,3 +1,63 @@
+## [0.32.6](https://github.com/jquense/yup/compare/v0.32.5...v0.32.6) (2020-12-08)
+
+
+### Bug Fixes
+
+* mixed() is the the base class ([7f8591d](https://github.com/jquense/yup/commit/7f8591d)), closes [#1156](https://github.com/jquense/yup/issues/1156)
+
+
+
+
+
+## [0.32.5](https://github.com/jquense/yup/compare/v0.32.4...v0.32.5) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** change base.default() to any ([01c6930](https://github.com/jquense/yup/commit/01c6930))
+
+
+
+
+
+## [0.32.4](https://github.com/jquense/yup/compare/v0.32.3...v0.32.4) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** rm base pick/omit types as they conflict with more specific ones ([14e2c8c](https://github.com/jquense/yup/commit/14e2c8c))
+
+
+### Features
+
+* add additional functions to Lazy class ([#1148](https://github.com/jquense/yup/issues/1148)) ([ecad1a3](https://github.com/jquense/yup/commit/ecad1a3))
+
+
+
+
+
+## [0.32.3](https://github.com/jquense/yup/compare/v0.32.2...v0.32.3) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** AnyObjectSchema anys ([1c54665](https://github.com/jquense/yup/commit/1c54665))
+
+
+
+
+
+## [0.32.2](https://github.com/jquense/yup/compare/v0.32.1...v0.32.2) (2020-12-07)
+
+
+### Bug Fixes
+
+* **types:** array type with lazy ([ba92dfc](https://github.com/jquense/yup/commit/ba92dfc)), closes [#1146](https://github.com/jquense/yup/issues/1146)
+
+
+
+
+
 ## [0.32.1](https://github.com/jquense/yup/compare/v0.32.0...v0.32.1) (2020-12-04)
 
 
