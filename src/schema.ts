@@ -28,22 +28,21 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import { Config, Defined, Flags, Thunk, _ } from './util/types';
+import { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
 
 export { Config };
 
 export type ConfigOf<T> = T extends AnySchema<any, any, infer C> ? C : never;
 
 export type ContextOf<T> = ConfigOf<T>['context'];
-export type FlagsOf<T> = ConfigOf<T>['flags'];
+
+export type FlagsOf<T> = T extends AnySchema ? T['__flags'] : never;
+
+export type HasFlag<T, F extends Flags> = F extends FlagsOf<T> ? true : never;
 
 export type ResolveFlags<T, F extends Flags> = Preserve<F, 'd'> extends never
   ? T
   : Defined<T>;
-
-export type HasFlag<T, F extends Flags> = Preserve<FlagsOf<T>, F> extends never
-  ? never
-  : true;
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
@@ -116,13 +115,14 @@ export interface SchemaDescription {
 
 export default abstract class BaseSchema<
   TType = any,
-  TOut = any,
+  TOut = TType,
   TConfig extends Config<any, any> = Config
 > {
   readonly type: string;
 
   readonly __type!: TType;
   readonly __outputType!: ResolveFlags<TOut, TConfig['flags']>;
+  readonly __flags!: TConfig['flags'];
 
   readonly __isYupSchema__!: boolean;
 
@@ -742,8 +742,8 @@ export default abstract class BaseSchema<
   oneOf<U extends TType>(
     enums: ReadonlyArray<U | Reference>,
     message = locale.oneOf,
-  ): this {
-    var next = this.clone();
+  ): any {
+    let next = this.clone();
 
     enums.forEach((val) => {
       next._whitelist.add(val);
@@ -774,7 +774,7 @@ export default abstract class BaseSchema<
     enums: Array<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
-    var next = this.clone();
+    let next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
@@ -798,10 +798,10 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  strip(strip = true) {
+  strip(strip = true): BaseSchema<TType, TOut, SetFlag<TConfig, 's'>> {
     let next = this.clone();
     next.spec.strip = strip;
-    return next;
+    return next as any;
   }
 
   describe() {
@@ -828,7 +828,7 @@ export default abstract class BaseSchema<
 
 export default interface BaseSchema<
   TType = any,
-  TOut = any,
+  TOut = TType,
   TConfig extends Config<any, any> = Config
 > {
   validateAt(

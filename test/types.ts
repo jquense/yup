@@ -18,7 +18,7 @@ import type {
 } from '../src/object';
 import type { Config, ResolveFlags } from '../src/schema';
 import { Preserve } from '../src/types';
-// import { HasFlag } from '../src/util/types';
+import { _ } from '../src/util/types';
 
 mixed().required().nullable();
 
@@ -77,6 +77,7 @@ string().required().nullable();
   const obj = object({
     string: string<'foo'>().defined(),
     number: number().default(1),
+    removed: number().strip(),
     ref: ref('string'),
     nest: object({
       other: string(),
@@ -89,7 +90,7 @@ string().required().nullable();
   // $ExpectType number | undefined
   type _i1 = TypeOfShape<typeof obj['fields']>['number'];
 
-  // $ExpectType string
+  // $ExpectType "foo"
   type _i2 = TypeOfShape<typeof obj['fields']>['string'];
 
   // $ExpectType unknown
@@ -101,20 +102,20 @@ string().required().nullable();
   // $ExpectType number
   type _i4 = AssertsShape<typeof obj['fields']>['number'];
 
-  // $ExpectType string
+  // $ExpectType "foo"
   type _i5 = AssertsShape<typeof obj['fields']>['string'];
 
-  // type __ = typeof obj['fields']['lazy']['__outputType'];
+  type _i6 = _<AssertsShape<typeof obj['fields']>>;
 
   // $ExpectType number
-  type _i6 = AssertsShape<typeof obj['fields']>['lazy'];
+  type _i7 = AssertsShape<typeof obj['fields']>['lazy'];
 
   const cast1 = obj.cast({});
 
   // $ExpectType string | undefined
   cast1!.nest!.other;
 
-  // $ExpectType string
+  // $ExpectType "foo"
   cast1!.string;
 
   // $ExpectType number
@@ -345,13 +346,3 @@ SchemaOf: {
 //     }),
 //   });
 // }
-
-// interface LoginFormValues {
-//   readonly user: string;
-//   readonly password: string;
-// }
-
-// export const loginValidatorValid: SchemaOf<LoginFormValues> = object({
-//   user: string().required(),
-//   password: string().required()
-// });

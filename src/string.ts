@@ -227,10 +227,10 @@ export default interface StringSchema<
     def: Thunk<D>,
   ): StringSchema<TType, ToggleDefault<TConfig, D>>;
 
-  // oneOf<U extends TType>(
-  //   arrayOfValues: ReadonlyArray<U | Reference>,
-  //   message?: MixedLocale['oneOf'],
-  // ): StringSchema<U | Optionals<TType>, TConfig>;
+  oneOf<U extends TType>(
+    arrayOfValues: ReadonlyArray<U | Reference>,
+    message?: MixedLocale['oneOf'],
+  ): StringSchema<U | Optionals<TType>, TConfig>;
 
   concat<T extends Maybe<string>, C extends AnyConfig>(
     schema: StringSchema<T, C>,
@@ -245,4 +245,5 @@ export default interface StringSchema<
 
   nullable(msg?: Message<any>): StringSchema<TType | null, TConfig>;
   nonNullable(): StringSchema<NotNull<TType>, TConfig>;
+  strip(): StringSchema<TType, SetFlag<TConfig, 's'>>;
 }

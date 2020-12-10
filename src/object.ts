@@ -5,7 +5,7 @@ import mapKeys from 'lodash/mapKeys';
 import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
-import { object as locale } from './locale';
+import { object as locale, string } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
@@ -31,6 +31,8 @@ import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
   AnySchema,
+  FlagsOf,
+  HasFlag,
   SchemaObjectDescription,
   SchemaSpec,
 } from './schema';
@@ -66,10 +68,22 @@ export type TypeOfShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: FieldType<Shape[K], '__type'>;
 };
 
-export type AssertsShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__outputType']
-    : Shape[K] extends Reference
+type Strip<K, V> = V extends AnySchema ? HasFlag<V, 's'> extends never ? K : never : K;
+
+
+type PickByType<T, U> = {
+  [k in keyof T as T[k] extends U ? k : never]: T[k]
+}
+
+type _a = PickByType<{
+  name: string,
+  age: number
+}, string>
+
+export type AssertsShape<S extends ObjectShape> = {
+  [K in keyof S as Strip<K, S[K]>]: S[K] extends TypedSchema
+    ? S[K]['__outputType']
+    : S[K] extends Reference
     ? unknown
     : never;
 };

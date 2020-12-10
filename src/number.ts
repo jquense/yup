@@ -153,6 +153,8 @@ export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TConfig extends Config<any, any> = Config
 > extends BaseSchema<TType, TType, TConfig> {
+  strip(): NumberSchema<TType, SetFlag<TConfig, 's'>>;
+
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): NumberSchema<TType, ToggleDefault<TConfig, D>>;
