@@ -219,6 +219,7 @@ SchemaOf: {
     firstName: string;
     title: string | undefined;
     age?: number;
+    colors: string[];
   };
 
   type PersonSchema = SchemaOf<Person>;
@@ -227,6 +228,7 @@ SchemaOf: {
     firstName: string().defined(),
     title: string(),
     age: number(),
+    colors: array(string().defined()),
   });
 }
 
