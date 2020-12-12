@@ -39,7 +39,7 @@ function addMethod(schemaType: any, name: string, fn: any) {
 
 type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
   {
-    [k in keyof T]-?: T[k] extends Array<infer E>
+    [k in keyof T]-?: T[k] extends ReadonlyArray<infer E>
       ? ArraySchema<SchemaOf<E>>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
@@ -48,7 +48,7 @@ type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
   }
 >;
 
-type SchemaOf<T> = T extends Array<infer E>
+type SchemaOf<T> = T extends ReadonlyArray<infer E>
     ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
     : T extends AnyObject
     ? ObjectSchemaOf<T>

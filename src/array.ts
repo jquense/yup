@@ -22,7 +22,7 @@ import BaseSchema, {
 } from './schema';
 import Lazy from './Lazy';
 
-export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
+export type RejectorFn = (value: any, index: number, array: readonly any[]) => boolean;
 
 export function create<
   C extends AnyObject = AnyObject,
@@ -251,7 +251,7 @@ export default class ArraySchema<
       ? (v) => !!v
       : (v, i, a) => !rejector(v, i, a);
 
-    return this.transform((values: any[]) =>
+    return this.transform((values: readonly any[]) =>
       values != null ? values.filter(reject) : values,
     );
   }
