@@ -1,7 +1,7 @@
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
-import { array as locale, MixedLocale } from './locale';
+import { array as locale } from './locale';
 import runTests, { RunTest } from './util/runTests';
 import type {
   AnyObject,
@@ -9,7 +9,6 @@ import type {
   Callback,
   Message,
   Maybe,
-  Preserve,
   Optionals,
 } from './types';
 import ValidationError from './ValidationError';
@@ -18,7 +17,6 @@ import {
   Asserts,
   Config,
   Defined,
-  If,
   NotNull,
   SetFlag,
   Thunk,
@@ -187,7 +185,7 @@ export default class ArraySchema<
 
   of<TInner extends AnySchema>(schema: TInner): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
-    var next = this.clone();
+    let next = this.clone();
 
     if (!isSchema(schema))
       throw new TypeError(

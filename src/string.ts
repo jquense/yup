@@ -1,4 +1,4 @@
-import { MixedLocale, string as locale, string } from './locale';
+import { MixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe, AnyObject, Optionals } from './types';

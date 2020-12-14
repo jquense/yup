@@ -1,12 +1,9 @@
 import BaseSchema from './schema';
-import type { MixedLocale } from './locale';
-import type { AnyObject, Maybe, Message, Optionals } from './types';
+import type { AnyObject, Maybe, Message } from './types';
 import type {
   Config,
   Defined,
-  If,
   NotNull,
-  SetFlag,
   Thunk,
   ToggleDefault,
 } from './util/types';

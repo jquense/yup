@@ -30,7 +30,8 @@ export interface Config<C = AnyObject, F extends Flags = ''> {
   context: C;
   flags: F;
 }
-export interface AnyConfig extends Config<any, any> {}
+
+export type AnyConfig = Config<any, any>;
 
 export type MergeConfig<T extends AnyConfig, U extends AnyConfig> = Config<
   T['context'] & U['context'],

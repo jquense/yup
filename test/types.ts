@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-labels */
-/* eslint-disable no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 
 import {
   array,

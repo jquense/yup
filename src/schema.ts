@@ -215,7 +215,7 @@ export default abstract class BaseSchema<
   }
 
   label(label: string) {
-    var next = this.clone();
+    let next = this.clone();
     next.spec.label = label;
     return next;
   }
@@ -318,7 +318,7 @@ export default abstract class BaseSchema<
       schema = schema.clone();
       schema.conditions = [];
       schema = conditions.reduce(
-        (schema, condition) => condition.resolve(schema, options),
+        (prevSchema, condition) => condition.resolve(prevSchema, options),
         schema,
       ) as this;
 
@@ -374,7 +374,7 @@ export default abstract class BaseSchema<
       rawValue === undefined
         ? rawValue
         : this.transforms.reduce(
-            (value, fn) => fn.call(this, value, rawValue, this),
+            (prevValue, fn) => fn.call(this, prevValue, rawValue, this),
             rawValue,
           );
 
@@ -465,9 +465,9 @@ export default abstract class BaseSchema<
     return typeof maybeCb === 'function'
       ? schema._validate(value, options, maybeCb)
       : new Promise((resolve, reject) =>
-          schema._validate(value, options, (err, value) => {
+          schema._validate(value, options, (err, validated) => {
             if (err) reject(err);
-            else resolve(value);
+            else resolve(validated);
           }),
         );
   }
@@ -484,9 +484,9 @@ export default abstract class BaseSchema<
     let schema = this.resolve({ ...options, value });
     let result: any;
 
-    schema._validate(value, { ...options, sync: true }, (err, value) => {
+    schema._validate(value, { ...options, sync: true }, (err, validated) => {
       if (err) throw err;
-      result = value;
+      result = validated;
     });
 
     return result;
@@ -559,7 +559,7 @@ export default abstract class BaseSchema<
 
   protected nullability(nullable: boolean, message?: Message<any>) {
     const next = this.clone({ nullable });
-    next.internalTests['nullable'] = createValidation({
+    next.internalTests.nullable = createValidation({
       message,
       name: 'nullable',
       test(value) {
@@ -571,7 +571,7 @@ export default abstract class BaseSchema<
 
   protected optionality(optional: boolean, message?: Message<any>) {
     const next = this.clone({ optional });
-    next.internalTests['optionality'] = createValidation({
+    next.internalTests.optionality = createValidation({
       message,
       name: 'optionality',
       test(value) {
@@ -624,7 +624,7 @@ export default abstract class BaseSchema<
   }
 
   transform(fn: TransformFunction<this>) {
-    var next = this.clone();
+    let next = this.clone();
     next.transforms.push(fn as TransformFunction<any>);
     return next;
   }
@@ -726,9 +726,9 @@ export default abstract class BaseSchema<
   }
 
   typeError(message: Message) {
-    var next = this.clone();
+    let next = this.clone();
 
-    next.internalTests['typeError'] = createValidation({
+    next.internalTests.typeError = createValidation({
       message,
       name: 'typeError',
       test(value) {
@@ -755,7 +755,7 @@ export default abstract class BaseSchema<
       next._blacklist.delete(val);
     });
 
-    next.internalTests['whiteList'] = createValidation({
+    next.internalTests.whiteList = createValidation({
       message,
       name: 'oneOf',
       test(value) {
@@ -785,7 +785,7 @@ export default abstract class BaseSchema<
       next._whitelist.delete(val);
     });
 
-    next.internalTests['blacklist'] = createValidation({
+    next.internalTests.blacklist = createValidation({
       message,
       name: 'notOneOf',
       test(value) {
@@ -838,6 +838,7 @@ export default abstract class BaseSchema<
 
 export default interface BaseSchema<
   TType = any,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TOut = TType,
   TConfig extends Config<any, any> = Config
 > {

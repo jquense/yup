@@ -31,12 +31,9 @@ import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
   AnySchema,
-  FlagsOf,
-  HasFlag,
   SchemaObjectDescription,
   SchemaSpec,
 } from './schema';
-import string from './string';
 import { ResolveOptions } from './Condition';
 
 export type Assign<T extends {}, U extends {}> = {
@@ -70,11 +67,11 @@ export type TypeOfShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: FieldType<Shape[K], '__type'>;
 };
 
-type Strip<K, V> = V extends AnySchema
-  ? HasFlag<V, 's'> extends never
-    ? K
-    : never
-  : K;
+// type Strip<K, V> = V extends AnySchema
+//   ? HasFlag<V, 's'> extends never
+//     ? K
+//     : never
+//   : K;
 
 export type AssertsShape<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends TypedSchema
@@ -261,7 +258,7 @@ export default class ObjectSchema<
 
       originalValue = originalValue || value;
 
-      let tests = this._nodes.map((key) => (_: any, cb: Callback) => {
+      let tests = this._nodes.map((key) => (__: any, cb: Callback) => {
         let path =
           key.indexOf('.') === -1
             ? (opts.path ? `${opts.path}.` : '') + key
@@ -343,7 +340,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation((next: any) => next.setFields(nextFields));
+    return next.withMutation((s: any) => s.setFields(nextFields));
   }
 
   protected _getDefault() {
@@ -493,7 +490,7 @@ export default class ObjectSchema<
   }
 
   transformKeys(fn: (key: string) => string) {
-    return this.transform((obj) => obj && mapKeys(obj, (_, key) => fn(key)));
+    return this.transform((obj) => obj && mapKeys(obj, (__, key) => fn(key)));
   }
 
   camelCase() {

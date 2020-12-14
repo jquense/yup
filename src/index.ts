@@ -12,8 +12,7 @@ import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
 import BaseSchema, { AnySchema } from './schema';
-import type { TypeOf, Asserts, Config, AnyConfig } from './util/types';
-import { Maybe } from './types';
+import type { TypeOf, Asserts, Config } from './util/types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,

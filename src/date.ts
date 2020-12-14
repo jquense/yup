@@ -7,9 +7,7 @@ import type { AnyObject, Maybe, Message } from './types';
 import type {
   Config,
   Defined,
-  If,
   NotNull,
-  SetFlag,
   Thunk,
   ToggleDefault,
 } from './util/types';
@@ -88,7 +86,7 @@ export default class DateSchema<
   }
 
   max(max: unknown | Ref, message = locale.max) {
-    var limit = this.prepareParam(max, 'max');
+    let limit = this.prepareParam(max, 'max');
 
     return this.test({
       message,

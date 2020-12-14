@@ -15,7 +15,7 @@ export default function sortFields(
   let nodes = [] as string[];
 
   function addNode(depPath: string, key: string) {
-    var node = split(depPath)[0];
+    let node = split(depPath)[0];
 
     if (!~nodes.indexOf(node)) nodes.push(node);
 
