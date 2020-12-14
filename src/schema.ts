@@ -166,8 +166,6 @@ export default abstract class BaseSchema<
       strict: false,
       abortEarly: true,
       recursive: true,
-      label: undefined,
-      meta: undefined,
       nullable: false,
       optional: true,
       // presence: 'nonnullable',

@@ -646,6 +646,19 @@ describe('Mixed Types ', () => {
     }.should.throw(TypeError));
   });
 
+  it('concat should not overwrite label and meta with undefined', function () {
+    const testLabel = "Test Label"
+    const testMeta = {
+      testField: "test field"
+    }
+    let baseSchema = mixed().label(testLabel).meta(testMeta)
+    const otherSchema = mixed()
+
+    baseSchema = baseSchema.concat(otherSchema)
+    expect(baseSchema.spec.label).to.equal(testLabel)
+    expect(baseSchema.spec.meta.testField).to.equal(testMeta.testField)
+  })
+
   it('concat should allow mixed and other type', function () {
     let inst = mixed().default('hi');
 
