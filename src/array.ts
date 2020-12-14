@@ -31,6 +31,7 @@ import BaseSchema, {
   SchemaSpec,
 } from './schema';
 import Lazy from './Lazy';
+import { ResolveOptions } from './Condition';
 
 export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
@@ -263,9 +264,19 @@ export default class ArraySchema<
     );
   }
 
-  describe() {
+  describe(options?: ResolveOptions<C['context']>) {
     let base = super.describe() as SchemaInnerTypeDescription;
-    if (this.innerType) base.innerType = this.innerType.describe();
+    if (this.innerType) {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[0],
+        };
+      }
+      base.innerType = this.innerType.describe(options);
+    }
     return base;
   }
 }

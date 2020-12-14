@@ -37,6 +37,7 @@ import BaseSchema, {
   SchemaSpec,
 } from './schema';
 import string from './string';
+import { ResolveOptions } from './Condition';
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
@@ -194,7 +195,7 @@ export default class ObjectSchema<
           parent: intermediateValue,
         });
 
-        let fieldSpec = 'spec' in field ? field.spec : undefined;
+        let fieldSpec = field instanceof BaseSchema ? field.spec : undefined;
         let strict = fieldSpec?.strict;
 
         if (fieldSpec?.strip) {
@@ -507,9 +508,20 @@ export default class ObjectSchema<
     return this.transformKeys((key) => snakeCase(key).toUpperCase());
   }
 
-  describe() {
-    let base = super.describe() as SchemaObjectDescription;
-    base.fields = mapValues(this.fields, (value) => value.describe());
+  describe(options?: ResolveOptions<TConfig['context']>) {
+    let base = super.describe(options) as SchemaObjectDescription;
+    base.fields = mapValues(this.fields, (value, key) => {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+
+      return value.describe(innerOptions);
+    });
     return base;
   }
 }

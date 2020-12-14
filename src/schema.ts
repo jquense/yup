@@ -96,16 +96,23 @@ export interface SchemaObjectDescription extends SchemaDescription {
   fields: Record<string, SchemaFieldDescription>;
 }
 
+export interface SchemaLazyDescription {
+  type: string;
+  label?: string;
+  meta: object | undefined;
+}
+
 export type SchemaFieldDescription =
   | SchemaDescription
   | SchemaRefDescription
   | SchemaObjectDescription
-  | SchemaInnerTypeDescription;
+  | SchemaInnerTypeDescription
+  | SchemaLazyDescription;
 
 export interface SchemaDescription {
   type: string;
   label?: string;
-  meta: object;
+  meta: object | undefined;
   oneOf: unknown[];
   notOneOf: unknown[];
   nullable: boolean;
@@ -804,8 +811,13 @@ export default abstract class BaseSchema<
     return next as any;
   }
 
-  describe() {
-    const next = this.clone();
+  /**
+   * Return a serialized description of the schema including validations, flags, types etc.
+   *
+   * @param options Provide any needed context for resolving runtime schema alterations (lazy, when conditions, etc).
+   */
+  describe(options?: ResolveOptions<TConfig['context']>) {
+    const next = (options ? this.resolve(options) : this).clone();
     const { label, meta, optional, nullable } = next.spec;
     const description: SchemaDescription = {
       meta,

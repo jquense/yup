@@ -1,3 +1,4 @@
+import { before } from 'lodash';
 import {
   array,
   bool,
@@ -899,75 +900,162 @@ describe('Mixed Types ', () => {
     });
   });
 
-  it('should describe', () => {
-    const desc = object({
-      foo: array(number().integer()).required(),
-      bar: string()
-        .max(2)
-        .meta({ input: 'foo' })
-        .label('str!')
-        .oneOf(['a', 'b'])
-        .notOneOf([ref('foo')]),
-    }).describe();
+  describe('schema.describe()', () => {
+    let schema;
+    beforeEach(() => {
+      schema = object({
+        lazy: lazy(() => string().nullable()),
+        foo: array(number().integer()).required(),
+        bar: string()
+          .max(2)
+          .meta({ input: 'foo' })
+          .label('str!')
+          .oneOf(['a', 'b'])
+          .notOneOf([ref('foo')])
+          .when('lazy', {
+            is: 'entered',
+            then: (s) => s.defined(),
+          }),
+      });
+    });
 
-    desc.should.eql({
-      type: 'object',
-      meta: undefined,
-      label: undefined,
-      nullable: false,
-      optional: true,
-      tests: [],
-      oneOf: [],
-      notOneOf: [],
-      fields: {
-        foo: {
-          type: 'array',
-          meta: undefined,
-          label: undefined,
-          nullable: false,
-          optional: false,
-          tests: [
-            {
-              name: 'required',
-              params: undefined,
-            },
-          ],
-          oneOf: [],
-          notOneOf: [],
-          innerType: {
-            type: 'number',
+    it('should describe', () => {
+      schema.describe().should.eql({
+        type: 'object',
+        meta: undefined,
+        label: undefined,
+        nullable: false,
+        optional: true,
+        tests: [],
+        oneOf: [],
+        notOneOf: [],
+        fields: {
+          lazy: {
+            type: 'lazy',
+            meta: undefined,
+            label: undefined,
+          },
+          foo: {
+            type: 'array',
             meta: undefined,
             label: undefined,
             nullable: false,
-            optional: true,
-            oneOf: [],
-            notOneOf: [],
+            optional: false,
             tests: [
               {
-                name: 'integer',
+                name: 'required',
                 params: undefined,
+              },
+            ],
+            oneOf: [],
+            notOneOf: [],
+            innerType: {
+              type: 'number',
+              meta: undefined,
+              label: undefined,
+              nullable: false,
+              optional: true,
+              oneOf: [],
+              notOneOf: [],
+              tests: [
+                {
+                  name: 'integer',
+                  params: undefined,
+                },
+              ],
+            },
+          },
+          bar: {
+            type: 'string',
+            label: 'str!',
+            tests: [{ name: 'max', params: { max: 2 } }],
+            meta: {
+              input: 'foo',
+            },
+            nullable: false,
+            optional: true,
+            oneOf: ['a', 'b'],
+            notOneOf: [
+              {
+                type: 'ref',
+                key: 'foo',
               },
             ],
           },
         },
-        bar: {
-          type: 'string',
-          label: 'str!',
-          tests: [{ name: 'max', params: { max: 2 } }],
-          meta: {
-            input: 'foo',
+      });
+    });
+
+    it('should describe with options', () => {
+      schema.describe({ value: { lazy: 'entered' } }).should.eql({
+        type: 'object',
+        meta: undefined,
+        label: undefined,
+        nullable: false,
+        optional: true,
+        tests: [],
+        oneOf: [],
+        notOneOf: [],
+        fields: {
+          lazy: {
+            type: 'string',
+            meta: undefined,
+            label: undefined,
+            nullable: true,
+            optional: true,
+            oneOf: [],
+            notOneOf: [],
+            tests: [],
           },
-          nullable: false,
-          optional: true,
-          oneOf: ['a', 'b'],
-          notOneOf: [
-            {
-              type: 'ref',
-              key: 'foo',
+          foo: {
+            type: 'array',
+            meta: undefined,
+            label: undefined,
+            nullable: false,
+            optional: false,
+            tests: [
+              {
+                name: 'required',
+                params: undefined,
+              },
+            ],
+            oneOf: [],
+            notOneOf: [],
+            innerType: {
+              type: 'number',
+              meta: undefined,
+              label: undefined,
+              nullable: false,
+              optional: true,
+              oneOf: [],
+              notOneOf: [],
+              tests: [
+                {
+                  name: 'integer',
+                  params: undefined,
+                },
+              ],
             },
-          ],
+          },
+          bar: {
+            type: 'string',
+            label: 'str!',
+            tests: [{ name: 'max', params: { max: 2 } }],
+            meta: {
+              input: 'foo',
+            },
+            nullable: false,
+            optional: false,
+            oneOf: ['a', 'b'],
+            notOneOf: [
+              {
+                type: 'ref',
+                key: 'foo',
+              },
+            ],
+          },
         },
-      },
+      });
     });
   });
 

@@ -1,6 +1,6 @@
 import { lazy, mixed } from '../src';
 
-describe('lazy', function() {
+describe('lazy', function () {
   it('should throw on a non-schema value', () => {
     (() => lazy(() => undefined).validate()).should.throw();
   });
@@ -25,6 +25,17 @@ describe('lazy', function() {
       };
       lazy(mapper).validate(value, context);
       mapper.should.have.been.calledWithExactly(value, context);
+    });
+
+    it('should allow meta', () => {
+      const meta = { a: 1 };
+      const schema = lazy(mapper).meta(meta);
+
+      expect(schema.meta()).to.eql(meta);
+
+      expect(schema.meta({ added: true })).to.not.eql(schema.meta());
+
+      expect(schema.meta({ added: true }).meta()).to.eql({ a: 1, added: true });
     });
   });
 });
