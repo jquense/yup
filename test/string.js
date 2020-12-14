@@ -73,7 +73,7 @@ describe('String types', () => {
     inst.isType(new String('5')).should.equal(true);
     inst.isType(false).should.equal(false);
     inst.isType(null).should.equal(false);
-    inst.nullable(false).isType(null).should.equal(false);
+    inst.nullable().isType(null).should.equal(true);
   });
 
   it('should VALIDATE correctly', function () {

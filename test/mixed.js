@@ -80,7 +80,7 @@ describe('Mixed Types ', () => {
   it('should warn about null types', async () => {
     let error = await string().strict().validate(null).should.be.rejected();
 
-    expect(error.message).to.match(/If "null" is intended/);
+    expect(error.message).to.match(/this cannot be null/);
   });
 
   it('should validateAt', async () => {
@@ -243,7 +243,7 @@ describe('Mixed Types ', () => {
   });
 
   describe('should exclude values', () => {
-    let inst = mixed().notOneOf([5, 'hello']);
+    let inst = mixed().nullable().notOneOf([5, 'hello']);
 
     TestHelpers.validateAll(inst, {
       valid: [6, 'hfhfh', [5, inst.oneOf([5]), '`oneOf` called after'], null],
@@ -914,6 +914,8 @@ describe('Mixed Types ', () => {
       type: 'object',
       meta: undefined,
       label: undefined,
+      nullable: false,
+      optional: true,
       tests: [],
       oneOf: [],
       notOneOf: [],
@@ -922,19 +924,22 @@ describe('Mixed Types ', () => {
           type: 'array',
           meta: undefined,
           label: undefined,
+          nullable: false,
+          optional: false,
           tests: [
             {
               name: 'required',
               params: undefined,
             },
           ],
-
           oneOf: [],
           notOneOf: [],
           innerType: {
             type: 'number',
             meta: undefined,
             label: undefined,
+            nullable: false,
+            optional: true,
             oneOf: [],
             notOneOf: [],
             tests: [
@@ -952,6 +957,8 @@ describe('Mixed Types ', () => {
           meta: {
             input: 'foo',
           },
+          nullable: false,
+          optional: true,
           oneOf: ['a', 'b'],
           notOneOf: [
             {

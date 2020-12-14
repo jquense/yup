@@ -589,7 +589,7 @@ export default abstract class BaseSchema<
   nullable(): any {
     return this.nullability(true);
   }
-  nonNullable(message = locale.required): any {
+  nonNullable(message = locale.notNull): any {
     return this.nullability(false, message);
   }
 

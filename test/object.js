@@ -765,7 +765,7 @@ describe('Object types', () => {
   });
 
   it('should allow opt out of topo sort on specific edges', () => {
-    (function () {
+    expect(() => {
       object().shape({
         orgID: number().when('location', function (v) {
           if (v == null) return this.required();
@@ -774,8 +774,9 @@ describe('Object types', () => {
           if (v == null) return this.required();
         }),
       });
-    }.should.throw('Cyclic dependency, node was:"location"'));
-    (function () {
+    }).to.throw('Cyclic dependency, node was:"location"');
+
+    expect(() => {
       object().shape(
         {
           orgID: number().when('location', function (v) {
@@ -787,7 +788,7 @@ describe('Object types', () => {
         },
         [['location', 'orgID']],
       );
-    }.should.not.throw());
+    }).not.to.throw();
   });
 
   it('should use correct default when concating', () => {

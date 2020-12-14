@@ -368,18 +368,15 @@ export default class ObjectSchema<
 
   private setFields<S extends ObjectShape>(
     shape: S,
-    excludes: readonly string[] = [],
+    excludedEdges?: readonly string[],
   ): ObjectSchema<S, TConfig, TypeOfShape<S> | Optionals<TIn>> {
     let next = this.clone() as any;
     next.fields = shape;
-    next._sortErrors = sortByKeyOrder(Object.keys(shape));
 
-    if (excludes.length) {
-      if (!Array.isArray(excludes[0])) excludes = [excludes as any];
-      let keys = excludes.map(([first, second]) => `${first}-${second}`);
-      next._excludedEdges = next._excludedEdges.concat(keys);
-    }
-    next._nodes = sortFields(shape, next._excludedEdges);
+    next._nodes = sortFields(shape, excludedEdges);
+    next._sortErrors = sortByKeyOrder(Object.keys(shape));
+    // XXX: this carries over edges which may not be what you want
+    if (excludedEdges) next._excludedEdges = excludedEdges;
     return next;
   }
 
@@ -517,7 +514,7 @@ export default class ObjectSchema<
   }
 }
 
-export function create<TShape extends ObjectShape>(spec?: TShape) {
+export function create<TShape extends ObjectShape = {}>(spec?: TShape) {
   return new ObjectSchema<TShape>(spec);
 }
 

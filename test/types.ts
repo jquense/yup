@@ -224,7 +224,7 @@ SchemaOf: {
 
   type PersonSchema = SchemaOf<Person>;
 
-  const _t: PersonSchema = object({
+  const _t: PersonSchema = object().shape({
     firstName: string().defined(),
     title: string(),
     age: number(),

@@ -28,6 +28,7 @@ describe('Yup', function () {
   it('cast should assert on undefined cast results', () => {
     (() =>
       string()
+        .defined()
         .transform(() => undefined)
         .cast('foo')).should.throw();
   });

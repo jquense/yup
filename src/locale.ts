@@ -6,6 +6,7 @@ export interface MixedLocale {
   required?: Message;
   oneOf?: Message<{ values: any }>;
   notOneOf?: Message<{ values: any }>;
+  notNull?: Message;
   notType?: Message;
   defined?: Message;
 }
@@ -59,20 +60,16 @@ export let mixed: Required<MixedLocale> = {
   notOneOf: '${path} must not be one of the following values: ${values}',
   notType: ({ path, type, value, originalValue }) => {
     let isCast = originalValue != null && originalValue !== value;
-    let msg =
+    return (
       `${path} must be a \`${type}\` type, ` +
       `but the final value was: \`${printValue(value, true)}\`` +
       (isCast
         ? ` (cast from the value \`${printValue(originalValue, true)}\`).`
-        : '.');
-
-    if (value === null) {
-      msg += `\n If "null" is intended as an empty value be sure to mark the schema as \`.nullable()\``;
-    }
-
-    return msg;
+        : '.')
+    );
   },
   defined: '${path} must be defined',
+  notNull: '${path} cannot be null',
 };
 
 export let string: Required<StringLocale> = {
