@@ -109,6 +109,7 @@
   "dependencies": {
     "@babel/runtime": "^7.12.5",
     "@types/lodash": "^4.14.165",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
     "lodash": "^4.17.20",
     "lodash-es": "^4.17.11",
     "nanoclone": "^0.2.1",
