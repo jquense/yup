@@ -137,8 +137,6 @@ export default abstract class BaseSchema<
       strict: false,
       abortEarly: true,
       recursive: true,
-      label: undefined,
-      meta: undefined,
       nullable: false,
       presence: 'optional',
       ...options?.spec,
