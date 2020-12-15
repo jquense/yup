@@ -1,8 +1,5 @@
-import has from 'lodash/has';
 import snakeCase from 'lodash/snakeCase';
 import camelCase from 'lodash/camelCase';
-import mapKeys from 'lodash/mapKeys';
-import mapValues from 'lodash/mapValues';
 import { getter } from 'property-expr';
 
 import { object as locale } from './locale';
@@ -26,6 +23,7 @@ import type {
   NotNull,
   ToggleDefault,
   _,
+  MakePartial,
 } from './util/types';
 import type Reference from './Reference';
 import Lazy from './Lazy';
@@ -73,13 +71,11 @@ export type TypeOfShape<Shape extends ObjectShape> = {
 //     : never
 //   : K;
 
-export type AssertsShape<S extends ObjectShape> = {
-  [K in keyof S]: S[K] extends TypedSchema
-    ? S[K]['__outputType']
-    : S[K] extends Reference
-    ? unknown
-    : never;
-};
+export type AssertsShape<S extends ObjectShape> = MakePartial<
+  {
+    [K in keyof S]: FieldType<S[K], '__outputType'>;
+  }
+>;
 
 export type PartialSchema<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends BaseSchema ? ReturnType<S[K]['optional']> : S[K];
@@ -176,7 +172,7 @@ export default class ObjectSchema<
     let isChanged = false;
     for (const prop of props) {
       let field = fields[prop];
-      let exists = has(value!, prop);
+      let exists = prop in value!;
 
       if (field) {
         let fieldValue;
@@ -446,9 +442,9 @@ export default class ObjectSchema<
     let fromGetter = getter(from, true);
 
     return this.transform((obj) => {
-      if (obj == null) return obj;
+      if (!obj) return obj;
       let newObj = obj;
-      if (has(obj, from)) {
+      if (from in obj) {
         newObj = { ...obj };
         if (!alias) delete newObj[from];
 
@@ -490,7 +486,12 @@ export default class ObjectSchema<
   }
 
   transformKeys(fn: (key: string) => string) {
-    return this.transform((obj) => obj && mapKeys(obj, (__, key) => fn(key)));
+    return this.transform((obj) => {
+      if (!obj) return obj;
+      const result: AnyObject = {};
+      for (const key of Object.keys(obj)) result[fn(key)] = obj[key];
+      return result;
+    });
   }
 
   camelCase() {
@@ -507,7 +508,8 @@ export default class ObjectSchema<
 
   describe(options?: ResolveOptions<TConfig['context']>) {
     let base = super.describe(options) as SchemaObjectDescription;
-    base.fields = mapValues(this.fields, (value, key) => {
+    base.fields = {};
+    for (const [key, value] of Object.entries(this.fields)) {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {
@@ -516,9 +518,8 @@ export default class ObjectSchema<
           value: innerOptions.value[key],
         };
       }
-
-      return value.describe(innerOptions);
-    });
+      base.fields[key] = value.describe(innerOptions);
+    }
     return base;
   }
 }

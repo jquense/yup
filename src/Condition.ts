@@ -1,4 +1,3 @@
-import has from 'lodash/has';
 import isSchema from './util/isSchema';
 import Reference from './Reference';
 import { SchemaLike } from './types';
@@ -37,7 +36,7 @@ class Condition<T extends SchemaLike = SchemaLike> {
       return;
     }
 
-    if (!has(options, 'is'))
+    if (!('is' in options))
       throw new TypeError('`is:` is required for `when()` conditions');
 
     if (!options.then && !options.otherwise)
