@@ -1,4 +1,3 @@
-import mapValues from 'lodash/mapValues';
 import ValidationError from '../ValidationError';
 import Ref from '../Reference';
 import {
@@ -81,17 +80,18 @@ export default function createValidation(config: {
     }
 
     function createError(overrides: CreateErrorOptions = {}) {
-      const nextParams = mapValues(
-        {
-          value,
-          originalValue,
-          label,
-          path: overrides.path || path,
-          ...params,
-          ...overrides.params,
-        },
-        resolve,
-      );
+      const nextParams = {
+        value,
+        originalValue,
+        label,
+        path: overrides.path || path,
+        ...params,
+        ...overrides.params,
+      };
+
+      type Keys = (keyof typeof nextParams)[];
+      for (const key of Object.keys(nextParams) as Keys)
+        nextParams[key] = resolve(nextParams[key]);
 
       const error = new ValidationError(
         ValidationError.formatError(overrides.message || message, nextParams),

@@ -168,7 +168,6 @@ export default abstract class BaseSchema<
       recursive: true,
       nullable: false,
       optional: true,
-      // presence: 'nonnullable',
       ...options?.spec,
     };
 
@@ -524,6 +523,7 @@ export default abstract class BaseSchema<
     if (defaultValue == null) {
       return defaultValue;
     }
+
     return typeof defaultValue === 'function'
       ? defaultValue.call(this)
       : cloneDeep(defaultValue);

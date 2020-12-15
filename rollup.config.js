@@ -12,16 +12,10 @@ const base = {
     }),
   ],
   external: [
-    'lodash/has',
-    'lodash/cloneDeepWith',
-    'lodash/toArray',
-    'lodash/mapKeys',
-    'lodash/mapValues',
     'lodash/snakeCase',
     'lodash/camelCase',
     'toposort',
     'fn-name',
-    'synchronous-promise',
     'property-expr',
   ],
 };

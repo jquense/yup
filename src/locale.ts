@@ -114,7 +114,7 @@ export let array: Required<ArrayLocale> = {
   length: '${path} must be have ${length} items',
 };
 
-export default Object.assign(Object.create(null), {
+export default Object.assign(Object.create(null) as {}, {
   mixed,
   string,
   number,
