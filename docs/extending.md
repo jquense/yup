@@ -43,7 +43,7 @@ yup.addMethod(yup.date, 'format', parseDateFromFormats);
 Note that `addMethod` isn't magic, it mutates the prototype of the passed in schema.
 
 > Note: if you are using TypeScript you also need to adjust the class or interface
-> see the [typescript](./typescript) docs for details.
+> see the [typescript](./typescript.md) docs for details.
 
 ## Creating new Schema types
 
