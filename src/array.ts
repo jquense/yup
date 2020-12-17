@@ -9,7 +9,6 @@ import type {
   Callback,
   Message,
   Maybe,
-  Optionals,
 } from './types';
 import ValidationError from './ValidationError';
 import type Reference from './Reference';
@@ -21,7 +20,6 @@ import {
   SetFlag,
   Thunk,
   ToggleDefault,
-  TypeOf,
 } from './util/types';
 import BaseSchema, {
   AnySchema,
@@ -43,8 +41,8 @@ export function create<
 export default class ArraySchema<
   T extends AnySchema | Lazy<any, any>,
   C extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
-> extends BaseSchema<TIn, Asserts<T>[] | Optionals<TIn>, C> {
+  TIn extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
+> extends BaseSchema<TIn, C> {
   innerType?: T;
 
   constructor(type?: T) {
@@ -288,8 +286,8 @@ create.prototype = ArraySchema.prototype;
 export default interface ArraySchema<
   T extends AnySchema | Lazy<any, any>,
   C extends Config<any, any> = Config,
-  TIn extends Maybe<TypeOf<T>[]> = TypeOf<T>[] | undefined
-> extends BaseSchema<TIn, Asserts<T>[] | Optionals<TIn>, C> {
+  TIn extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
+> extends BaseSchema<TIn, C> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): ArraySchema<T, ToggleDefault<C, D>, TIn>;

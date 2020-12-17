@@ -11,13 +11,7 @@ const base = {
       presets: [['jason', { modules: false, runtime: false }]],
     }),
   ],
-  external: [
-    'lodash/snakeCase',
-    'lodash/camelCase',
-    'toposort',
-    'fn-name',
-    'property-expr',
-  ],
+  external: ['toposort', 'fn-name', 'property-expr'],
 };
 
 module.exports = [

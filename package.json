@@ -73,6 +73,7 @@
     "@babel/core": "7.12.10",
     "@babel/plugin-proposal-logical-assignment-operators": "^7.12.1",
     "@babel/preset-typescript": "^7.12.7",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
     "@typescript-eslint/parser": "^4.9.1",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",
@@ -108,12 +109,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
-    "@types/lodash": "^4.14.165",
-    "@typescript-eslint/eslint-plugin": "^4.9.1",
-    "lodash": "^4.17.20",
-    "lodash-es": "^4.17.11",
     "nanoclone": "^0.2.1",
     "property-expr": "^2.0.4",
+    "tiny-case": "^1.0.1",
     "toposort": "^2.0.2"
   },
   "engines": {

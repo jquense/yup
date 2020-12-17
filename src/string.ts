@@ -44,7 +44,7 @@ export { create };
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
   TConfig extends AnyConfig = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   constructor() {
     super({ type: 'string' });
 
@@ -219,7 +219,7 @@ create.prototype = StringSchema.prototype;
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
   TConfig extends AnyConfig = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): StringSchema<TType, ToggleDefault<TConfig, D>>;
