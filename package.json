@@ -111,7 +111,7 @@
     "@babel/runtime": "^7.12.5",
     "nanoclone": "^0.2.1",
     "property-expr": "^2.0.4",
-    "tiny-case": "^1.0.1",
+    "tiny-case": "^1.0.2",
     "toposort": "^2.0.2"
   },
   "engines": {

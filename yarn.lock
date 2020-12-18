@@ -10879,10 +10879,10 @@ timers-browserify@^2.0.4:
   dependencies:
     setimmediate "^1.0.4"
 
-tiny-case@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/tiny-case/-/tiny-case-1.0.1.tgz#06b6257c0a35c72e455e23f55bab7abfc8049d8a"
-  integrity sha512-4d4i5qze9WwU+eVXygm+naw4Dx1GQGvISKyFAdIriw5P08+YASWCgi1+iRhC3H32vv20c7r2NP4g6lalG9Uspw==
+tiny-case@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/tiny-case/-/tiny-case-1.0.2.tgz#54fb8bd597139785b8dd4d983ab059151516df29"
+  integrity sha512-XRlpLF8S2VuTqM8AbxvubIR+9dThYGDJ1d6hDM5F0LopIFIaxq8OFk9oAEljQjCJsrelJbBZXRKo0MFOqrEGqA==
 
 title-case@^2.1.0:
   version "2.1.1"

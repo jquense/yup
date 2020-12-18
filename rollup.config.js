@@ -11,7 +11,7 @@ const base = {
       presets: [['jason', { modules: false, runtime: false }]],
     }),
   ],
-  external: ['toposort', 'fn-name', 'property-expr'],
+  external: ['tiny-case', 'toposort', 'fn-name', 'property-expr'],
 };
 
 module.exports = [
