@@ -30,7 +30,7 @@ export function create() {
 export default class DateSchema<
   TType extends Maybe<Date> = Date | undefined,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   static INVALID_DATE = invalidDate;
 
   constructor() {
@@ -106,7 +106,7 @@ create.INVALID_DATE = invalidDate;
 export default interface DateSchema<
   TType extends Maybe<Date>,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): DateSchema<TType, ToggleDefault<TConfig, D>>;

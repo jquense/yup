@@ -32,7 +32,7 @@ import { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
 
 export { Config };
 
-export type ConfigOf<T> = T extends AnySchema<any, any, infer C> ? C : never;
+export type ConfigOf<T> = T extends AnySchema<any, infer C> ? C : never;
 
 export type ContextOf<T> = ConfigOf<T>['context'];
 
@@ -61,11 +61,10 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<
-  TType = any,
-  TOut = any,
-  C extends Config = any
-> = BaseSchema<TType, TOut, C>;
+export type AnySchema<TType = any, C extends Config = any> = BaseSchema<
+  TType,
+  C
+>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -122,15 +121,14 @@ export interface SchemaDescription {
 
 export default abstract class BaseSchema<
   TType = any,
-  TOut = TType,
   TConfig extends Config<any, any> = Config
 > {
   readonly type: string;
 
   readonly __type!: TType;
-  readonly __outputType!: ResolveFlags<TOut, TConfig['flags']>;
-  readonly __flags!: TConfig['flags'];
+  readonly __outputType!: ResolveFlags<TType, TConfig['flags']>;
 
+  readonly __flags!: TConfig['flags'];
   readonly __isYupSchema__!: boolean;
 
   readonly deps: readonly string[] = [];
@@ -803,7 +801,7 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  strip(strip = true): BaseSchema<TType, TOut, SetFlag<TConfig, 's'>> {
+  strip(strip = true): BaseSchema<TType, SetFlag<TConfig, 's'>> {
     let next = this.clone();
     next.spec.strip = strip;
     return next as any;
@@ -837,9 +835,8 @@ export default abstract class BaseSchema<
 }
 
 export default interface BaseSchema<
-  TType = any,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  TOut = TType,
+  TType = any,
   TConfig extends Config<any, any> = Config
 > {
   validateAt(

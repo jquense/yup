@@ -16,14 +16,5 @@ module.exports = (api) => ({
     ],
     '@babel/preset-typescript',
   ],
-  plugins: [
-    '@babel/plugin-proposal-logical-assignment-operators',
-    api.env() === 'modules' && [
-      'transform-rename-import',
-      {
-        original: 'lodash',
-        replacement: 'lodash-es',
-      },
-    ],
-  ].filter(Boolean),
+  plugins: ['@babel/plugin-proposal-logical-assignment-operators'],
 });

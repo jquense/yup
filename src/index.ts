@@ -43,7 +43,7 @@ type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
         ObjectSchemaOf<T[k]>
-      : BaseSchema<T[k], T[k], Config>;
+      : BaseSchema<T[k], Config>;
   }
 >;
 
@@ -51,7 +51,7 @@ type SchemaOf<T> = T extends Array<infer E>
   ? ArraySchema<SchemaOf<E>>
   : T extends AnyObject
   ? ObjectSchemaOf<T>
-  : BaseSchema<T, T, Config>;
+  : BaseSchema<T, Config>;
 
 export type AnyObjectSchema = ObjectSchema<any, any, any>;
 

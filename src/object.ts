@@ -1,7 +1,6 @@
-import snakeCase from 'lodash/snakeCase';
-import camelCase from 'lodash/camelCase';
 // @ts-ignore
 import { getter, normalizePath, join } from 'property-expr';
+import { camelCase, snakeCase } from 'tiny-case';
 
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
@@ -76,7 +75,7 @@ export type AssertsShape<S extends ObjectShape> = MakePartial<
   {
     [K in keyof S]: FieldType<S[K], '__outputType'>;
   }
->;
+> & { [k: string]: any };
 
 export type PartialSchema<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends BaseSchema ? ReturnType<S[K]['optional']> : S[K];
@@ -115,8 +114,8 @@ const defaultSort = sortByKeyOrder([]);
 export default class ObjectSchema<
   TShape extends ObjectShape,
   TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
-> extends BaseSchema<TIn, AssertsShape<TShape> | Optionals<TIn>, TConfig> {
+  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined
+> extends BaseSchema<TIn, TConfig> {
   fields: TShape = Object.create(null);
 
   spec!: ObjectSchemaSpec;
@@ -325,7 +324,7 @@ export default class ObjectSchema<
     ? ObjectSchema<
         TShape & S,
         TConfig & C,
-        TypeOfShape<TShape & S> | Optionals<IType>
+        AssertsShape<TShape & S> | Optionals<IType>
       >
     : never;
   concat(schema: this): this;
@@ -372,7 +371,7 @@ export default class ObjectSchema<
   private setFields<S extends ObjectShape>(
     shape: S,
     excludedEdges?: readonly string[],
-  ): ObjectSchema<S, TConfig, TypeOfShape<S> | Optionals<TIn>> {
+  ): ObjectSchema<S, TConfig, AssertsShape<S> | Optionals<TIn>> {
     let next = this.clone() as any;
     next.fields = shape;
 
@@ -415,7 +414,7 @@ export default class ObjectSchema<
   deepPartial(): ObjectSchema<
     DeepPartialSchema<TShape>,
     TConfig,
-    Optionals<TIn> | undefined | TypeOfShape<DeepPartialSchema<TShape>>
+    Optionals<TIn> | undefined | AssertsShape<DeepPartialSchema<TShape>>
   > {
     const partial: any = {};
     for (const [key, schema] of Object.entries(this.fields)) {
@@ -542,8 +541,8 @@ create.prototype = ObjectSchema.prototype;
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape> | undefined
-> extends BaseSchema<TIn, AssertsShape<TShape> | Optionals<TIn>, TConfig> {
+  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined
+> extends BaseSchema<TIn, TConfig> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
   ): ObjectSchema<TShape, ToggleDefault<TConfig, D>, TIn>;

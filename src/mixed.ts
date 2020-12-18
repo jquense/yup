@@ -5,7 +5,7 @@ import BaseSchema from './schema';
 export declare class MixedSchema<
   TType = any,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): MixedSchema<TType, ToggleDefault<TConfig, D>>;
@@ -14,7 +14,7 @@ export declare class MixedSchema<
     schema: MixedSchema<IT, IC>,
   ): MixedSchema<NonNullable<TType> | IT, TConfig & IC>;
   concat<IT, IC extends Config<any, any>>(
-    schema: BaseSchema<IT, any, IC>,
+    schema: BaseSchema<IT, IC>,
   ): MixedSchema<NonNullable<TType> | Optionals<IT>, TConfig & IC>;
   concat(schema: this): this;
 

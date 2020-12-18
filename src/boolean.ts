@@ -22,7 +22,7 @@ export function create() {
 export default class BooleanSchema<
   TType extends Maybe<boolean> = boolean | undefined,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   constructor() {
     super({ type: 'boolean' });
 
@@ -73,7 +73,7 @@ create.prototype = BooleanSchema.prototype;
 export default interface BooleanSchema<
   TType extends Maybe<boolean>,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): BooleanSchema<TType, ToggleDefault<TConfig, D>>;

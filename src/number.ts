@@ -28,7 +28,7 @@ export function create() {
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   constructor() {
     super({ type: 'number' });
 
@@ -151,7 +151,7 @@ create.prototype = NumberSchema.prototype;
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TType, TConfig> {
+> extends BaseSchema<TType, TConfig> {
   strip(): NumberSchema<TType, SetFlag<TConfig, 's'>>;
 
   default<D extends Maybe<TType>>(
