@@ -460,6 +460,8 @@ but uses the resulting schema as the subject for validation.
 
 > Note! The `value` here is the _root_ value relative to the starting schema, not the value at the nested path.
 
+> Warning! the sibling values of the when validators will not be casted
+
 ```js
 let schema = object({
   foo: array().of(
