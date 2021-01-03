@@ -4,7 +4,7 @@ import { AnyObject, Maybe, Optionals } from './types';
 import type { Defined } from './util/types';
 import BaseSchema from './schema';
 
-declare class MixedSchema<
+export declare class MixedSchema<
   TType = any,
   TContext = AnyObject,
   TOut = TType
