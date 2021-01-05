@@ -29,7 +29,7 @@ export type ResolveOptions<TContext = any> = {
 class Condition<T extends SchemaLike = SchemaLike> {
   fn: ConditionBuilder<T>;
 
-  constructor(public refs: Reference[], options: ConditionOptions<T>) {
+  constructor(public refs: readonly Reference[], options: ConditionOptions<T>) {
     this.refs = refs;
 
     if (typeof options === 'function') {

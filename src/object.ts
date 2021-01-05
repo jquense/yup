@@ -331,7 +331,7 @@ export default class ObjectSchema<
 
   shape<TNextShape extends ObjectShape>(
     additions: TNextShape,
-    excludes: [string, string][] = [],
+    excludes: readonly (readonly [string, string])[] = [],
   ): ObjectSchema<
     Assign<TShape, TNextShape>,
     TContext,
@@ -356,7 +356,7 @@ export default class ObjectSchema<
     return next as any;
   }
 
-  pick(keys: string[]) {
+  pick(keys: readonly string[]) {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
@@ -368,7 +368,7 @@ export default class ObjectSchema<
     }) as any;
   }
 
-  omit(keys: string[]): any {
+  omit(keys: readonly string[]): any {
     const next = this.clone() as any;
     const fields = next.fields;
     next.fields = {};
@@ -482,14 +482,14 @@ export interface OptionalObjectSchema<
   ): OptionalObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 
   pick<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): OptionalObjectSchema<
     Pick<TShape, TKey>,
     TContext,
     TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
   >;
   omit<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): OptionalObjectSchema<
     Omit<TShape, TKey>,
     TContext,
@@ -528,14 +528,14 @@ export interface DefinedObjectSchema<
   ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 
   pick<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): DefinedObjectSchema<
     Pick<TShape, TKey>,
     TContext,
     TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
   >;
   omit<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): DefinedObjectSchema<
     Omit<TShape, TKey>,
     TContext,
@@ -568,14 +568,14 @@ export interface RequiredObjectSchema<
   ): RequiredObjectSchema<TShape, TContext, Exclude<TIn, null>>;
 
   pick<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): RequiredObjectSchema<
     Pick<TShape, TKey>,
     TContext,
     TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
   >;
   omit<TKey extends keyof TShape>(
-    keys: TKey[],
+    keys: readonly TKey[],
   ): RequiredObjectSchema<
     Omit<TShape, TKey>,
     TContext,

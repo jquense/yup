@@ -33,7 +33,7 @@ export default class ValidationError extends Error {
   }
 
   constructor(
-    errorOrErrors: string | ValidationError | ValidationError[],
+    errorOrErrors: string | ValidationError | readonly ValidationError[],
     value?: any,
     field?: string,
     type?: string,

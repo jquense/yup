@@ -623,13 +623,13 @@ export default abstract class BaseSchema<
   }
 
   when(options: ConditionOptions<this>): this;
-  when(keys: string | string[], options: ConditionOptions<this>): this;
+  when(keys: string | readonly string[], options: ConditionOptions<this>): this;
   when(
-    keys: string | string[] | ConditionOptions<this>,
+    keys: string | readonly string[] | ConditionOptions<this>,
     options?: ConditionOptions<this>,
   ) {
     if (!Array.isArray(keys) && typeof keys !== 'string') {
-      options = keys;
+      options = keys as ConditionOptions<this>;
       keys = '.';
     }
 
@@ -666,7 +666,7 @@ export default abstract class BaseSchema<
   }
 
   oneOf<U extends TCast>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: ReadonlyArray<Maybe<U> | Reference>,
     message = locale.oneOf,
   ): this {
     var next = this.clone();
@@ -697,7 +697,7 @@ export default abstract class BaseSchema<
   }
 
   notOneOf<U extends TCast>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: ReadonlyArray<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
     var next = this.clone();
