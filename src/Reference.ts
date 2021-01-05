@@ -10,8 +10,8 @@ export type ReferenceOptions<TValue = unknown> = {
   map?: (value: unknown) => TValue;
 };
 
-export function create(key: string, options?: ReferenceOptions) {
-  return new Reference(key, options);
+export function create<TValue = unknown>(key: string, options?: ReferenceOptions<TValue>) {
+  return new Reference<TValue>(key, options);
 }
 
 export default class Reference<TValue = unknown> {
