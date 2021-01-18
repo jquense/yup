@@ -86,7 +86,7 @@
     "doctoc": "^1.4.0",
     "eslint": "^7.12.0",
     "eslint-config-jason": "^7.0.1",
-    "eslint-config-prettier": "^6.14.0",
+    "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.0",
     "eslint-plugin-react": "^7.21.5",
