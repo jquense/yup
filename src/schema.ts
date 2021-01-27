@@ -28,9 +28,9 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
+import type { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
 
-export { Config };
+export type { Config };
 
 export type ConfigOf<T> = T extends AnySchema<any, infer C> ? C : never;
 
