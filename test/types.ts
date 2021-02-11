@@ -264,6 +264,11 @@ SchemaOf: {
   const _c1 = array(number())
     .concat(array(number()).required())
     .validateSync([]);
+
+  const _definedArray: Array<{ a: number }> = array()
+    .of(object({ a: number().required() }))
+    .defined()
+    .validateSync([]);
 }
 
 {

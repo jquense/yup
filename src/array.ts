@@ -261,6 +261,14 @@ export default class ArraySchema<
     if (this.innerType) base.innerType = this.innerType.describe();
     return base;
   }
+
+  defined(): DefinedArraySchema<T, C, TIn> {
+    return super.defined();
+  }
+
+  required(msg?: MixedLocale['required']): RequiredArraySchema<T, C, TIn> {
+    return super.required(msg);
+  }
 }
 
 create.prototype = ArraySchema.prototype;
