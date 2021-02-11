@@ -265,9 +265,16 @@ SchemaOf: {
     .concat(array(number()).required())
     .validateSync([]);
 
-  const _definedArray: Array<{ a: number }> = array()
+  const _definedArray: Array<{ a: number }> | null = array()
     .of(object({ a: number().required() }))
+    .nullable()
     .defined()
+    .validateSync([]);
+  
+  const _requiredArray: Array<{ a: number }> = array()
+    .of(object({ a: number().required() }))
+    .nullable()
+    .required()
     .validateSync([]);
 }
 
