@@ -6,7 +6,7 @@ import DateSchema, { create as dateCreate } from './date';
 import ObjectSchema, { AnyObject, create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
 import { create as refCreate } from './Reference';
-import { create as lazyCreate } from './Lazy';
+import Lazy, { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
@@ -39,16 +39,16 @@ function addMethod(schemaType: any, name: string, fn: any) {
 type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
   {
     [k in keyof T]-?: T[k] extends Array<infer E>
-      ? ArraySchema<SchemaOf<E>>
+      ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k]>
+        ObjectSchemaOf<T[k] | Lazy<T[k]>>
       : BaseSchema<T[k], Config>;
   }
 >;
 
 type SchemaOf<T> = T extends Array<infer E>
-  ? ArraySchema<SchemaOf<E>>
+  ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
   : T extends AnyObject
   ? ObjectSchemaOf<T>
   : BaseSchema<T, Config>;

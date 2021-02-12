@@ -2,7 +2,7 @@ import { forEach } from 'property-expr';
 
 let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
-export function getIn(schema: any, path: string, value: any, context = value) {
+export function getIn(schema: any, path: string, value?: any, context = value) {
   let parent: any, lastPart: string, lastPartDebug: string;
 
   // root path: ''
@@ -50,7 +50,7 @@ export function getIn(schema: any, path: string, value: any, context = value) {
   return { schema, parent, parentPath: lastPart! };
 }
 
-const reach = (obj: {}, path: string, value: any, context: any) =>
+const reach = (obj: {}, path: string, value?: any, context?: any) =>
   getIn(obj, path, value, context).schema;
 
 export default reach;

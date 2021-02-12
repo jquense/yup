@@ -411,7 +411,7 @@ Options = {
 - `stripUnknown`: remove unspecified keys from objects.
 - `recursive`: when `false` validations will not descend into nested schema
   (relevant for objects or arrays).
-- `context`: any context needed for validating schema conditions (see: `when()`)
+- `context`: any context needed for validating schema conditions (see: [`when()`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema))
 
 ```js
 schema.validate({ name: 'jimmy', age: 24 }).then(function (value) {
@@ -541,7 +541,7 @@ First the legally required Rich Hickey quote:
 `withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change.
 Generally this isn't necessary since the vast majority of schema changes happen during the initial
 declaration, and only happen once over the lifetime of the schema, so performance isn't an issue.
-However certain mutations _do_ occur at cast/validation time, (such as conditional schema using `when()`), or
+However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)), or
 when instantiating a schema object.
 
 ```js
