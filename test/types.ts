@@ -10,6 +10,7 @@ import {
   ref,
   lazy,
   SchemaOf,
+  date,
 } from '../src';
 import type {
   AssertsShape,
@@ -220,6 +221,7 @@ SchemaOf: {
     title: string | undefined;
     age?: number;
     colors: string[];
+    createdAt: Date;
   };
 
   type PersonSchema = SchemaOf<Person>;
@@ -229,6 +231,7 @@ SchemaOf: {
     title: string(),
     age: number(),
     colors: array(string().defined()),
+    createdAt: date().defined(),
   });
 }
 

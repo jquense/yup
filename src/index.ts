@@ -40,6 +40,8 @@ type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
   {
     [k in keyof T]-?: T[k] extends Array<infer E>
       ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
+      : T[k] extends Date
+      ? DateSchema<T[k]>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
         ObjectSchemaOf<T[k] | Lazy<T[k]>>
@@ -49,6 +51,8 @@ type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
 
 type SchemaOf<T> = T extends Array<infer E>
   ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
+  : T extends Date
+  ? DateSchema<T>
   : T extends AnyObject
   ? ObjectSchemaOf<T>
   : BaseSchema<T, Config>;
