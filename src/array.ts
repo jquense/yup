@@ -179,7 +179,7 @@ export default class ArraySchema<
 
   of<TInner extends AnySchema>(schema: TInner): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
-    var next = this.clone();
+    let next = this.clone();
 
     if (!isSchema(schema))
       throw new TypeError(
