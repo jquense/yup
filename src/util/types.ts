@@ -18,7 +18,7 @@ export type Thunk<T> = T | (() => T);
 export type If<T, Y, N> = Exclude<T, undefined> extends never ? Y : N;
 
 /* this seems to force TS to show the full type instead of all the wrapped generics */
-export type _<T> = T extends {} ? { [k in keyof T]: _<T[k]> } : T;
+export type _<T> = T extends {} ? { [k in keyof T]: T[k] } : T;
 
 type OptionalKeys<T extends {}> = {
   [k in keyof T]: undefined extends T[k] ? k : never;

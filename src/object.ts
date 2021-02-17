@@ -29,6 +29,7 @@ import type Reference from './Reference';
 import Lazy from './Lazy';
 import BaseSchema, {
   AnySchema,
+  ResolveFlags,
   SchemaObjectDescription,
   SchemaSpec,
 } from './schema';
@@ -119,6 +120,8 @@ export default class ObjectSchema<
   fields: TShape = Object.create(null);
 
   spec!: ObjectSchemaSpec;
+
+  readonly __outputType!: ResolveFlags<_<TIn>, TConfig['flags']>;
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];

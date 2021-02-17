@@ -335,7 +335,7 @@ export default abstract class BaseSchema<
   cast(
     value: any,
     options: CastOptions<TConfig['context']> = {},
-  ): _<this['__outputType']> {
+  ): this['__outputType'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -450,7 +450,7 @@ export default abstract class BaseSchema<
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): Promise<_<this['__outputType']>>;
+  ): Promise<this['__outputType']>;
   validate(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
@@ -473,11 +473,11 @@ export default abstract class BaseSchema<
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): _<this['__outputType']>;
+  ): this['__outputType'];
   validateSync(
     value: any,
     options?: ValidateOptions<TConfig['context']>,
-  ): _<this['__outputType']> {
+  ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
 
