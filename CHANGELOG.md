@@ -1,3 +1,22 @@
+## [0.32.9](https://github.com/jquense/yup/compare/v0.32.6...v0.32.9) (2021-02-17)
+
+
+### Bug Fixes
+
+* **types:** Array required() and defined() will no longer return any ([#1256](https://github.com/jquense/yup/issues/1256)) ([52e5876](https://github.com/jquense/yup/commit/52e5876))
+* export MixedSchema to fix ts with --declarations ([#1204](https://github.com/jquense/yup/issues/1204)) ([67c96ae](https://github.com/jquense/yup/commit/67c96ae))
+* **types:** add generic to Reference.create() ([#1208](https://github.com/jquense/yup/issues/1208)) ([be3d1b4](https://github.com/jquense/yup/commit/be3d1b4))
+* **types:** reach and getIn make last 2 arguments optional ([#1194](https://github.com/jquense/yup/issues/1194)) ([5cf2c48](https://github.com/jquense/yup/commit/5cf2c48))
+* do not initialize spec values with undefined ([#1177](https://github.com/jquense/yup/issues/1177)) ([e8e5b46](https://github.com/jquense/yup/commit/e8e5b46)), closes [jquense/yup#1160](https://github.com/jquense/yup/issues/1160) [jquense/yup#1160](https://github.com/jquense/yup/issues/1160)
+* **types:** meta() return type ([e41040a](https://github.com/jquense/yup/commit/e41040a))
+* array handling in SchemaOf type ([#1169](https://github.com/jquense/yup/issues/1169)) ([e785e1a](https://github.com/jquense/yup/commit/e785e1a))
+* **types:** make StringSchema.matches options optional ([#1166](https://github.com/jquense/yup/issues/1166)) ([b53e5f2](https://github.com/jquense/yup/commit/b53e5f2))
+* **types:** SchemaOf doesn't produce a union of base schema ([2d71f32](https://github.com/jquense/yup/commit/2d71f32))
+
+
+
+
+
 ## [0.32.6](https://github.com/jquense/yup/compare/v0.32.5...v0.32.6) (2020-12-08)
 
 
