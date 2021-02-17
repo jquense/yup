@@ -264,6 +264,20 @@ SchemaOf: {
   const _c1 = array(number())
     .concat(array(number()).required())
     .validateSync([]);
+
+  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[] | null
+  const _definedArray: Array<{ a: number }> | null = array()
+    .of(object({ a: number().required() }))
+    .nullable()
+    .defined()
+    .validateSync([]);
+
+  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[]
+  const _requiredArray: Array<{ a: number }> = array()
+    .of(object({ a: number().required() }))
+    .nullable()
+    .required()
+    .validateSync([]);
 }
 
 {

@@ -261,6 +261,20 @@ export default class ArraySchema<
     if (this.innerType) base.innerType = this.innerType.describe();
     return base;
   }
+
+  nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
+  nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
+  nullable(isNullable = true): ArraySchema<T, C, TIn | null> {
+    return super.nullable(isNullable as any);
+  }
+
+  defined(): DefinedArraySchema<T, C, TIn> {
+    return super.defined();
+  }
+
+  required(msg?: MixedLocale['required']): RequiredArraySchema<T, C, TIn> {
+    return super.required(msg);
+  }
 }
 
 create.prototype = ArraySchema.prototype;
