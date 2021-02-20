@@ -59,7 +59,7 @@ If you want the type produced by casting:
 ```ts
 import type { TypeOf } from 'yup';
 
-interface PersonInput extends Typeof<typeof personSchema> {}
+interface PersonInput extends TypeOf<typeof personSchema> {}
 
 const validated: PersonInput = personSchema.cast(json);
 ```
