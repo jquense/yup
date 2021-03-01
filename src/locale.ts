@@ -114,7 +114,7 @@ export let object: Required<ObjectLocale> = {
 export let array: Required<ArrayLocale> = {
   min: '${path} field must have at least ${min} items',
   max: '${path} field must have less than or equal to ${max} items',
-  length: '${path} must be have ${length} items',
+  length: '${path} must have ${length} items',
 };
 
 export default Object.assign(Object.create(null), {
