@@ -722,7 +722,7 @@ let asyncJimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
   async (value, context) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
-});
+);
 
 await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
