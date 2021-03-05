@@ -721,24 +721,23 @@ let jimmySchema = string().test(
 let asyncJimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
-  async (value, context) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+  async (value, testContext) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
 });
 
 await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
 ```
 
-Test functions are called with a special context, or `this` value, that exposes some useful metadata
-and functions. Older versions just expose the `this` context using `function ()`, not arrow-func,
-but now it's exposed too as a second argument of the test functions. It's allow you decide which
-approach you prefer.
+Test functions are called with a special context value, as the second argument, that exposes some useful metadata
+and functions. For non arrow functions, the test context is also set as the function `this`. Watch out, if you access 
+it via `this` it won't work in an arrow function.
 
-- `this.path`: the string path of the current validation
-- `this.schema`: the resolved schema object that the test is running against.
-- `this.options`: the `options` object that validate() or isValid() was called with
-- `this.parent`: in the case of nested schema, this is the value of the parent object
-- `this.originalValue`: the original value that is being tested
-- `this.createError(Object: { path: String, message: String, params: Object })`: create and return a
+- `testContext.path`: the string path of the current validation
+- `testContext.schema`: the resolved schema object that the test is running against.
+- `testContext.options`: the `options` object that validate() or isValid() was called with
+- `testContext.parent`: in the case of nested schema, this is the value of the parent object
+- `testContext.originalValue`: the original value that is being tested
+- `testContext.createError(Object: { path: String, message: String, params: Object })`: create and return a
   validation error. Useful for dynamically setting the `path`, `params`, or more likely, the error `message`.
   If either option is omitted it will use the current path, or default message.
 
