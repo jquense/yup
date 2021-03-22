@@ -10,6 +10,7 @@ import {
   mixed,
   number,
   ref,
+  date,
   lazy,
   SchemaOf,
 } from '../src';
@@ -200,6 +201,35 @@ SchemaOf: {
     age: number(),
   });
 }
+
+SchemaOfDate: {
+  type Employee = {
+    hire_date: Date;
+    name: string;
+  };
+
+  type EmployeeSchema = SchemaOf<Employee>;
+
+  const _t: EmployeeSchema = object({
+    name: string().defined(),
+    hire_date: date().defined()
+  });
+}
+
+SchemaOfDateArray: {
+  type EmployeeWithPromotions = {
+    promotion_dates: Date[];
+    name: string;
+  };
+
+  type EmployeeWithPromotionsSchema = SchemaOf<EmployeeWithPromotions>;
+
+  const _t: EmployeeWithPromotionsSchema = object({
+    name: string().defined(),
+    promotion_dates: array().of(date().defined())
+  });
+}
+
 
 {
   // const str = string();
