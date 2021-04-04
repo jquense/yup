@@ -120,7 +120,7 @@ export default function createValidation(config: {
           if (ValidationError.isError(validOrError)) cb(validOrError);
           else if (!validOrError) cb(createError());
           else cb(null, validOrError);
-        });
+        }).catch(cb);
       } catch (err) {
         cb(err);
       }
