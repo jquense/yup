@@ -37,25 +37,25 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
-type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
+type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<
   {
     [k in keyof T]-?: T[k] extends Array<infer E>
-      ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
-      : T[k] extends Date
+      ? ArraySchema<SchemaOf<E, CustomTypes> | Lazy<SchemaOf<E, CustomTypes>>>
+      : T[k] extends Date | CustomTypes
       ? BaseSchema<Maybe<T[k]>, AnyObject, T[k]>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k]> | ObjectSchemaOf<Lazy<T[k]>>
+        ObjectSchemaOf<T[k], CustomTypes> | Lazy<ObjectSchemaOf<T[k], CustomTypes>>
       : BaseSchema<Maybe<T[k]>, AnyObject, T[k]>;
   }
 >;
 
-type SchemaOf<T> = T extends Array<infer E>
-  ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
-  : T extends Date
+type SchemaOf<T, CustomTypes = never> = T extends Array<infer E>
+  ? ArraySchema<SchemaOf<E, CustomTypes> | Lazy<SchemaOf<E, CustomTypes>>>
+  : T extends Date | CustomTypes
   ? BaseSchema<Maybe<T>, AnyObject, T>
   : T extends AnyObject
-  ? ObjectSchemaOf<T>
+  ? ObjectSchemaOf<T, CustomTypes>
   : BaseSchema<Maybe<T>, AnyObject, T>;
 
 export type AnyObjectSchema = ObjectSchema<any, any, any, any>;

@@ -230,6 +230,36 @@ SchemaOfDateArray: {
   });
 }
 
+SchemaOfFile: {
+  type Document = {
+    file: File;
+    date_uploaded: Date;
+    notes: string;
+  };
+
+  type FileSchema = SchemaOf<Document, File>;
+
+  const _t: FileSchema = object({
+    file: mixed<File>().defined(),
+    date_uploaded: date().defined(),
+    notes: string().defined(),
+  });
+}
+
+SchemaOfFileArray: {
+  type DocumentWithFullHistory = {
+    history: File[];
+    name: string;
+  };
+
+  type DocumentWithFullHistorySchema = SchemaOf<DocumentWithFullHistory, File>;
+
+  const _t: DocumentWithFullHistorySchema = object({
+    name: string().defined(),
+    history: array().of(mixed<File>().defined())
+  });
+}
+
 
 {
   // const str = string();
