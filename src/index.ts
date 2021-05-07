@@ -45,7 +45,7 @@ type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<
       ? BaseSchema<Maybe<T[k]>, AnyObject, T[k]>
       : T[k] extends AnyObject
       ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k], CustomTypes> | ObjectSchemaOf<Lazy<T[k]>, CustomTypes>
+        ObjectSchemaOf<T[k], CustomTypes> | Lazy<ObjectSchemaOf<T[k], CustomTypes>>
       : BaseSchema<Maybe<T[k]>, AnyObject, T[k]>;
   }
 >;
