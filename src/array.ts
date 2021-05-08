@@ -177,7 +177,7 @@ export default class ArraySchema<
     return next;
   }
 
-  of<TInner extends AnySchema>(schema: TInner): ArraySchema<TInner> {
+  of<TInner extends AnySchema | Lazy<any, any>>(schema: TInner): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
     let next = this.clone();
 
