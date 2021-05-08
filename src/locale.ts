@@ -39,7 +39,7 @@ export interface DateLocale {
 }
 
 export interface ObjectLocale {
-  noUnknown?: Message;
+    noUnknown?: Message<{ unknown: string }>;
 }
 
 export interface ArrayLocale {
