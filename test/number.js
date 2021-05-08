@@ -103,6 +103,15 @@ describe('Number types', function () {
       valid: [7, 35738787838, [null, schema.nullable()]],
       invalid: [2, null, [14, schema.min(10).min(15)]],
     });
+
+    it('should differentiate b/w -0 and 0', () => {
+      return Promise.all([
+        number().min(0).isValid(0).should.eventually().equal(true),
+        number().min(0).isValid(-0).should.eventually().equal(false),
+        number().min(-0).isValid(0).should.eventually().equal(true),
+        number().min(-0).isValid(-0).should.eventually().equal(true),
+      ]);
+    });
   });
 
   describe('max', () => {
@@ -111,6 +120,15 @@ describe('Number types', function () {
     TestHelpers.validateAll(schema, {
       valid: [4, -5222, [null, schema.nullable()]],
       invalid: [10, null, [16, schema.max(20).max(15)]],
+    });
+
+    it('should differentiate b/w -0 and 0', () => {
+      return Promise.all([
+        number().max(0).isValid(0).should.eventually().equal(true),
+        number().max(0).isValid(-0).should.eventually().equal(true),
+        number().max(-0).isValid(0).should.eventually().equal(false),
+        number().max(-0).isValid(-0).should.eventually().equal(true),
+      ]);
     });
   });
 
@@ -128,6 +146,15 @@ describe('Number types', function () {
         .should.be.rejected.and.eventually.have.property('errors')
         .that.contain('this must be less than 5');
     });
+
+    it('should differentiate b/w -0 and 0', () => {
+      return Promise.all([
+        number().lessThan(0).isValid(0).should.eventually().equal(false),
+        number().lessThan(0).isValid(-0).should.eventually().equal(true),
+        number().lessThan(-0).isValid(0).should.eventually().equal(false),
+        number().lessThan(-0).isValid(-0).should.eventually().equal(false),
+      ]);
+    });
   });
 
   describe('moreThan', () => {
@@ -143,6 +170,15 @@ describe('Number types', function () {
         .validate(4)
         .should.be.rejected.and.eventually.have.property('errors')
         .that.contain('this must be greater than 5');
+    });
+    
+    it('should differentiate b/w -0 and 0', () => {
+      return Promise.all([
+        number().moreThan(0).isValid(0).should.eventually().equal(false),
+        number().moreThan(0).isValid(-0).should.eventually().equal(false),
+        number().moreThan(-0).isValid(0).should.eventually().equal(true),
+        number().moreThan(-0).isValid(-0).should.eventually().equal(false),
+      ]);
     });
   });
 

@@ -43,14 +43,20 @@ export default class NumberSchema<
     return typeof value === 'number' && !isNaN(value);
   }
 
-  min(min: number | Reference<number>, message = locale.min) {
+  min(min: number | Reference<number>, message = locale.min) {    
     return this.test({
       message,
       name: 'min',
       exclusive: true,
       params: { min },
       test(value: Maybe<number>) {
-        return isAbsent(value) || value >= this.resolve(min);
+        const resolvedMin = this.resolve(min);
+
+        // NOTE: ES "Strict Equality Comparison" (i.e ===) does not differentiate b/w -0 and 0
+        // Ref: https://262.ecma-international.org/6.0/#sec-strict-equality-comparison
+        // "Object.is" implements "Same Value" algo which specifically considers -0 and 0
+        // Ref: https://tc39.es/ecma262/#sec-samevalue
+        return isAbsent(value) || Object.is(Math.min(value, resolvedMin), resolvedMin);
       },
     });
   }
@@ -62,7 +68,9 @@ export default class NumberSchema<
       exclusive: true,
       params: { max },
       test(value: Maybe<number>) {
-        return isAbsent(value) || value <= this.resolve(max);
+        const resolvedMax = this.resolve(max);
+
+        return isAbsent(value) || Object.is(Math.max(value, resolvedMax), resolvedMax);
       },
     });
   }
@@ -74,7 +82,9 @@ export default class NumberSchema<
       exclusive: true,
       params: { less },
       test(value: Maybe<number>) {
-        return isAbsent(value) || value < this.resolve(less);
+        const resolvedLess = this.resolve(less);
+
+        return isAbsent(value) || !Object.is(value, resolvedLess) && Object.is(Math.max(value, resolvedLess), resolvedLess);
       },
     });
   }
@@ -86,7 +96,9 @@ export default class NumberSchema<
       exclusive: true,
       params: { more },
       test(value: Maybe<number>) {
-        return isAbsent(value) || value > this.resolve(more);
+        const resolvedMore = this.resolve(more);
+
+        return isAbsent(value) || !Object.is(value, resolvedMore) && Object.is(Math.min(value, resolvedMore), resolvedMore);
       },
     });
   }
