@@ -127,6 +127,10 @@ export default class NumberSchema<
       !isAbsent(value) ? Math[method](value) : value,
     );
   }
+  
+  nullIfEmpty() {
+      this.transform((value, original) => original === '' ? null : value); 
+  }    
 }
 
 create.prototype = NumberSchema.prototype;
