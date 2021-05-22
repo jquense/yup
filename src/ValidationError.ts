@@ -4,6 +4,15 @@ import toArray from './util/toArray';
 let strReg = /\$\{\s*(\w+)\s*\}/g;
 
 type Params = Record<string, unknown>;
+type MessageFunction = (params: Params) => string|MessageFunction
+
+const handleFormat = (message: unknown, params: Params): string|unknown => {
+  if (typeof message === 'function') return handleFormat(message(params), params)
+  if (typeof message === 'string') {
+    return message.replace(strReg, (_, key) => printValue(params[key]));
+  }
+  return message
+}
 
 export default class ValidationError extends Error {
   value: any;
@@ -22,20 +31,7 @@ export default class ValidationError extends Error {
     const path = params.label || params.path || 'this';
     if (path !== params.path) params = { ...params, path };
 
-    if (typeof message === 'string')
-      return message.replace(strReg, (_, key) => printValue(params[key]));
-
-    if (typeof message === 'function') {
-      const result = message(params)
-
-      if (typeof result === 'function') {
-        return result(params)
-      } else {
-        return result
-      }
-    }
-
-    return message;
+    return handleFormat(message, params)
   }
   static isError(err: any): err is ValidationError {
     return err && err.name === 'ValidationError';
