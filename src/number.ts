@@ -1,4 +1,4 @@
-import { MixedLocale, number as locale } from './locale';
+import {MixedLocale, number, number as locale} from './locale';
 import isAbsent from './util/isAbsent';
 import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
@@ -67,7 +67,7 @@ export default class NumberSchema<
     });
   }
 
-  lessThan(less: number | Reference<number>, message?:string|(() => any)) {
+  lessThan(less: number | Reference<number>, message?:string|Message<{ less: number }>) {
     return this.test({
       message: () => message || locale.lessThan,
       name: 'max',
@@ -79,7 +79,7 @@ export default class NumberSchema<
     });
   }
 
-  moreThan(more: number | Reference<number>, message?:string|(() => any)) {
+  moreThan(more: number | Reference<number>, message?:string|Message<{ more: number }>) {
     return this.test({
       message: () => message || locale.moreThan,
       name: 'min',
@@ -92,11 +92,11 @@ export default class NumberSchema<
   }
 
   positive(msg?:string) {
-    return this.moreThan(0, () => msg || locale.positive);
+    return this.moreThan(0, msg || locale.positive);
   }
 
   negative(msg?:string) {
-    return this.lessThan(0, () => msg || locale.negative);
+    return this.lessThan(0, msg || locale.negative);
   }
 
   integer(message?:string) {
