@@ -24,7 +24,16 @@ export default class ValidationError extends Error {
 
     if (typeof message === 'string')
       return message.replace(strReg, (_, key) => printValue(params[key]));
-    if (typeof message === 'function') return message(params);
+
+    if (typeof message === 'function') {
+      const result = message(params)
+
+      if (typeof result === 'function') {
+        return result(params)
+      } else {
+        return result
+      }
+    }
 
     return message;
   }
