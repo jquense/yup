@@ -35,10 +35,10 @@ export default class BooleanSchema<
   }
 
   isTrue(
-    message = locale.isValue,
+    message?:string,
   ): BooleanSchema<TType | true, TContext, true | Optionals<TOut>> {
     return this.test({
-      message,
+      message: () => message || locale.isValue,
       name: 'is-value',
       exclusive: true,
       params: { value: 'true' },
@@ -49,10 +49,10 @@ export default class BooleanSchema<
   }
 
   isFalse(
-    message = locale.isValue,
+    message?:string,
   ): BooleanSchema<TType | false, TContext, false | Optionals<TOut>> {
     return this.test({
-      message,
+      message: () => message || locale.isValue,
       name: 'is-value',
       exclusive: true,
       params: { value: 'false' },

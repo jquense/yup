@@ -43,9 +43,9 @@ export default class NumberSchema<
     return typeof value === 'number' && !isNaN(value);
   }
 
-  min(min: number | Reference<number>, message = locale.min) {
+  min(min: number | Reference<number>, message?: string) {
     return this.test({
-      message,
+      message: () => message || locale.min,
       name: 'min',
       exclusive: true,
       params: { min },
@@ -55,9 +55,9 @@ export default class NumberSchema<
     });
   }
 
-  max(max: number | Reference<number>, message = locale.max) {
+  max(max: number | Reference<number>, message?:string ) {
     return this.test({
-      message,
+      message: () => message || locale.max,
       name: 'max',
       exclusive: true,
       params: { max },
@@ -67,9 +67,9 @@ export default class NumberSchema<
     });
   }
 
-  lessThan(less: number | Reference<number>, message = locale.lessThan) {
+  lessThan(less: number | Reference<number>, message?:string|(() => any)) {
     return this.test({
-      message,
+      message: () => message || locale.lessThan,
       name: 'max',
       exclusive: true,
       params: { less },
@@ -79,9 +79,9 @@ export default class NumberSchema<
     });
   }
 
-  moreThan(more: number | Reference<number>, message = locale.moreThan) {
+  moreThan(more: number | Reference<number>, message?:string|(() => any)) {
     return this.test({
-      message,
+      message: () => message || locale.moreThan,
       name: 'min',
       exclusive: true,
       params: { more },
@@ -91,18 +91,18 @@ export default class NumberSchema<
     });
   }
 
-  positive(msg = locale.positive) {
-    return this.moreThan(0, msg);
+  positive(msg?:string) {
+    return this.moreThan(0, () => msg || locale.positive);
   }
 
-  negative(msg = locale.negative) {
-    return this.lessThan(0, msg);
+  negative(msg?:string) {
+    return this.lessThan(0, () => msg || locale.negative);
   }
 
-  integer(message = locale.integer) {
+  integer(message?:string) {
     return this.test({
       name: 'integer',
-      message,
+      message: () => message ||  locale.integer,
       test: (val) => isAbsent(val) || Number.isInteger(val),
     });
   }

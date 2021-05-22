@@ -62,10 +62,10 @@ export default class StringSchema<
 
   length(
     length: number | Reference<number>,
-    message: Message<{ length: number }> = locale.length,
+    message: Message<{ length: number }>,
   ) {
     return this.test({
-      message,
+      message: () => message || locale.length,
       name: 'length',
       exclusive: true,
       params: { length },
@@ -77,10 +77,10 @@ export default class StringSchema<
 
   min(
     min: number | Reference<number>,
-    message: Message<{ min: number }> = locale.min,
+    message: Message<{ min: number }>,
   ) {
     return this.test({
-      message,
+      message: () => message || locale.min,
       name: 'min',
       exclusive: true,
       params: { min },
@@ -92,12 +92,12 @@ export default class StringSchema<
 
   max(
     max: number | Reference<number>,
-    message: Message<{ max: number }> = locale.max,
+    message: Message<{ max: number }>,
   ) {
     return this.test({
       name: 'max',
       exclusive: true,
-      message,
+      message: () => message || locale.max,
       params: { max },
       test(value: Maybe<string>) {
         return isAbsent(value) || value.length <= this.resolve(max);
@@ -124,6 +124,7 @@ export default class StringSchema<
 
     return this.test({
       name: name || 'matches',
+      // TODO: make this a function
       message: message || locale.matches,
       params: { regex },
       test: (value: Maybe<string>) =>
@@ -133,26 +134,26 @@ export default class StringSchema<
     });
   }
 
-  email(message = locale.email) {
+  email(message?:string) {
     return this.matches(rEmail, {
       name: 'email',
-      message,
+      message: () => message || locale.email,
       excludeEmptyString: true,
     });
   }
 
-  url(message = locale.url) {
+  url(message?:string) {
     return this.matches(rUrl, {
       name: 'url',
-      message,
+      message: () => message || locale.url,
       excludeEmptyString: true,
     });
   }
 
-  uuid(message = locale.uuid) {
+  uuid(message?:string) {
     return this.matches(rUUID, {
       name: 'uuid',
-      message,
+      message: () => message || locale.uuid,
       excludeEmptyString: false,
     });
   }
@@ -164,19 +165,19 @@ export default class StringSchema<
     ) as any;
   }
 
-  trim(message = locale.trim) {
+  trim(message?:string) {
     return this.transform((val) => (val != null ? val.trim() : val)).test({
-      message,
+      message: () => message || locale.trim,
       name: 'trim',
       test: isTrimmed,
     });
   }
 
-  lowercase(message = locale.lowercase) {
+  lowercase(message?:string) {
     return this.transform((value) =>
       !isAbsent(value) ? value.toLowerCase() : value,
     ).test({
-      message,
+      message: () => message || locale.lowercase,
       name: 'string_case',
       exclusive: true,
       test: (value: Maybe<string>) =>
@@ -184,11 +185,11 @@ export default class StringSchema<
     });
   }
 
-  uppercase(message = locale.uppercase) {
+  uppercase(message?:string) {
     return this.transform((value) =>
       !isAbsent(value) ? value.toUpperCase() : value,
     ).test({
-      message,
+      message: () => message || locale.uppercase,
       name: 'string_case',
       exclusive: true,
       test: (value: Maybe<string>) =>
