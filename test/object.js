@@ -27,6 +27,8 @@ describe('Object types', () => {
         nested: object().shape({ str: string() }),
         arrNested: array().of(object().shape({ num: number() })),
         stripped: string().strip(),
+        constructor: string().default('1'),
+        __proto__: string().default('2'),
       });
     });
 
@@ -59,6 +61,8 @@ describe('Object types', () => {
         dte: new Date(1411500325000),
         nested: { str: '5' },
         arrNested: [{ num: 5 }, { num: 5 }],
+        constructor: '1',
+        __proto__: '2',
       });
 
       cast.arrNested[0].should.equal(obj.arrNested[0], 'should be kept as is');
@@ -72,6 +76,8 @@ describe('Object types', () => {
         dte: new Date(1411500325000),
         nested: { str: '5' },
         arrNested: [{ num: 5 }, { num: 5 }],
+        constructor: '1',
+        __proto__: '2',
       };
 
       inst.cast(obj).should.equal(obj);
@@ -91,6 +97,7 @@ describe('Object types', () => {
           .shape({ str: string().min(3) })
           .required(),
         arrNested: array().of(object().shape({ num: number() })),
+        constructor: string(),
       });
       obj = {
         num: '4',
@@ -99,6 +106,7 @@ describe('Object types', () => {
         dte: '2014-09-23T19:25:25Z',
         nested: { str: 5 },
         arrNested: [{ num: 5 }, { num: '2' }],
+        constructor: '1',
       };
     });
 
