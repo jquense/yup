@@ -227,6 +227,30 @@ describe('String types', () => {
     ]);
   });
 
+  it('should check hex correctly', function () {
+	var v = string().hex()
+
+    return Promise.all([
+      v
+        .isValid('#1f2e3f')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('#fff')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('#FFF')
+        .should.eventually()
+        .equal(true),
+      v
+        .isValid('#192')
+        .should.eventually()
+        .equal(true),
+      v.isValid('this is not a hex').should.eventually().equal(false)
+    ]);
+  });
+
   it('should validate transforms', function () {
     return Promise.all([
       string().trim().isValid(' 3  ').should.eventually().equal(true),

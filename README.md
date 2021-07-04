@@ -189,6 +189,7 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
   - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
   - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+  - [`string.hex(message?: string | function): Schema`](#stringhexmessage-string--function-schema)
   - [`string.ensure(): Schema`](#stringensure-schema)
   - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
   - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
@@ -878,6 +879,10 @@ Validates the value as a valid URL via a regex.
 #### `string.uuid(message?: string | function): Schema`
 
 Validates the value as a valid UUID via a regex.
+
+#### `string.hex(message?: string | function): Schema`
+
+Validates the value as a valid hexadecimal via a regex.
 
 #### `string.ensure(): Schema`
 
