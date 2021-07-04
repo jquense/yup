@@ -18,6 +18,7 @@ export interface StringLocale {
   email?: Message<{ regex: RegExp }>;
   url?: Message<{ regex: RegExp }>;
   uuid?: Message<{ regex: RegExp }>;
+  hex?: Message<{ regex: RegExp }>;
   trim?: Message;
   lowercase?: Message;
   uppercase?: Message;
@@ -83,6 +84,7 @@ export let string: Required<StringLocale> = {
   email: '${path} must be a valid email',
   url: '${path} must be a valid URL',
   uuid: '${path} must be a valid UUID',
+  hex: '${path} must be a valid hexadecimal',
   trim: '${path} must be a trimmed string',
   lowercase: '${path} must be a lowercase string',
   uppercase: '${path} must be a upper case string',
