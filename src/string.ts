@@ -23,8 +23,12 @@ export type MatchOptions = {
 
 let objStringTag = {}.toString();
 
-export function create() {
-  return new StringSchema();
+export function create<
+  TType extends Maybe<string> = string | undefined,
+  TContext extends AnyObject = AnyObject,
+  TOut extends TType = TType
+>() {
+  return new StringSchema<TType, TContext, TOut>();
 }
 
 export default class StringSchema<
