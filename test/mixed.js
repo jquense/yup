@@ -529,6 +529,16 @@ describe('Mixed Types ', () => {
       });
   });
 
+  it('should fail when the test function returns a rejected Promise', async () => {
+    let inst = string().test(() => {
+      return Promise.reject(new Error('oops an error occurred'))
+    });
+
+    return inst
+      .validate('joe')
+      .should.be.rejected();
+  });
+
   describe('withMutation', () => {
     it('should pass the same instance to a provided function', () => {
       let inst = mixed();

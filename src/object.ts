@@ -305,7 +305,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation((next: any) => next.shape(nextFields));
+    return next.withMutation(() => next.shape(nextFields));
   }
 
   getDefaultFromShape(): DefaultFromShape<TShape> {
@@ -376,7 +376,7 @@ export default class ObjectSchema<
       delete fields[key];
     }
 
-    return next.withMutation((next: any) => next.shape(fields));
+    return next.withMutation(() => next.shape(fields));
   }
 
   from(from: string, to: keyof TShape, alias?: boolean) {

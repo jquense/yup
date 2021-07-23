@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
 /* eslint-disable no-unused-expressions */
 
@@ -8,6 +10,7 @@ import {
   mixed,
   number,
   ref,
+  date,
   lazy,
   SchemaOf,
 } from '../src';
@@ -199,6 +202,65 @@ SchemaOf: {
   });
 }
 
+SchemaOfDate: {
+  type Employee = {
+    hire_date: Date;
+    name: string;
+  };
+
+  type EmployeeSchema = SchemaOf<Employee>;
+
+  const _t: EmployeeSchema = object({
+    name: string().defined(),
+    hire_date: date().defined()
+  });
+}
+
+SchemaOfDateArray: {
+  type EmployeeWithPromotions = {
+    promotion_dates: Date[];
+    name: string;
+  };
+
+  type EmployeeWithPromotionsSchema = SchemaOf<EmployeeWithPromotions>;
+
+  const _t: EmployeeWithPromotionsSchema = object({
+    name: string().defined(),
+    promotion_dates: array().of(date().defined())
+  });
+}
+
+SchemaOfFile: {
+  type Document = {
+    file: File;
+    date_uploaded: Date;
+    notes: string;
+  };
+
+  type FileSchema = SchemaOf<Document, File>;
+
+  const _t: FileSchema = object({
+    file: mixed<File>().defined(),
+    date_uploaded: date().defined(),
+    notes: string().defined(),
+  });
+}
+
+SchemaOfFileArray: {
+  type DocumentWithFullHistory = {
+    history: File[];
+    name: string;
+  };
+
+  type DocumentWithFullHistorySchema = SchemaOf<DocumentWithFullHistory, File>;
+
+  const _t: DocumentWithFullHistorySchema = object({
+    name: string().defined(),
+    history: array().of(mixed<File>().defined())
+  });
+}
+
+
 {
   // const str = string();
   // type f = Type<typeof str>;
@@ -263,6 +325,20 @@ SchemaOf: {
   // $ExpectType (number | undefined)[]
   const _c1 = array(number())
     .concat(array(number()).required())
+    .validateSync([]);
+
+  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[] | null
+  const _definedArray: Array<{ a: number }> | null = array()
+    .of(object({ a: number().required() }))
+    .nullable()
+    .defined()
+    .validateSync([]);
+
+  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[]
+  const _requiredArray: Array<{ a: number }> = array()
+    .of(object({ a: number().required() }))
+    .nullable()
+    .required()
     .validateSync([]);
 }
 

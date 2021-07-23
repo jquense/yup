@@ -179,7 +179,7 @@ export default class ArraySchema<
 
   of<TInner extends AnySchema>(schema: TInner): ArraySchema<TInner> {
     // FIXME: this should return a new instance of array without the default to be
-    var next = this.clone();
+    let next = this.clone();
 
     if (!isSchema(schema))
       throw new TypeError(
@@ -260,6 +260,20 @@ export default class ArraySchema<
     let base = super.describe() as SchemaInnerTypeDescription;
     if (this.innerType) base.innerType = this.innerType.describe();
     return base;
+  }
+
+  nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
+  nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
+  nullable(isNullable = true): ArraySchema<T, C, TIn | null> {
+    return super.nullable(isNullable as any);
+  }
+
+  defined(): DefinedArraySchema<T, C, TIn> {
+    return super.defined();
+  }
+
+  required(msg?: MixedLocale['required']): RequiredArraySchema<T, C, TIn> {
+    return super.required(msg);
   }
 }
 
