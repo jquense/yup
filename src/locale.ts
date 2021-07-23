@@ -52,6 +52,16 @@ export interface BooleanLocale {
   isValue?: Message;
 }
 
+export interface LocaleObject {
+  mixed?: MixedLocale;
+  string?: StringLocale;
+  number?: NumberLocale;
+  date?: DateLocale;
+  boolean?: BooleanLocale;
+  object?: ObjectLocale;
+  array?: ArrayLocale;
+}
+
 export let mixed: Required<MixedLocale> = {
   default: '${path} is invalid',
   required: '${path} is a required field',
