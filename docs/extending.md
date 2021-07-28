@@ -47,9 +47,9 @@ Note that `addMethod` isn't magic, it mutates the prototype of the passed in sch
 
 ## Creating new Schema types
 
-If you're use case calls for creating an entirely new type. inheriting from
-and existing schema class may be best: Generally you should not inheriting from
-the abstract `BaseSchema` unless you know what you are doing. The other types are fair game though.
+If you're using case calls for creating an entirely new type, inheriting from
+an existing schema class may be the best alternative: Generally you should not inherit from
+the abstract `BaseSchema` (unless you know what you are doing). The other types are fair game though.
 
 You should keep in mind some basic guidelines when extending schemas:
 
