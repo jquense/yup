@@ -381,8 +381,10 @@ export default abstract class BaseSchema<
     let initialTests = [];
 
     if (this._typeError) initialTests.push(this._typeError);
-    if (this._whitelistError) initialTests.push(this._whitelistError);
-    if (this._blacklistError) initialTests.push(this._blacklistError);
+
+    let finalTests = [];
+    if (this._whitelistError) finalTests.push(this._whitelistError);
+    if (this._blacklistError) finalTests.push(this._blacklistError);    
 
     runTests(
       {
@@ -398,7 +400,7 @@ export default abstract class BaseSchema<
 
         runTests(
           {
-            tests: this.tests,
+            tests: this.tests.concat(finalTests),
             args,
             path,
             sync,
