@@ -697,7 +697,7 @@ export default abstract class BaseSchema<
   }
 
   notOneOf<U extends TCast>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: Array<Maybe<U> | Reference> | Reference,
     message = locale.notOneOf,
   ): this {
     var next = this.clone();
