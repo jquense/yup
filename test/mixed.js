@@ -173,6 +173,15 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should limit values with a ref', async () => {
+    let context = { someValues: [1,2,3] };
+    let inst = mixed().oneOf(ref('$someValues'));
+    await inst.validate(1,{context}).should.eventually.equal(1);
+    await inst.validate(4,{context}).should.be.rejected().then(err => {
+      err.type.should.equal('oneOf')
+    })
+  })
+
   it('should not require field when notRequired was set', async () => {
     let inst = mixed().required();
 
@@ -257,6 +266,23 @@ describe('Mixed Types ', () => {
         'this must not be one of the following values: 5, hello',
       );
     });
+
+    it('should accept a ref in place of an array', () => {
+      const context = {someValues:[1,2,3]}
+      return Promise.all([
+        mixed()
+          .notOneOf(ref('$someValues'))
+          .validate(1,{context})
+          .should.be.rejected()
+          .then(err => {
+            err.type.should.equal('notOneOf')
+          }),
+        mixed()
+          .notOneOf(ref('$someValues'))
+          .validate(4,{context})
+          .should.eventually.be(4)
+      ])
+    })
   });
 
   it('should run subset of validations first', () => {

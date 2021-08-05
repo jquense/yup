@@ -666,12 +666,12 @@ export default abstract class BaseSchema<
   }
 
   oneOf<U extends TCast>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: Array<Maybe<U> | Reference> | Reference,
     message = locale.oneOf,
   ): this {
     var next = this.clone();
 
-    enums.forEach((val) => {
+    (Ref.isRef(enums) ? [enums] : enums).forEach((val) => {
       next._whitelist.add(val);
       next._blacklist.delete(val);
     });
@@ -701,7 +701,7 @@ export default abstract class BaseSchema<
     message = locale.notOneOf,
   ): this {
     var next = this.clone();
-    enums.forEach((val) => {
+    (Ref.isRef(enums) ? [enums] : enums).forEach((val) => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
     });

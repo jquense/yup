@@ -41,8 +41,11 @@ export default class ReferenceSet {
 
     let item,
       values = this.refs.values();
-    while (((item = values.next()), !item.done))
-      if (resolve(item.value) === value) return true;
+    while (((item = values.next()), !item.done)) {
+      const resolved = resolve(item.value);
+      if((Array.isArray(resolved) && resolved.some(r => r === value)) || resolved === value) return true;
+    }
+      
 
     return false;
   }
