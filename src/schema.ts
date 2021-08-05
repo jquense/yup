@@ -12,7 +12,6 @@ import createValidation, {
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
-import toArray from './util/toArray';
 import {
   ValidateOptions,
   TransformFunction,
@@ -28,6 +27,7 @@ import ValidationError from './ValidationError';
 import type { Asserts, Thunk } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
+import toArray from './util/toArray';
 
 // const UNSET = 'unset' as const;
 
@@ -682,12 +682,14 @@ export default abstract class BaseSchema<
       test(value) {
         if (value === undefined) return true;
         let valids = this.schema._whitelist;
+        let resolved = valids.resolveAll(this.resolve);
 
-        return valids.has(value, this.resolve)
+        return resolved.includes(value)
           ? true
           : this.createError({
               params: {
                 values: valids.toArray().join(', '),
+                resolved
               },
             });
       },
@@ -711,10 +713,12 @@ export default abstract class BaseSchema<
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
-        if (invalids.has(value, this.resolve))
+        let resolved = invalids.resolveAll(this.resolve);
+        if (resolved.includes(value))
           return this.createError({
             params: {
               values: invalids.toArray().join(', '),
+              resolved
             },
           });
         return true;
