@@ -173,8 +173,8 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   - [`mixed.notRequired(): Schema` Alias: `optional()`](#mixednotrequired-schema-alias-optional)
   - [`mixed.defined(): Schema`](#mixeddefined-schema)
   - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
-  - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
-  - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-message-string--function)
+  - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany--ref-message-string--function-schema-alias-equals)
+  - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany--ref-message-string--function)
   - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
   - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
   - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
@@ -603,7 +603,7 @@ Require a value for the schema. All field values apart from `undefined` meet thi
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
 be used in the `message` argument.
 
-#### `mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
+#### `mixed.oneOf(arrayOfValues: Array<any> | Ref, message?: string | function): Schema` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
@@ -619,7 +619,7 @@ await schema.isValid('jimmy'); // => true
 await schema.isValid(new Date()); // => false
 ```
 
-#### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
+#### `mixed.notOneOf(arrayOfValues: Array<any> | Ref, message?: string | function)`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
 The `${values}` interpolation can be used in the `message` argument.
