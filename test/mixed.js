@@ -173,6 +173,17 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should limit values with a ref', async () => {
+    let someValues =  [1,2,3] ;
+    let context = { someValues };
+    let inst = mixed().oneOf([ref('$someValues[0]'),ref('$someValues[1]'),ref('$someValues[2]')]);
+    await inst.validate(1,{context}).should.eventually.equal(1);
+    await inst.validate(4,{context}).should.be.rejected().then(err => {
+      err.type.should.equal('oneOf')
+      expect(err.params.resolved).to.deep.equal(someValues)
+    })
+  })
+
   it('should not require field when notRequired was set', async () => {
     let inst = mixed().required();
 
