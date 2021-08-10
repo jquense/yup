@@ -2,11 +2,13 @@ import {
   array,
   bool,
   lazy,
-  mixed, MixedSchema, number,
+  mixed,  
+  number,
   object,
   reach,
   ref,
   string,
+  MixedSchema,
   ValidationError
 } from '../src';
 import { ensureSync } from './helpers';

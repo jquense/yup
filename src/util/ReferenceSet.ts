@@ -1,5 +1,5 @@
-import Reference from '../Reference';
 import type { SchemaRefDescription } from '../schema';
+import Reference from '../Reference';
 
 export default class ReferenceSet {
   list: Set<unknown>;
