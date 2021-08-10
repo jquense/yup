@@ -174,12 +174,13 @@ describe('Mixed Types ', () => {
   });
 
   it('should limit values with a ref', async () => {
-    let context = { someValues: [1,2,3] };
+    let someValues = [1,2,3];
+    let context = { someValues };
     let inst = mixed().oneOf(ref('$someValues'));
     await inst.validate(1,{context}).should.eventually.equal(1);
     await inst.validate(4,{context}).should.be.rejected().then(err => {
       err.type.should.equal('oneOf')
-      expect(err.params.resolved).to.deep.equal(context.someValues)
+      expect(err.params.resolved).to.deep.equal(someValues)
     });
   })
 
