@@ -1,5 +1,5 @@
-import type { SchemaRefDescription } from '../schema';
 import Reference from '../Reference';
+import type { SchemaRefDescription } from '../schema';
 
 export default class ReferenceSet {
   list: Set<unknown>;
@@ -26,6 +26,10 @@ export default class ReferenceSet {
     return Array.from(this.list).concat(Array.from(this.refs.values()));
   }
 
+  resolveAll(resolve: (v: unknown) => unknown) {
+    return this.toArray().reduce((acc: unknown[],e) => acc.concat(Reference.isRef(e) ? resolve(e) : e),[]);
+  }
+
   add(value: unknown) {
     Reference.isRef(value)
       ? this.refs.set(value.key, value)
@@ -35,19 +39,6 @@ export default class ReferenceSet {
     Reference.isRef(value)
       ? this.refs.delete(value.key)
       : this.list.delete(value);
-  }
-  has(value: unknown, resolve: (v: unknown) => unknown) {
-    if (this.list.has(value)) return true;
-
-    let item,
-      values = this.refs.values();
-    while (((item = values.next()), !item.done)) {
-      const resolved = resolve(item.value);
-      if((Array.isArray(resolved) && resolved.some(r => r === value)) || resolved === value) return true;
-    }
-      
-
-    return false;
   }
 
   clone() {

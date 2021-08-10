@@ -2,14 +2,12 @@ import {
   array,
   bool,
   lazy,
-  mixed,
-  number,
+  mixed, MixedSchema, number,
   object,
   reach,
   ref,
   string,
-  ValidationError,
-  MixedSchema,
+  ValidationError
 } from '../src';
 import { ensureSync } from './helpers';
 
@@ -179,7 +177,8 @@ describe('Mixed Types ', () => {
     await inst.validate(1,{context}).should.eventually.equal(1);
     await inst.validate(4,{context}).should.be.rejected().then(err => {
       err.type.should.equal('oneOf')
-    })
+      expect(err.params.resolved).to.deep.equal(context.someValues)
+    });
   })
 
   it('should not require field when notRequired was set', async () => {
