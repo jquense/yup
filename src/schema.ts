@@ -509,9 +509,9 @@ export default abstract class BaseSchema<
     return value != null;
   }
 
-  defined(message = locale.defined): any {
+  defined(message?:string ): any {
     return this.test({
-      message,
+      message: () => message || locale.defined,
       name: 'defined',
       exclusive: true,
       test(value) {
@@ -520,10 +520,10 @@ export default abstract class BaseSchema<
     });
   }
 
-  required(message = locale.required): any {
+  required(message: any): any {
     return this.clone({ presence: 'required' }).withMutation((s) =>
       s.test({
-        message,
+        message: () => message || locale.required,
         name: 'required',
         exclusive: true,
         test(value) {
@@ -591,6 +591,7 @@ export default abstract class BaseSchema<
       opts = { name: args[0], message: args[1], test: args[2] };
     }
 
+    // TODO: should we always pass function here
     if (opts.message === undefined) opts.message = locale.default;
 
     if (typeof opts.test !== 'function')
@@ -669,7 +670,7 @@ export default abstract class BaseSchema<
 
   oneOf<U extends TCast>(
     enums: Array<Maybe<U> | Reference>,
-    message = locale.oneOf,
+    message?:string,
   ): this {
     var next = this.clone();
 
@@ -679,7 +680,7 @@ export default abstract class BaseSchema<
     });
 
     next._whitelistError = createValidation({
-      message,
+      message: () => message || locale.oneOf,
       name: 'oneOf',
       test(value) {
         if (value === undefined) return true;
@@ -702,7 +703,7 @@ export default abstract class BaseSchema<
 
   notOneOf<U extends TCast>(
     enums: Array<Maybe<U> | Reference>,
-    message = locale.notOneOf,
+    message?:string,
   ): this {
     var next = this.clone();
     enums.forEach((val) => {
@@ -711,7 +712,7 @@ export default abstract class BaseSchema<
     });
 
     next._blacklistError = createValidation({
-      message,
+      message: () => message || locale.notOneOf,
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;

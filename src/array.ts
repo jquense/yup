@@ -195,10 +195,10 @@ export default class ArraySchema<
 
   length(
     length: number | Reference<number>,
-    message: Message<{ length: number }> = locale.length,
+    message: Message<{ length: number }>,
   ) {
     return this.test({
-      message,
+      message: () => message || locale.length,
       name: 'length',
       exclusive: true,
       params: { length },
@@ -209,10 +209,9 @@ export default class ArraySchema<
   }
 
   min(min: number | Reference<number>, message?: Message<{ min: number }>) {
-    message = message || locale.min;
 
     return this.test({
-      message,
+      message: () => message || locale.min,
       name: 'min',
       exclusive: true,
       params: { min },
@@ -224,9 +223,8 @@ export default class ArraySchema<
   }
 
   max(max: number | Reference<number>, message?: Message<{ max: number }>) {
-    message = message || locale.max;
     return this.test({
-      message,
+      message: () => message || locale.max,
       name: 'max',
       exclusive: true,
       params: { max },

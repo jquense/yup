@@ -62,11 +62,11 @@ export default class DateSchema<
     return param;
   }
 
-  min(min: unknown | Ref<Date>, message = locale.min) {
+  min(min: unknown | Ref<Date>, message?:string) {
     let limit = this.prepareParam(min, 'min');
 
     return this.test({
-      message,
+      message: () => message || locale.min,
       name: 'min',
       exclusive: true,
       params: { min },
@@ -76,11 +76,11 @@ export default class DateSchema<
     });
   }
 
-  max(max: unknown | Ref, message = locale.max) {
+  max(max: unknown | Ref, message?:string ) {
     var limit = this.prepareParam(max, 'max');
 
     return this.test({
-      message,
+      message: () => message || locale.max,
       name: 'max',
       exclusive: true,
       params: { max },
