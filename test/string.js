@@ -139,6 +139,12 @@ describe('String types', () => {
     return v.isValid('').should.eventually().equal(true);
   });
 
+  it('SLUG should exclude empty strings', () => {
+    let v = string().slug();
+
+    return v.isValid('').should.eventually().equal(true);
+  });
+
   it('should check MIN correctly', function () {
     var v = string().min(5);
     var obj = object({
@@ -227,23 +233,33 @@ describe('String types', () => {
     ]);
   });
 
-  it('should check allowed values at the end',() => {
+  it('should check allowed values at the end', () => {
     return Promise.all([
       string()
         .required('Required')
         .notOneOf([ref('$someKey')])
-        .validate('',{context:{someKey:''}})
-        .should.be.rejected().then(err => {
-          err.type.should.equal('required')
+        .validate('', { context: { someKey: '' } })
+        .should.be.rejected()
+        .then((err) => {
+          err.type.should.equal('required');
         }),
       object({
-        email:string().required('Email Required'),
-        password:string().required('Password Required').notOneOf([ref('email')]),
-      }).validate({email:'',password:''},{abortEarly:false})
-      .should.be.rejected().then(err => {
-        err.errors.should.include('Email Required');
-        err.errors.should.include('Password Required');
+        email: string().required('Email Required'),
+        slug: string().slug('String must be valid slug'),
+        password: string()
+          .required('Password Required')
+          .notOneOf([ref('email')]),
       })
+        .validate(
+          { email: '', password: '', slug: 'test slug string' },
+          { abortEarly: false },
+        )
+        .should.be.rejected()
+        .then((err) => {
+          err.errors.should.include('Email Required');
+          err.errors.should.include('String must be valid slug');
+          err.errors.should.include('Password Required');
+        }),
     ]);
   });
 
