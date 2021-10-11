@@ -14,7 +14,7 @@ export let castAll = (inst, { invalid = [], valid = [] }) => {
     });
   });
 
-  invalid.forEach(value => {
+  invalid.forEach((value) => {
     it(`should not cast ${printValue(value)}`, () => {
       castAndShouldFail(inst, value);
     });
@@ -31,26 +31,27 @@ export let validateAll = (inst, { valid = [], invalid = [] }) => {
   });
 
   function runValidations(arr, isValid) {
-    arr.forEach(config => {
+    arr.forEach((config) => {
       let message = '',
         value = config,
         schema = inst;
 
       if (Array.isArray(config)) [value, schema, message = ''] = config;
 
-      it(`${printValue(value)}${message && `  (${message})`}`, () =>
-        schema.isValid(value).should.become(isValid));
+      it(`${printValue(value)}${message && `  (${message})`}`, async () => {
+        await schema.isValid(value).should.become(isValid);
+      });
     });
   }
 };
 
 export function ensureSync(fn) {
   let run = false;
-  let resolve = t => {
+  let resolve = (t) => {
     if (!run) return t;
     throw new Error('Did not execute synchronously');
   };
-  let err = t => {
+  let err = (t) => {
     if (!run) throw t;
     throw new Error('Did not execute synchronously');
   };

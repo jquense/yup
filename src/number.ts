@@ -1,6 +1,6 @@
 import { MixedLocale, number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Maybe, Message } from './types';
+import type { AnyObject, Maybe } from './types';
 import type Reference from './Reference';
 import type { Defined, If, Thunk } from './util/types';
 import BaseSchema from './schema';
@@ -112,7 +112,7 @@ export default class NumberSchema<
   }
 
   round(method: 'ceil' | 'floor' | 'round' | 'trunc') {
-    var avail = ['ceil', 'floor', 'round', 'trunc'];
+    let avail = ['ceil', 'floor', 'round', 'trunc'];
     method = (method?.toLowerCase() as any) || ('round' as const);
 
     // this exists for symemtry with the new Math.trunc

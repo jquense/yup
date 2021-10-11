@@ -116,12 +116,14 @@ export default function createValidation(config: {
 
     if (!sync) {
       try {
-        Promise.resolve(test.call(ctx, value, ctx)).then((validOrError) => {
-          if (ValidationError.isError(validOrError)) cb(validOrError);
-          else if (!validOrError) cb(createError());
-          else cb(null, validOrError);
-        }).catch(cb);
-      } catch (err) {
+        Promise.resolve(test.call(ctx, value, ctx))
+          .then((validOrError) => {
+            if (ValidationError.isError(validOrError)) cb(validOrError);
+            else if (!validOrError) cb(createError());
+            else cb(null, validOrError);
+          })
+          .catch(cb);
+      } catch (err: any) {
         cb(err);
       }
 
@@ -138,7 +140,7 @@ export default function createValidation(config: {
             `This test will finish after the validate call has returned`,
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       cb(err);
       return;
     }

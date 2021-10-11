@@ -122,8 +122,8 @@ describe('Number types', function () {
       invalid: [5, 7, null, [14, schema.lessThan(10).lessThan(14)]],
     });
 
-    it('should return default message', () => {
-      return schema
+    it('should return default message', async () => {
+      await schema
         .validate(6)
         .should.be.rejected.and.eventually.have.property('errors')
         .that.contain('this must be less than 5');
@@ -138,8 +138,8 @@ describe('Number types', function () {
       invalid: [5, -10, null, [64, schema.moreThan(52).moreThan(74)]],
     });
 
-    it('should return default message', () => {
-      return schema
+    it('should return default message', async () => {
+      await schema
         .validate(4)
         .should.be.rejected.and.eventually.have.property('errors')
         .that.contain('this must be greater than 5');
@@ -154,8 +154,8 @@ describe('Number types', function () {
       invalid: [10.53, 0.1 * 0.2, -34512535.626, new Date()],
     });
 
-    it('should return default message', () => {
-      return schema
+    it('should return default message', async () => {
+      await schema
         .validate(10.53)
         .should.be.rejected.and.eventually.have.property('errors')
         .that.contain('this must be an integer');

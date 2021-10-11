@@ -14,7 +14,7 @@ module.exports = (api) => ({
             targets: { node: 'current' },
           },
     ],
-    '@babel/preset-typescript',
+    ['@babel/preset-typescript', { allowDeclareFields: true }],
   ],
   plugins: [
     '@babel/plugin-proposal-logical-assignment-operators',
