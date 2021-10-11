@@ -86,7 +86,8 @@ export default class ObjectSchema<
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];
-  private _excludedEdges: readonly string[] = [];
+
+  private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
 
   constructor(spec?: TShape) {
     super({
@@ -305,7 +306,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation(() => next.shape(nextFields));
+    return next.withMutation(() => next.shape(nextFields, this._excludedEdges));
   }
 
   getDefaultFromShape(): DefaultFromShape<TShape> {
@@ -344,11 +345,10 @@ export default class ObjectSchema<
     next._sortErrors = sortByKeyOrder(Object.keys(fields));
 
     if (excludes.length) {
+      // this is a convenience for when users only supply a single pair
       if (!Array.isArray(excludes[0])) excludes = [excludes as any];
 
-      let keys = excludes.map(([first, second]) => `${first}-${second}`);
-
-      next._excludedEdges = next._excludedEdges.concat(keys);
+      next._excludedEdges = [...next._excludedEdges, ...excludes];
     }
 
     next._nodes = sortFields(fields, next._excludedEdges);
