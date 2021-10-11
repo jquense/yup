@@ -10,7 +10,10 @@ export type ReferenceOptions<TValue = unknown> = {
   map?: (value: unknown) => TValue;
 };
 
-export function create<TValue = unknown>(key: string, options?: ReferenceOptions<TValue>) {
+export function create<TValue = unknown>(
+  key: string,
+  options?: ReferenceOptions<TValue>,
+) {
   return new Reference<TValue>(key, options);
 }
 
@@ -24,7 +27,7 @@ export default class Reference<TValue = unknown> {
   readonly getter: (data: unknown) => unknown;
   readonly map?: (value: unknown) => TValue;
 
-  readonly __isYupRef!: boolean;
+  declare readonly __isYupRef: boolean;
 
   constructor(key: string, options: ReferenceOptions<TValue> = {}) {
     if (typeof key !== 'string')

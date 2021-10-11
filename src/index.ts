@@ -36,7 +36,7 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
-type ObjectSchemaOf<T extends AnyObject> = ObjectSchema<
+type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<
   {
     [k in keyof T]-?: T[k] extends Array<infer E>
       ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>

@@ -801,6 +801,26 @@ describe('Object types', () => {
     expect(inst.concat(object().default({})).getDefault()).to.eql({});
   });
 
+  it('should maintain excluded edges when concating', async () => {
+    const schema = object().shape(
+      {
+        a1: string().when('a2', {
+          is: undefined,
+          then: string().required(),
+        }),
+        a2: string().when('a1', {
+          is: undefined,
+          then: string().required(),
+        }),
+      },
+      [['a1', 'a2']],
+    );
+
+    await expect(schema.concat(object()).isValid({ a1: null })).to.become(
+      false,
+    );
+  });
+
   it('should handle nested conditionals', () => {
     let countSchema = number().when('isBig', {
       is: true,

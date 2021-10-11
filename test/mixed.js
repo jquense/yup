@@ -173,6 +173,24 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should limit values with a ref', async () => {
+    let someValues = [1, 2, 3];
+    let context = { someValues };
+    let inst = mixed().oneOf([
+      ref('$someValues[0]'),
+      ref('$someValues[1]'),
+      ref('$someValues[2]'),
+    ]);
+    await inst.validate(1, { context }).should.eventually.equal(1);
+    await inst
+      .validate(4, { context })
+      .should.be.rejected()
+      .then((err) => {
+        err.type.should.equal('oneOf');
+        expect(err.params.resolved).to.deep.equal(someValues);
+      });
+  });
+
   it('should not require field when notRequired was set', async () => {
     let inst = mixed().required();
 
@@ -529,6 +547,14 @@ describe('Mixed Types ', () => {
       });
   });
 
+  it('should fail when the test function returns a rejected Promise', async () => {
+    let inst = string().test(() => {
+      return Promise.reject(new Error('oops an error occurred'));
+    });
+
+    return inst.validate('joe').should.be.rejected();
+  });
+
   describe('withMutation', () => {
     it('should pass the same instance to a provided function', () => {
       let inst = mixed();
@@ -635,6 +661,18 @@ describe('Mixed Types ', () => {
 
       result.message.should.contain('str is a required field');
     });
+  });
+
+  it('concat should carry over transforms', async () => {
+    let inst = string().trim();
+
+    await expect(inst.concat(string().min(4)).cast(' hello  ')).to.equal(
+      'hello',
+    );
+
+    await expect(inst.concat(string().min(4)).isValid(' he  ')).to.become(
+      false,
+    );
   });
 
   it('concat should fail on different types', function () {

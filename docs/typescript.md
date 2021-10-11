@@ -59,7 +59,7 @@ If you want the type produced by casting:
 ```ts
 import type { TypeOf } from 'yup';
 
-interface PersonInput extends Typeof<typeof personSchema> {}
+interface PersonInput extends TypeOf<typeof personSchema> {}
 
 const validated: PersonInput = personSchema.cast(json);
 ```
@@ -109,7 +109,7 @@ if needed. Type extensions should go in an "ambient" type def file such as your
 
 ```ts
 declare module 'yup' {
-  class StringSchema<TIn, TContext, TOut> {
+  interface StringSchema<TIn, TContext, TOut> {
     myMethod(param: string): this;
   }
 }

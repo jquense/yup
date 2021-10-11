@@ -12,7 +12,6 @@ import createValidation, {
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
-import toArray from './util/toArray';
 import {
   ValidateOptions,
   TransformFunction,
@@ -121,15 +120,15 @@ export interface SchemaDescription {
 
 export default abstract class BaseSchema<
   TType = any,
-  TConfig extends Config<any, any> = Config
+  TConfig extends Config<any, any> = Config,
 > {
-  readonly type: string;
+  declare readonly type: string;
 
-  readonly __type!: TType;
-  readonly __outputType!: ResolveFlags<TType, TConfig['flags']>;
+  declare readonly __type!: TType;
+  declare readonly __outputType!: ResolveFlags<TType, TConfig['flags']>;
 
-  readonly __flags!: TConfig['flags'];
-  readonly __isYupSchema__!: boolean;
+  declare readonly __flags!: TConfig['flags'];
+  declare readonly __isYupSchema__!: boolean;
 
   readonly deps: readonly string[] = [];
 
@@ -293,6 +292,7 @@ export default abstract class BaseSchema<
       });
     });
 
+    combined.transforms = [...base.transforms, ...combined.transforms];
     return combined as any;
   }
 
@@ -759,12 +759,14 @@ export default abstract class BaseSchema<
       test(value) {
         if (value === undefined) return true;
         let valids = this.schema._whitelist;
+        let resolved = valids.resolveAll(this.resolve);
 
-        return valids.has(value, this.resolve)
+        return resolved.includes(value)
           ? true
           : this.createError({
               params: {
                 values: valids.toArray().join(', '),
+                resolved,
               },
             });
       },
@@ -788,10 +790,12 @@ export default abstract class BaseSchema<
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
-        if (invalids.has(value, this.resolve))
+        let resolved = invalids.resolveAll(this.resolve);
+        if (resolved.includes(value))
           return this.createError({
             params: {
               values: invalids.toArray().join(', '),
+              resolved,
             },
           });
         return true;
@@ -837,7 +841,7 @@ export default abstract class BaseSchema<
 export default interface BaseSchema<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TType = any,
-  TConfig extends Config<any, any> = Config
+  TConfig extends Config<any, any> = Config,
 > {
   validateAt(
     path: string,
@@ -859,21 +863,20 @@ export default interface BaseSchema<
 BaseSchema.prototype.__isYupSchema__ = true;
 
 for (const method of ['validate', 'validateSync'])
-  BaseSchema.prototype[
-    `${method}At` as 'validateAt' | 'validateSyncAt'
-  ] = function (path: string, value: any, options: ValidateOptions = {}) {
-    const { parent, parentPath, schema } = getIn(
-      this,
-      path,
-      value,
-      options.context,
-    );
-    return schema[method](parent && parent[parentPath], {
-      ...options,
-      parent,
-      path,
-    });
-  };
+  BaseSchema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
+    function (path: string, value: any, options: ValidateOptions = {}) {
+      const { parent, parentPath, schema } = getIn(
+        this,
+        path,
+        value,
+        options.context,
+      );
+      return schema[method](parent && parent[parentPath], {
+        ...options,
+        parent,
+        path,
+      });
+    };
 
 for (const alias of ['equals', 'is'] as const)
   BaseSchema.prototype[alias] = BaseSchema.prototype.oneOf;

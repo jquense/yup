@@ -37,8 +37,7 @@ import { ResolveOptions } from './Condition';
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} &
-  U;
+} & U;
 
 export type AnyObject = Record<string, any>;
 
@@ -119,13 +118,14 @@ export default class ObjectSchema<
 > extends BaseSchema<TIn, TConfig> {
   fields: TShape = Object.create(null);
 
-  spec!: ObjectSchemaSpec;
+  declare spec: ObjectSchemaSpec;
 
   readonly __outputType!: ResolveFlags<_<TIn>, TConfig['flags']>;
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];
-  private _excludedEdges: readonly string[] = [];
+
+  private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
 
   constructor(spec?: TShape) {
     super({
@@ -347,7 +347,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation((s: any) => s.setFields(nextFields));
+    return next.withMutation((s: any) => s.setFields(nextFields, this._excludedEdges));
   }
 
   protected _getDefault() {
@@ -373,7 +373,7 @@ export default class ObjectSchema<
 
   private setFields<S extends ObjectShape>(
     shape: S,
-    excludedEdges?: readonly string[],
+    excludedEdges?: readonly [string, string][],
   ): ObjectSchema<S, TConfig, AssertsShape<S> | Optionals<TIn>> {
     let next = this.clone() as any;
     next.fields = shape;
@@ -393,8 +393,8 @@ export default class ObjectSchema<
       let edges = next._excludedEdges;
       if (excludes.length) {
         if (!Array.isArray(excludes[0])) excludes = [excludes as any];
-        let keys = excludes.map(([first, second]) => `${first}-${second}`);
-        edges = edges.concat(keys);
+
+        edges = [...next._excludedEdges, ...excludes];
       }
 
       // XXX: excludes here is wrong

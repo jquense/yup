@@ -8,28 +8,28 @@ import { ObjectShape } from '../object';
 
 export default function sortFields(
   fields: ObjectShape,
-  excludes: readonly string[] = [],
+  excludedEdges: readonly [string, string][] = [],
 ) {
   let edges = [] as Array<[string, string]>;
-  let nodes = [] as string[];
+  let nodes = new Set<string>();
+  let excludes = new Set(excludedEdges.map(([a, b]) => `${a}-${b}`));
 
   function addNode(depPath: string, key: string) {
     let node = split(depPath)[0];
 
-    if (!~nodes.indexOf(node)) nodes.push(node);
-
-    if (!~excludes.indexOf(`${key}-${node}`)) edges.push([key, node]);
+    nodes.add(node);
+    if (!excludes.has(`${key}-${node}`)) edges.push([key, node]);
   }
 
   for (const key of Object.keys(fields)) {
     let value = fields[key];
 
-    if (!~nodes.indexOf(key)) nodes.push(key);
+    nodes.add(key);
 
     if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
     else if (isSchema(value) && 'deps' in value)
       value.deps.forEach((path) => addNode(path, key));
   }
 
-  return toposort.array(nodes, edges).reverse() as string[];
+  return toposort.array(Array.from(nodes), edges).reverse() as string[];
 }
