@@ -48,7 +48,7 @@ export type ObjectShape = Record<
 
 type FieldType<
   T extends AnySchema | Reference | Lazy<any, any>,
-  F extends '__type' | '__outputType'
+  F extends '__type' | '__outputType',
 > = T extends TypedSchema ? T[F] : T extends Reference ? unknown : never;
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
@@ -71,11 +71,9 @@ export type TypeOfShape<Shape extends ObjectShape> = {
 //     : never
 //   : K;
 
-export type AssertsShape<S extends ObjectShape> = MakePartial<
-  {
-    [K in keyof S]: FieldType<S[K], '__outputType'>;
-  }
-> & { [k: string]: any };
+export type AssertsShape<S extends ObjectShape> = MakePartial<{
+  [K in keyof S]: FieldType<S[K], '__outputType'>;
+}> & { [k: string]: any };
 
 export type PartialSchema<S extends ObjectShape> = {
   [K in keyof S]: S[K] extends BaseSchema ? ReturnType<S[K]['optional']> : S[K];
@@ -114,13 +112,13 @@ const defaultSort = sortByKeyOrder([]);
 export default class ObjectSchema<
   TShape extends ObjectShape,
   TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
-  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined
+  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined,
 > extends BaseSchema<TIn, TConfig> {
   fields: TShape = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
 
-  readonly __outputType!: ResolveFlags<_<TIn>, TConfig['flags']>;
+  declare readonly __outputType: ResolveFlags<_<TIn>, TConfig['flags']>;
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];
@@ -347,7 +345,9 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation((s: any) => s.setFields(nextFields, this._excludedEdges));
+    return next.withMutation((s: any) =>
+      s.setFields(nextFields, this._excludedEdges),
+    );
   }
 
   protected _getDefault() {
@@ -544,7 +544,7 @@ create.prototype = ObjectSchema.prototype;
 export default interface ObjectSchema<
   TShape extends ObjectShape,
   TConfig extends Config<any, any> = Config<AnyObject, 'd'>,
-  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined
+  TIn extends Maybe<AssertsShape<TShape>> = AssertsShape<TShape> | undefined,
 > extends BaseSchema<TIn, TConfig> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,

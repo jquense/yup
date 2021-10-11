@@ -13,6 +13,7 @@ import isSchema from './util/isSchema';
 import setLocale from './setLocale';
 import BaseSchema, { AnySchema } from './schema';
 import type { TypeOf, Asserts, Config } from './util/types';
+import { Maybe } from './types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,
@@ -36,26 +37,30 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
-type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<
-  {
-    [k in keyof T]-?: T[k] extends Array<infer E>
-      ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
-      : T[k] extends Date
-      ? DateSchema<T[k]>
-      : T[k] extends AnyObject
-      ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k] | Lazy<T[k]>>
-      : BaseSchema<T[k], Config>;
-  }
->;
+// type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<{
+//   [k in keyof T]-?:
+//     | SchemaOf<T[k], CustomTypes>
+//     | Lazy<SchemaOf<T[k], CustomTypes>>;
+// }>;
 
-type SchemaOf<T> = T extends Array<infer E>
-  ? ArraySchema<SchemaOf<E> | Lazy<SchemaOf<E>>>
+type SchemaOf<T, CustomTypes = never> = [T] extends [Array<infer E>]
+  ? ArraySchema<SchemaOf<E, CustomTypes> | Lazy<SchemaOf<E, CustomTypes>>>
+  : [T] extends [Maybe<string>]
+  ? StringSchema<T>
+  : [T] extends [Maybe<number>]
+  ? NumberSchema<T>
   : T extends Date
   ? DateSchema<T>
-  : T extends AnyObject
-  ? ObjectSchemaOf<T>
-  : BaseSchema<T, Config>;
+  : T extends CustomTypes
+  ? BaseSchema<T, Config>
+  : [T] extends [AnyObject]
+  ? ObjectSchema<{
+      [k in keyof T]-?:
+        | SchemaOf<T[k], CustomTypes>
+        | Lazy<SchemaOf<T[k], CustomTypes>>;
+    }>
+  : //ObjectSchemaOf<T, CustomTypes>
+    never;
 
 export type AnyObjectSchema = ObjectSchema<any, any, any>;
 

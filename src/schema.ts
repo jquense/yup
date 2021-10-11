@@ -28,6 +28,7 @@ import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
 import type { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
+import toArray from './util/toArray';
 
 export type { Config };
 
@@ -124,11 +125,11 @@ export default abstract class BaseSchema<
 > {
   declare readonly type: string;
 
-  declare readonly __type!: TType;
-  declare readonly __outputType!: ResolveFlags<TType, TConfig['flags']>;
+  declare readonly __type: TType;
+  declare readonly __outputType: ResolveFlags<TType, TConfig['flags']>;
 
-  declare readonly __flags!: TConfig['flags'];
-  declare readonly __isYupSchema__!: boolean;
+  declare readonly __flags: TConfig['flags'];
+  declare readonly __isYupSchema__: boolean;
 
   readonly deps: readonly string[] = [];
 

@@ -10,10 +10,11 @@ import {
   mixed,
   number,
   ref,
-  date,
   lazy,
   SchemaOf,
   date,
+  BaseSchema,
+  StringSchema,
 } from '../src';
 import type {
   AssertsShape,
@@ -21,7 +22,7 @@ import type {
   TypeOfShape,
 } from '../src/object';
 import type { Config, ResolveFlags } from '../src/schema';
-import { Preserve } from '../src/types';
+import { AnyObject, Preserve } from '../src/types';
 import { _ } from '../src/util/types';
 
 mixed().required().nullable();
@@ -176,7 +177,7 @@ ObjectPartial: {
   // $ExpectType string | undefined
   partial.validateSync({ age: '1' })!.name;
 
-  // $ExpectType StringSchema<string | undefined, Config<Record<string, any>, "">>
+  // $ExpectType StringSchema<string | undefined, Config<AnyObject, "">>
   partial.fields.name;
 
   // $ExpectType string
@@ -220,6 +221,9 @@ ObjectOmit: {
 
 SchemaOf: {
   type Person = {
+    nested?: {
+      name: string;
+    };
     firstName: string;
     title: string | undefined;
     age?: number;
@@ -228,13 +232,20 @@ SchemaOf: {
   };
 
   type PersonSchema = SchemaOf<Person>;
+  const _b: BaseSchema<
+    string,
+    Config<AnyObject, ''>
+  > = null as any as StringSchema<string, Config<AnyObject, ''>>;
 
-  const _t: PersonSchema = object().shape({
+  const _t: PersonSchema = object({
     firstName: string().defined(),
     title: string(),
-    age: number(),
+    age: lazy(() => number()),
     colors: array(string().defined()),
     createdAt: date().defined(),
+    nested: object({
+      name: string().required(),
+    }),
   });
 }
 
@@ -366,14 +377,14 @@ SchemaOfFileArray: {
     .concat(array(number()).required())
     .validateSync([]);
 
-  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[] | null
+  // $ExpectType { [x: string]: any; a: number; }[] | null
   const _definedArray: Array<{ a: number }> | null = array()
     .of(object({ a: number().required() }))
     .nullable()
     .defined()
     .validateSync([]);
 
-  // $ExpectType AssertsShape<{ a: RequiredNumberSchema<number | undefined, Record<string, any>>; }>[]
+  // $ExpectType { [x: string]: any; a: number; }[]
   const _requiredArray: Array<{ a: number }> = array()
     .of(object({ a: number().required() }))
     .nullable()

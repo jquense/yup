@@ -28,6 +28,7 @@ export default class ValidationError extends Error {
 
     return message;
   }
+
   static isError(err: any): err is ValidationError {
     return err && err.name === 'ValidationError';
   }
