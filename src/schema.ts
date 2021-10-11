@@ -94,7 +94,7 @@ export interface SchemaDescription {
 export default abstract class BaseSchema<
   TCast = any,
   TContext = AnyObject,
-  TOutput = any
+  TOutput = any,
 > {
   readonly type: string;
 
@@ -183,7 +183,7 @@ export default abstract class BaseSchema<
   }
 
   label(label: string) {
-    var next = this.clone();
+    let next = this.clone();
     next.spec.label = label;
     return next;
   }
@@ -383,7 +383,7 @@ export default abstract class BaseSchema<
 
     if (this._typeError) initialTests.push(this._typeError);
 
-    let finalTests = [];
+    let finalTests: any[] = [];
     if (this._whitelistError) finalTests.push(this._whitelistError);
     if (this._blacklistError) finalTests.push(this._blacklistError);
 
@@ -501,7 +501,7 @@ export default abstract class BaseSchema<
   }
 
   strict(isStrict = true) {
-    var next = this.clone();
+    let next = this.clone();
     next.spec.strict = isStrict;
     return next;
   }
@@ -535,7 +535,7 @@ export default abstract class BaseSchema<
   }
 
   notRequired(): any {
-    var next = this.clone({ presence: 'optional' });
+    let next = this.clone({ presence: 'optional' });
     next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next as any;
   }
@@ -543,7 +543,7 @@ export default abstract class BaseSchema<
   nullable(isNullable?: true): any;
   nullable(isNullable: false): any;
   nullable(isNullable = true): any {
-    var next = this.clone({
+    let next = this.clone({
       nullable: isNullable !== false,
     });
 
@@ -551,7 +551,7 @@ export default abstract class BaseSchema<
   }
 
   transform(fn: TransformFunction<this>) {
-    var next = this.clone();
+    let next = this.clone();
     next.transforms.push(fn as TransformFunction<any>);
     return next;
   }
@@ -650,7 +650,7 @@ export default abstract class BaseSchema<
   }
 
   typeError(message: Message) {
-    var next = this.clone();
+    let next = this.clone();
 
     next._typeError = createValidation({
       message,
@@ -672,7 +672,7 @@ export default abstract class BaseSchema<
     enums: Array<Maybe<U> | Reference>,
     message = locale.oneOf,
   ): this {
-    var next = this.clone();
+    let next = this.clone();
 
     enums.forEach((val) => {
       next._whitelist.add(val);
@@ -705,7 +705,7 @@ export default abstract class BaseSchema<
     enums: Array<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
-    var next = this.clone();
+    let next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
@@ -757,6 +757,7 @@ export default abstract class BaseSchema<
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default interface BaseSchema<TCast, TContext, TOutput> {
   validateAt(
     path: string,
@@ -779,21 +780,20 @@ export default interface BaseSchema<TCast, TContext, TOutput> {
 BaseSchema.prototype.__isYupSchema__ = true;
 
 for (const method of ['validate', 'validateSync'])
-  BaseSchema.prototype[
-    `${method}At` as 'validateAt' | 'validateSyncAt'
-  ] = function (path: string, value: any, options: ValidateOptions = {}) {
-    const { parent, parentPath, schema } = getIn(
-      this,
-      path,
-      value,
-      options.context,
-    );
-    return schema[method](parent && parent[parentPath], {
-      ...options,
-      parent,
-      path,
-    });
-  };
+  BaseSchema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
+    function (path: string, value: any, options: ValidateOptions = {}) {
+      const { parent, parentPath, schema } = getIn(
+        this,
+        path,
+        value,
+        options.context,
+      );
+      return schema[method](parent && parent[parentPath], {
+        ...options,
+        parent,
+        path,
+      });
+    };
 
 for (const alias of ['equals', 'is'] as const)
   BaseSchema.prototype[alias] = BaseSchema.prototype.oneOf;

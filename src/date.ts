@@ -1,4 +1,3 @@
-import MixedSchema from './mixed';
 // @ts-ignore
 import isoParse from './util/isodate';
 import { date as locale, MixedLocale } from './locale';
@@ -77,7 +76,7 @@ export default class DateSchema<
   }
 
   max(max: unknown | Ref, message = locale.max) {
-    var limit = this.prepareParam(max, 'max');
+    let limit = this.prepareParam(max, 'max');
 
     return this.test({
       message,

@@ -22,8 +22,7 @@ import BaseSchema, {
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} &
-  U;
+} & U;
 
 export type AnyObject = Record<string, any>;
 
@@ -78,11 +77,11 @@ export default class ObjectSchema<
   TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
   TOut extends Maybe<AssertsShape<TShape>> =
     | AssertsShape<TShape>
-    | Optionals<TIn>
+    | Optionals<TIn>,
 > extends BaseSchema<TIn, TContext, TOut> {
   fields: TShape = Object.create(null);
 
-  spec!: ObjectSchemaSpec;
+  declare spec: ObjectSchemaSpec;
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];
@@ -458,7 +457,7 @@ create.prototype = ObjectSchema.prototype;
 export interface OptionalObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
 > extends ObjectSchema<TShape, TContext, TIn> {
   default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),
@@ -500,7 +499,7 @@ export interface OptionalObjectSchema<
 export interface DefinedObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
+  TIn extends Maybe<TypeOfShape<TShape>>,
 > extends ObjectSchema<
     TShape,
     TContext,
@@ -546,7 +545,7 @@ export interface DefinedObjectSchema<
 export interface RequiredObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
+  TIn extends Maybe<TypeOfShape<TShape>>,
 > extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
   default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),

@@ -212,7 +212,7 @@ SchemaOfDate: {
 
   const _t: EmployeeSchema = object({
     name: string().defined(),
-    hire_date: date().defined()
+    hire_date: date().defined(),
   });
 }
 
@@ -226,7 +226,7 @@ SchemaOfDateArray: {
 
   const _t: EmployeeWithPromotionsSchema = object({
     name: string().defined(),
-    promotion_dates: array().of(date().defined())
+    promotion_dates: array().of(date().defined()),
   });
 }
 
@@ -256,10 +256,9 @@ SchemaOfFileArray: {
 
   const _t: DocumentWithFullHistorySchema = object({
     name: string().defined(),
-    history: array().of(mixed<File>().defined())
+    history: array().of(mixed<File>().defined()),
   });
 }
-
 
 {
   // const str = string();

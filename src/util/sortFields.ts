@@ -16,7 +16,7 @@ export default function sortFields(
   let excludes = new Set(excludedEdges.map(([a, b]) => `${a}-${b}`));
 
   function addNode(depPath: string, key: string) {
-    var node = split(depPath)[0];
+    let node = split(depPath)[0];
 
     nodes.add(node);
     if (!excludes.has(`${key}-${node}`)) edges.push([key, node]);
