@@ -96,12 +96,12 @@ export default abstract class BaseSchema<
   TContext = AnyObject,
   TOutput = any,
 > {
-  readonly type: string;
+  declare readonly type: string;
 
-  readonly __inputType!: TCast;
-  readonly __outputType!: TOutput;
+  declare readonly __inputType: TCast;
+  declare readonly __outputType: TOutput;
 
-  readonly __isYupSchema__!: boolean;
+  declare readonly __isYupSchema__: boolean;
 
   readonly deps: readonly string[] = [];
 
@@ -112,8 +112,8 @@ export default abstract class BaseSchema<
 
   private _mutate?: boolean;
   private _typeError?: Test;
-  private _whitelistError?: Test;
-  private _blacklistError?: Test;
+  private declare _whitelistError?: Test;
+  private declare _blacklistError?: Test;
 
   protected _whitelist = new ReferenceSet();
   protected _blacklist = new ReferenceSet();
