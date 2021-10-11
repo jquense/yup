@@ -264,6 +264,7 @@ export default abstract class BaseSchema<
       });
     });
 
+    combined.transforms = [...base.transforms, ...combined.transforms];
     return combined as any;
   }
 
@@ -384,7 +385,7 @@ export default abstract class BaseSchema<
 
     let finalTests = [];
     if (this._whitelistError) finalTests.push(this._whitelistError);
-    if (this._blacklistError) finalTests.push(this._blacklistError);    
+    if (this._blacklistError) finalTests.push(this._blacklistError);
 
     runTests(
       {
@@ -691,7 +692,7 @@ export default abstract class BaseSchema<
           : this.createError({
               params: {
                 values: valids.toArray().join(', '),
-                resolved
+                resolved,
               },
             });
       },
@@ -720,7 +721,7 @@ export default abstract class BaseSchema<
           return this.createError({
             params: {
               values: invalids.toArray().join(', '),
-              resolved
+              resolved,
             },
           });
         return true;
