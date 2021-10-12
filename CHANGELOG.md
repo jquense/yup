@@ -1,3 +1,14 @@
+## [0.32.11](https://github.com/jquense/yup/compare/v0.32.10...v0.32.11) (2021-10-12)
+
+
+### Bug Fixes
+
+* dep ranges ([2015c0f](https://github.com/jquense/yup/commit/2015c0f717065360076d5c460a139a2fff410166))
+
+
+
+
+
 ## [0.32.10](https://github.com/jquense/yup/compare/v0.32.9...v0.32.10) (2021-10-11)
 
 
