@@ -784,7 +784,7 @@ let schema = yup.mixed().test({
 #### `mixed.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](#mixedistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
