@@ -109,7 +109,7 @@ if needed. Type extensions should go in an "ambient" type def file such as your
 
 ```ts
 declare module 'yup' {
-  class StringSchema<TIn, TContext, TOut> {
+  interface StringSchema<TIn, TContext, TOut> {
     myMethod(param: string): this;
   }
 }

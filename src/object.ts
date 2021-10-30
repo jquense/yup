@@ -22,8 +22,7 @@ import BaseSchema, {
 
 export type Assign<T extends {}, U extends {}> = {
   [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} &
-  U;
+} & U;
 
 export type AnyObject = Record<string, any>;
 
@@ -78,15 +77,16 @@ export default class ObjectSchema<
   TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
   TOut extends Maybe<AssertsShape<TShape>> =
     | AssertsShape<TShape>
-    | Optionals<TIn>
+    | Optionals<TIn>,
 > extends BaseSchema<TIn, TContext, TOut> {
   fields: TShape = Object.create(null);
 
-  spec!: ObjectSchemaSpec;
+  declare spec: ObjectSchemaSpec;
 
   private _sortErrors = defaultSort;
   private _nodes: readonly string[] = [];
-  private _excludedEdges: readonly string[] = [];
+
+  private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
 
   constructor(spec?: TShape) {
     super({
@@ -305,7 +305,7 @@ export default class ObjectSchema<
       }
     }
 
-    return next.withMutation(() => next.shape(nextFields));
+    return next.withMutation(() => next.shape(nextFields, this._excludedEdges));
   }
 
   getDefaultFromShape(): DefaultFromShape<TShape> {
@@ -344,11 +344,10 @@ export default class ObjectSchema<
     next._sortErrors = sortByKeyOrder(Object.keys(fields));
 
     if (excludes.length) {
+      // this is a convenience for when users only supply a single pair
       if (!Array.isArray(excludes[0])) excludes = [excludes as any];
 
-      let keys = excludes.map(([first, second]) => `${first}-${second}`);
-
-      next._excludedEdges = next._excludedEdges.concat(keys);
+      next._excludedEdges = [...next._excludedEdges, ...excludes];
     }
 
     next._nodes = sortFields(fields, next._excludedEdges);
@@ -458,7 +457,7 @@ create.prototype = ObjectSchema.prototype;
 export interface OptionalObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>
+  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
 > extends ObjectSchema<TShape, TContext, TIn> {
   default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),
@@ -500,7 +499,7 @@ export interface OptionalObjectSchema<
 export interface DefinedObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
+  TIn extends Maybe<TypeOfShape<TShape>>,
 > extends ObjectSchema<
     TShape,
     TContext,
@@ -546,7 +545,7 @@ export interface DefinedObjectSchema<
 export interface RequiredObjectSchema<
   TShape extends ObjectShape,
   TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>
+  TIn extends Maybe<TypeOfShape<TShape>>,
 > extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
   default<TNextDefault extends Maybe<AnyObject>>(
     def: TNextDefault | (() => TNextDefault),

@@ -7,6 +7,6 @@ module.exports = {
 
   plugins: ['ts-expect'],
   rules: {
-    'ts-expect/expect': 'error',
+    'ts-expect/expect': 'warn',
   },
 };

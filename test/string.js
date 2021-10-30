@@ -227,27 +227,47 @@ describe('String types', () => {
     ]);
   });
 
-  it('should check hex correctly', function () {
-	var v = string().hex()
+	it('should check hex correctly', function () {
+		var v = string().hex()
+	
+			return Promise.all([
+				v
+					.isValid('#1f2e3f')
+					.should.eventually()
+					.equal(true),
+				v
+					.isValid('#fff')
+					.should.eventually()
+					.equal(true),
+				v
+					.isValid('#FFF')
+					.should.eventually()
+					.equal(true),
+				v
+					.isValid('#192')
+					.should.eventually()
+					.equal(true),
+				v.isValid('this is not a hex').should.eventually().equal(false),
+			]);
+	});
 
+  it('should check allowed values at the end',() => {
     return Promise.all([
-      v
-        .isValid('#1f2e3f')
-        .should.eventually()
-        .equal(true),
-      v
-        .isValid('#fff')
-        .should.eventually()
-        .equal(true),
-      v
-        .isValid('#FFF')
-        .should.eventually()
-        .equal(true),
-      v
-        .isValid('#192')
-        .should.eventually()
-        .equal(true),
-      v.isValid('this is not a hex').should.eventually().equal(false)
+      string()
+        .required('Required')
+        .notOneOf([ref('$someKey')])
+        .validate('',{context:{someKey:''}})
+        .should.be.rejected().then(err => {
+          err.type.should.equal('required')
+        }),
+      object({
+        email:string().required('Email Required'),
+        password:string().required('Password Required').notOneOf([ref('email')]),
+      }).validate({email:'',password:''},{abortEarly:false})
+      .should.be.rejected().then(err => {
+        err.errors.should.include('Email Required');
+        err.errors.should.include('Password Required');
+      })
     ]);
   });
 

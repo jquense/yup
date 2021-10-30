@@ -173,6 +173,24 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should limit values with a ref', async () => {
+    let someValues = [1, 2, 3];
+    let context = { someValues };
+    let inst = mixed().oneOf([
+      ref('$someValues[0]'),
+      ref('$someValues[1]'),
+      ref('$someValues[2]'),
+    ]);
+    await inst.validate(1, { context }).should.eventually.equal(1);
+    await inst
+      .validate(4, { context })
+      .should.be.rejected()
+      .then((err) => {
+        err.type.should.equal('oneOf');
+        expect(err.params.resolved).to.deep.equal(someValues);
+      });
+  });
+
   it('should not require field when notRequired was set', async () => {
     let inst = mixed().required();
 
@@ -531,12 +549,10 @@ describe('Mixed Types ', () => {
 
   it('should fail when the test function returns a rejected Promise', async () => {
     let inst = string().test(() => {
-      return Promise.reject(new Error('oops an error occurred'))
+      return Promise.reject(new Error('oops an error occurred'));
     });
 
-    return inst
-      .validate('joe')
-      .should.be.rejected();
+    return inst.validate('joe').should.be.rejected();
   });
 
   describe('withMutation', () => {
@@ -647,6 +663,18 @@ describe('Mixed Types ', () => {
     });
   });
 
+  it('concat should carry over transforms', async () => {
+    let inst = string().trim();
+
+    await expect(inst.concat(string().min(4)).cast(' hello  ')).to.equal(
+      'hello',
+    );
+
+    await expect(inst.concat(string().min(4)).isValid(' he  ')).to.become(
+      false,
+    );
+  });
+
   it('concat should fail on different types', function () {
     let inst = string().default('hi');
 
@@ -656,17 +684,17 @@ describe('Mixed Types ', () => {
   });
 
   it('concat should not overwrite label and meta with undefined', function () {
-    const testLabel = "Test Label"
+    const testLabel = 'Test Label';
     const testMeta = {
-      testField: "test field"
-    }
-    let baseSchema = mixed().label(testLabel).meta(testMeta)
-    const otherSchema = mixed()
+      testField: 'test field',
+    };
+    let baseSchema = mixed().label(testLabel).meta(testMeta);
+    const otherSchema = mixed();
 
-    baseSchema = baseSchema.concat(otherSchema)
-    expect(baseSchema.spec.label).to.equal(testLabel)
-    expect(baseSchema.spec.meta.testField).to.equal(testMeta.testField)
-  })
+    baseSchema = baseSchema.concat(otherSchema);
+    expect(baseSchema.spec.label).to.equal(testLabel);
+    expect(baseSchema.spec.meta.testField).to.equal(testMeta.testField);
+  });
 
   it('concat should allow mixed and other type', function () {
     let inst = mixed().default('hi');

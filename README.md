@@ -142,7 +142,6 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [`yup`](#yup)
   - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
   - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
@@ -607,7 +606,9 @@ be used in the `message` argument.
 #### `mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
 
 Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
-The `${values}` interpolation can be used in the `message` argument.
+The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
+the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
+at validation time.
 
 Note that `undefined` does not fail this validator, even when `undefined` is not included in `arrayOfValues`.
 If you don't want `undefined` to be a valid value, you can use `mixed.required`.
@@ -623,7 +624,9 @@ await schema.isValid(new Date()); // => false
 #### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
 
 Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
-The `${values}` interpolation can be used in the `message` argument.
+The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
+the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
+at validation time.
 
 ```js
 let schema = yup.mixed().notOneOf(['jimmy', 42]);
@@ -730,7 +733,7 @@ await schema.isValid('john'); // => false
 ```
 
 Test functions are called with a special context value, as the second argument, that exposes some useful metadata
-and functions. For non arrow functions, the test context is also set as the function `this`. Watch out, if you access 
+and functions. For non arrow functions, the test context is also set as the function `this`. Watch out, if you access
 it via `this` it won't work in an arrow function.
 
 - `testContext.path`: the string path of the current validation
@@ -782,7 +785,7 @@ let schema = yup.mixed().test({
 #### `mixed.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](mixedistypevalue)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](#mixedistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the

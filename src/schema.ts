@@ -12,7 +12,6 @@ import createValidation, {
 import printValue from './util/printValue';
 import Ref from './Reference';
 import { getIn } from './util/reach';
-import toArray from './util/toArray';
 import {
   ValidateOptions,
   TransformFunction,
@@ -28,6 +27,7 @@ import ValidationError from './ValidationError';
 import type { Asserts, Thunk } from './util/types';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
+import toArray from './util/toArray';
 
 // const UNSET = 'unset' as const;
 
@@ -94,14 +94,14 @@ export interface SchemaDescription {
 export default abstract class BaseSchema<
   TCast = any,
   TContext = AnyObject,
-  TOutput = any
+  TOutput = any,
 > {
-  readonly type: string;
+  declare readonly type: string;
 
-  readonly __inputType!: TCast;
-  readonly __outputType!: TOutput;
+  declare readonly __inputType: TCast;
+  declare readonly __outputType: TOutput;
 
-  readonly __isYupSchema__!: boolean;
+  declare readonly __isYupSchema__: boolean;
 
   readonly deps: readonly string[] = [];
 
@@ -112,8 +112,8 @@ export default abstract class BaseSchema<
 
   private _mutate?: boolean;
   private _typeError?: Test;
-  private _whitelistError?: Test;
-  private _blacklistError?: Test;
+  private declare _whitelistError?: Test;
+  private declare _blacklistError?: Test;
 
   protected _whitelist = new ReferenceSet();
   protected _blacklist = new ReferenceSet();
@@ -183,7 +183,7 @@ export default abstract class BaseSchema<
   }
 
   label(label: string) {
-    var next = this.clone();
+    let next = this.clone();
     next.spec.label = label;
     return next;
   }
@@ -264,6 +264,7 @@ export default abstract class BaseSchema<
       });
     });
 
+    combined.transforms = [...base.transforms, ...combined.transforms];
     return combined as any;
   }
 
@@ -381,8 +382,10 @@ export default abstract class BaseSchema<
     let initialTests = [];
 
     if (this._typeError) initialTests.push(this._typeError);
-    if (this._whitelistError) initialTests.push(this._whitelistError);
-    if (this._blacklistError) initialTests.push(this._blacklistError);
+
+    let finalTests: any[] = [];
+    if (this._whitelistError) finalTests.push(this._whitelistError);
+    if (this._blacklistError) finalTests.push(this._blacklistError);
 
     runTests(
       {
@@ -398,7 +401,7 @@ export default abstract class BaseSchema<
 
         runTests(
           {
-            tests: this.tests,
+            tests: this.tests.concat(finalTests),
             args,
             path,
             sync,
@@ -498,7 +501,7 @@ export default abstract class BaseSchema<
   }
 
   strict(isStrict = true) {
-    var next = this.clone();
+    let next = this.clone();
     next.spec.strict = isStrict;
     return next;
   }
@@ -532,7 +535,7 @@ export default abstract class BaseSchema<
   }
 
   notRequired(): any {
-    var next = this.clone({ presence: 'optional' });
+    let next = this.clone({ presence: 'optional' });
     next.tests = next.tests.filter((test) => test.OPTIONS.name !== 'required');
     return next as any;
   }
@@ -540,7 +543,7 @@ export default abstract class BaseSchema<
   nullable(isNullable?: true): any;
   nullable(isNullable: false): any;
   nullable(isNullable = true): any {
-    var next = this.clone({
+    let next = this.clone({
       nullable: isNullable !== false,
     });
 
@@ -548,7 +551,7 @@ export default abstract class BaseSchema<
   }
 
   transform(fn: TransformFunction<this>) {
-    var next = this.clone();
+    let next = this.clone();
     next.transforms.push(fn as TransformFunction<any>);
     return next;
   }
@@ -647,7 +650,7 @@ export default abstract class BaseSchema<
   }
 
   typeError(message: Message) {
-    var next = this.clone();
+    let next = this.clone();
 
     next._typeError = createValidation({
       message,
@@ -669,7 +672,7 @@ export default abstract class BaseSchema<
     enums: Array<Maybe<U> | Reference>,
     message = locale.oneOf,
   ): this {
-    var next = this.clone();
+    let next = this.clone();
 
     enums.forEach((val) => {
       next._whitelist.add(val);
@@ -682,12 +685,14 @@ export default abstract class BaseSchema<
       test(value) {
         if (value === undefined) return true;
         let valids = this.schema._whitelist;
+        let resolved = valids.resolveAll(this.resolve);
 
-        return valids.has(value, this.resolve)
+        return resolved.includes(value)
           ? true
           : this.createError({
               params: {
                 values: valids.toArray().join(', '),
+                resolved,
               },
             });
       },
@@ -700,7 +705,7 @@ export default abstract class BaseSchema<
     enums: Array<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
-    var next = this.clone();
+    let next = this.clone();
     enums.forEach((val) => {
       next._blacklist.add(val);
       next._whitelist.delete(val);
@@ -711,10 +716,12 @@ export default abstract class BaseSchema<
       name: 'notOneOf',
       test(value) {
         let invalids = this.schema._blacklist;
-        if (invalids.has(value, this.resolve))
+        let resolved = invalids.resolveAll(this.resolve);
+        if (resolved.includes(value))
           return this.createError({
             params: {
               values: invalids.toArray().join(', '),
+              resolved,
             },
           });
         return true;
@@ -750,6 +757,7 @@ export default abstract class BaseSchema<
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default interface BaseSchema<TCast, TContext, TOutput> {
   validateAt(
     path: string,
@@ -772,21 +780,20 @@ export default interface BaseSchema<TCast, TContext, TOutput> {
 BaseSchema.prototype.__isYupSchema__ = true;
 
 for (const method of ['validate', 'validateSync'])
-  BaseSchema.prototype[
-    `${method}At` as 'validateAt' | 'validateSyncAt'
-  ] = function (path: string, value: any, options: ValidateOptions = {}) {
-    const { parent, parentPath, schema } = getIn(
-      this,
-      path,
-      value,
-      options.context,
-    );
-    return schema[method](parent && parent[parentPath], {
-      ...options,
-      parent,
-      path,
-    });
-  };
+  BaseSchema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
+    function (path: string, value: any, options: ValidateOptions = {}) {
+      const { parent, parentPath, schema } = getIn(
+        this,
+        path,
+        value,
+        options.context,
+      );
+      return schema[method](parent && parent[parentPath], {
+        ...options,
+        parent,
+        path,
+      });
+    };
 
 for (const alias of ['equals', 'is'] as const)
   BaseSchema.prototype[alias] = BaseSchema.prototype.oneOf;

@@ -1,3 +1,39 @@
+## [0.32.11](https://github.com/jquense/yup/compare/v0.32.10...v0.32.11) (2021-10-12)
+
+
+### Bug Fixes
+
+* dep ranges ([2015c0f](https://github.com/jquense/yup/commit/2015c0f717065360076d5c460a139a2fff410166))
+
+
+
+
+
+## [0.32.10](https://github.com/jquense/yup/compare/v0.32.9...v0.32.10) (2021-10-11)
+
+
+### Bug Fixes
+
+* carry over excluded edges when concating objects ([5334349](https://github.com/jquense/yup/commit/53343491f0624120812182a70919a2fc3ebe11f5)), closes [#1423](https://github.com/jquense/yup/issues/1423)
+* fix the typo for the array length validation ([#1287](https://github.com/jquense/yup/issues/1287)) ([4c17508](https://github.com/jquense/yup/commit/4c175086ce8e53df529bbdff6f215929a5a39167))
+* missing transforms on concat ([f3056f2](https://github.com/jquense/yup/commit/f3056f2cbade92eaf0427848f43df97eae010555)), closes [#1260](https://github.com/jquense/yup/issues/1260)
+* oneOf, notOneOf swallowing multiple errors ([#1434](https://github.com/jquense/yup/issues/1434)) ([7842afb](https://github.com/jquense/yup/commit/7842afbaca0a44fc2fea72b44a90c2000ca2b8f0))
+* prevent unhandled Promise rejection when returning rejected Promise inside test function ([#1327](https://github.com/jquense/yup/issues/1327)) ([5eda549](https://github.com/jquense/yup/commit/5eda549dfce95be225b0eb6dbe3cbe7bcd5d3347))
+* SchemaOf<>'s treatment of Date objects. ([#1305](https://github.com/jquense/yup/issues/1305)) ([91ace1e](https://github.com/jquense/yup/commit/91ace1e8be3fc23c775ec8117c47b406bf29da4a)), closes [#1243](https://github.com/jquense/yup/issues/1243) [#1302](https://github.com/jquense/yup/issues/1302)
+* update lodash/lodash-es to fix CVEs flagged in 4.17.20 ([#1334](https://github.com/jquense/yup/issues/1334)) ([70d0b67](https://github.com/jquense/yup/commit/70d0b67e172f695168c5d00bc9856f2f775e0957))
+* **utils:** use named functions for default exports ([#1329](https://github.com/jquense/yup/issues/1329)) ([acbb8b4](https://github.com/jquense/yup/commit/acbb8b4f3c24ceaf65eab09abaf8e086a9f11a73))
+
+
+### Features
+
+* add resolved to params ([#1437](https://github.com/jquense/yup/issues/1437)) ([03584f6](https://github.com/jquense/yup/commit/03584f6758ff43409113c41f58fd41e065aa18a3))
+* add types to setLocale ([#1427](https://github.com/jquense/yup/issues/1427)) ([7576cd8](https://github.com/jquense/yup/commit/7576cd836ce9b660c054f9117795dbd9be12f747)), closes [#1321](https://github.com/jquense/yup/issues/1321)
+* allows custom types to be passed to avoid cast to ObjectSchema ([#1358](https://github.com/jquense/yup/issues/1358)) ([94cfd11](https://github.com/jquense/yup/commit/94cfd11b3f23e10f731efac05c5525829d10ded1))
+
+
+
+
+
 ## [0.32.9](https://github.com/jquense/yup/compare/v0.32.6...v0.32.9) (2021-02-17)
 
 
