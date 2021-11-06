@@ -604,7 +604,7 @@ be used in the `message` argument.
 
 #### `mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
 
-Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
+Allowlist a set of values. Values added are automatically removed from any blocklist if they are in it.
 The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
 the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
 at validation time.
@@ -622,7 +622,7 @@ await schema.isValid(new Date()); // => false
 
 #### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
 
-Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
+Blocklist a set of values. Values added are automatically removed from any allowlist if they are in it.
 The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
 the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
 at validation time.
