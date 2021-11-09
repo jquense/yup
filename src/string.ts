@@ -12,6 +12,8 @@ let rUrl = /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFD
 // eslint-disable-next-line
 let rUUID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
 
+let rSlug = /^[^\s-_](?!.*?[-_]{2,})[a-z0-9-\\][^\s]*[^-_\s]$/;
+
 let isTrimmed = (value: Maybe<string>) =>
   isAbsent(value) || value === value.trim();
 
@@ -193,6 +195,14 @@ export default class StringSchema<
       exclusive: true,
       test: (value: Maybe<string>) =>
         isAbsent(value) || value === value.toUpperCase(),
+    });
+  }
+
+  slug(message = locale.slug) {
+    return this.matches(rSlug, {
+      name: 'slug',
+      message,
+      excludeEmptyString: true,
     });
   }
 }

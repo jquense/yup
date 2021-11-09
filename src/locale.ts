@@ -21,6 +21,7 @@ export interface StringLocale {
   trim?: Message;
   lowercase?: Message;
   uppercase?: Message;
+  slug?: Message<{ regex: RegExp }>;
 }
 
 export interface NumberLocale {
@@ -96,6 +97,7 @@ export let string: Required<StringLocale> = {
   trim: '${path} must be a trimmed string',
   lowercase: '${path} must be a lowercase string',
   uppercase: '${path} must be a upper case string',
+  slug: '${path} must be a valid slug',
 };
 
 export let number: Required<NumberLocale> = {
