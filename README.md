@@ -162,7 +162,7 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
   - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-options---any)
   - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
-  - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
+  - [`mixed.strict(isStrict: boolean = true): Schema`](#mixedstrictisstrict-boolean--false-schema)
   - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
   - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
   - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
