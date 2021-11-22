@@ -61,7 +61,7 @@ import type { TypeOf } from 'yup';
 
 interface PersonInput extends TypeOf<typeof personSchema> {}
 
-const validated: PersonInput = personSchema.cast(json);
+const casted: PersonInput = personSchema.cast(json);
 ```
 
 You can also go the other direction, specifying an interface and ensuring that a schema would match it:
