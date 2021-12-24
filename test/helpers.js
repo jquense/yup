@@ -1,16 +1,13 @@
 import printValue from '../src/util/printValue';
 
 export let castAndShouldFail = (schema, value) => {
-  (() => schema.cast(value)).should.throw(
-    TypeError,
-    /The value of (.+) could not be cast to a value that satisfies the schema type/gi,
-  );
+  expect(() => schema.cast(value)).toThrowError(TypeError);
 };
 
 export let castAll = (inst, { invalid = [], valid = [] }) => {
   valid.forEach(([value, result, schema = inst]) => {
     it(`should cast ${printValue(value)} to ${printValue(result)}`, () => {
-      expect(schema.cast(value)).to.equal(result);
+      expect(schema.cast(value)).toBe(result);
     });
   });
 
@@ -39,11 +36,17 @@ export let validateAll = (inst, { valid = [], invalid = [] }) => {
       if (Array.isArray(config)) [value, schema, message = ''] = config;
 
       it(`${printValue(value)}${message && `  (${message})`}`, async () => {
-        await schema.isValid(value).should.become(isValid);
+        await expect(schema.isValid(value)).resolves.toEqual(isValid);
       });
     });
   }
 };
+
+export function validationErrorWithMessages(...errors) {
+  return expect.objectContaining({
+    errors,
+  });
+}
 
 export function ensureSync(fn) {
   let run = false;

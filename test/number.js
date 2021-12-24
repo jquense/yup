@@ -33,66 +33,64 @@ describe('Number types', function () {
 
     it('should round', () => {
       // schema.round('floor').cast(45.99999).should.equal(45);
-      schema.round('ceIl').cast(45.1111).should.equal(46);
-      schema.round().cast(45.444444).should.equal(45);
+      expect(schema.round('ceIl').cast(45.1111)).toBe(46);
+      expect(schema.round().cast(45.444444)).toBe(45);
 
-      expect(schema.nullable().integer().round().cast(null)).to.equal(null);
-      (function () {
+      expect(schema.nullable().integer().round().cast(null)).toBeNull();
+      expect(function () {
         schema.round('fasf');
-      }.should.throw(TypeError));
+      }).toThrowError(TypeError);
     });
 
     it('should truncate', () => {
-      schema.truncate().cast(45.55).should.equal(45);
+      expect(schema.truncate().cast(45.55)).toBe(45);
     });
 
     it('should return NaN for failed casts', () => {
-      expect(number().cast('asfasf', { assert: false })).to.eql(NaN);
+      expect(number().cast('asfasf', { assert: false })).toEqual(NaN);
 
-      expect(number().cast(null, { assert: false })).to.eql(NaN);
+      expect(number().cast(null, { assert: false })).toEqual(NaN);
     });
   });
 
   it('should handle DEFAULT', function () {
     var inst = number().default(0);
 
-    inst.getDefault().should.equal(0);
-    inst.default(5).required().getDefault().should.equal(5);
+    expect(inst.getDefault()).toBe(0);
+    expect(inst.default(5).required().getDefault()).toBe(5);
   });
 
   it('should type check', function () {
     var inst = number();
 
-    inst.isType(5).should.equal(true);
-    inst.isType(new Number(5)).should.equal(true);
-    inst.isType(new Number('foo')).should.equal(false);
-    inst.isType(false).should.equal(false);
-    inst.isType(null).should.equal(false);
-    inst.isType(NaN).should.equal(false);
-    inst.nullable().isType(null).should.equal(true);
+    expect(inst.isType(5)).toBe(true);
+    expect(inst.isType(new Number(5))).toBe(true);
+    expect(inst.isType(new Number('foo'))).toBe(false);
+    expect(inst.isType(false)).toBe(false);
+    expect(inst.isType(null)).toBe(false);
+    expect(inst.isType(NaN)).toBe(false);
+    expect(inst.nullable().isType(null)).toBe(true);
   });
 
   it('should VALIDATE correctly', function () {
     var inst = number().required().min(4);
 
     return Promise.all([
-      number().isValid(null).should.eventually().equal(false),
-      number().nullable().isValid(null).should.eventually().equal(true),
-      number().isValid(' ').should.eventually().equal(false),
-      number().isValid('12abc').should.eventually().equal(false),
-      number().isValid(0xff).should.eventually.equal(true),
-      number().isValid('0xff').should.eventually.equal(true),
+      expect(number().isValid(null)).resolves.toBe(false),
+      expect(number().nullable().isValid(null)).resolves.toBe(true),
+      expect(number().isValid(' ')).resolves.toBe(false),
+      expect(number().isValid('12abc')).resolves.toBe(false),
+      expect(number().isValid(0xff)).resolves.toBe(true),
+      expect(number().isValid('0xff')).resolves.toBe(true),
 
-      inst.isValid(5).should.eventually().equal(true),
-      inst.isValid(2).should.eventually().equal(false),
+      expect(inst.isValid(5)).resolves.toBe(true),
+      expect(inst.isValid(2)).resolves.toBe(false),
 
-      inst
-        .validate()
-        .should.be.rejected()
-        .then(function (err) {
-          err.errors.length.should.equal(1);
-          err.errors[0].should.contain('required');
-        }),
+      expect(inst.validate()).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('required'),
+        ),
+      ),
     ]);
   });
 
@@ -123,10 +121,9 @@ describe('Number types', function () {
     });
 
     it('should return default message', async () => {
-      await schema
-        .validate(6)
-        .should.be.rejected.and.eventually.have.property('errors')
-        .that.contain('this must be less than 5');
+      await expect(schema.validate(6)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages('this must be less than 5'),
+      );
     });
   });
 
@@ -139,10 +136,11 @@ describe('Number types', function () {
     });
 
     it('should return default message', async () => {
-      await schema
-        .validate(4)
-        .should.be.rejected.and.eventually.have.property('errors')
-        .that.contain('this must be greater than 5');
+      await expect(schema.validate(4)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('this must be greater than 5'),
+        ),
+      );
     });
   });
 
@@ -155,10 +153,9 @@ describe('Number types', function () {
     });
 
     it('should return default message', async () => {
-      await schema
-        .validate(10.53)
-        .should.be.rejected.and.eventually.have.property('errors')
-        .that.contain('this must be an integer');
+      await expect(schema.validate(10.53)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages('this must be an integer'),
+      );
     });
   });
 
@@ -166,16 +163,15 @@ describe('Number types', function () {
     var v = number().positive();
 
     return Promise.all([
-      v.isValid(7).should.eventually().equal(true),
+      expect(v.isValid(7)).resolves.toBe(true),
 
-      v.isValid(0).should.eventually().equal(false),
+      expect(v.isValid(0)).resolves.toBe(false),
 
-      v
-        .validate(0)
-        .should.be.rejected()
-        .then(null, function (err) {
-          err.errors[0].should.contain('this must be a positive number');
-        }),
+      expect(v.validate(0)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          'this must be a positive number',
+        ),
+      ),
     ]);
   });
 
@@ -183,16 +179,15 @@ describe('Number types', function () {
     var v = number().negative();
 
     return Promise.all([
-      v.isValid(-4).should.eventually().equal(true),
+      expect(v.isValid(-4)).resolves.toBe(true),
 
-      v.isValid(0).should.eventually().equal(false),
+      expect(v.isValid(0)).resolves.toBe(false),
 
-      v
-        .validate(10)
-        .should.be.rejected()
-        .then(null, function (err) {
-          err.errors[0].should.contain('this must be a negative number');
-        }),
+      expect(v.validate(10)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          'this must be a negative number',
+        ),
+      ),
     ]);
   });
 });

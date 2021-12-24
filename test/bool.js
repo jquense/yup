@@ -4,12 +4,12 @@ describe('Boolean types', () => {
   it('should CAST correctly', () => {
     let inst = bool();
 
-    inst.cast('true').should.equal(true);
-    inst.cast('True').should.equal(true);
-    inst.cast('false').should.equal(false);
-    inst.cast('False').should.equal(false);
-    inst.cast(1).should.equal(true);
-    inst.cast(0).should.equal(false);
+    expect(inst.cast('true')).toBe(true);
+    expect(inst.cast('True')).toBe(true);
+    expect(inst.cast('false')).toBe(false);
+    expect(inst.cast('False')).toBe(false);
+    expect(inst.cast(1)).toBe(true);
+    expect(inst.cast(0)).toBe(false);
 
     TestHelpers.castAndShouldFail(inst, 'foo');
 
@@ -19,71 +19,53 @@ describe('Boolean types', () => {
   it('should handle DEFAULT', () => {
     let inst = bool();
 
-    expect(inst.getDefault()).to.equal(undefined);
-    inst.default(true).required().getDefault().should.equal(true);
+    expect(inst.getDefault()).toBeUndefined();
+    expect(inst.default(true).required().getDefault()).toBe(true);
   });
 
   it('should type check', () => {
     let inst = bool();
 
-    inst.isType(1).should.equal(false);
-    inst.isType(false).should.equal(true);
-    inst.isType('true').should.equal(false);
-    inst.isType(NaN).should.equal(false);
-    inst.isType(new Number('foooo')).should.equal(false);
+    expect(inst.isType(1)).toBe(false);
+    expect(inst.isType(false)).toBe(true);
+    expect(inst.isType('true')).toBe(false);
+    expect(inst.isType(NaN)).toBe(false);
+    expect(inst.isType(new Number('foooo'))).toBe(false);
 
-    inst.isType(34545).should.equal(false);
-    inst.isType(new Boolean(false)).should.equal(true);
+    expect(inst.isType(34545)).toBe(false);
+    expect(inst.isType(new Boolean(false))).toBe(true);
 
-    expect(inst.isType(null)).to.equal(false);
+    expect(inst.isType(null)).toBe(false);
 
-    inst.nullable().isType(null).should.equal(true);
+    expect(inst.nullable().isType(null)).toBe(true);
   });
 
   it('bool should VALIDATE correctly', () => {
     let inst = bool().required();
 
     return Promise.all([
-      bool().isValid('1').should.eventually().equal(true),
-      bool().strict().isValid(null).should.eventually().equal(false),
-      bool().nullable().isValid(null).should.eventually().equal(true),
-      inst
-        .validate()
-        .should.be.rejected()
-        .then((err) => {
-          err.errors.length.should.equal(1);
-          err.errors[0].should.contain('required');
+      expect(bool().isValid('1')).resolves.toBe(true),
+      expect(bool().strict().isValid(null)).resolves.toBe(false),
+      expect(bool().nullable().isValid(null)).resolves.toBe(true),
+      expect(inst.validate()).rejects.toEqual(
+        expect.objectContaining({
+          errors: ['this is a required field'],
         }),
+      ),
     ]);
   });
 
   it('should check isTrue correctly', () => {
     return Promise.all([
-      bool()
-        .isTrue()
-        .isValid(true)
-        .should.eventually()
-        .equal(true),
-      bool()
-        .isTrue()
-        .isValid(false)
-        .should.eventually()
-        .equal(false),
+      expect(bool().isTrue().isValid(true)).resolves.toBe(true),
+      expect(bool().isTrue().isValid(false)).resolves.toBe(false),
     ]);
   });
 
   it('should check isFalse correctly', () => {
     return Promise.all([
-      bool()
-        .isFalse()
-        .isValid(false)
-        .should.eventually()
-        .equal(true),
-      bool()
-        .isFalse()
-        .isValid(true)
-        .should.eventually()
-        .equal(false),
+      expect(bool().isFalse().isValid(false)).resolves.toBe(true),
+      expect(bool().isFalse().isValid(true)).resolves.toBe(false),
     ]);
   });
 });

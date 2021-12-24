@@ -20,19 +20,18 @@ global.YUP_USE_SYNC &&
     let schema = number();
 
     // test negative ensure case
-    await ensureSync(() => Promise.resolve()).should.be.rejectedWith(
+    await expect(ensureSync(() => Promise.resolve())).rejects.toThrowError(
       Error,
       'Did not execute synchronously',
     );
+
     // test positive case
-    await ensureSync(() => schema.isValid(1)).should.be.become(true);
+    await expect(ensureSync(() => schema.isValid(1))).resolves.toBe(true);
 
-    // ensureit fails with the correct message in sync mode
-    let err = await ensureSync(() =>
-      schema.validate('john'),
-    ).should.be.rejected();
-
-    expect(err.message).to.match(
+    // ensure it fails with the correct message in sync mode
+    await expect(
+      ensureSync(() => schema.validate('john')),
+    ).rejects.toThrowError(
       /the final value was: `NaN`.+cast from the value `"john"`/,
     );
   });
@@ -43,16 +42,16 @@ describe('Mixed Types ', () => {
       next;
     let sub = (inst.sub = mixed());
 
-    inst.should.not.equal((next = inst.required()));
+    expect(inst).not.toBe((next = inst.required()));
 
-    next.sub.should.equal(sub);
-    inst.sub.should.equal(next.sub);
+    expect(next.sub).toBe(sub);
+    expect(inst.sub).toBe(next.sub);
 
-    inst.should.be.an.instanceOf(MixedSchema);
-    next.should.be.an.instanceOf(MixedSchema);
+    expect(inst).toBeInstanceOf(MixedSchema);
+    expect(next).toBeInstanceOf(MixedSchema);
 
     return Promise.all([
-      inst.isValid().should.eventually().equal(true),
+      expect(inst.isValid()).resolves.toBe(true),
       next.isValid(null),
     ]);
   });
@@ -60,13 +59,13 @@ describe('Mixed Types ', () => {
   it('cast should return a default when undefined', () => {
     let inst = mixed().default('hello');
 
-    inst.cast(undefined).should.equal('hello');
+    expect(inst.cast(undefined)).toBe('hello');
   });
 
   it('getDefault should return the default value', function () {
     let inst = string().default('hi');
-    inst.getDefault({}).should.equal('hi');
-    inst.getDefault().should.equal('hi');
+    expect(inst.getDefault({})).toBe('hi');
+    expect(inst.getDefault()).toBe('hi');
   });
 
   it('getDefault should return the default value using context', function () {
@@ -74,13 +73,13 @@ describe('Mixed Types ', () => {
       is: 'greet',
       then: string().default('hi'),
     });
-    inst.getDefault({ context: { foo: 'greet' } }).should.equal('hi');
+    expect(inst.getDefault({ context: { foo: 'greet' } })).toBe('hi');
   });
 
   it('should warn about null types', async () => {
-    let error = await string().strict().validate(null).should.be.rejected();
-
-    expect(error.message).to.match(/this cannot be null/);
+    await expect(string().strict().validate(null)).rejects.toThrowError(
+      /this cannot be null/,
+    );
   });
 
   it('should validateAt', async () => {
@@ -99,13 +98,11 @@ describe('Mixed Types ', () => {
       foo: [{ bar: 1 }, { bar: 1, loose: true }],
     };
 
-    await schema.validateAt('foo[1].bar', value).should.be.fulfilled();
+    await expect(schema.validateAt('foo[1].bar', value)).resolves.toBeDefined();
 
-    const err = await schema
-      .validateAt('foo[0].bar', value)
-      .should.be.rejected();
-
-    expect(err.message).to.match(/bar must be a `string` type/);
+    await expect(schema.validateAt('foo[0].bar', value)).rejects.toThrowError(
+      /bar must be a `string` type/,
+    );
   });
 
   // xit('should castAt', async () => {
@@ -127,48 +124,47 @@ describe('Mixed Types ', () => {
   // });
 
   it('should print the original value', async () => {
-    let error = await number().validate('john').should.be.rejected();
-
-    expect(error.message).to.match(
+    await expect(number().validate('john')).rejects.toThrowError(
       /the final value was: `NaN`.+cast from the value `"john"`/,
     );
   });
 
   it('should allow function messages', async () => {
-    let error = await string()
-      .label('My string')
-      .required((d) => `${d.label} is required`)
-      .validate()
-      .should.be.rejected();
-
-    expect(error.message).to.match(/My string is required/);
+    await expect(
+      string()
+        .label('My string')
+        .required((d) => `${d.label} is required`)
+        .validate(),
+    ).rejects.toThrowError(/My string is required/);
   });
 
   it('should check types', async () => {
     let inst = string().strict().typeError('must be a ${type}!');
 
-    let error = await inst.validate(5).should.be.rejected();
+    await expect(inst.validate(5)).rejects.toEqual(
+      expect.objectContaining({
+        type: 'typeError',
+        message: 'must be a string!',
+        inner: [],
+      }),
+    );
 
-    error.type.should.equal('typeError');
-    error.message.should.equal('must be a string!');
-    error.inner.length.should.equal(0);
-
-    error = await inst.validate(5, { abortEarly: false }).should.be.rejected();
-
-    expect(error.type).to.not.exist();
-    error.message.should.equal('must be a string!');
-    error.inner.length.should.equal(1);
+    await expect(inst.validate(5, { abortEarly: false })).rejects.toEqual(
+      expect.objectContaining({
+        type: undefined,
+        message: 'must be a string!',
+        inner: [expect.any(ValidationError)],
+      }),
+    );
   });
 
   it('should limit values', async () => {
     let inst = mixed().oneOf([5, 'hello']);
 
-    await inst.isValid(5).should.eventually().equal(true);
-    await inst.isValid('hello').should.eventually().equal(true);
+    await expect(inst.isValid(5)).resolves.toBe(true);
+    await expect(inst.isValid('hello')).resolves.toBe(true);
 
-    let err = await inst.validate(6).should.be.rejected();
-
-    err.errors[0].should.equal(
+    await expect(inst.validate(6)).rejects.toThrowError(
       'this must be one of the following values: 5, hello',
     );
   });
@@ -181,29 +177,29 @@ describe('Mixed Types ', () => {
       ref('$someValues[1]'),
       ref('$someValues[2]'),
     ]);
-    await inst.validate(1, { context }).should.eventually.equal(1);
-    await inst
-      .validate(4, { context })
-      .should.be.rejected()
-      .then((err) => {
-        err.type.should.equal('oneOf');
-        expect(err.params.resolved).to.deep.equal(someValues);
-      });
+    await expect(inst.validate(1, { context })).resolves.toBe(1);
+
+    await expect(inst.validate(4, { context })).rejects.toEqual(
+      expect.objectContaining({
+        type: 'oneOf',
+        params: expect.objectContaining({ resolved: someValues }),
+      }),
+    );
   });
 
   it('should not require field when notRequired was set', async () => {
     let inst = mixed().required();
 
-    await inst.isValid('test').should.eventually().equal(true);
-    await inst.isValid(1).should.eventually.equal(true);
+    await expect(inst.isValid('test')).resolves.toBe(true);
+    await expect(inst.isValid(1)).resolves.toBe(true);
 
-    let err = await inst.validate().should.be.rejected();
-
-    err.errors[0].should.equal('this is a required field');
+    await expect(inst.validate()).rejects.toThrowError(
+      'this is a required field',
+    );
 
     inst = inst.notRequired();
 
-    await inst.isValid().should.eventually.equal(true);
+    await expect(inst.isValid()).resolves.toBe(true);
   });
 
   global.YUP_USE_SYNC &&
@@ -211,9 +207,9 @@ describe('Mixed Types ', () => {
       it('should validate synchronously', async () => {
         let schema = number();
 
-        schema.isValidSync('john').should.equal(false);
+        expect(schema.isValidSync('john')).toBe(false);
 
-        expect(() => schema.validateSync('john')).to.throw(
+        expect(() => schema.validateSync('john')).toThrowError(
           /the final value was: `NaN`.+cast from the value `"john"`/,
         );
       });
@@ -221,17 +217,15 @@ describe('Mixed Types ', () => {
       it('should isValid synchronously', async () => {
         let schema = number();
 
-        schema.isValidSync('john').should.equal(false);
+        expect(schema.isValidSync('john')).toBe(false);
       });
 
       it('should throw on async test', async () => {
         let schema = mixed().test('test', 'foo', () => Promise.resolve());
 
-        let err = await ensureSync(() =>
-          schema.validate('john'),
-        ).should.be.rejected();
-
-        expect(err.message).to.match(/Validation test of type: "test"/);
+        await expect(
+          ensureSync(() => schema.validate('john')),
+        ).rejects.toThrowError(/Validation test of type: "test"/);
       });
     });
 
@@ -254,9 +248,13 @@ describe('Mixed Types ', () => {
         bar: string().oneOf([ref('foo'), 'b']),
       });
 
-      await inst.validate({ foo: 'a', bar: 'a' }).should.be.fulfilled();
+      await expect(
+        inst.validate({ foo: 'a', bar: 'a' }),
+      ).resolves.toBeDefined();
 
-      await inst.validate({ foo: 'foo', bar: 'bar' }).should.be.rejected();
+      await expect(
+        inst.validate({ foo: 'foo', bar: 'bar' }),
+      ).rejects.toThrowError();
     });
   });
 
@@ -269,34 +267,29 @@ describe('Mixed Types ', () => {
     });
 
     it('should throw the correct error', async () => {
-      let err = await inst.validate(5).should.be.rejected();
-
-      err.errors[0].should.equal(
+      await expect(inst.validate(5)).rejects.toThrowError(
         'this must not be one of the following values: 5, hello',
       );
     });
   });
 
-  it('should run subset of validations first', () => {
+  it('should run subset of validations first', async () => {
     let called = false;
     let inst = string()
       .strict()
       .test('test', 'boom', () => (called = true));
 
-    return inst
-      .validate(25)
-      .should.be.rejected()
-      .then(() => {
-        called.should.equal(false);
-      });
+    await expect(inst.validate(25)).rejects.toThrowError();
+
+    expect(called).toBe(false);
   });
 
   it('should respect strict', () => {
     let inst = string().equals(['hello', '5']);
 
     return Promise.all([
-      inst.isValid(5).should.eventually().equal(true),
-      inst.strict().isValid(5).should.eventually().equal(false),
+      expect(inst.isValid(5)).resolves.toBe(true),
+      expect(inst.strict().isValid(5)).resolves.toBe(false),
     ]);
   });
 
@@ -304,63 +297,55 @@ describe('Mixed Types ', () => {
     let inst = string().trim().min(10);
 
     return Promise.all([
-      inst
-        .strict()
-        .validate(' hi ')
-        .should.be.rejected()
-        .then((err) => {
-          err.errors.length.should.equal(1);
-        }),
+      expect(inst.strict().validate(' hi ')).rejects.toThrowError(
+        /must be a trimmed string/,
+      ),
 
-      inst
-        .strict()
-        .validate(' hi ', { abortEarly: false })
-        .should.be.rejected()
-        .then((err) => {
-          err.errors.length.should.equal(2);
-        }),
+      expect(
+        inst.strict().validate(' hi ', { abortEarly: false }),
+      ).rejects.toThrowError(/2 errors/),
     ]);
   });
 
   it('should overload test()', () => {
     let inst = mixed().test('test', noop);
 
-    inst.tests.length.should.equal(1);
-    inst.tests[0].OPTIONS.test.should.equal(noop);
-    inst.tests[0].OPTIONS.message.should.equal('${path} is invalid');
+    expect(inst.tests).toHaveLength(1);
+    expect(inst.tests[0].OPTIONS.test).toBe(noop);
+    expect(inst.tests[0].OPTIONS.message).toBe('${path} is invalid');
   });
 
   it('should fallback to default message', async () => {
     let inst = mixed().test(() => false);
 
-    await inst
-      .validate('foo')
-      .should.be.rejectedWith(ValidationError, 'this is invalid');
+    await expect(inst.validate('foo')).rejects.toThrowError(
+      ValidationError,
+      'this is invalid',
+    );
   });
 
   it('should allow non string messages', async () => {
     let message = { key: 'foo' };
     let inst = mixed().test('test', message, () => false);
 
-    inst.tests.length.should.equal(1);
-    inst.tests[0].OPTIONS.message.should.equal(message);
+    expect(inst.tests).toHaveLength(1);
+    expect(inst.tests[0].OPTIONS.message).toBe(message);
 
-    let error = await inst.validate('foo').should.be.rejected();
-
-    error.message.should.equal(message);
+    let err = await inst.validate('foo').catch((err) => err);
+    expect(err.message).toEqual(message);
   });
 
   it('should dedupe tests with the same test function', () => {
     let inst = mixed().test('test', ' ', noop).test('test', 'asdasd', noop);
 
-    inst.tests.length.should.equal(1);
-    inst.tests[0].OPTIONS.message.should.equal('asdasd');
+    expect(inst.tests).toHaveLength(1);
+    expect(inst.tests[0].OPTIONS.message).toBe('asdasd');
   });
 
   it('should not dedupe tests with the same test function and different type', () => {
     let inst = mixed().test('test', ' ', noop).test('test-two', 'asdasd', noop);
 
-    inst.tests.length.should.equal(2);
+    expect(inst.tests).toHaveLength(2);
   });
 
   it('should respect exclusive validation', () => {
@@ -373,13 +358,13 @@ describe('Mixed Types ', () => {
       })
       .test({ message: 'also invalid', name: 'test', test: () => {} });
 
-    inst.tests.length.should.equal(1);
+    expect(inst.tests).toHaveLength(1);
 
     inst = mixed()
       .test({ message: 'invalid', name: 'test', test: () => {} })
       .test({ message: 'also invalid', name: 'test', test: () => {} });
 
-    inst.tests.length.should.equal(2);
+    expect(inst.tests).toHaveLength(2);
   });
 
   it('should non-exclusive tests should stack', () => {
@@ -387,7 +372,7 @@ describe('Mixed Types ', () => {
       .test({ name: 'test', message: ' ', test: () => {} })
       .test({ name: 'test', message: ' ', test: () => {} });
 
-    inst.tests.length.should.equal(2);
+    expect(inst.tests).toHaveLength(2);
   });
 
   it('should replace existing tests, with exclusive test ', () => {
@@ -395,7 +380,7 @@ describe('Mixed Types ', () => {
       .test({ name: 'test', message: ' ', test: noop })
       .test({ name: 'test', exclusive: true, message: ' ', test: noop });
 
-    inst.tests.length.should.equal(1);
+    expect(inst.tests).toHaveLength(1);
   });
 
   it('should replace existing exclusive tests, with non-exclusive', () => {
@@ -404,13 +389,13 @@ describe('Mixed Types ', () => {
       .test({ name: 'test', message: ' ', test: () => {} })
       .test({ name: 'test', message: ' ', test: () => {} });
 
-    inst.tests.length.should.equal(2);
+    expect(inst.tests).toHaveLength(2);
   });
 
   it('exclusive tests should throw without a name', () => {
-    (() => {
+    expect(() => {
       mixed().test({ message: 'invalid', exclusive: true, test: noop });
-    }).should.throw();
+    }).toThrowError();
   });
 
   it('exclusive tests should replace previous ones', async () => {
@@ -421,9 +406,9 @@ describe('Mixed Types ', () => {
       test: (v) => v < 5,
     });
 
-    (await inst.isValid(8)).should.equal(false);
+    expect(await inst.isValid(8)).toBe(false);
 
-    (
+    expect(
       await inst
         .test({
           message: 'invalid',
@@ -431,8 +416,8 @@ describe('Mixed Types ', () => {
           name: 'max',
           test: (v) => v < 10,
         })
-        .isValid(8)
-    ).should.equal(true);
+        .isValid(8),
+    ).toBe(true);
   });
 
   it('tests should be called with the correct `this`', async () => {
@@ -444,9 +429,9 @@ describe('Mixed Types ', () => {
         exclusive: true,
         name: 'max',
         test() {
-          this.path.should.equal('test');
-          this.parent.should.eql({ other: 5, test: 'hi' });
-          this.options.context.should.eql({ user: 'jason' });
+          expect(this.path).toBe('test');
+          expect(this.parent).toEqual({ other: 5, test: 'hi' });
+          expect(this.options.context).toEqual({ user: 'jason' });
           called = true;
           return true;
         },
@@ -458,7 +443,7 @@ describe('Mixed Types ', () => {
       { context: { user: 'jason' } },
     );
 
-    called.should.equal(true);
+    expect(called).toBe(true);
   });
 
   it('tests should be able to access nested parent', async () => {
@@ -494,10 +479,10 @@ describe('Mixed Types ', () => {
 
     await first.validate(testFixture);
     // console.log(finalFrom);
-    finalFrom[0].value.should.eql(testFixture.second[finalOptions.index]);
-    finalFrom[0].schema.should.equal(third);
-    finalFrom[1].value.should.equal(testFixture);
-    finalFrom[1].schema.should.equal(first);
+    expect(finalFrom[0].value).toEqual(testFixture.second[finalOptions.index]);
+    expect(finalFrom[0].schema).toBe(third);
+    expect(finalFrom[1].value).toBe(testFixture);
+    expect(finalFrom[1].schema).toBe(first);
   });
 
   it('tests can return an error', () => {
@@ -509,13 +494,12 @@ describe('Mixed Types ', () => {
       },
     });
 
-    return inst
-      .validate('')
-      .should.be.rejected()
-      .then(function (e) {
-        e.path.should.equal('my.path');
-        e.errors[0].should.equal('invalid my.path');
-      });
+    return expect(inst.validate('')).rejects.toEqual(
+      expect.objectContaining({
+        path: 'my.path',
+        errors: ['invalid my.path'],
+      }),
+    );
   });
 
   it('should use returned error path and message', () => {
@@ -527,80 +511,77 @@ describe('Mixed Types ', () => {
       },
     });
 
-    return inst
-      .validate({ other: 5, test: 'hi' })
-      .should.be.rejected()
-      .then(function (e) {
-        e.path.should.equal('my.path');
-        e.errors[0].should.equal('my.path nope!');
-      });
+    return expect(inst.validate({ other: 5, test: 'hi' })).rejects.toEqual(
+      expect.objectContaining({
+        path: 'my.path',
+        errors: ['my.path nope!'],
+      }),
+    );
   });
 
   it('should allow custom validation', async () => {
     let inst = string().test('name', 'test a', (val) => val === 'jim');
 
-    return inst
-      .validate('joe')
-      .should.be.rejected()
-      .then((e) => {
-        e.errors[0].should.equal('test a');
+    return expect(inst.validate('joe')).rejects.toThrowError('test a');
+  });
+
+  !global.YUP_USE_SYNC &&
+    it('should fail when the test function returns a rejected Promise', async () => {
+      let inst = string().test(() => {
+        return Promise.reject(new Error('oops an error occurred'));
       });
-  });
 
-  it('should fail when the test function returns a rejected Promise', async () => {
-    let inst = string().test(() => {
-      return Promise.reject(new Error('oops an error occurred'));
+      return expect(inst.validate('joe')).rejects.toThrowError(
+        'oops an error occurred',
+      );
     });
-
-    return inst.validate('joe').should.be.rejected();
-  });
 
   describe('withMutation', () => {
     it('should pass the same instance to a provided function', () => {
       let inst = mixed();
-      let func = sinon.spy();
+      let func = jest.fn();
 
       inst.withMutation(func);
 
-      func.should.have.been.calledOnceWithExactly(inst);
+      expect(func).toHaveBeenCalledWith(inst);
     });
 
     it('should temporarily make mutable', () => {
       let inst = mixed();
 
-      let update = () => {
-        inst.withMutation((inst) => {
-          inst.test('a', () => true);
-        });
-      };
+      expect(inst.tests).toHaveLength(0);
 
-      update.should.increase(() => inst.tests.length).by(1);
+      inst.withMutation((inst) => {
+        inst.test('a', () => true);
+      });
+
+      expect(inst.tests).toHaveLength(1);
     });
 
     it('should return immutability', () => {
       let inst = mixed();
       inst.withMutation(() => {});
 
-      let update = () => {
-        inst.test('a', () => true);
-      };
+      expect(inst.tests).toHaveLength(0);
 
-      update.should.not.increase(() => inst.tests.length);
+      inst.test('a', () => true);
+
+      expect(inst.tests).toHaveLength(0);
     });
 
     it('should work with nesting', () => {
       let inst = mixed();
 
-      let update = () => {
-        inst.withMutation((inst) => {
-          inst.withMutation((inst) => {
-            inst.test('a', () => true);
-          });
-          inst.test('b', () => true);
-        });
-      };
+      expect(inst.tests).toHaveLength(0);
 
-      update.should.increase(() => inst.tests.length).by(2);
+      inst.withMutation((inst) => {
+        inst.withMutation((inst) => {
+          inst.test('a', () => true);
+        });
+        inst.test('b', () => true);
+      });
+
+      expect(inst.tests).toHaveLength(2);
     });
   });
 
@@ -626,22 +607,21 @@ describe('Mixed Types ', () => {
     });
 
     it('should have the correct number of tests', () => {
-      reach(next, 'str').tests.length.should.equal(2);
+      expect(reach(next, 'str').tests).toHaveLength(2);
     });
 
     it('should have the tests in the correct order', () => {
-      reach(next, 'str').tests[0].OPTIONS.name.should.equal('required');
+      expect(reach(next, 'str').tests[0].OPTIONS.name).toBe('required');
     });
 
     it('should validate correctly', async () => {
-      await inst
-        .isValid({ str: 'hi', str2: 'hi', obj: {} })
-        .should.become(true);
-      (
-        await next
-          .validate({ str: ' hi  ', str2: 'hi', obj: { str: 'hi' } })
-          .should.be.fulfilled()
-      ).should.deep.eql({
+      await expect(
+        inst.isValid({ str: 'hi', str2: 'hi', obj: {} }),
+      ).resolves.toBe(true);
+
+      await expect(
+        next.validate({ str: ' hi  ', str2: 'hi', obj: { str: 'hi' } }),
+      ).resolves.toEqual({
         str: 'hi',
         str2: 'hi',
         obj: { str: 'hi' },
@@ -649,28 +629,22 @@ describe('Mixed Types ', () => {
     });
 
     it('should throw the correct validation errors', async () => {
-      let result = await next
-        .validate({ str: 'hi', str2: 'hi', obj: {} })
-        .should.be.rejected();
+      await expect(
+        next.validate({ str: 'hi', str2: 'hi', obj: {} }),
+      ).rejects.toThrowError('obj.str is a required field');
 
-      result.message.should.contain('obj.str is a required field');
-
-      result = await next
-        .validate({ str2: 'hi', obj: { str: 'hi' } })
-        .should.be.rejected();
-
-      result.message.should.contain('str is a required field');
+      await expect(
+        next.validate({ str2: 'hi', obj: { str: 'hi' } }),
+      ).rejects.toThrowError('str is a required field');
     });
   });
 
   it('concat should carry over transforms', async () => {
     let inst = string().trim();
 
-    await expect(inst.concat(string().min(4)).cast(' hello  ')).to.equal(
-      'hello',
-    );
+    await expect(inst.concat(string().min(4)).cast(' hello  ')).toBe('hello');
 
-    await expect(inst.concat(string().min(4)).isValid(' he  ')).to.become(
+    await expect(inst.concat(string().min(4)).isValid(' he  ')).resolves.toBe(
       false,
     );
   });
@@ -678,9 +652,9 @@ describe('Mixed Types ', () => {
   it('concat should fail on different types', function () {
     let inst = string().default('hi');
 
-    (function () {
+    expect(function () {
       inst.concat(object());
-    }.should.throw(TypeError));
+    }).toThrowError(TypeError);
   });
 
   it('concat should not overwrite label and meta with undefined', function () {
@@ -692,50 +666,51 @@ describe('Mixed Types ', () => {
     const otherSchema = mixed();
 
     baseSchema = baseSchema.concat(otherSchema);
-    expect(baseSchema.spec.label).to.equal(testLabel);
-    expect(baseSchema.spec.meta.testField).to.equal(testMeta.testField);
+    expect(baseSchema.spec.label).toBe(testLabel);
+    expect(baseSchema.spec.meta.testField).toBe(testMeta.testField);
   });
 
   it('concat should allow mixed and other type', function () {
     let inst = mixed().default('hi');
 
-    (function () {
-      inst.concat(string())._type.should.equal('string');
-    }.should.not.throw(TypeError));
+    expect(function () {
+      expect(inst.concat(string())._type).toBe('string');
+    }).not.toThrowError(TypeError);
   });
 
   it('concat should validate with mixed and other type', async function () {
     let inst = mixed().concat(number());
 
-    await inst
-      .validate([])
-      .should.be.rejected(ValidationError, /should be a `number`/);
+    await expect(inst.validate([])).rejects.toThrowError(
+      ValidationError,
+      /should be a `number`/,
+    );
   });
 
   it('concat should maintain undefined defaults', function () {
     let inst = string().default('hi');
 
-    expect(inst.concat(string().default(undefined)).getDefault()).to.equal(
-      undefined,
-    );
+    expect(
+      inst.concat(string().default(undefined)).getDefault(),
+    ).toBeUndefined();
   });
 
   it('concat should preserve oneOf', async function () {
     let inst = string().oneOf(['a']).concat(string().default('hi'));
 
-    await inst.isValid('a').should.become(true);
+    await expect(inst.isValid('a')).resolves.toBe(true);
   });
 
   // xit('concat should maintain explicit nullability', async function () {
   //   let inst = string().nullable().concat(string().default('hi'));
 
-  //   await inst.isValid(null).should.become(true);
+  //   await inst.isValid(null).should.resolves.toBe(true);
   // });
 
   it('concat should maintain explicit presence', async function () {
     let inst = string().required().concat(string());
 
-    await inst.isValid(undefined).should.become(false);
+    await expect(inst.isValid(undefined)).resolves.toBe(false);
   });
 
   it('gives whitelist precedence to second in concat', async function () {
@@ -743,9 +718,9 @@ describe('Mixed Types ', () => {
       .oneOf(['a', 'b', 'c'])
       .concat(string().notOneOf(['b']));
 
-    await inst.isValid('a').should.become(true);
-    await inst.isValid('b').should.become(false);
-    await inst.isValid('c').should.become(true);
+    await expect(inst.isValid('a')).resolves.toBe(true);
+    await expect(inst.isValid('b')).resolves.toBe(false);
+    await expect(inst.isValid('c')).resolves.toBe(true);
   });
 
   it('gives blacklist precedence to second in concat', async function () {
@@ -753,9 +728,9 @@ describe('Mixed Types ', () => {
       .notOneOf(['a', 'b', 'c'])
       .concat(string().oneOf(['b', 'c']));
 
-    await inst.isValid('a').should.become(false);
-    await inst.isValid('b').should.become(true);
-    await inst.isValid('c').should.become(true);
+    await expect(inst.isValid('a')).resolves.toBe(false);
+    await expect(inst.isValid('b')).resolves.toBe(true);
+    await expect(inst.isValid('c')).resolves.toBe(true);
   });
 
   it('concats whitelist with refs', async function () {
@@ -766,20 +741,17 @@ describe('Mixed Types ', () => {
         .concat(string().notOneOf(['c', ref('$x')])),
     });
 
-    await inst.isValid({ x: 'a', y: 'a' }).should.become(false);
-    await inst.isValid({ x: 'a', y: 'b' }).should.become(true);
-    await inst.isValid({ x: 'a', y: 'c' }).should.become(false);
+    await expect(inst.isValid({ x: 'a', y: 'a' })).resolves.toBe(false);
+    await expect(inst.isValid({ x: 'a', y: 'b' })).resolves.toBe(true);
+    await expect(inst.isValid({ x: 'a', y: 'c' })).resolves.toBe(false);
   });
 
   it('defaults should be validated but not transformed', function () {
     let inst = string().trim().default('  hi  ');
 
-    return inst
-      .validate(undefined)
-      .should.be.rejected()
-      .then(function (err) {
-        err.message.should.equal('this must be a trimmed string');
-      });
+    return expect(inst.validate(undefined)).rejects.toThrowError(
+      'this must be a trimmed string',
+    );
   });
 
   it('should handle conditionals', async function () {
@@ -788,13 +760,15 @@ describe('Mixed Types ', () => {
       then: mixed().required('from parent'),
     });
 
-    await inst
-      .validate(undefined, { parent: { prop: 5 } })
-      .should.be.rejected();
-    await inst
-      .validate(undefined, { parent: { prop: 1 } })
-      .should.be.fulfilled();
-    await inst.validate('hello', { parent: { prop: 5 } }).should.be.fulfilled();
+    await expect(
+      inst.validate(undefined, { parent: { prop: 5 } }),
+    ).rejects.toThrowError();
+    await expect(
+      inst.validate(undefined, { parent: { prop: 1 } }),
+    ).resolves.toBeUndefined();
+    await expect(
+      inst.validate('hello', { parent: { prop: 5 } }),
+    ).resolves.toBeDefined();
 
     inst = string().when('prop', {
       is: function (val) {
@@ -804,33 +778,36 @@ describe('Mixed Types ', () => {
       otherwise: string().min(4),
     });
 
-    await inst
-      .validate(undefined, { parent: { prop: 5 } })
-      .should.be.rejected();
-    await inst.validate('hello', { parent: { prop: 1 } }).should.be.fulfilled();
-    await inst.validate('hel', { parent: { prop: 1 } }).should.be.rejected();
+    await expect(
+      inst.validate(undefined, { parent: { prop: 5 } }),
+    ).rejects.toThrowError();
+    await expect(
+      inst.validate('hello', { parent: { prop: 1 } }),
+    ).resolves.toBeDefined();
+    await expect(
+      inst.validate('hel', { parent: { prop: 1 } }),
+    ).rejects.toThrowError();
   });
 
   it('should handle multiple conditionals', function () {
     let called = false;
     let inst = mixed().when(['$prop', '$other'], function (prop, other) {
-      other.should.equal(true);
-      prop.should.equal(1);
+      expect(other).toBe(true);
+      expect(prop).toBe(1);
       called = true;
     });
 
     inst.cast({}, { context: { prop: 1, other: true } });
-    called.should.equal(true);
+    expect(called).toBe(true);
 
     inst = mixed().when(['$prop', '$other'], {
       is: 5,
       then: mixed().required(),
     });
 
-    return inst
-      .isValid(undefined, { context: { prop: 5, other: 5 } })
-      .should.eventually()
-      .equal(false);
+    return expect(
+      inst.isValid(undefined, { context: { prop: 5, other: 5 } }),
+    ).resolves.toBe(false);
   });
 
   it('should require context when needed', async function () {
@@ -839,15 +816,15 @@ describe('Mixed Types ', () => {
       then: mixed().required('from context'),
     });
 
-    await inst
-      .validate(undefined, { context: { prop: 5 } })
-      .should.be.rejected();
-    await inst
-      .validate(undefined, { context: { prop: 1 } })
-      .should.be.fulfilled();
-    await inst
-      .validate('hello', { context: { prop: 5 } })
-      .should.be.fulfilled();
+    await expect(
+      inst.validate(undefined, { context: { prop: 5 } }),
+    ).rejects.toThrowError();
+    await expect(
+      inst.validate(undefined, { context: { prop: 1 } }),
+    ).resolves.toBeUndefined();
+    await expect(
+      inst.validate('hello', { context: { prop: 5 } }),
+    ).resolves.toBeDefined();
 
     inst = string().when('$prop', {
       is: function (val) {
@@ -857,13 +834,15 @@ describe('Mixed Types ', () => {
       otherwise: string().min(4),
     });
 
-    await inst
-      .validate(undefined, { context: { prop: 5 } })
-      .should.be.rejected();
-    await inst
-      .validate('hello', { context: { prop: 1 } })
-      .should.be.fulfilled();
-    await inst.validate('hel', { context: { prop: 1 } }).should.be.rejected();
+    await expect(
+      inst.validate(undefined, { context: { prop: 5 } }),
+    ).rejects.toThrowError();
+    await expect(
+      inst.validate('hello', { context: { prop: 1 } }),
+    ).resolves.toBeDefined();
+    await expect(
+      inst.validate('hel', { context: { prop: 1 } }),
+    ).rejects.toThrowError();
   });
 
   it('should not use context refs in object calculations', function () {
@@ -874,7 +853,7 @@ describe('Mixed Types ', () => {
       }),
     });
 
-    inst.getDefault().should.eql({ prop: undefined });
+    expect(inst.getDefault()).toEqual({ prop: undefined });
   });
 
   it('should support self references in conditions', async function () {
@@ -883,13 +862,14 @@ describe('Mixed Types ', () => {
       then: number().min(5),
     });
 
-    await inst
-      .validate(4)
-      .should.be.rejectedWith(ValidationError, /must be greater/);
+    await expect(inst.validate(4)).rejects.toThrowError(
+      ValidationError,
+      /must be greater/,
+    );
 
-    await inst.validate(5).should.be.fulfilled();
+    await expect(inst.validate(5)).resolves.toBeDefined();
 
-    await inst.validate(-1).should.be.fulfilled();
+    await expect(inst.validate(-1)).resolves.toBeDefined();
   });
 
   it('should support conditional single argument as options shortcut', async function () {
@@ -898,13 +878,14 @@ describe('Mixed Types ', () => {
       then: number().min(5),
     });
 
-    await inst
-      .validate(4)
-      .should.be.rejectedWith(ValidationError, /must be greater/);
+    await expect(inst.validate(4)).rejects.toThrowError(
+      ValidationError,
+      /must be greater/,
+    );
 
-    await inst.validate(5).should.be.fulfilled();
+    await expect(inst.validate(5)).resolves.toBeDefined();
 
-    await inst.validate(-1).should.be.fulfilled();
+    await expect(inst.validate(-1)).resolves.toBeDefined();
   });
 
   it('should allow nested conditions and lazies', async function () {
@@ -916,17 +897,17 @@ describe('Mixed Types ', () => {
       }),
     });
 
-    await inst
-      .validate('pass', { context: { check: false } })
-      .should.be.fulfilled();
+    await expect(
+      inst.validate('pass', { context: { check: false } }),
+    ).resolves.toBeDefined();
 
-    await inst
-      .validate('pass', { context: { check: 'hello' } })
-      .should.be.rejectedWith(ValidationError, /must be at least/);
+    await expect(
+      inst.validate('pass', { context: { check: 'hello' } }),
+    ).rejects.toThrowError(ValidationError, /must be at least/);
 
-    await inst
-      .validate('passes', { context: { check: 'hello' } })
-      .should.be.fulfilled();
+    await expect(
+      inst.validate('passes', { context: { check: 'hello' } }),
+    ).resolves.toBeDefined();
   });
 
   it('should use label in error message', async function () {
@@ -935,19 +916,18 @@ describe('Mixed Types ', () => {
       prop: string().required().label(label),
     });
 
-    await inst
-      .validate({})
-      .should.be.rejected()
-      .then(function (err) {
-        err.message.should.equal(`${label} is a required field`);
-      });
+    await expect(inst.validate({})).rejects.toThrowError(
+      `${label} is a required field`,
+    );
   });
 
   it('should add meta() data', () => {
-    string().meta({ input: 'foo' }).meta({ foo: 'bar' }).meta().should.eql({
-      input: 'foo',
-      foo: 'bar',
-    });
+    expect(string().meta({ input: 'foo' }).meta({ foo: 'bar' }).meta()).toEqual(
+      {
+        input: 'foo',
+        foo: 'bar',
+      },
+    );
   });
 
   describe('schema.describe()', () => {
@@ -970,7 +950,7 @@ describe('Mixed Types ', () => {
     });
 
     it('should describe', () => {
-      schema.describe().should.eql({
+      expect(schema.describe()).toEqual({
         type: 'object',
         meta: undefined,
         label: undefined,
@@ -1037,7 +1017,7 @@ describe('Mixed Types ', () => {
     });
 
     it('should describe with options', () => {
-      schema.describe({ value: { lazy: 'entered' } }).should.eql({
+      expect(schema.describe({ value: { lazy: 'entered' } })).toEqual({
         type: 'object',
         meta: undefined,
         label: undefined,
@@ -1115,12 +1095,9 @@ describe('Mixed Types ', () => {
         prop: string().defined(),
       });
 
-      await inst
-        .validate({})
-        .should.be.rejected()
-        .then(function (err) {
-          err.message.should.equal('prop must be defined');
-        });
+      await expect(inst.validate({})).rejects.toThrowError(
+        'prop must be defined',
+      );
     });
 
     it('should pass when value is null', async () => {
@@ -1128,7 +1105,7 @@ describe('Mixed Types ', () => {
         prop: string().nullable().defined(),
       });
 
-      await inst.isValid({ prop: null }).should.eventually().equal(true);
+      await expect(inst.isValid({ prop: null })).resolves.toBe(true);
     });
 
     it('should pass when value is not undefined', async () => {
@@ -1136,10 +1113,7 @@ describe('Mixed Types ', () => {
         prop: string().defined(),
       });
 
-      await inst
-        .isValid({ prop: 'prop value' })
-        .should.eventually()
-        .equal(true);
+      await expect(inst.isValid({ prop: 'prop value' })).resolves.toBe(true);
     });
   });
 });

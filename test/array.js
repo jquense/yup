@@ -3,177 +3,175 @@ import { string, number, object, array, StringSchema } from '../src';
 describe('Array types', () => {
   describe('casting', () => {
     it('should parse json strings', () => {
-      array().cast('[2,3,5,6]').should.eql([2, 3, 5, 6]);
+      expect(array().cast('[2,3,5,6]')).toEqual([2, 3, 5, 6]);
     });
 
     it('should return null for failed casts', () => {
-      expect(array().cast('asfasf', { assert: false })).to.equal(null);
+      expect(array().cast('asfasf', { assert: false })).toBeNull();
 
-      expect(array().cast(null, { assert: false })).to.equal(null);
+      expect(array().cast(null, { assert: false })).toBeNull();
     });
 
     it('should recursively cast fields', () => {
-      array().of(number()).cast(['4', '5']).should.eql([4, 5]);
+      expect(array().of(number()).cast(['4', '5'])).toEqual([4, 5]);
 
-      array()
-        .of(string())
-        .cast(['4', 5, false])
-        .should.eql(['4', '5', 'false']);
+      expect(array().of(string()).cast(['4', 5, false])).toEqual([
+        '4',
+        '5',
+        'false',
+      ]);
     });
   });
 
   it('should handle DEFAULT', () => {
-    expect(array().getDefault()).to.equal(undefined);
+    expect(array().getDefault()).toBeUndefined();
 
-    array()
-      .default(() => [1, 2, 3])
-      .getDefault()
-      .should.eql([1, 2, 3]);
+    expect(
+      array()
+        .default(() => [1, 2, 3])
+        .getDefault(),
+    ).toEqual([1, 2, 3]);
   });
 
   it('should type check', () => {
     var inst = array();
 
-    inst.isType([]).should.equal(true);
-    inst.isType({}).should.equal(false);
-    inst.isType('true').should.equal(false);
-    inst.isType(NaN).should.equal(false);
-    inst.isType(34545).should.equal(false);
+    expect(inst.isType([])).toBe(true);
+    expect(inst.isType({})).toBe(false);
+    expect(inst.isType('true')).toBe(false);
+    expect(inst.isType(NaN)).toBe(false);
+    expect(inst.isType(34545)).toBe(false);
 
-    expect(inst.isType(null)).to.equal(false);
+    expect(inst.isType(null)).toBe(false);
 
-    inst.nullable().isType(null).should.equal(true);
+    expect(inst.nullable().isType(null)).toBe(true);
   });
 
   it('should cast children', () => {
-    array().of(number()).cast(['1', '3']).should.eql([1, 3]);
+    expect(array().of(number()).cast(['1', '3'])).toEqual([1, 3]);
   });
 
   it('should concat subType correctly', async () => {
-    expect(array(number()).concat(array()).innerType).to.exist();
+    expect(array(number()).concat(array()).innerType).toBeDefined();
 
     let merged = array(number()).concat(array(number().required()));
 
-    expect(merged.innerType.type).to.equal('number');
+    expect(merged.innerType.type).toBe('number');
 
-    await expect(merged.validateAt('[0]', undefined)).to.be.rejected();
+    await expect(merged.validateAt('[0]', undefined)).rejects.toThrowError();
   });
 
   it('should pass options to children', () => {
-    array(object({ name: string() }))
-      .cast([{ id: 1, name: 'john' }], { stripUnknown: true })
-      .should.eql([{ name: 'john' }]);
+    expect(
+      array(object({ name: string() })).cast([{ id: 1, name: 'john' }], {
+        stripUnknown: true,
+      }),
+    ).toEqual([{ name: 'john' }]);
   });
 
   describe('validation', () => {
     test.each([
-      ['missing', undefined, array().defined()],
       ['required', undefined, array().required()],
       ['required', null, array().required()],
       ['null', null, array()],
       ['length', [1, 2, 3], array().length(2)],
     ])('Basic validations fail: %s %p', async (type, value, schema) => {
-      expect(await schema.isValid(value)).to.equal(false);
+      expect(await schema.isValid(value)).toBe(false);
     });
 
     test.each([
-      ['missing', [], array().defined()],
       ['required', [], array().required()],
       ['nullable', null, array().nullable()],
       ['length', [1, 2, 3], array().length(3)],
     ])('Basic validations pass: %s %p', async (type, value, schema) => {
-      expect(await schema.isValid(value)).to.equal(true);
+      expect(await schema.isValid(value)).toBe(true);
     });
 
     it('should allow undefined', async () => {
-      await array().of(number().max(5)).isValid().should.become(true);
+      await expect(array().of(number().max(5)).isValid()).resolves.toBe(true);
     });
 
     it('max should replace earlier tests', async () => {
-      expect(await array().max(4).max(10).isValid(Array(5).fill(0))).to.equal(
-        true,
-      );
+      expect(await array().max(4).max(10).isValid(Array(5).fill(0))).toBe(true);
     });
 
     it('min should replace earlier tests', async () => {
-      expect(await array().min(10).min(4).isValid(Array(5).fill(0))).to.equal(
-        true,
-      );
+      expect(await array().min(10).min(4).isValid(Array(5).fill(0))).toBe(true);
     });
 
     it('should respect subtype validations', async () => {
       var inst = array().of(number().max(5));
 
-      await inst.isValid(['gg', 3]).should.become(false);
-      await inst.isValid([7, 3]).should.become(false);
+      await expect(inst.isValid(['gg', 3])).resolves.toBe(false);
+      await expect(inst.isValid([7, 3])).resolves.toBe(false);
 
       let value = await inst.validate(['4', 3]);
 
-      value.should.eql([4, 3]);
+      expect(value).toEqual([4, 3]);
     });
 
     it('should prevent recursive casting', async () => {
-      let castSpy = sinon.spy(StringSchema.prototype, '_cast');
+      let castSpy = jest.spyOn(StringSchema.prototype, '_cast');
 
       let value = await array(string()).validate([5]);
 
-      value[0].should.equal('5');
+      expect(value[0]).toBe('5');
 
-      castSpy.should.have.been.calledOnce();
-      StringSchema.prototype._cast.restore();
+      expect(castSpy).toHaveBeenCalledTimes(1);
+      castSpy.mockRestore();
     });
   });
 
-  it('should respect abortEarly', () => {
+  it('should respect abortEarly', async () => {
     var inst = array()
       .of(object({ str: string().required() }))
       .test('name', 'oops', () => false);
 
-    return Promise.all([
-      inst
-        .validate([{ str: '' }])
-        .should.be.rejected()
-        .then((err) => {
-          err.value.should.eql([{ str: '' }]);
-          err.errors.length.should.equal(1);
-          err.errors.should.eql(['oops']);
-        }),
-      inst
-        .validate([{ str: '' }], { abortEarly: false })
-        .should.be.rejected()
-        .then((err) => {
-          err.value.should.eql([{ str: '' }]);
-          err.errors.length.should.equal(2);
-          err.errors.should.eql(['[0].str is a required field', 'oops']);
-        }),
-    ]);
+    await expect(inst.validate([{ str: '' }])).rejects.toEqual(
+      expect.objectContaining({
+        value: [{ str: '' }],
+        errors: ['oops'],
+      }),
+    );
+
+    await expect(
+      inst.validate([{ str: '' }], { abortEarly: false }),
+    ).rejects.toEqual(
+      expect.objectContaining({
+        value: [{ str: '' }],
+        errors: ['[0].str is a required field', 'oops'],
+      }),
+    );
   });
 
   it('should compact arrays', () => {
     var arr = ['', 1, 0, 4, false, null],
       inst = array();
 
-    inst.compact().cast(arr).should.eql([1, 4]);
+    expect(inst.compact().cast(arr)).toEqual([1, 4]);
 
-    inst
-      .compact((v) => v == null)
-      .cast(arr)
-      .should.eql(['', 1, 0, 4, false]);
+    expect(inst.compact((v) => v == null).cast(arr)).toEqual([
+      '',
+      1,
+      0,
+      4,
+      false,
+    ]);
   });
 
   it('should ensure arrays', () => {
     var inst = array().ensure();
 
     const a = [1, 4];
-    inst.cast(a).should.equal(a);
+    expect(inst.cast(a)).toBe(a);
 
-    inst.cast(null).should.eql([]);
+    expect(inst.cast(null)).toEqual([]);
     // nullable is redundant since this should always produce an array
     // but we want to ensure that null is actually turned into an array
-    inst.nullable().cast(null).should.eql([]);
+    expect(inst.nullable().cast(null)).toEqual([]);
 
-    inst.cast(1).should.eql([1]);
-    inst.nullable().cast(1).should.eql([1]);
+    expect(inst.cast(1)).toEqual([1]);
+    expect(inst.nullable().cast(1)).toEqual([1]);
   });
 
   it('should pass resolved path to descendants', async () => {
@@ -181,8 +179,8 @@ describe('Array types', () => {
     let expectedPaths = ['[0]', '[1]'];
 
     let itemSchema = string().when([], function (_, context) {
-      let path = context.path || '';
-      path.should.be.oneOf(expectedPaths);
+      let path = context.path;
+      expect(expectedPaths).toContain(path);
       return string().required();
     });
 
@@ -193,18 +191,17 @@ describe('Array types', () => {
     let sparseArray = new Array(2);
     sparseArray[1] = 1;
     let value = await array().of(number()).validate(sparseArray);
-    expect(0 in sparseArray).to.be.false();
-    expect(0 in value).to.be.false();
+    expect(0 in sparseArray).toBe(false);
+    expect(0 in value).toBe(false);
     // eslint-disable-next-line no-sparse-arrays
-    value.should.eql([, 1]);
+    expect(value).toEqual([, 1]);
   });
 
   it('should validate empty slots in sparse array', async () => {
     let sparseArray = new Array(2);
     sparseArray[1] = 1;
-    await array()
-      .of(number().required())
-      .isValid(sparseArray)
-      .should.become(false);
+    await expect(
+      array().of(number().required()).isValid(sparseArray),
+    ).resolves.toEqual(false);
   });
 });

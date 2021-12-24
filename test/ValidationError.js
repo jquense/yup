@@ -6,47 +6,47 @@ describe('ValidationError', function () {
       const str = ValidationError.formatError('Some message ${param}', {
         param: 'here',
       });
-      str.should.contain('here');
+      expect(str).toContain('here');
     });
 
     it(`should auto include any param named 'label' or 'path' as the 'path' param`, function () {
       const str = ValidationError.formatError('${path} goes here', {
         label: 'label',
       });
-      str.should.contain('label');
+      expect(str).toContain('label');
     });
 
     it(`should use 'this' if a 'label' or 'path' param is not provided`, function () {
       const str = ValidationError.formatError('${path} goes here', {});
-      str.should.contain('this');
+      expect(str).toContain('this');
     });
 
     it(`should include "undefined" in the message if undefined is provided as a param`, function () {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: undefined,
       });
-      str.should.contain('undefined');
+      expect(str).toContain('undefined');
     });
 
     it(`should include "null" in the message if null is provided as a param`, function () {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: null,
       });
-      str.should.contain('null');
+      expect(str).toContain('null');
     });
 
     it(`should include "NaN" in the message if null is provided as a param`, function () {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: NaN,
       });
-      str.should.contain('NaN');
+      expect(str).toContain('NaN');
     });
 
     it(`should include 0 in the message if 0 is provided as a param`, function () {
       const str = ValidationError.formatError('${path} value is ${min}', {
         min: 0,
       });
-      str.should.contain('0');
+      expect(str).toContain('0');
     });
   });
 });

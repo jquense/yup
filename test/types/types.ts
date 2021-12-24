@@ -15,15 +15,15 @@ import {
   date,
   BaseSchema,
   StringSchema,
-} from '../src';
+} from '../../src';
 import type {
   AssertsShape,
   DefaultFromShape,
   TypeOfShape,
-} from '../src/object';
-import type { Config, ResolveFlags } from '../src/schema';
-import { AnyObject, Preserve } from '../src/types';
-import { _ } from '../src/util/types';
+} from '../../src/object';
+import type { Config, ResolveFlags } from '../../src/schema';
+import { AnyObject, Preserve } from '../../src/types';
+import { _ } from '../../src/util/types';
 
 mixed().required().nullable();
 

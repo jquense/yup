@@ -2,7 +2,7 @@ import { lazy, mixed } from '../src';
 
 describe('lazy', function () {
   it('should throw on a non-schema value', () => {
-    (() => lazy(() => undefined).validate()).should.throw();
+    expect(() => lazy(() => undefined).validate()).toThrowError();
   });
 
   describe('mapper', () => {
@@ -10,13 +10,12 @@ describe('lazy', function () {
     let mapper;
 
     beforeEach(() => {
-      mapper = sinon.stub();
-      mapper.returns(mixed());
+      mapper = jest.fn(() => mixed());
     });
 
     it('should call with value', () => {
       lazy(mapper).validate(value);
-      mapper.should.have.been.calledWith(value);
+      expect(mapper).toHaveBeenCalledWith(value, expect.any(Object));
     });
 
     it('should call with context', () => {
@@ -24,18 +23,21 @@ describe('lazy', function () {
         a: 1,
       };
       lazy(mapper).validate(value, context);
-      mapper.should.have.been.calledWithExactly(value, context);
+      expect(mapper).toHaveBeenCalledWith(value, context);
     });
 
     it('should allow meta', () => {
       const meta = { a: 1 };
       const schema = lazy(mapper).meta(meta);
 
-      expect(schema.meta()).to.eql(meta);
+      expect(schema.meta()).toEqual(meta);
 
-      expect(schema.meta({ added: true })).to.not.eql(schema.meta());
+      expect(schema.meta({ added: true })).not.toEqual(schema.meta());
 
-      expect(schema.meta({ added: true }).meta()).to.eql({ a: 1, added: true });
+      expect(schema.meta({ added: true }).meta()).toEqual({
+        a: 1,
+        added: true,
+      });
     });
   });
 });
