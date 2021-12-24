@@ -6,6 +6,7 @@ import type {
   AnyConfig,
   Config,
   Defined,
+  Message,
   MergeConfig,
   NotNull,
   SetFlag,
@@ -27,7 +28,7 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config
+  TConfig extends Config<any, any> = Config,
 > extends BaseSchema<TType, TConfig> {
   constructor() {
     super({ type: 'number' });
@@ -150,7 +151,7 @@ create.prototype = NumberSchema.prototype;
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config
+  TConfig extends Config<any, any> = Config,
 > extends BaseSchema<TType, TConfig> {
   strip(): NumberSchema<TType, SetFlag<TConfig, 's'>>;
 
