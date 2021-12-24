@@ -1,12 +1,11 @@
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Maybe } from './types';
+import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
 import type {
   AnyConfig,
   Config,
   Defined,
-  Message,
   MergeConfig,
   NotNull,
   SetFlag,

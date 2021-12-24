@@ -13,7 +13,7 @@ import isAbsent from './util/isAbsent';
 export function create(): BooleanSchema;
 export function create<
   T extends boolean,
-  TContext = AnyObject
+  TContext = AnyObject,
 >(): BooleanSchema<T | undefined, Config<TContext>>;
 export function create() {
   return new BooleanSchema();
@@ -21,7 +21,7 @@ export function create() {
 
 export default class BooleanSchema<
   TType extends Maybe<boolean> = boolean | undefined,
-  TConfig extends Config<any, any> = Config
+  TConfig extends Config<any, any> = Config,
 > extends BaseSchema<TType, TConfig> {
   constructor() {
     super({ type: 'boolean' });
@@ -66,26 +66,23 @@ export default class BooleanSchema<
       },
     }) as any;
   }
+
+  override default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): BooleanSchema<TType, ToggleDefault<TConfig, D>> {
+    return super.default(def);
+  }
+
+  // concat<TOther extends BooleanSchema<any, any>>(schema: TOther): TOther;
+
+  // defined(msg?: Message): BooleanSchema<Defined<TType>, TConfig>;
+  // optional(): BooleanSchema<TType | undefined, TConfig>;
+
+  // required(msg?: Message): BooleanSchema<NonNullable<TType>, TConfig>;
+  // declarenotRequired(): BooleanSchema<Maybe<TType>, TConfig>;
+
+  // nullable(msg?: Message): BooleanSchema<TType | null, TConfig>;
+  // nonNullable(): BooleanSchema<NotNull<TType>, TConfig>;
 }
 
 create.prototype = BooleanSchema.prototype;
-
-export default interface BooleanSchema<
-  TType extends Maybe<boolean>,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): BooleanSchema<TType, ToggleDefault<TConfig, D>>;
-
-  concat<TOther extends BooleanSchema<any, any>>(schema: TOther): TOther;
-
-  defined(msg?: Message): BooleanSchema<Defined<TType>, TConfig>;
-  optional(): BooleanSchema<TType | undefined, TConfig>;
-
-  required(msg?: Message): BooleanSchema<NonNullable<TType>, TConfig>;
-  notRequired(): BooleanSchema<Maybe<TType>, TConfig>;
-
-  nullable(msg?: Message): BooleanSchema<TType | null, TConfig>;
-  nonNullable(): BooleanSchema<NotNull<TType>, TConfig>;
-}

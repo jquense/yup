@@ -13,6 +13,7 @@ import type {
 import ValidationError from './ValidationError';
 import type Reference from './Reference';
 import {
+  AnyConfig,
   Asserts,
   Config,
   Defined,
@@ -33,15 +34,15 @@ export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
 
 export function create<
   C extends AnyObject = AnyObject,
-  T extends AnySchema | Lazy<any, any> = AnySchema
+  T extends AnySchema | Lazy<any, any> = AnySchema,
 >(type?: T) {
   return new ArraySchema<T, Config<C>>(type);
 }
 
 export default class ArraySchema<
   T extends AnySchema | Lazy<any, any>,
-  C extends Config<any, any> = Config,
-  TIn extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
+  C extends AnyConfig = Config,
+  TIn extends any[] | null | undefined = T['__outputType'][] | undefined,
 > extends BaseSchema<TIn, C> {
   innerType?: T;
 
@@ -241,7 +242,7 @@ export default class ArraySchema<
   }
 
   ensure(): ArraySchema<T, SetFlag<C, 'd'>, NonNullable<TIn>> {
-    return this.default(() => ([] as any) as TIn).transform(
+    return this.default(() => [] as any as TIn).transform(
       (val: TIn, original: any) => {
         // We don't want to return `null` for nullable schema
         if (this._typeCheck(val)) return val;
@@ -276,19 +277,19 @@ export default class ArraySchema<
     return base;
   }
 
-  nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
-  nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
-  nullable(isNullable = true): ArraySchema<T, C, TIn | null> {
-    return super.nullable(isNullable as any);
-  }
+  // nullable(isNullable?: true): ArraySchema<T, C, TIn | null>;
+  // nullable(isNullable: false): ArraySchema<T, C, Exclude<TIn, null>>;
+  // nullable(isNullable = true): ArraySchema<T, C, TIn | null> {
+  //   return super.nullable(isNullable as any);
+  // }
 
-  defined(): DefinedArraySchema<T, C, TIn> {
-    return super.defined();
-  }
+  // defined(): ArraySchema<T, C, TIn> {
+  //   return super.defined();
+  // }
 
-  required(msg?: MixedLocale['required']): RequiredArraySchema<T, C, TIn> {
-    return super.required(msg);
-  }
+  // required(msg?: MixedLocale['required']): ArraySchema<T, C, TIn> {
+  //   return super.required(msg);
+  // }
 }
 
 create.prototype = ArraySchema.prototype;
@@ -300,7 +301,7 @@ create.prototype = ArraySchema.prototype;
 export default interface ArraySchema<
   T extends AnySchema | Lazy<any, any>,
   C extends Config<any, any> = Config,
-  TIn extends Maybe<Asserts<T>[]> = Asserts<T>[] | undefined
+  TIn extends any[] | null | undefined = T['__outputType'][] | undefined,
 > extends BaseSchema<TIn, C> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,

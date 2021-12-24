@@ -54,11 +54,11 @@ type SchemaOf<T, CustomTypes = never> = [T] extends [Array<infer E>]
   : T extends CustomTypes
   ? BaseSchema<T, Config>
   : [T] extends [AnyObject]
-  ? ObjectSchema<{
-      [k in keyof T]-?:
-        | SchemaOf<T[k], CustomTypes>
-        | Lazy<SchemaOf<T[k], CustomTypes>>;
-    }>
+  // ? ObjectSchema<{
+  //     [k in keyof T]-?:
+  //       | SchemaOf<T[k], CustomTypes>
+  //       | Lazy<SchemaOf<T[k], CustomTypes>>;
+  //   }>
   : //ObjectSchemaOf<T, CustomTypes>
     never;
 
@@ -91,7 +91,7 @@ export {
   StringSchema,
   NumberSchema,
   DateSchema,
-  ObjectSchema,
+  // ObjectSchema,
   ArraySchema,
 };
 
