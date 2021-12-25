@@ -11,7 +11,6 @@ import {
   number,
   ref,
   lazy,
-  SchemaOf,
   date,
   BaseSchema,
   StringSchema,

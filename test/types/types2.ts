@@ -2,9 +2,9 @@
 /* eslint-disable no-unused-labels */
 import { AnySchema, array, number, string, date, ref } from '../../src';
 import { create as lazy } from '../../src/Lazy';
-import { create as object } from '../../src/object';
+import ObjectSchema, { create as object } from '../../src/object';
 
-import { ISchema } from '../../src/util/types';
+import { ISchema, _ } from '../../src/util/types';
 
 Strings: {
   const strRequired = string().required();
@@ -223,7 +223,7 @@ Object: {
     name: string;
   }
 
-  const _person = object<Person>({ name: string().defined() });
+  const _person: ObjectSchema<Person> = object({ name: string().defined() });
 
   const a1 = object({
     list: array(number().required()).required(),
@@ -258,7 +258,8 @@ Object: {
 
   const cast1 = obj.cast({});
 
-  type f = typeof obj['fields']['number'];
+  type f = _<ReturnType<typeof obj.getDefaultFromShape()>>;
+
   // $ExpectType string | undefined
   cast1!.nest!.other;
 
@@ -271,28 +272,29 @@ Object: {
   //
   // Object Defaults
   //
-  const dflt1 = obj.getDefaultFromShape();
+  // const dflt1 = obj.getDefaultFromShape();
 
-  // $ExpectType number
-  dflt1.number;
+  // // $ExpectType number
+  // dflt1.number;
 
-  // $ExpectType undefined
-  dflt1.ref;
+  // // $ExpectType undefined
+  // dflt1.ref;
 
-  // $ExpectType undefined
-  dflt1.lazy;
+  // // $ExpectType undefined
+  // dflt1.lazy;
 
-  // $ExpectType undefined
-  dflt1.string;
+  // // $ExpectType undefined
+  // dflt1.string;
 
-  // $ExpectType undefined
-  dflt1.nest.other;
+  // // $ExpectType undefined
+  // dflt1.nest.other;
 
   const merge = object({
     field: string().required(),
     other: string().default(''),
   }).shape({
     field: number(),
+    name: string(),
   });
 
   // $ExpectType number | undefined
@@ -307,7 +309,7 @@ Object: {
       name: string;
     };
 
-    const _t = object<Employee>({
+    const _t: ObjectSchema<Employee> = object({
       name: string().defined(),
       hire_date: date().defined(),
     });
@@ -319,9 +321,68 @@ Object: {
       name: string;
     };
 
-    const _t = object<EmployeeWithPromotions>({
+    const _t = object({
       name: string().defined(),
       promotion_dates: array().of(date().defined()).defined(),
     });
+  }
+
+  ObjectPick: {
+    const schema = object({
+      age: number(),
+      name: string().required(),
+    })
+      .nullable()
+      .required();
+
+    // $ExpectType number | undefined
+    schema.pick(['age']).validateSync({ age: '1' }).age;
+  }
+
+  ObjectOmit: {
+    const schema = object({
+      age: number(),
+      name: string().required(),
+    })
+      .nullable()
+      .required();
+
+    // $ExpectType string
+    schema.omit(['age']).validateSync({ name: '1' }).name;
+
+    // $ExpectType string | undefined
+    schema.omit(['age']).partial().validateSync({ name: '1' }).name;
+  }
+
+  ObjectPartial: {
+    const schema = object({
+      // age: number(),
+      name: string().required(),
+      address: object()
+        .shape({
+          line1: string().required(),
+          zip: number().required().strip(),
+        })
+        .default(undefined),
+    }).nullable();
+
+    const partial = schema.partial();
+
+    // $ExpectType string | undefined
+    partial.validateSync({ age: '1' })!.name;
+
+    // $ExpectType StringSchema<string | undefined, Config<AnyObject, "">>
+    partial.fields.name;
+
+    // $ExpectType string
+    partial.validateSync({})!.address!.line1;
+
+    const deepPartial = schema.deepPartial();
+
+    // $ExpectType string | undefined
+    deepPartial.validateSync({ age: '1' })!.name;
+
+    // $ExpectType string | undefined
+    deepPartial.validateSync({})!.address!.line1;
   }
 }

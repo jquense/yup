@@ -1,5 +1,6 @@
 import type { AnySchema } from './schema';
 import type Lazy from './Lazy';
+import { ISchema } from './util/types';
 
 export type AnyObject = Record<string, any>;
 
@@ -44,7 +45,7 @@ export interface InternalOptions<TContext = {}>
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: AnySchema; value: any }[];
+  from?: { schema: ISchema<any, TContext>; value: any }[];
 }
 
 export interface MessageParams {

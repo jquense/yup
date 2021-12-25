@@ -28,12 +28,15 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import type { Defined, Flags, ISchema, Thunk, _ } from './util/types';
+import type {
+  Defined,
+  Flags,
+  ISchema,
+  ResolveFlags,
+  Thunk,
+  _,
+} from './util/types';
 import toArray from './util/toArray';
-
-export type ResolveFlags<T, F extends Flags> = Preserve<F, 'd'> extends never
-  ? T
-  : Defined<T>;
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
@@ -117,11 +120,9 @@ export default abstract class BaseSchema<
   TFlags extends Flags = '',
 > implements ISchema<TType, TContext, TFlags>
 {
-  declare readonly type: string;
+  readonly type: string;
 
-  // declare readonly __type: TType;
   declare readonly __outputType: ResolveFlags<TType, TFlags>;
-
   declare readonly __context: TContext;
   declare readonly __flags: TFlags;
   declare readonly __isYupSchema__: boolean;
@@ -515,7 +516,7 @@ export default abstract class BaseSchema<
   }
 
   getDefault(
-    options?: ResolveOptions,
+    options?: ResolveOptions<TContext>,
     // If schema is defaulted we know it's at least not undefined
   ): Preserve<TFlags, 'd'> extends never ? undefined : Defined<TType> {
     let schema = this.resolve(options || {});

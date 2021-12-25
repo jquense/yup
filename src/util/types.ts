@@ -19,6 +19,12 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any> {
   ): Promise<T>;
 
   describe(options?: ResolveOptions<C>): SchemaFieldDescription;
+  resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
+
+  getDefault(
+    options?: ResolveOptions<C>,
+    // If schema is defaulted we know it's at least not undefined
+  ): Preserve<F, 'd'> extends never ? undefined : Defined<T>;
 }
 
 export type Asserts<TSchema extends ISchema<any>> = TSchema['__outputType'];
@@ -37,8 +43,8 @@ type OptionalKeys<T extends {}> = {
 type RequiredKeys<T extends object> = Exclude<keyof T, OptionalKeys<T>>;
 
 export type MakePartial<T extends object> = {
-  [k in OptionalKeys<T>]?: T[k];
-} & { [k in RequiredKeys<T>]: T[k] };
+  [k in OptionalKeys<T> as T[k] extends never ? never : k]?: T[k];
+} & { [k in RequiredKeys<T> as T[k] extends never ? never : k]: T[k] };
 
 //
 // Schema Config
@@ -61,3 +67,9 @@ export type ToggleDefault<F extends Flags, D> = Preserve<
 > extends never
   ? SetFlag<F, 'd'>
   : UnsetFlag<F, 'd'>;
+
+export type ResolveFlags<T, F extends Flags> = Preserve<F, 's'> extends never
+  ? Preserve<F, 'd'> extends never
+    ? T
+    : Defined<T>
+  : never;
