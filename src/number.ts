@@ -3,10 +3,8 @@ import isAbsent from './util/isAbsent';
 import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
 import type {
-  AnyConfig,
-  Config,
   Defined,
-  MergeConfig,
+  Flags,
   NotNull,
   SetFlag,
   Thunk,
@@ -19,7 +17,7 @@ let isNaN = (value: Maybe<number>) => value != +value!;
 export function create(): NumberSchema;
 export function create<T extends number, TContext = AnyObject>(): NumberSchema<
   T | undefined,
-  Config<TContext>
+  TContext
 >;
 export function create() {
   return new NumberSchema();
@@ -27,8 +25,9 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config,
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TFlags> {
   constructor() {
     super({ type: 'number' });
 
@@ -150,25 +149,30 @@ create.prototype = NumberSchema.prototype;
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config,
-> extends BaseSchema<TType, TConfig> {
-  strip(): NumberSchema<TType, SetFlag<TConfig, 's'>>;
+  TContext = AnyObject,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TFlags> {
+  strip(): NumberSchema<TType, TContext, SetFlag<TFlags, 's'>>;
 
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): NumberSchema<TType, ToggleDefault<TConfig, D>>;
+  ): NumberSchema<TType, TContext, ToggleDefault<TFlags, D>>;
 
-  concat<T extends Maybe<number>, C extends AnyConfig>(
-    schema: NumberSchema<T, C>,
-  ): NumberSchema<NonNullable<TType> | T, MergeConfig<TConfig, C>>;
+  concat<UType extends Maybe<number>, UContext, UFlags extends Flags>(
+    schema: NumberSchema<UType, UContext, UFlags>,
+  ): NumberSchema<
+    NonNullable<TType> | UType,
+    TContext & UContext,
+    TFlags | UFlags
+  >;
   concat(schema: this): this;
 
-  defined(msg?: Message): NumberSchema<Defined<TType>, TConfig>;
-  optional(): NumberSchema<TType | undefined, TConfig>;
+  defined(msg?: Message): NumberSchema<Defined<TType>, TContext, TFlags>;
+  optional(): NumberSchema<TType | undefined, TContext, TFlags>;
 
-  required(msg?: Message): NumberSchema<NonNullable<TType>, TConfig>;
-  notRequired(): NumberSchema<Maybe<TType>, TConfig>;
+  required(msg?: Message): NumberSchema<NonNullable<TType>, TContext, TFlags>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext, TFlags>;
 
-  nullable(msg?: Message): NumberSchema<TType | null, TConfig>;
-  nonNullable(): NumberSchema<NotNull<TType>, TConfig>;
+  nullable(msg?: Message): NumberSchema<TType | null, TContext, TFlags>;
+  nonNullable(): NumberSchema<NotNull<TType>, TContext, TFlags>;
 }

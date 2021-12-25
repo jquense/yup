@@ -5,8 +5,8 @@ import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 import type { AnyObject, Maybe, Message } from './types';
 import type {
-  Config,
   Defined,
+  Flags,
   NotNull,
   Thunk,
   ToggleDefault,
@@ -21,7 +21,7 @@ let isDate = (obj: any): obj is Date =>
 export function create(): DateSchema;
 export function create<T extends Date, TContext = AnyObject>(): DateSchema<
   T | undefined,
-  Config<TContext>
+  TContext
 >;
 export function create() {
   return new DateSchema();
@@ -29,8 +29,9 @@ export function create() {
 
 export default class DateSchema<
   TType extends Maybe<Date> = Date | undefined,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TFlags> {
   static INVALID_DATE = invalidDate;
 
   constructor() {
@@ -105,20 +106,21 @@ create.INVALID_DATE = invalidDate;
 
 export default interface DateSchema<
   TType extends Maybe<Date>,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): DateSchema<TType, ToggleDefault<TConfig, D>>;
+  ): DateSchema<TType, TContext, ToggleDefault<TFlags, D>>;
 
   concat<TOther extends DateSchema<any, any>>(schema: TOther): TOther;
 
-  defined(msg?: Message): DateSchema<Defined<TType>, TConfig>;
-  optional(): DateSchema<TType | undefined, TConfig>;
+  defined(msg?: Message): DateSchema<Defined<TType>, TContext, TFlags>;
+  optional(): DateSchema<TType | undefined, TContext, TFlags>;
 
-  required(msg?: Message): DateSchema<NonNullable<TType>, TConfig>;
-  notRequired(): DateSchema<Maybe<TType>, TConfig>;
+  required(msg?: Message): DateSchema<NonNullable<TType>, TContext, TFlags>;
+  notRequired(): DateSchema<Maybe<TType>, TContext, TFlags>;
 
-  nullable(msg?: Message): DateSchema<TType | null, TConfig>;
-  nonNullable(): DateSchema<NotNull<TType>, TConfig>;
+  nullable(msg?: Message): DateSchema<TType | null, TContext, TFlags>;
+  nonNullable(): DateSchema<NotNull<TType>, TContext, TFlags>;
 }

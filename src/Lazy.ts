@@ -1,63 +1,64 @@
 import isSchema from './util/isSchema';
-import type { Callback, ValidateOptions } from './types';
+import type { AnyObject, Callback, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
 import type {
-  AnySchema,
   CastOptions,
-  ConfigOf,
+  ResolveFlags,
   SchemaFieldDescription,
   SchemaLazyDescription,
 } from './schema';
-import { Config, TypedSchema, TypeOf } from './util/types';
+import { Flags, ISchema } from './util/types';
+import { BaseSchema } from '.';
 
-export type LazyBuilder<T extends AnySchema = any> = (
+export type LazyBuilder<T, TContext = AnyObject, TFlags extends Flags = any> = (
   value: any,
   options: ResolveOptions,
-) => T;
+) => ISchema<T, TContext, TFlags>;
 
-export function create<T extends AnySchema>(builder: LazyBuilder<T>) {
-  return new Lazy(builder);
+export function create<T, TContext = AnyObject, TFlags extends Flags = any>(
+  builder: LazyBuilder<T, TContext, TFlags>,
+) {
+  return new Lazy<T, TContext, TFlags>(builder);
 }
-
-export type LazyReturnValue<T> = T extends Lazy<infer TSchema>
-  ? TSchema
-  : never;
-
-export type LazyType<T> = LazyReturnValue<T> extends TypedSchema
-  ? TypeOf<LazyReturnValue<T>>
-  : never;
 
 export interface LazySpec {
   meta: Record<string, unknown> | undefined;
 }
 
-class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
-  implements TypedSchema {
+class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
+  implements ISchema<T, TContext, TFlags>
+{
   type = 'lazy' as const;
 
   __isYupSchema__ = true;
 
-  readonly __type!: T['__type'];
-  readonly __outputType!: T['__outputType'];
+  declare readonly __outputType: ResolveFlags<T, TFlags>;
+
+  declare readonly __context: TContext;
+  declare readonly __flags: TFlags;
 
   spec: LazySpec;
 
-  constructor(private builder: LazyBuilder<T>) {
+  constructor(private builder: LazyBuilder<T, TContext, TFlags>) {
     this.spec = { meta: undefined };
   }
 
-  clone(): Lazy<T, TConfig> {
-    const next = new Lazy(this.builder);
+  clone(): Lazy<T, TContext, TFlags> {
+    const next = create(this.builder);
     next.spec = { ...this.spec };
     return next;
   }
 
   private _resolve = (
     value: any,
-    options: ResolveOptions<TConfig['context']> = {},
-  ): T => {
-    let schema = this.builder(value, options);
+    options: ResolveOptions<TContext> = {},
+  ): BaseSchema<T, TContext, TFlags> => {
+    let schema = this.builder(value, options) as BaseSchema<
+      T,
+      TContext,
+      TFlags
+    >;
 
     if (!isSchema(schema))
       throw new TypeError('lazy() functions must return a valid schema');
@@ -65,11 +66,11 @@ class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
     return schema.resolve(options);
   };
 
-  resolve(options: ResolveOptions<TConfig['context']>) {
+  resolve(options: ResolveOptions<TContext>) {
     return this._resolve(options.value, options);
   }
 
-  cast(value: any, options?: CastOptions<TConfig['context']>): T['__type'] {
+  cast(value: any, options?: CastOptions<TContext>): T {
     return this._resolve(value, options).cast(value, options);
   }
 
@@ -77,44 +78,37 @@ class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
     value: any,
     options?: ValidateOptions,
     maybeCb?: Callback,
-  ): T['__outputType'] {
+  ): Promise<T> {
     // @ts-expect-error missing public callback on type
     return this._resolve(value, options).validate(value, options, maybeCb);
   }
 
-  validateSync(
-    value: any,
-    options?: ValidateOptions<TConfig['context']>,
-  ): T['__outputType'] {
+  validateSync(value: any, options?: ValidateOptions<TContext>): T {
     return this._resolve(value, options).validateSync(value, options);
   }
 
-  validateAt(
-    path: string,
-    value: any,
-    options?: ValidateOptions<TConfig['context']>,
-  ) {
+  validateAt(path: string, value: any, options?: ValidateOptions<TContext>) {
     return this._resolve(value, options).validateAt(path, value, options);
   }
 
   validateSyncAt(
     path: string,
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ) {
     return this._resolve(value, options).validateSyncAt(path, value, options);
   }
 
-  isValid(value: any, options?: ValidateOptions<TConfig['context']>) {
+  isValid(value: any, options?: ValidateOptions<TContext>) {
     return this._resolve(value, options).isValid(value, options);
   }
 
-  isValidSync(value: any, options?: ValidateOptions<TConfig['context']>) {
+  isValidSync(value: any, options?: ValidateOptions<TContext>) {
     return this._resolve(value, options).isValidSync(value, options);
   }
 
   describe(
-    options?: ResolveOptions<TConfig['context']>,
+    options?: ResolveOptions<TContext>,
   ): SchemaLazyDescription | SchemaFieldDescription {
     return options
       ? this.resolve(options).describe(options)
@@ -122,7 +116,7 @@ class Lazy<T extends AnySchema, TConfig extends Config = ConfigOf<T>>
   }
 
   meta(): Record<string, unknown> | undefined;
-  meta(obj: Record<string, unknown>): Lazy<T, TConfig>;
+  meta(obj: Record<string, unknown>): Lazy<T, TContext, TFlags>;
   meta(...args: [Record<string, unknown>?]) {
     if (args.length === 0) return this.spec.meta;
 

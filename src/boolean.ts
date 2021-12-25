@@ -1,8 +1,8 @@
 import BaseSchema from './schema';
 import type { AnyObject, Maybe, Message } from './types';
 import type {
-  Config,
   Defined,
+  Flags,
   NotNull,
   Thunk,
   ToggleDefault,
@@ -14,15 +14,16 @@ export function create(): BooleanSchema;
 export function create<
   T extends boolean,
   TContext = AnyObject,
->(): BooleanSchema<T | undefined, Config<TContext>>;
+>(): BooleanSchema<T | undefined, TContext>;
 export function create() {
   return new BooleanSchema();
 }
 
 export default class BooleanSchema<
   TType extends Maybe<boolean> = boolean | undefined,
-  TConfig extends Config<any, any> = Config,
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TFlags> {
   constructor() {
     super({ type: 'boolean' });
 
@@ -43,7 +44,9 @@ export default class BooleanSchema<
     return typeof v === 'boolean';
   }
 
-  isTrue(message = locale.isValue): BooleanSchema<TType | true, TConfig> {
+  isTrue(
+    message = locale.isValue,
+  ): BooleanSchema<TType | true, TContext, TFlags> {
     return this.test({
       message,
       name: 'is-value',
@@ -55,7 +58,9 @@ export default class BooleanSchema<
     }) as any;
   }
 
-  isFalse(message = locale.isValue): BooleanSchema<TType | false, TConfig> {
+  isFalse(
+    message = locale.isValue,
+  ): BooleanSchema<TType | false, TContext, TFlags> {
     return this.test({
       message,
       name: 'is-value',
@@ -69,20 +74,29 @@ export default class BooleanSchema<
 
   override default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): BooleanSchema<TType, ToggleDefault<TConfig, D>> {
+  ): BooleanSchema<TType, TContext, ToggleDefault<TFlags, D>> {
     return super.default(def);
   }
 
   // concat<TOther extends BooleanSchema<any, any>>(schema: TOther): TOther;
-
-  // defined(msg?: Message): BooleanSchema<Defined<TType>, TConfig>;
-  // optional(): BooleanSchema<TType | undefined, TConfig>;
-
-  // required(msg?: Message): BooleanSchema<NonNullable<TType>, TConfig>;
-  // declarenotRequired(): BooleanSchema<Maybe<TType>, TConfig>;
-
-  // nullable(msg?: Message): BooleanSchema<TType | null, TConfig>;
-  // nonNullable(): BooleanSchema<NotNull<TType>, TConfig>;
+  defined(msg?: Message): BooleanSchema<Defined<TType>, TContext, TFlags> {
+    return super.defined(msg);
+  }
+  optional(): BooleanSchema<TType | undefined, TContext, TFlags> {
+    return super.defined();
+  }
+  required(msg?: Message): BooleanSchema<NonNullable<TType>, TContext, TFlags> {
+    return super.required(msg);
+  }
+  notRequired(): BooleanSchema<Maybe<TType>, TContext, TFlags> {
+    return super.notRequired();
+  }
+  nullable(): BooleanSchema<TType | null, TContext, TFlags> {
+    return super.nullable();
+  }
+  nonNullable(msg?: Message): BooleanSchema<NotNull<TType>, TContext, TFlags> {
+    return super.nonNullable(msg);
+  }
 }
 
 create.prototype = BooleanSchema.prototype;
