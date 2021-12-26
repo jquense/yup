@@ -29,7 +29,7 @@ Strings: {
 
   const strDefined = string().default('');
 
-  // $ExpectType string
+  // $ExpectType ""
   const _strDefined = strDefined.getDefault();
 
   const strDefault = string().nullable().default('').nullable().trim();
@@ -40,7 +40,7 @@ Strings: {
   // $ExpectType string | null
   strDefault.validateSync('');
 
-  // $ExpectType StringSchema<string, AnyObject, "d">
+  // $ExpectType StringSchema<string, AnyObject, "", "d">
   const strDefaultRequired = string().nullable().required().default('').trim();
 
   // $ExpectType string
@@ -51,6 +51,9 @@ Strings: {
 
   // $ExpectType "foo" | "bar"
   string<'foo' | 'bar'>().defined().validateSync('foo');
+
+  // $ExpectType never
+  string().strip().cast(undefined);
 }
 
 Numbers: {
@@ -77,7 +80,7 @@ Numbers: {
 
   const numDefined = number().default(3);
 
-  // $ExpectType number
+  // $ExpectType 3
   numDefined.getDefault();
 
   const numDefault = number().nullable().default(3).nullable().min(2);
@@ -96,9 +99,12 @@ Numbers: {
 
   // $ExpectType number
   numDefaultRequired.validateSync(null);
+
+  // $ExpectType never
+  number().strip().cast(undefined);
 }
 
-{
+date: {
   const dtRequired = date().required();
 
   // $ExpectType Date
@@ -148,6 +154,9 @@ Numbers: {
 
   // $ExpectType Date
   dtDefaultRequired.validateSync(null);
+
+  // $ExpectType never
+  date().strip().cast(undefined);
 }
 
 Lazy: {
@@ -164,6 +173,8 @@ Array: {
   type _a = AnySchema<number | undefined, any, ''>;
 
   type _b = _a['__outputType'];
+
+  array().default<string[]>(() => []);
 
   // $ExpectType (string | undefined)[] | undefined
   array(string()).cast(null);
@@ -183,7 +194,7 @@ Array: {
   // $ExpectType (string | null)[] | undefined
   array(string().nullable().default('')).validateSync(null);
 
-  // $ExpectType any[]
+  // $ExpectType number[]
   array()
     .default([] as number[])
     .getDefault();
@@ -199,11 +210,14 @@ Array: {
 
   const numList = [1, 2];
 
-  // $ExpectType (number | undefined)[]
+  // $ExpectType number[]
   array(number()).default(numList).getDefault();
 
-  // $ExpectType (number | undefined)[]
+  // $ExpectType (number | undefined)[] | undefined
   array(number()).concat(array(number()).required()).validateSync([]);
+
+  // $ExpectType never
+  array().strip().cast(undefined);
 }
 
 Object: {
@@ -214,7 +228,7 @@ Object: {
     colors: array(string().defined()).required(),
   }).optional();
 
-  // $ExpectType { name: string, colors: string[] }
+  // $ExpectType { name: string; colors: string[]; } | undefined
   v.cast({});
 
   type _I = InferType<typeof v>;
@@ -253,12 +267,15 @@ Object: {
     nest: object({
       other: string(),
     }),
+    nullObject: object({
+      other: string(),
+    }).default(null),
     lazy: lazy(() => number().defined()),
   });
 
   const cast1 = obj.cast({});
 
-  type f = _<ReturnType<typeof obj.getDefaultFromShape()>>;
+  let _f = obj.getDefault();
 
   // $ExpectType string | undefined
   cast1!.nest!.other;
@@ -269,35 +286,41 @@ Object: {
   // $ExpectType number
   cast1!.number;
 
+  // $ExpectType never
+  object().strip().cast(undefined);
+
   //
   // Object Defaults
   //
-  // const dflt1 = obj.getDefaultFromShape();
+  const dflt1 = obj.getDefault();
 
-  // // $ExpectType number
-  // dflt1.number;
+  // $ExpectType 1
+  dflt1.number;
 
-  // // $ExpectType undefined
-  // dflt1.ref;
+  // $ExpectType undefined
+  dflt1.ref;
 
-  // // $ExpectType undefined
-  // dflt1.lazy;
+  // $ExpectType undefined
+  dflt1.lazy;
 
-  // // $ExpectType undefined
-  // dflt1.string;
+  // $ExpectType undefined
+  dflt1.string;
 
-  // // $ExpectType undefined
-  // dflt1.nest.other;
+  // $ExpectType undefined
+  dflt1.nest.other;
+
+  // $ExpectType null
+  dflt1.nullObject;
 
   const merge = object({
     field: string().required(),
     other: string().default(''),
   }).shape({
-    field: number(),
+    field: number().default(1),
     name: string(),
   });
 
-  // $ExpectType number | undefined
+  // $ExpectType number
   merge.cast({}).field;
 
   // $ExpectType string
@@ -321,7 +344,7 @@ Object: {
       name: string;
     };
 
-    const _t = object({
+    const _t: ObjectSchema<EmployeeWithPromotions> = object({
       name: string().defined(),
       promotion_dates: array().of(date().defined()).defined(),
     });
@@ -370,9 +393,6 @@ Object: {
 
     // $ExpectType string | undefined
     partial.validateSync({ age: '1' })!.name;
-
-    // $ExpectType StringSchema<string | undefined, Config<AnyObject, "">>
-    partial.fields.name;
 
     // $ExpectType string
     partial.validateSync({})!.address!.line1;

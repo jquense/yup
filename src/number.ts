@@ -26,8 +26,9 @@ export function create() {
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({ type: 'number' });
 
@@ -150,29 +151,37 @@ create.prototype = NumberSchema.prototype;
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
-  strip(): NumberSchema<TType, TContext, SetFlag<TFlags, 's'>>;
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+  strip(): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): NumberSchema<TType, TContext, ToggleDefault<TFlags, D>>;
+  ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
-  concat<UType extends Maybe<number>, UContext, UFlags extends Flags>(
-    schema: NumberSchema<UType, UContext, UFlags>,
+  concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
+    schema: NumberSchema<UType, UContext, UDefault, UFlags>,
   ): NumberSchema<
     NonNullable<TType> | UType,
     TContext & UContext,
+    UDefault,
     TFlags | UFlags
   >;
   concat(schema: this): this;
 
-  defined(msg?: Message): NumberSchema<Defined<TType>, TContext, TFlags>;
-  optional(): NumberSchema<TType | undefined, TContext, TFlags>;
+  defined(
+    msg?: Message,
+  ): NumberSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): NumberSchema<TType | undefined, TContext, TDefault, TFlags>;
 
-  required(msg?: Message): NumberSchema<NonNullable<TType>, TContext, TFlags>;
-  notRequired(): NumberSchema<Maybe<TType>, TContext, TFlags>;
+  required(
+    msg?: Message,
+  ): NumberSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(msg?: Message): NumberSchema<TType | null, TContext, TFlags>;
-  nonNullable(): NumberSchema<NotNull<TType>, TContext, TFlags>;
+  nullable(
+    msg?: Message,
+  ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 }

@@ -20,7 +20,6 @@ import {
   InternalOptions,
   Maybe,
   ExtraParams,
-  Preserve,
   AnyObject,
 } from './types';
 
@@ -58,8 +57,9 @@ export type SchemaOptions<TDefault> = {
 export type AnySchema<
   TType = any,
   C = AnyObject,
+  D = any,
   F extends Flags = Flags,
-> = BaseSchema<TType, C, F>;
+> = BaseSchema<TType, C, D, F>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -117,8 +117,9 @@ export interface SchemaDescription {
 export default abstract class BaseSchema<
   TType = any,
   TContext = AnyObject,
+  TDefault = any,
   TFlags extends Flags = '',
-> implements ISchema<TType, TContext, TFlags>
+> implements ISchema<TType, TContext, TFlags, TDefault>
 {
   readonly type: string;
 
@@ -126,6 +127,7 @@ export default abstract class BaseSchema<
   declare readonly __context: TContext;
   declare readonly __flags: TFlags;
   declare readonly __isYupSchema__: boolean;
+  declare readonly __default: TDefault;
 
   readonly deps: readonly string[] = [];
 
@@ -518,7 +520,7 @@ export default abstract class BaseSchema<
   getDefault(
     options?: ResolveOptions<TContext>,
     // If schema is defaulted we know it's at least not undefined
-  ): Preserve<TFlags, 'd'> extends never ? undefined : Defined<TType> {
+  ): TDefault {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
@@ -823,11 +825,12 @@ export default abstract class BaseSchema<
 }
 
 export default interface BaseSchema<
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   TType = any,
   TContext = AnyObject,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  TDefault = any,
   TFlags extends Flags = '',
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 > {
   validateAt(
     path: string,

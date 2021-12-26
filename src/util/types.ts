@@ -6,10 +6,11 @@ export type Defined<T> = T extends undefined ? never : T;
 
 export type NotNull<T> = T extends null ? never : T;
 
-export interface ISchema<T, C = AnyObject, F extends Flags = any> {
+export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   __flags: F;
   __context: C;
   __outputType: T;
+  __default: D;
 
   cast(value: any, options: CastOptions<C>): T;
   validate(
@@ -20,11 +21,6 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any> {
 
   describe(options?: ResolveOptions<C>): SchemaFieldDescription;
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
-
-  getDefault(
-    options?: ResolveOptions<C>,
-    // If schema is defaulted we know it's at least not undefined
-  ): Preserve<F, 'd'> extends never ? undefined : Defined<T>;
 }
 
 export type Asserts<TSchema extends ISchema<any>> = TSchema['__outputType'];
@@ -69,7 +65,7 @@ export type ToggleDefault<F extends Flags, D> = Preserve<
   : UnsetFlag<F, 'd'>;
 
 export type ResolveFlags<T, F extends Flags> = Preserve<F, 's'> extends never
-  ? Preserve<F, 'd'> extends never
+  ? Extract<F, 'd'> extends never
     ? T
     : Defined<T>
   : never;

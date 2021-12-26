@@ -49,8 +49,9 @@ export { create };
 export default class StringSchema<
   TType extends Maybe<string> = string | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({ type: 'string' });
 
@@ -225,33 +226,41 @@ create.prototype = StringSchema.prototype;
 export default interface StringSchema<
   TType extends Maybe<string> = string | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): StringSchema<TType, TContext, ToggleDefault<TFlags, D>>;
+  ): StringSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   oneOf<U extends TType>(
     arrayOfValues: ReadonlyArray<U | Reference>,
     message?: MixedLocale['oneOf'],
-  ): StringSchema<U | Optionals<TType>, TContext, TFlags>;
+  ): StringSchema<U | Optionals<TType>, TContext, TDefault, TFlags>;
 
-  concat<UType extends Maybe<string>, UContext, UFlags extends Flags>(
-    schema: StringSchema<UType, UContext, UFlags>,
+  concat<UType extends Maybe<string>, UContext, UDefault, UFlags extends Flags>(
+    schema: StringSchema<UType, UContext, UDefault, UFlags>,
   ): StringSchema<
     NonNullable<TType> | UType,
     TContext & UContext,
+    UDefault,
     TFlags | UFlags
   >;
   concat(schema: this): this;
 
-  defined(msg?: Message): StringSchema<Defined<TType>, TContext, TFlags>;
-  optional(): StringSchema<TType | undefined, TContext, TFlags>;
+  defined(
+    msg?: Message,
+  ): StringSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): StringSchema<TType | undefined, TContext, TDefault, TFlags>;
 
-  required(msg?: Message): StringSchema<NonNullable<TType>, TContext, TFlags>;
-  notRequired(): StringSchema<Maybe<TType>, TContext, TFlags>;
+  required(
+    msg?: Message,
+  ): StringSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): StringSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(msg?: Message<any>): StringSchema<TType | null, TContext, TFlags>;
-  nonNullable(): StringSchema<NotNull<TType>, TContext, TFlags>;
-  strip(): StringSchema<TType, TContext, SetFlag<TFlags, 's'>>;
+  nullable(
+    msg?: Message<any>,
+  ): StringSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(): StringSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+  strip(): StringSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

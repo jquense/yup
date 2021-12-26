@@ -35,9 +35,10 @@ export function create<C extends AnyObject = AnyObject, T = any>(
 export default class ArraySchema<
   T,
   TContext,
+  TDefault = undefined,
   TFlags extends Flags = '',
   TIn extends any[] | null | undefined = T[] | undefined,
-> extends BaseSchema<TIn, TContext, TFlags> {
+> extends BaseSchema<TIn, TContext, TDefault, TFlags> {
   innerType?: ISchema<T, TContext>;
 
   constructor(type?: ISchema<T, TContext>) {
@@ -235,14 +236,16 @@ export default class ArraySchema<
     });
   }
 
-  ensure(): ArraySchema<T, TContext, SetFlag<TFlags, 'd'>, NonNullable<TIn>> {
-    return this.default(() => [] as any as TIn).transform(
+  //  ArraySchema<T, TContext, T[], SetFlag<TFlags, 'd'>, NonNullable<TIn>>
+
+  ensure() {
+    return this.default<TIn>(() => [] as any).transform(
       (val: TIn, original: any) => {
         // We don't want to return `null` for nullable schema
         if (this._typeCheck(val)) return val;
         return original == null ? [] : [].concat(original);
       },
-    ) as any;
+    );
   }
 
   compact(rejector?: RejectorFn) {
@@ -277,24 +280,35 @@ create.prototype = ArraySchema.prototype;
 export default interface ArraySchema<
   T,
   TContext,
+  TDefault = undefined,
   TFlags extends Flags = '',
   TIn extends any[] | null | undefined = T[] | undefined,
-> extends BaseSchema<TIn, TContext, TFlags> {
+> extends BaseSchema<TIn, TContext, TDefault, TFlags> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): ArraySchema<T, TContext, ToggleDefault<TFlags, D>, TIn>;
+  ): ArraySchema<T, TContext, D, ToggleDefault<TFlags, D>, TIn>;
 
   concat<IT, IC, IF extends Flags>(
     schema: ArraySchema<IT, IC, IF>,
-  ): ArraySchema<NonNullable<T> | IT, TContext & IC, TFlags | IF>;
+  ): ArraySchema<NonNullable<T> | IT, TContext & IC, TDefault, TFlags | IF>;
   concat(schema: this): this;
 
-  defined(msg?: Message): ArraySchema<T, TContext, TFlags, Defined<TIn>>;
-  optional(): ArraySchema<T, TContext, TFlags, TIn | undefined>;
+  defined(
+    msg?: Message,
+  ): ArraySchema<T, TContext, TDefault, TFlags, Defined<TIn>>;
+  optional(): ArraySchema<T, TContext, TDefault, TFlags, TIn | undefined>;
 
-  required(msg?: Message): ArraySchema<T, TContext, TFlags, NonNullable<TIn>>;
-  notRequired(): ArraySchema<T, TContext, TFlags, Maybe<TIn>>;
+  required(
+    msg?: Message,
+  ): ArraySchema<T, TContext, TDefault, TFlags, NonNullable<TIn>>;
+  notRequired(): ArraySchema<T, TContext, TDefault, TFlags, Maybe<TIn>>;
 
-  nullable(isNullable?: true): ArraySchema<T, TContext, TFlags, TIn | null>;
-  nullable(isNullable: false): ArraySchema<T, TContext, TFlags, NotNull<TIn>>;
+  nullable(
+    isNullable?: true,
+  ): ArraySchema<T, TContext, TDefault, TFlags, TIn | null>;
+  nullable(
+    isNullable: false,
+  ): ArraySchema<T, TContext, TDefault, TFlags, NotNull<TIn>>;
+
+  strip(): ArraySchema<T, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

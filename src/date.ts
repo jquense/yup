@@ -8,6 +8,7 @@ import type {
   Defined,
   Flags,
   NotNull,
+  SetFlag,
   Thunk,
   ToggleDefault,
 } from './util/types';
@@ -30,8 +31,9 @@ export function create() {
 export default class DateSchema<
   TType extends Maybe<Date> = Date | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   static INVALID_DATE = invalidDate;
 
   constructor() {
@@ -107,20 +109,27 @@ create.INVALID_DATE = invalidDate;
 export default interface DateSchema<
   TType extends Maybe<Date>,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): DateSchema<TType, TContext, ToggleDefault<TFlags, D>>;
+  ): DateSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<TOther extends DateSchema<any, any>>(schema: TOther): TOther;
 
-  defined(msg?: Message): DateSchema<Defined<TType>, TContext, TFlags>;
-  optional(): DateSchema<TType | undefined, TContext, TFlags>;
+  defined(
+    msg?: Message,
+  ): DateSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): DateSchema<TType | undefined, TContext, TDefault, TFlags>;
 
-  required(msg?: Message): DateSchema<NonNullable<TType>, TContext, TFlags>;
-  notRequired(): DateSchema<Maybe<TType>, TContext, TFlags>;
+  required(
+    msg?: Message,
+  ): DateSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): DateSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(msg?: Message): DateSchema<TType | null, TContext, TFlags>;
-  nonNullable(): DateSchema<NotNull<TType>, TContext, TFlags>;
+  nullable(msg?: Message): DateSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(): DateSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(): DateSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

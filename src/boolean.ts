@@ -4,6 +4,7 @@ import type {
   Defined,
   Flags,
   NotNull,
+  SetFlag,
   Thunk,
   ToggleDefault,
 } from './util/types';
@@ -22,8 +23,9 @@ export function create() {
 export default class BooleanSchema<
   TType extends Maybe<boolean> = boolean | undefined,
   TContext = AnyObject,
+  TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TFlags> {
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({ type: 'boolean' });
 
@@ -74,28 +76,38 @@ export default class BooleanSchema<
 
   override default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): BooleanSchema<TType, TContext, ToggleDefault<TFlags, D>> {
+  ): BooleanSchema<TType, TContext, D, ToggleDefault<TFlags, D>> {
     return super.default(def);
   }
 
   // concat<TOther extends BooleanSchema<any, any>>(schema: TOther): TOther;
-  defined(msg?: Message): BooleanSchema<Defined<TType>, TContext, TFlags> {
+  defined(
+    msg?: Message,
+  ): BooleanSchema<Defined<TType>, TContext, TDefault, TFlags> {
     return super.defined(msg);
   }
-  optional(): BooleanSchema<TType | undefined, TContext, TFlags> {
+  optional(): BooleanSchema<TType | undefined, TContext, TDefault, TFlags> {
     return super.defined();
   }
-  required(msg?: Message): BooleanSchema<NonNullable<TType>, TContext, TFlags> {
+  required(
+    msg?: Message,
+  ): BooleanSchema<NonNullable<TType>, TContext, TDefault, TFlags> {
     return super.required(msg);
   }
-  notRequired(): BooleanSchema<Maybe<TType>, TContext, TFlags> {
+  notRequired(): BooleanSchema<Maybe<TType>, TContext, TDefault, TFlags> {
     return super.notRequired();
   }
-  nullable(): BooleanSchema<TType | null, TContext, TFlags> {
+  nullable(): BooleanSchema<TType | null, TContext, TDefault, TFlags> {
     return super.nullable();
   }
-  nonNullable(msg?: Message): BooleanSchema<NotNull<TType>, TContext, TFlags> {
+  nonNullable(
+    msg?: Message,
+  ): BooleanSchema<NotNull<TType>, TContext, TDefault, TFlags> {
     return super.nonNullable(msg);
+  }
+
+  strip(): BooleanSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>> {
+    return super.strip();
   }
 }
 

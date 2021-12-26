@@ -2,66 +2,30 @@
 import { getter, normalizePath, join } from 'property-expr';
 import { camelCase, snakeCase } from 'tiny-case';
 
-import { Flags, ISchema } from './util/types';
+import { Flags, ISchema, SetFlag, ToggleDefault } from './util/types';
 
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
-import {
-  InternalOptions,
-  Callback,
-  Maybe,
-  Message,
-  Optionals,
-  Preserve,
-} from './types';
+import { InternalOptions, Callback, Maybe, Message } from './types';
 import ValidationError from './ValidationError';
-import type {
-  Defined,
-  Thunk,
-  NotNull,
-  ToggleDefault,
-  _,
-  MakePartial,
-} from './util/types';
+import type { Defined, Thunk, NotNull, _, MakePartial } from './util/types';
 import type Reference from './Reference';
 import BaseSchema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
+import {
+  AnyObject,
+  DefaultFromShape,
+  MergeObjectTypes,
+  ObjectShape,
+  PartialDeep,
+  TypeFromShape,
+} from './util/objectTypes';
 
-export type Assign<T extends {}, U extends {}> = {
-  [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} & U;
-
-export type MergeObjectTypes<T extends Maybe<AnyObject>, U extends AnyObject> =
-  | ({ [P in keyof T]: P extends keyof U ? U[P] : T[P] } & U)
-  | Optionals<T>;
-
-export type AnyObject = Record<string, any>;
-
-export type ObjectShape = { [k: string]: ISchema<any> | Reference };
+export type { AnyObject };
 
 type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
-
-type PartialDeep<T> = T extends
-  | string
-  | number
-  | bigint
-  | boolean
-  | null
-  | undefined
-  | symbol
-  | Date
-  ? T | undefined
-  : // Arrays, Sets and Maps and their readonly counterparts have their items made
-  // deeply partial, but their own instances are left untouched
-  T extends Array<infer ArrayType>
-  ? Array<PartialDeep<ArrayType>>
-  : T extends ReadonlyArray<infer ArrayType>
-  ? ReadonlyArray<ArrayType>
-  : {
-      [K in keyof T]?: PartialDeep<T[K]>;
-    };
 
 export type Shape<T extends Maybe<AnyObject>, C = AnyObject> = {
   [field in keyof T]: ISchema<T[field], C> | Reference;
@@ -89,37 +53,28 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
-type TypeFromShape<S extends ObjectShape, C> = {
-  [K in keyof S]: S[K] extends ISchema<any, C> ? S[K]['__outputType'] : unknown;
-};
+// type StripValues<T, U> = {
+//   [K in keyof T as Preserve<T[K], U> extends never ? K : never]: T[K];
+// };
 
-export type DefaultFromShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends { getDefault: () => infer D }
-    ? D
-    : never;
-};
+export function create<C = AnyObject, S extends ObjectShape = {}>(spec?: S) {
+  type TIn = _<TypeFromShape<S, C>>;
+  type TDefault = _<DefaultFromShape<S>>;
 
-export function create<S extends ObjectShape, C = AnyObject>(spec?: S) {
-  return new ObjectSchema<_<TypeFromShape<S, C>>, C, DefaultFromShape<S>, 'd'>(
-    spec as any,
-  );
+  return new ObjectSchema<TIn, C, TDefault>(spec as any);
 }
 
 export default interface ObjectSchema<
   TIn extends Maybe<AnyObject>,
   TContext = AnyObject,
+  // important that this is `any` so that using `ObjectSchema<MyType>`'s default
+  // will match object schema regardless of defaults
   TDefault = any,
-  TFlags extends Flags = 'd',
-> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TFlags> {
-  // override readonly __outputType: ResolveFlags<_<MakeKeysOptional<TIn>>, TFlags>;
-
-  // new <T extends AnyObject = {}, C = AnyObject>(
-  //   shape?: Shape<T, C>,
-  // ): ObjectSchema<T, C, 'd'>;
-
+  TFlags extends Flags = '',
+> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
-  ): ObjectSchema<TIn, TContext, TDefault, ToggleDefault<TFlags, D>>;
+  ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
 
   defined(
     msg?: Message,
@@ -137,14 +92,16 @@ export default interface ObjectSchema<
   nullable(
     isNullable: false,
   ): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+
+  strip(): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
 export default class ObjectSchema<
   TIn extends Maybe<AnyObject>,
   TContext = AnyObject,
   TDefault = any,
-  TFlags extends Flags = 'd',
-> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TFlags> {
+  TFlags extends Flags = '',
+> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
@@ -173,7 +130,7 @@ export default class ObjectSchema<
       });
 
       if (spec) {
-        this.shape(spec);
+        this.shape(spec as any);
       }
     });
   }
@@ -388,22 +345,19 @@ export default class ObjectSchema<
       return undefined;
     }
 
-    return this.getDefaultFromShape();
-  }
-  // FIXME
-  getDefaultFromShape(): TDefault {
     let dft: any = {};
     this._nodes.forEach((key) => {
       const field = this.fields[key] as any;
       dft[key] = 'getDefault' in field ? field.getDefault() : undefined;
     });
+
     return dft;
   }
 
-  private setFields<TInNext extends Maybe<AnyObject>>(
+  private setFields<TInNext extends Maybe<AnyObject>, TDefaultNext>(
     shape: Shape<TInNext, TContext>,
     excludedEdges?: readonly [string, string][],
-  ): ObjectSchema<TInNext, TContext, TFlags> {
+  ): ObjectSchema<TInNext, TContext, TDefaultNext, TFlags> {
     let next = this.clone() as any;
     next.fields = shape;
 
@@ -414,10 +368,15 @@ export default class ObjectSchema<
     return next;
   }
 
-  shape<U extends AnyObject>(
-    additions: Shape<U, TContext>,
+  shape<U extends ObjectShape>(
+    additions: U,
     excludes: [string, string][] = [],
   ) {
+    type UIn = TypeFromShape<U, TContext>;
+    type UDefault = Extract<TFlags, 'd'> extends never
+      ? _<TDefault & DefaultFromShape<U>>
+      : TDefault;
+
     return this.clone().withMutation((next) => {
       let edges = next._excludedEdges;
       if (excludes.length) {
@@ -427,7 +386,7 @@ export default class ObjectSchema<
       }
 
       // XXX: excludes here is wrong
-      return next.setFields<_<MergeObjectTypes<TIn, U>>>(
+      return next.setFields<_<MergeObjectTypes<TIn, UIn>>, UDefault>(
         Object.assign(next.fields, additions) as any,
         edges,
       );
@@ -440,7 +399,7 @@ export default class ObjectSchema<
       partial[key] = schema instanceof BaseSchema ? schema.optional() : schema;
     }
 
-    return this.setFields<Partial<TIn>>(partial);
+    return this.setFields<Partial<TIn>, TDefault>(partial);
   }
 
   deepPartial() {
@@ -451,7 +410,7 @@ export default class ObjectSchema<
         partial[key] =
           schema instanceof BaseSchema ? schema.optional() : schema;
     }
-    return this.setFields<PartialDeep<TIn>>(partial);
+    return this.setFields<PartialDeep<TIn>, TDefault>(partial);
   }
 
   pick<TKey extends keyof TIn>(keys: TKey[]) {
@@ -460,7 +419,7 @@ export default class ObjectSchema<
       if (this.fields[key]) picked[key] = this.fields[key];
     }
 
-    return this.setFields<Pick<TIn, TKey>>(picked);
+    return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(picked);
   }
 
   omit<TKey extends keyof TIn>(keys: TKey[]) {
@@ -470,7 +429,7 @@ export default class ObjectSchema<
       delete fields[key];
     }
 
-    return this.setFields<Omit<TIn, TKey>>(fields);
+    return this.setFields<Omit<TIn, TKey>, TDefault>(fields);
   }
 
   from(from: string, to: keyof TIn, alias?: boolean) {

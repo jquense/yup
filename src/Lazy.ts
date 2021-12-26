@@ -4,47 +4,54 @@ import type { ResolveOptions } from './Condition';
 
 import type {
   CastOptions,
-  ResolveFlags,
   SchemaFieldDescription,
   SchemaLazyDescription,
 } from './schema';
 import { Flags, ISchema } from './util/types';
 import { BaseSchema } from '.';
 
-export type LazyBuilder<T, TContext = AnyObject, TFlags extends Flags = any> = (
+export type LazyBuilder<
+  T,
+  TContext = AnyObject,
+  TDefault = any,
+  TFlags extends Flags = any,
+> = (
   value: any,
   options: ResolveOptions,
-) => ISchema<T, TContext, TFlags>;
+) => ISchema<T, TContext, TFlags, TDefault>;
 
-export function create<T, TContext = AnyObject, TFlags extends Flags = any>(
-  builder: LazyBuilder<T, TContext, TFlags>,
-) {
-  return new Lazy<T, TContext, TFlags>(builder);
+export function create<
+  T,
+  TContext = AnyObject,
+  TFlags extends Flags = any,
+  TDefault = any,
+>(builder: LazyBuilder<T, TContext, TDefault, TFlags>) {
+  return new Lazy<T, TContext, TDefault, TFlags>(builder);
 }
 
 export interface LazySpec {
   meta: Record<string, unknown> | undefined;
 }
 
-class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
-  implements ISchema<T, TContext, TFlags>
+class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
+  implements ISchema<T, TContext, TFlags, TDefault>
 {
   type = 'lazy' as const;
 
   __isYupSchema__ = true;
 
-  declare readonly __outputType: ResolveFlags<T, TFlags>;
-
+  declare readonly __outputType: T;
   declare readonly __context: TContext;
   declare readonly __flags: TFlags;
+  declare readonly __default: TDefault;
 
   spec: LazySpec;
 
-  constructor(private builder: LazyBuilder<T, TContext, TFlags>) {
+  constructor(private builder: LazyBuilder<T, TContext, TDefault, TFlags>) {
     this.spec = { meta: undefined };
   }
 
-  clone(): Lazy<T, TContext, TFlags> {
+  clone(): Lazy<T, TContext, TDefault, TFlags> {
     const next = create(this.builder);
     next.spec = { ...this.spec };
     return next;
@@ -53,10 +60,11 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   private _resolve = (
     value: any,
     options: ResolveOptions<TContext> = {},
-  ): BaseSchema<T, TContext, TFlags> => {
+  ): BaseSchema<T, TContext, TDefault, TFlags> => {
     let schema = this.builder(value, options) as BaseSchema<
       T,
       TContext,
+      TDefault,
       TFlags
     >;
 
@@ -116,7 +124,7 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   }
 
   meta(): Record<string, unknown> | undefined;
-  meta(obj: Record<string, unknown>): Lazy<T, TContext, TFlags>;
+  meta(obj: Record<string, unknown>): Lazy<T, TContext, TDefault, TFlags>;
   meta(...args: [Record<string, unknown>?]) {
     if (args.length === 0) return this.spec.meta;
 
