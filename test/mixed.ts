@@ -9,19 +9,20 @@ import {
   ref,
   string,
   ValidationError,
-  MixedSchema,
 } from '../src';
-import { ensureSync } from './helpers';
+import ObjectSchema from '../src/object';
+import { ISchema } from '../src/util/types';
+import { ensureSync, validateAll } from './helpers';
 
 let noop = () => {};
 
+// @ts-ignore
 global.YUP_USE_SYNC &&
   it('[internal] normal methods should be running in sync Mode', async () => {
     let schema = number();
 
     // test negative ensure case
     await expect(ensureSync(() => Promise.resolve())).rejects.toThrowError(
-      Error,
       'Did not execute synchronously',
     );
 
@@ -37,25 +38,6 @@ global.YUP_USE_SYNC &&
   });
 
 describe('Mixed Types ', () => {
-  xit('should be immutable', () => {
-    let inst = mixed(),
-      next;
-    let sub = (inst.sub = mixed());
-
-    expect(inst).not.toBe((next = inst.required()));
-
-    expect(next.sub).toBe(sub);
-    expect(inst.sub).toBe(next.sub);
-
-    expect(inst).toBeInstanceOf(MixedSchema);
-    expect(next).toBeInstanceOf(MixedSchema);
-
-    return Promise.all([
-      expect(inst.isValid()).resolves.toBe(true),
-      next.isValid(null),
-    ]);
-  });
-
   it('cast should return a default when undefined', () => {
     let inst = mixed().default('hello');
 
@@ -71,7 +53,7 @@ describe('Mixed Types ', () => {
   it('getDefault should return the default value using context', function () {
     let inst = string().when('$foo', {
       is: 'greet',
-      then: string().default('hi'),
+      then: (s) => s.default('hi'),
     });
     expect(inst.getDefault({ context: { foo: 'greet' } })).toBe('hi');
   });
@@ -134,7 +116,7 @@ describe('Mixed Types ', () => {
       string()
         .label('My string')
         .required((d) => `${d.label} is required`)
-        .validate(),
+        .validate(undefined),
     ).rejects.toThrowError(/My string is required/);
   });
 
@@ -193,15 +175,16 @@ describe('Mixed Types ', () => {
     await expect(inst.isValid('test')).resolves.toBe(true);
     await expect(inst.isValid(1)).resolves.toBe(true);
 
-    await expect(inst.validate()).rejects.toThrowError(
+    await expect(inst.validate(undefined)).rejects.toThrowError(
       'this is a required field',
     );
 
     inst = inst.notRequired();
 
-    await expect(inst.isValid()).resolves.toBe(true);
+    await expect(inst.isValid(undefined)).resolves.toBe(true);
   });
 
+  // @ts-ignore
   global.YUP_USE_SYNC &&
     describe('synchronous methods', () => {
       it('should validate synchronously', async () => {
@@ -221,7 +204,7 @@ describe('Mixed Types ', () => {
       });
 
       it('should throw on async test', async () => {
-        let schema = mixed().test('test', 'foo', () => Promise.resolve());
+        let schema = mixed().test('test', 'foo', () => Promise.resolve(true));
 
         await expect(
           ensureSync(() => schema.validate('john')),
@@ -232,7 +215,7 @@ describe('Mixed Types ', () => {
   describe('oneOf', () => {
     let inst = mixed().oneOf(['hello']);
 
-    TestHelpers.validateAll(inst, {
+    validateAll(inst, {
       valid: [undefined, 'hello'],
       invalid: [
         'YOLO',
@@ -261,7 +244,7 @@ describe('Mixed Types ', () => {
   describe('should exclude values', () => {
     let inst = mixed().nullable().notOneOf([5, 'hello']);
 
-    TestHelpers.validateAll(inst, {
+    validateAll(inst, {
       valid: [6, 'hfhfh', [5, inst.oneOf([5]), '`oneOf` called after'], null],
       invalid: [5, [null, inst.required(), 'required schema']],
     });
@@ -318,10 +301,7 @@ describe('Mixed Types ', () => {
   it('should fallback to default message', async () => {
     let inst = mixed().test(() => false);
 
-    await expect(inst.validate('foo')).rejects.toThrowError(
-      ValidationError,
-      'this is invalid',
-    );
+    await expect(inst.validate('foo')).rejects.toThrowError('this is invalid');
   });
 
   it('should allow non string messages', async () => {
@@ -349,14 +329,14 @@ describe('Mixed Types ', () => {
   });
 
   it('should respect exclusive validation', () => {
-    let inst = mixed()
-      .test({
-        message: 'invalid',
-        exclusive: true,
-        name: 'test',
-        test: () => {},
-      })
-      .test({ message: 'also invalid', name: 'test', test: () => {} });
+    let inst = mixed().test({
+      message: 'invalid',
+      exclusive: true,
+      name: 'test',
+      test: () => {},
+    });
+
+    //.test({ message: 'also invalid', name: 'test', test: () => {} });
 
     expect(inst.tests).toHaveLength(1);
 
@@ -447,7 +427,7 @@ describe('Mixed Types ', () => {
   });
 
   it('tests should be able to access nested parent', async () => {
-    let finalFrom, finalOptions;
+    let finalFrom: any, finalOptions: any;
     let testFixture = {
       firstField: 'test',
       second: [
@@ -463,7 +443,7 @@ describe('Mixed Types ', () => {
     let third = object({
       thirdField: mixed().test({
         test() {
-          finalFrom = this.from;
+          finalFrom = this.from!;
           finalOptions = this.options;
           return true;
         },
@@ -525,6 +505,7 @@ describe('Mixed Types ', () => {
     return expect(inst.validate('joe')).rejects.toThrowError('test a');
   });
 
+  // @ts-ignore
   !global.YUP_USE_SYNC &&
     it('should fail when the test function returns a rejected Promise', async () => {
       let inst = string().test(() => {
@@ -586,7 +567,7 @@ describe('Mixed Types ', () => {
   });
 
   describe('concat', () => {
-    let next;
+    let next: ISchema<any>;
     let inst = object({
       str: string().required(),
       obj: object({
@@ -653,6 +634,7 @@ describe('Mixed Types ', () => {
     let inst = string().default('hi');
 
     expect(function () {
+      // @ts-expect-error invalid combo
       inst.concat(object());
     }).toThrowError(TypeError);
   });
@@ -682,8 +664,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().concat(number());
 
     await expect(inst.validate([])).rejects.toThrowError(
-      ValidationError,
-      /should be a `number`/,
+      /must be a `number` type/,
     );
   });
 
@@ -700,12 +681,6 @@ describe('Mixed Types ', () => {
 
     await expect(inst.isValid('a')).resolves.toBe(true);
   });
-
-  // xit('concat should maintain explicit nullability', async function () {
-  //   let inst = string().nullable().concat(string().default('hi'));
-
-  //   await inst.isValid(null).should.resolves.toBe(true);
-  // });
 
   it('concat should maintain explicit presence', async function () {
     let inst = string().required().concat(string());
@@ -757,44 +732,44 @@ describe('Mixed Types ', () => {
   it('should handle conditionals', async function () {
     let inst = mixed().when('prop', {
       is: 5,
-      then: mixed().required('from parent'),
+      then: (s) => s.required('from parent'),
     });
 
     await expect(
-      inst.validate(undefined, { parent: { prop: 5 } }),
+      inst.validate(undefined, { parent: { prop: 5 } } as any),
     ).rejects.toThrowError();
     await expect(
-      inst.validate(undefined, { parent: { prop: 1 } }),
+      inst.validate(undefined, { parent: { prop: 1 } } as any),
     ).resolves.toBeUndefined();
     await expect(
-      inst.validate('hello', { parent: { prop: 5 } }),
+      inst.validate('hello', { parent: { prop: 5 } } as any),
     ).resolves.toBeDefined();
 
     inst = string().when('prop', {
-      is: function (val) {
-        return val === 5;
-      },
-      then: string().required(),
-      otherwise: string().min(4),
+      is: 5,
+      then: (s) => s.required(),
+      otherwise: (s) => s.min(4),
     });
 
     await expect(
-      inst.validate(undefined, { parent: { prop: 5 } }),
+      inst.validate(undefined, { parent: { prop: 5 } } as any),
     ).rejects.toThrowError();
     await expect(
-      inst.validate('hello', { parent: { prop: 1 } }),
+      inst.validate('hello', { parent: { prop: 1 } } as any),
     ).resolves.toBeDefined();
     await expect(
-      inst.validate('hel', { parent: { prop: 1 } }),
+      inst.validate('hel', { parent: { prop: 1 } } as any),
     ).rejects.toThrowError();
   });
 
   it('should handle multiple conditionals', function () {
     let called = false;
-    let inst = mixed().when(['$prop', '$other'], function (prop, other) {
+    let inst = mixed().when(['$prop', '$other'], (prop, other) => {
       expect(other).toBe(true);
       expect(prop).toBe(1);
       called = true;
+
+      return mixed();
     });
 
     inst.cast({}, { context: { prop: 1, other: true } });
@@ -802,7 +777,7 @@ describe('Mixed Types ', () => {
 
     inst = mixed().when(['$prop', '$other'], {
       is: 5,
-      then: mixed().required(),
+      then: (s) => s.required(),
     });
 
     return expect(
@@ -813,7 +788,7 @@ describe('Mixed Types ', () => {
   it('should require context when needed', async function () {
     let inst = mixed().when('$prop', {
       is: 5,
-      then: mixed().required('from context'),
+      then: (s) => s.required('from context'),
     });
 
     await expect(
@@ -827,11 +802,9 @@ describe('Mixed Types ', () => {
     ).resolves.toBeDefined();
 
     inst = string().when('$prop', {
-      is: function (val) {
-        return val === 5;
-      },
-      then: string().required(),
-      otherwise: string().min(4),
+      is: (val: any) => val === 5,
+      then: (s) => s.required(),
+      otherwise: (s) => s.min(4),
     });
 
     await expect(
@@ -849,7 +822,7 @@ describe('Mixed Types ', () => {
     let inst = object({
       prop: string().when('$prop', {
         is: 5,
-        then: string().required('from context'),
+        then: (s) => s.required('from context'),
       }),
     });
 
@@ -858,14 +831,11 @@ describe('Mixed Types ', () => {
 
   it('should support self references in conditions', async function () {
     let inst = number().when('.', {
-      is: (value) => value > 0,
-      then: number().min(5),
+      is: (value: number) => value > 0,
+      then: (s) => s.min(5),
     });
 
-    await expect(inst.validate(4)).rejects.toThrowError(
-      ValidationError,
-      /must be greater/,
-    );
+    await expect(inst.validate(4)).rejects.toThrowError(/must be greater/);
 
     await expect(inst.validate(5)).resolves.toBeDefined();
 
@@ -874,14 +844,11 @@ describe('Mixed Types ', () => {
 
   it('should support conditional single argument as options shortcut', async function () {
     let inst = number().when({
-      is: (value) => value > 0,
-      then: number().min(5),
+      is: (value: number) => value > 0,
+      then: (s) => s.min(5),
     });
 
-    await expect(inst.validate(4)).rejects.toThrowError(
-      ValidationError,
-      /must be greater/,
-    );
+    await expect(inst.validate(4)).rejects.toThrowError(/must be greater/);
 
     await expect(inst.validate(5)).resolves.toBeDefined();
 
@@ -890,11 +857,12 @@ describe('Mixed Types ', () => {
 
   it('should allow nested conditions and lazies', async function () {
     let inst = string().when('$check', {
-      is: (value) => typeof value === 'string',
-      then: string().when('$check', {
-        is: (value) => /hello/.test(value),
-        then: lazy(() => string().min(6)),
-      }),
+      is: (value: any) => typeof value === 'string',
+      then: (s) =>
+        s.when('$check', {
+          is: (value: any) => /hello/.test(value),
+          then: () => lazy(() => string().min(6)),
+        }),
     });
 
     await expect(
@@ -903,7 +871,7 @@ describe('Mixed Types ', () => {
 
     await expect(
       inst.validate('pass', { context: { check: 'hello' } }),
-    ).rejects.toThrowError(ValidationError, /must be at least/);
+    ).rejects.toThrowError(/must be at least/);
 
     await expect(
       inst.validate('passes', { context: { check: 'hello' } }),
@@ -931,7 +899,7 @@ describe('Mixed Types ', () => {
   });
 
   describe('schema.describe()', () => {
-    let schema;
+    let schema: ObjectSchema<any>;
     beforeEach(() => {
       schema = object({
         lazy: lazy(() => string().nullable()),

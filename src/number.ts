@@ -1,16 +1,16 @@
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Maybe } from './types';
+import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
 import type {
-  AnyConfig,
-  Config,
+  Concat,
   Defined,
-  MergeConfig,
+  Flags,
   NotNull,
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema from './schema';
 
@@ -19,7 +19,7 @@ let isNaN = (value: Maybe<number>) => value != +value!;
 export function create(): NumberSchema;
 export function create<T extends number, TContext = AnyObject>(): NumberSchema<
   T | undefined,
-  Config<TContext>
+  TContext
 >;
 export function create() {
   return new NumberSchema();
@@ -27,8 +27,10 @@ export function create() {
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({ type: 'number' });
 
@@ -124,20 +126,20 @@ export default class NumberSchema<
     return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
   }
 
-  round(method: 'ceil' | 'floor' | 'round' | 'trunc') {
+  round(method?: 'ceil' | 'floor' | 'round' | 'trunc') {
     let avail = ['ceil', 'floor', 'round', 'trunc'];
     method = (method?.toLowerCase() as any) || ('round' as const);
 
     // this exists for symemtry with the new Math.trunc
     if (method === 'trunc') return this.truncate();
 
-    if (avail.indexOf(method.toLowerCase()) === -1)
+    if (avail.indexOf(method!.toLowerCase()) === -1)
       throw new TypeError(
         'Only valid options for round() are: ' + avail.join(', '),
       );
 
     return this.transform((value) =>
-      !isAbsent(value) ? Math[method](value) : value,
+      !isAbsent(value) ? Math[method!](value) : value,
     );
   }
 }
@@ -150,25 +152,43 @@ create.prototype = NumberSchema.prototype;
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
-  strip(): NumberSchema<TType, SetFlag<TConfig, 's'>>;
-
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): NumberSchema<TType, ToggleDefault<TConfig, D>>;
+  ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
-  concat<T extends Maybe<number>, C extends AnyConfig>(
-    schema: NumberSchema<T, C>,
-  ): NumberSchema<NonNullable<TType> | T, MergeConfig<TConfig, C>>;
+  concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
+    schema: NumberSchema<UType, UContext, UDefault, UFlags>,
+  ): NumberSchema<
+    Concat<TType, UType>,
+    TContext & UContext,
+    UDefault,
+    TFlags | UFlags
+  >;
   concat(schema: this): this;
 
-  defined(msg?: Message): NumberSchema<Defined<TType>, TConfig>;
-  optional(): NumberSchema<TType | undefined, TConfig>;
+  defined(
+    msg?: Message,
+  ): NumberSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): NumberSchema<TType | undefined, TContext, TDefault, TFlags>;
 
-  required(msg?: Message): NumberSchema<NonNullable<TType>, TConfig>;
-  notRequired(): NumberSchema<Maybe<TType>, TConfig>;
+  required(
+    msg?: Message,
+  ): NumberSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(msg?: Message): NumberSchema<TType | null, TConfig>;
-  nonNullable(): NumberSchema<NotNull<TType>, TConfig>;
+  nullable(
+    msg?: Message,
+  ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): NumberSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

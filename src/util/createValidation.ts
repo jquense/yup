@@ -9,6 +9,7 @@ import {
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
+import { ISchema } from './types';
 
 export type CreateErrorOptions = {
   path?: string;
@@ -21,6 +22,7 @@ export type TestContext<TContext = {}> = {
   path: string;
   options: ValidateOptions<TContext>;
   parent: any;
+  from?: Array<{ schema: ISchema<any, TContext>; value: any }>;
   schema: any; // TODO: Schema<any>;
   resolve: <T>(value: T | Reference<T>) => T;
   createError: (params?: CreateErrorOptions) => ValidationError;
@@ -30,7 +32,7 @@ export type TestFunction<T = unknown, TContext = {}> = (
   this: TestContext<TContext>,
   value: T,
   context: TestContext<TContext>,
-) => boolean | ValidationError | Promise<boolean | ValidationError>;
+) => void | boolean | ValidationError | Promise<boolean | ValidationError>;
 
 export type TestOptions<TSchema extends AnySchema = AnySchema> = {
   value: any;

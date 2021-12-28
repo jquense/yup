@@ -1,31 +1,59 @@
-import { Maybe, Message, Optionals } from './types';
-import type { Config, Defined, Thunk, ToggleDefault } from './util/types';
+import { AnyObject, Maybe, Message, Optionals } from './types';
+import type {
+  Defined,
+  Flags,
+  SetFlag,
+  Thunk,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
 import BaseSchema from './schema';
 
 export declare class MixedSchema<
   TType = any,
-  TConfig extends Config<any, any> = Config
-> extends BaseSchema<TType, TConfig> {
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends BaseSchema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): MixedSchema<TType, ToggleDefault<TConfig, D>>;
+  ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
-  concat<IT, IC extends Config<any, any>>(
-    schema: MixedSchema<IT, IC>,
-  ): MixedSchema<NonNullable<TType> | IT, TConfig & IC>;
-  concat<IT, IC extends Config<any, any>>(
-    schema: BaseSchema<IT, IC>,
-  ): MixedSchema<NonNullable<TType> | Optionals<IT>, TConfig & IC>;
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: MixedSchema<IT, IC, ID, IF>,
+  ): MixedSchema<NonNullable<TType> | IT, TContext & IC, ID, TFlags | IF>;
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: BaseSchema<IT, IC, ID, IF>,
+  ): MixedSchema<
+    NonNullable<TType> | Optionals<IT>,
+    TContext & IC,
+    ID,
+    TFlags | IF
+  >;
   concat(schema: this): this;
 
-  defined(msg?: Message): MixedSchema<Defined<TType>, TConfig>;
-  optional(): MixedSchema<TType | undefined, TConfig>;
+  defined(
+    msg?: Message,
+  ): MixedSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): MixedSchema<TType | undefined, TContext, TDefault, TFlags>;
 
-  required(msg?: Message): MixedSchema<NonNullable<TType>, TConfig>;
-  notRequired(): MixedSchema<Maybe<TType>, TConfig>;
+  required(
+    msg?: Message,
+  ): MixedSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): MixedSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(msg?: Message): MixedSchema<TType | null, TConfig>;
-  nonNullable(): MixedSchema<Exclude<TType, null>, TConfig>;
+  nullable(
+    msg?: Message,
+  ): MixedSchema<TType | null, TContext, TDefault, TFlags>;
+
+  nonNullable(): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): MixedSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
 const Mixed: typeof MixedSchema = BaseSchema as any;

@@ -25,7 +25,8 @@
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",
         "jest/prefer-to-have-length": "warn",
-        "jest/valid-expect": "off"
+        "jest/valid-expect": "off",
+        "@typescript-eslint/no-empty-function": "off"
       }
     }
   ]

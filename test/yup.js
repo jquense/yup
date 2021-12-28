@@ -9,7 +9,6 @@ import {
   number,
   boolean,
   date,
-  ValidationError,
   ObjectSchema,
   ArraySchema,
   StringSchema,
@@ -28,10 +27,12 @@ describe('Yup', function () {
   it('cast should assert on undefined cast results', () => {
     expect(() =>
       string()
-        .toBeDefined()
+        .defined()
         .transform(() => undefined)
         .cast('foo'),
-    ).toThrowError();
+    ).toThrowError(
+      'The value of field could not be cast to a value that satisfies the schema type: "string".',
+    );
   });
 
   it('cast should respect assert option', () => {
@@ -113,7 +114,7 @@ describe('Yup', function () {
   });
 
   it('should REACH conditionally correctly', async function () {
-    var num = number().oneOf([4]),
+    let num = number().oneOf([4]),
       inst = object().shape({
         num: number().max(4),
         nested: object().shape({
@@ -172,7 +173,7 @@ describe('Yup', function () {
 
     await expect(
       reached.validate(5, { context, parent: { foo: 5 } }),
-    ).rejects.toThrowError(ValidationError, /one of the following/);
+    ).rejects.toThrowError(/one of the following/);
   });
 
   it('should reach through lazy', async () => {

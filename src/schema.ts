@@ -20,29 +20,22 @@ import {
   InternalOptions,
   Maybe,
   ExtraParams,
-  Preserve,
+  AnyObject,
 } from './types';
 
 import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import type { Config, Defined, Flags, SetFlag, Thunk, _ } from './util/types';
+import type {
+  Defined,
+  Flags,
+  ISchema,
+  ResolveFlags,
+  Thunk,
+  _,
+} from './util/types';
 import toArray from './util/toArray';
-
-export type { Config };
-
-export type ConfigOf<T> = T extends AnySchema<any, infer C> ? C : never;
-
-export type ContextOf<T> = ConfigOf<T>['context'];
-
-export type FlagsOf<T> = T extends AnySchema ? T['__flags'] : never;
-
-export type HasFlag<T, F extends Flags> = F extends FlagsOf<T> ? true : never;
-
-export type ResolveFlags<T, F extends Flags> = Preserve<F, 'd'> extends never
-  ? T
-  : Defined<T>;
 
 export type SchemaSpec<TDefault> = {
   nullable: boolean;
@@ -61,10 +54,12 @@ export type SchemaOptions<TDefault> = {
   spec?: SchemaSpec<TDefault>;
 };
 
-export type AnySchema<TType = any, C extends Config = any> = BaseSchema<
-  TType,
-  C
->;
+export type AnySchema<
+  TType = any,
+  C = AnyObject,
+  D = any,
+  F extends Flags = Flags,
+> = BaseSchema<TType, C, D, F>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -121,15 +116,18 @@ export interface SchemaDescription {
 
 export default abstract class BaseSchema<
   TType = any,
-  TConfig extends Config<any, any> = Config,
-> {
-  declare readonly type: string;
+  TContext = AnyObject,
+  TDefault = any,
+  TFlags extends Flags = '',
+> implements ISchema<TType, TContext, TFlags, TDefault>
+{
+  readonly type: string;
 
-  declare readonly __type: TType;
-  declare readonly __outputType: ResolveFlags<TType, TConfig['flags']>;
-
-  declare readonly __flags: TConfig['flags'];
+  declare readonly __outputType: ResolveFlags<TType, TFlags>;
+  declare readonly __context: TContext;
+  declare readonly __flags: TFlags;
   declare readonly __isYupSchema__: boolean;
+  declare readonly __default: TDefault;
 
   readonly deps: readonly string[] = [];
 
@@ -227,14 +225,6 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  // withContext<C extends AnyObject>(): BaseSchema<
-  //   TType,
-  //   C,
-  //   TOut
-  // > {
-  //   return this as any;
-  // }
-
   withMutation<T>(fn: (schema: this) => T): T {
     let before = this._mutate;
     this._mutate = true;
@@ -257,12 +247,6 @@ export default abstract class BaseSchema<
     let combined = schema.clone();
 
     const mergedSpec = { ...base.spec, ...combined.spec };
-
-    // if (combined.spec.nullable === UNSET)
-    //   mergedSpec.nullable = base.spec.nullable;
-
-    // if (combined.spec.presence === UNSET)
-    //   mergedSpec.presence = base.spec.presence;
 
     combined.spec = mergedSpec;
     combined.internalTests = {
@@ -307,7 +291,7 @@ export default abstract class BaseSchema<
     return this._typeCheck(v);
   }
 
-  resolve(options: ResolveOptions) {
+  resolve(options: ResolveOptions<TContext>) {
     let schema = this;
 
     if (schema.conditions.length) {
@@ -318,7 +302,7 @@ export default abstract class BaseSchema<
       schema = conditions.reduce(
         (prevSchema, condition) => condition.resolve(prevSchema, options),
         schema,
-      ) as this;
+      ) as any as this;
 
       schema = schema.resolve(options);
     }
@@ -333,10 +317,7 @@ export default abstract class BaseSchema<
    * @param {*=} options.parent
    * @param {*=} options.context
    */
-  cast(
-    value: any,
-    options: CastOptions<TConfig['context']> = {},
-  ): this['__outputType'] {
+  cast(value: any, options: CastOptions<TContext> = {}): this['__outputType'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -364,10 +345,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  protected _cast(
-    rawValue: any,
-    _options: CastOptions<TConfig['context']>,
-  ): any {
+  protected _cast(rawValue: any, _options: CastOptions<TContext>): any {
     let value =
       rawValue === undefined
         ? rawValue
@@ -385,7 +363,7 @@ export default abstract class BaseSchema<
 
   protected _validate(
     _value: any,
-    options: InternalOptions<TConfig['context']> = {},
+    options: InternalOptions<TContext> = {},
     cb: Callback,
   ): void {
     let {
@@ -447,14 +425,14 @@ export default abstract class BaseSchema<
     );
   }
 
-  // validate<U extends TType>(value: U, options?: ValidateOptions<TConfig['context']>): Promise<U>;
+  // validate<U extends TType>(value: U, options?: ValidateOptions<TContext>): Promise<U>;
   validate(
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']>;
   validate(
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
     maybeCb?: Callback,
   ) {
     let schema = this.resolve({ ...options, value });
@@ -470,14 +448,14 @@ export default abstract class BaseSchema<
         );
   }
 
-  // validateSync<U extends TType>(value: U, options?: ValidateOptions<TConfig['context']>): U;
+  // validateSync<U extends TType>(value: U, options?: ValidateOptions<TContext>): U;
   validateSync(
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): this['__outputType'];
   validateSync(
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
@@ -490,10 +468,7 @@ export default abstract class BaseSchema<
     return result;
   }
 
-  isValid(
-    value: any,
-    options?: ValidateOptions<TConfig['context']>,
-  ): Promise<boolean> {
+  isValid(value: any, options?: ValidateOptions<TContext>): Promise<boolean> {
     return this.validate(value, options).then(
       () => true,
       (err) => {
@@ -505,7 +480,7 @@ export default abstract class BaseSchema<
 
   isValidSync(
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): value is this['__outputType'] {
     try {
       this.validateSync(value, options);
@@ -529,11 +504,9 @@ export default abstract class BaseSchema<
   }
 
   getDefault(
-    options?: ResolveOptions,
+    options?: ResolveOptions<TContext>,
     // If schema is defaulted we know it's at least not undefined
-  ): Preserve<TConfig['flags'], 'd'> extends never
-    ? undefined
-    : Defined<TType> {
+  ): TDefault {
     let schema = this.resolve(options || {});
     return schema._getDefault();
   }
@@ -641,16 +614,13 @@ export default abstract class BaseSchema<
    * If an exclusive test is added to a schema with non-exclusive tests of the same name
    * the previous tests are removed and further tests of the same name will replace each other.
    */
-  test(options: TestConfig<this['__outputType'], TConfig['context']>): this;
-  test(test: TestFunction<this['__outputType'], TConfig['context']>): this;
-  test(
-    name: string,
-    test: TestFunction<this['__outputType'], TConfig['context']>,
-  ): this;
+  test(options: TestConfig<this['__outputType'], TContext>): this;
+  test(test: TestFunction<this['__outputType'], TContext>): this;
+  test(name: string, test: TestFunction<this['__outputType'], TContext>): this;
   test(
     name: string,
     message: Message,
-    test: TestFunction<this['__outputType'], TConfig['context']>,
+    test: TestFunction<this['__outputType'], TContext>,
   ): this;
   test(...args: any[]) {
     let opts: TestConfig;
@@ -806,7 +776,8 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  strip(strip = true): BaseSchema<TType, SetFlag<TConfig, 's'>> {
+  //BaseSchema<TType, SetFlag<TFlags, 's'>>
+  strip(strip = true): any {
     let next = this.clone();
     next.spec.strip = strip;
     return next as any;
@@ -817,7 +788,7 @@ export default abstract class BaseSchema<
    *
    * @param options Provide any needed context for resolving runtime schema alterations (lazy, when conditions, etc).
    */
-  describe(options?: ResolveOptions<TConfig['context']>) {
+  describe(options?: ResolveOptions<TContext>) {
     const next = (options ? this.resolve(options) : this).clone();
     const { label, meta, optional, nullable } = next.spec;
     const description: SchemaDescription = {
@@ -840,19 +811,22 @@ export default abstract class BaseSchema<
 }
 
 export default interface BaseSchema<
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   TType = any,
-  TConfig extends Config<any, any> = Config,
+  TContext = AnyObject,
+  TDefault = any,
+  TFlags extends Flags = '',
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 > {
   validateAt(
     path: string,
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): Promise<any>;
   validateSyncAt(
     path: string,
     value: any,
-    options?: ValidateOptions<TConfig['context']>,
+    options?: ValidateOptions<TContext>,
   ): any;
   equals: BaseSchema['oneOf'];
   is: BaseSchema['oneOf'];

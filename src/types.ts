@@ -1,9 +1,8 @@
 import type { AnySchema } from './schema';
-import type Lazy from './Lazy';
+import type { AnyObject } from './util/objectTypes';
+import type { ISchema } from './util/types';
 
-export type AnyObject = Record<string, any>;
-
-export type SchemaLike = AnySchema | Lazy<any>;
+export type { ISchema, AnyObject, AnySchema };
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 
@@ -44,7 +43,7 @@ export interface InternalOptions<TContext = {}>
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: AnySchema; value: any }[];
+  from?: { schema: ISchema<any, TContext>; value: any }[];
 }
 
 export interface MessageParams {
