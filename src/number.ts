@@ -3,6 +3,7 @@ import isAbsent from './util/isAbsent';
 import type { AnyObject, Maybe, Message } from './types';
 import type Reference from './Reference';
 import type {
+  Concat,
   Defined,
   Flags,
   NotNull,
@@ -163,7 +164,7 @@ export default interface NumberSchema<
   concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
     schema: NumberSchema<UType, UContext, UDefault, UFlags>,
   ): NumberSchema<
-    NonNullable<TType> | UType,
+    Concat<TType, UType>,
     TContext & UContext,
     UDefault,
     TFlags | UFlags

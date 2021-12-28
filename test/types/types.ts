@@ -372,23 +372,23 @@ SchemaOfFileArray: {
   a1.nested![0].name;
 
   // $ExpectType (number | undefined)[]
-  const _c1 = array(number())
-    .concat(array(number()).required())
-    .validateSync([]);
+  // const _c1 = array(number())
+  //   .concat(array(number()).required())
+  //   .validateSync([]);
 
-  // $ExpectType { [x: string]: any; a: number; }[] | null
-  const _definedArray: Array<{ a: number }> | null = array()
-    .of(object({ a: number().required() }))
-    .nullable()
-    .defined()
-    .validateSync([]);
+  // // $ExpectType { [x: string]: any; a: number; }[] | null
+  // const _definedArray: Array<{ a: number }> | null = array()
+  //   .of(object({ a: number().required() }))
+  //   .nullable()
+  //   .defined()
+  //   .validateSync([]);
 
-  // $ExpectType { [x: string]: any; a: number; }[]
-  const _requiredArray: Array<{ a: number }> = array()
-    .of(object({ a: number().required() }))
-    .nullable()
-    .required()
-    .validateSync([]);
+  // // $ExpectType { [x: string]: any; a: number; }[]
+  // const _requiredArray: Array<{ a: number }> = array()
+  //   .of(object({ a: number().required() }))
+  //   .nullable()
+  //   .required()
+  //   .validateSync([]);
 }
 
 {

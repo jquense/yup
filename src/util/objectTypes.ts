@@ -10,13 +10,13 @@ export type TypeFromShape<S extends ObjectShape, C> = {
   [K in keyof S]: S[K] extends ISchema<any, C> ? S[K]['__outputType'] : unknown;
 };
 
-type DefaultedKeys<S extends ObjectShape> = {
-  [K in keyof S]: S[K] extends ISchema<any>
-    ? undefined extends S[K]['__default']
-      ? never
-      : K
-    : never;
-}[keyof S];
+// type DefaultedKeys<S extends ObjectShape> = {
+//   [K in keyof S]: S[K] extends ISchema<any>
+//     ? undefined extends S[K]['__default']
+//       ? never
+//       : K
+//     : never;
+// }[keyof S];
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends ISchema<any>
@@ -43,3 +43,13 @@ export type PartialDeep<T> = T extends
   : T extends ReadonlyArray<infer ArrayType>
   ? ReadonlyArray<ArrayType>
   : { [K in keyof T]?: PartialDeep<T[K]> };
+
+type OptionalKeys<T extends {}> = {
+  [k in keyof T]: undefined extends T[k] ? k : never;
+}[keyof T];
+
+type RequiredKeys<T extends object> = Exclude<keyof T, OptionalKeys<T>>;
+
+export type MakePartial<T extends object> = {
+  [k in OptionalKeys<T> as T[k] extends never ? never : k]?: T[k];
+} & { [k in RequiredKeys<T> as T[k] extends never ? never : k]: T[k] };

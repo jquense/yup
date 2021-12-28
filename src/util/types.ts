@@ -1,6 +1,12 @@
 import type { ResolveOptions } from '../Condition';
 import type { CastOptions, SchemaFieldDescription } from '../schema';
-import type { AnyObject, Callback, Preserve, ValidateOptions } from '../types';
+import type {
+  AnyObject,
+  Callback,
+  Optionals,
+  Preserve,
+  ValidateOptions,
+} from '../types';
 
 export type Defined<T> = T extends undefined ? never : T;
 
@@ -23,24 +29,10 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
 }
 
-export type Asserts<TSchema extends ISchema<any>> = TSchema['__outputType'];
-
 export type Thunk<T> = T | (() => T);
-
-export type If<T, Y, N> = Exclude<T, undefined> extends never ? Y : N;
 
 /* this seems to force TS to show the full type instead of all the wrapped generics */
 export type _<T> = T extends {} ? { [k in keyof T]: T[k] } : T;
-
-type OptionalKeys<T extends {}> = {
-  [k in keyof T]: undefined extends T[k] ? k : never;
-}[keyof T];
-
-type RequiredKeys<T extends object> = Exclude<keyof T, OptionalKeys<T>>;
-
-export type MakePartial<T extends object> = {
-  [k in OptionalKeys<T> as T[k] extends never ? never : k]?: T[k];
-} & { [k in RequiredKeys<T> as T[k] extends never ? never : k]: T[k] };
 
 //
 // Schema Config
@@ -69,3 +61,12 @@ export type ResolveFlags<T, F extends Flags> = Preserve<F, 's'> extends never
     ? T
     : Defined<T>
   : never;
+
+export type Concat<T, U> = NonNullable<T> & NonNullable<U> extends never
+  ? never
+  : (NonNullable<T> & NonNullable<U>) | Optionals<U>;
+
+// // $ExpectType string | null
+// type a = Concat<string | null, string>;
+
+// type b = string  & (string | undefined)

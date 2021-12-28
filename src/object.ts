@@ -10,13 +10,14 @@ import sortByKeyOrder from './util/sortByKeyOrder';
 import runTests from './util/runTests';
 import { InternalOptions, Callback, Maybe, Message } from './types';
 import ValidationError from './ValidationError';
-import type { Defined, Thunk, NotNull, _, MakePartial } from './util/types';
+import type { Defined, Thunk, NotNull, _ } from './util/types';
 import type Reference from './Reference';
 import BaseSchema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
-import {
+import type {
   AnyObject,
   DefaultFromShape,
+  MakePartial,
   MergeObjectTypes,
   ObjectShape,
   PartialDeep,
@@ -53,10 +54,6 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
-// type StripValues<T, U> = {
-//   [K in keyof T as Preserve<T[K], U> extends never ? K : never]: T[K];
-// };
-
 export function create<C = AnyObject, S extends ObjectShape = {}>(spec?: S) {
   type TIn = _<TypeFromShape<S, C>>;
   type TDefault = _<DefaultFromShape<S>>;
@@ -70,7 +67,7 @@ export default interface ObjectSchema<
   // important that this is `any` so that using `ObjectSchema<MyType>`'s default
   // will match object schema regardless of defaults
   TDefault = any,
-  TFlags extends Flags = '',
+  TFlags extends Flags = 'd',
 > extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
@@ -86,12 +83,8 @@ export default interface ObjectSchema<
   ): ObjectSchema<NonNullable<TIn>, TContext, TDefault, TFlags>;
   notRequired(): ObjectSchema<Maybe<TIn>, TContext, TDefault, TFlags>;
 
-  nullable(
-    isNullable?: true,
-  ): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
-  nullable(
-    isNullable: false,
-  ): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+  nullable(msg?: Message): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
+  nonNullable(): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
 
   strip(): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
@@ -100,7 +93,7 @@ export default class ObjectSchema<
   TIn extends Maybe<AnyObject>,
   TContext = AnyObject,
   TDefault = any,
-  TFlags extends Flags = '',
+  TFlags extends Flags = 'd',
 > extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
@@ -374,7 +367,8 @@ export default class ObjectSchema<
   ) {
     type UIn = TypeFromShape<U, TContext>;
     type UDefault = Extract<TFlags, 'd'> extends never
-      ? _<TDefault & DefaultFromShape<U>>
+      ? // not defaulted then assume the default is derived and should be merged
+        _<TDefault & DefaultFromShape<U>>
       : TDefault;
 
     return this.clone().withMutation((next) => {

@@ -1,21 +1,21 @@
 import isSchema from './util/isSchema';
 import Reference from './Reference';
-import { SchemaLike } from './types';
+import type { ISchema } from './util/types';
 
-export interface ConditionBuilder<T extends SchemaLike> {
-  (this: T, value: any, schema: T): SchemaLike;
-  (v1: any, v2: any, schema: T): SchemaLike;
-  (v1: any, v2: any, v3: any, schema: T): SchemaLike;
-  (v1: any, v2: any, v3: any, v4: any, schema: T): SchemaLike;
+export interface ConditionBuilder<T extends ISchema<any, any>> {
+  (this: T, value: any, schema: T): ISchema<any, any>;
+  (v1: any, v2: any, schema: T): ISchema<any, any>;
+  (v1: any, v2: any, v3: any, schema: T): ISchema<any, any>;
+  (v1: any, v2: any, v3: any, v4: any, schema: T): ISchema<any, any>;
 }
 
-export type ConditionConfig<T extends SchemaLike> = {
+export type ConditionConfig<T extends ISchema<any>> = {
   is: any | ((...values: any[]) => boolean);
-  then?: SchemaLike | ((schema: T) => SchemaLike);
-  otherwise?: SchemaLike | ((schema: T) => SchemaLike);
+  then?: (schema: T) => ISchema<any>;
+  otherwise?: (schema: T) => ISchema<any>;
 };
 
-export type ConditionOptions<T extends SchemaLike> =
+export type ConditionOptions<T extends ISchema<any, any>> =
   | ConditionBuilder<T>
   | ConditionConfig<T>;
 
@@ -25,7 +25,7 @@ export type ResolveOptions<TContext = any> = {
   context?: TContext;
 };
 
-class Condition<T extends SchemaLike = SchemaLike> {
+class Condition<T extends ISchema<any, any> = ISchema<any, any>> {
   fn: ConditionBuilder<T>;
 
   constructor(public refs: Reference[], options: ConditionOptions<T>) {
@@ -52,22 +52,20 @@ class Condition<T extends SchemaLike = SchemaLike> {
         : (...values: any[]) => values.every((value) => value === is);
 
     this.fn = function (...args: any[]) {
-      let options = args.pop();
       let schema = args.pop();
       let branch = check(...args) ? then : otherwise;
 
-      if (!branch) return undefined;
-      if (typeof branch === 'function') return branch(schema);
-      return schema.concat(branch.resolve(options));
+      return branch?.(schema) ?? schema;
     };
   }
 
   resolve(base: T, options: ResolveOptions) {
     let values = this.refs.map((ref) =>
+      // TODO: ? operator here?
       ref.getValue(options?.value, options?.parent, options?.context),
     );
 
-    let schema = this.fn.apply(base, values.concat(base, options) as any);
+    let schema = this.fn.apply(base, values.concat(base) as any);
 
     if (schema === undefined || schema === base) return base;
 

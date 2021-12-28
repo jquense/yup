@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
-import { AnySchema, array, number, string, date, ref } from '../../src';
+import { array, number, string, date, ref, mixed } from '../../src';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
@@ -11,6 +11,21 @@ Strings: {
 
   // $ExpectType string
   strRequired.cast(undefined);
+
+  // $ExpectType string | null
+  strRequired.nullable().cast(undefined);
+
+  // $ExpectType string
+  strRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const strOptional = string().optional();
+
+  // $ExpectType string | undefined
+  strOptional.cast(undefined);
+
+  // $ExpectType string
+  strOptional.defined().cast(undefined);
 
   //
   const strNullableOptional = string().nullable().optional();
@@ -30,7 +45,7 @@ Strings: {
   const strDefined = string().default('');
 
   // $ExpectType ""
-  const _strDefined = strDefined.getDefault();
+  strDefined.getDefault();
 
   const strDefault = string().nullable().default('').nullable().trim();
 
@@ -54,6 +69,33 @@ Strings: {
 
   // $ExpectType never
   string().strip().cast(undefined);
+
+  // $ExpectType string | undefined
+  string().optional().concat(string()).cast('');
+
+  // $ExpectType string
+  string().optional().concat(string().defined()).cast('');
+
+  // $ExpectType string | undefined
+  string().nullable().concat(string()).cast('');
+
+  // $ExpectType string | null | undefined
+  string().nullable().concat(string().optional().nullable()).cast('');
+
+  // $ExpectType 'foo' | undefined
+  string().notRequired().concat(string<'foo'>()).cast('');
+
+  // $ExpectType 'foo' | null
+  string<'foo'>()
+    .notRequired()
+    .concat(string().nullable().default('bar'))
+    .cast('');
+
+  // $ExpectType never
+  string<'bar'>().concat(string<'foo'>().defined()).cast('');
+
+  // $ExpectType never
+  string<'bar'>().concat(string<'foo'>()).cast('');
 }
 
 Numbers: {
@@ -61,6 +103,21 @@ Numbers: {
 
   // $ExpectType number
   numRequired.cast(undefined);
+
+  // $ExpectType number | null
+  numRequired.nullable().cast(undefined);
+
+  // $ExpectType number
+  numRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const numOptional = number().optional();
+
+  // $ExpectType number | undefined
+  numOptional.cast(undefined);
+
+  // $ExpectType number
+  numOptional.defined().cast(undefined);
 
   //
   const numNullableOptional = number().nullable().optional();
@@ -102,6 +159,18 @@ Numbers: {
 
   // $ExpectType never
   number().strip().cast(undefined);
+
+  // $ExpectType 1 | undefined
+  number().notRequired().concat(number<1>()).cast('');
+
+  // $ExpectType 1 | null
+  number<1>().notRequired().concat(number().nullable().default(2)).cast('');
+
+  // $ExpectType never
+  number<2>().concat(number<1>().defined()).cast('');
+
+  // $ExpectType never
+  number<2>().concat(number<1>()).cast('');
 }
 
 date: {
@@ -109,6 +178,21 @@ date: {
 
   // $ExpectType Date
   dtRequired.cast(undefined);
+
+  // $ExpectType Date | null
+  dtRequired.nullable().cast(undefined);
+
+  // $ExpectType Date
+  dtRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const dtOptional = date().optional();
+
+  // $ExpectType Date | undefined
+  dtOptional.cast(undefined);
+
+  // $ExpectType Date
+  dtOptional.defined().cast(undefined);
 
   //
   const dtNullableOptional = date().nullable().optional();
@@ -166,13 +250,70 @@ Lazy: {
 }
 
 Array: {
-  let _t = array().cast([]);
+  const arrRequired = array().required();
 
-  array(number()).cast([1]);
+  // $ExpectType any[]
+  arrRequired.cast(undefined);
 
-  type _a = AnySchema<number | undefined, any, ''>;
+  // $ExpectType any[] | null
+  arrRequired.nullable().cast(undefined);
 
-  type _b = _a['__outputType'];
+  // $ExpectType any[]
+  arrRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const arrOptional = array().optional();
+
+  // $ExpectType any[] | undefined
+  arrOptional.cast(undefined);
+
+  // $ExpectType any[]
+  arrOptional.defined().cast(undefined);
+
+  //
+  const arrNullableOptional = array().nullable().optional();
+
+  // $ExpectType any[] | null | undefined
+  arrNullableOptional.cast('');
+
+  // $ExpectType any[]
+  arrNullableOptional.required().validateSync('');
+
+  //
+  //
+  const arrNullable = array().nullable();
+
+  // $ExpectType any[] | null | undefined
+  arrNullable.validateSync('');
+
+  const arrDefined = array().default(() => [] as unknown[]);
+
+  // $ExpectType unknown[]
+  arrDefined.getDefault();
+
+  const arrDefault = array()
+    .optional()
+    .default(() => [] as unknown[])
+    .nullable()
+    .min(1);
+
+  // $ExpectType any[] | null
+  arrDefault.cast('');
+
+  // $ExpectType any[] | null
+  arrDefault.validateSync('');
+
+  //
+  const arrDefaultRequired = array()
+    .nullable()
+    .required()
+    .default(() => [] as unknown[]);
+
+  // $ExpectType any[]
+  arrDefaultRequired.cast('');
+
+  // $ExpectType any[]
+  arrDefaultRequired.validateSync(null);
 
   array().default<string[]>(() => []);
 
@@ -218,9 +359,52 @@ Array: {
 
   // $ExpectType never
   array().strip().cast(undefined);
+
+  ArrayConcat: {
+    const arrReq = array(number()).required();
+
+    // $ExpectType (number | undefined)[]
+    const _c1 = array(number()).concat(arrReq).validateSync([]);
+  }
 }
 
 Object: {
+  const objRequired = object().required();
+
+  // $ExpectType {}
+  objRequired.cast(undefined);
+
+  // $ExpectType {} | null
+  objRequired.nullable().cast(undefined);
+
+  // $ExpectType {}
+  objRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const objOptional = object().optional();
+
+  // $ExpectType {} | undefined
+  objOptional.cast(undefined);
+
+  // $ExpectType {}
+  objOptional.defined().cast(undefined);
+
+  //
+  const objNullableOptional = object().nullable().optional();
+
+  // $ExpectType {} | null
+  objNullableOptional.cast('');
+
+  // $ExpectType {}
+  objNullableOptional.required().validateSync('');
+
+  //
+  //
+  const objNullable = object().nullable();
+
+  // $ExpectType {} | null
+  objNullable.validateSync('');
+
   type InferType<TSchema extends ISchema<any, any>> = TSchema['__outputType'];
 
   const v = object({
@@ -347,6 +531,18 @@ Object: {
     const _t: ObjectSchema<EmployeeWithPromotions> = object({
       name: string().defined(),
       promotion_dates: array().of(date().defined()).defined(),
+    });
+  }
+
+  SchemaOfFileArray: {
+    type DocumentWithFullHistory = {
+      history?: File[];
+      name: string;
+    };
+
+    const _t: ObjectSchema<DocumentWithFullHistory> = object({
+      name: string().defined(),
+      history: array().of(mixed<File>().defined()),
     });
   }
 

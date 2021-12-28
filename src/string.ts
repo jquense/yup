@@ -3,6 +3,7 @@ import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, Maybe, AnyObject, Optionals } from './types';
 import type {
+  Concat,
   Defined,
   Flags,
   NotNull,
@@ -241,7 +242,7 @@ export default interface StringSchema<
   concat<UType extends Maybe<string>, UContext, UDefault, UFlags extends Flags>(
     schema: StringSchema<UType, UContext, UDefault, UFlags>,
   ): StringSchema<
-    NonNullable<TType> | UType,
+    Concat<TType, UType>,
     TContext & UContext,
     UDefault,
     TFlags | UFlags

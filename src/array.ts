@@ -288,9 +288,15 @@ export default interface ArraySchema<
     def: Thunk<D>,
   ): ArraySchema<T, TContext, D, ToggleDefault<TFlags, D>, TIn>;
 
-  concat<IT, IC, IF extends Flags>(
-    schema: ArraySchema<IT, IC, IF>,
-  ): ArraySchema<NonNullable<T> | IT, TContext & IC, TDefault, TFlags | IF>;
+  concat<IT, IC, ID, IF extends Flags, IIn extends Maybe<IT[]>>(
+    schema: ArraySchema<IT, IC, ID, IF, IIn>,
+  ): ArraySchema<
+    NonNullable<T> | IT,
+    TContext & IC,
+    Extract<IF, 'd'> extends never ? TDefault : ID,
+    TFlags | IF,
+    IIn
+  >;
   concat(schema: this): this;
 
   defined(
@@ -304,11 +310,9 @@ export default interface ArraySchema<
   notRequired(): ArraySchema<T, TContext, TDefault, TFlags, Maybe<TIn>>;
 
   nullable(
-    isNullable?: true,
+    msg?: Message,
   ): ArraySchema<T, TContext, TDefault, TFlags, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): ArraySchema<T, TContext, TDefault, TFlags, NotNull<TIn>>;
+  nonNullable(): ArraySchema<T, TContext, TDefault, TFlags, NotNull<TIn>>;
 
   strip(): ArraySchema<T, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

@@ -71,7 +71,7 @@ describe('Mixed Types ', () => {
   it('getDefault should return the default value using context', function () {
     let inst = string().when('$foo', {
       is: 'greet',
-      then: string().default('hi'),
+      then: (s) => s.default('hi'),
     });
     expect(inst.getDefault({ context: { foo: 'greet' } })).toBe('hi');
   });
@@ -757,7 +757,7 @@ describe('Mixed Types ', () => {
   it('should handle conditionals', async function () {
     let inst = mixed().when('prop', {
       is: 5,
-      then: mixed().required('from parent'),
+      then: (s) => s.required('from parent'),
     });
 
     await expect(
@@ -774,8 +774,8 @@ describe('Mixed Types ', () => {
       is: function (val) {
         return val === 5;
       },
-      then: string().required(),
-      otherwise: string().min(4),
+      then: (s) => s.required(),
+      otherwise: (s) => s.min(4),
     });
 
     await expect(
@@ -791,7 +791,7 @@ describe('Mixed Types ', () => {
 
   it('should handle multiple conditionals', function () {
     let called = false;
-    let inst = mixed().when(['$prop', '$other'], function (prop, other) {
+    let inst = mixed().when(['$prop', '$other'], (prop, other) => {
       expect(other).toBe(true);
       expect(prop).toBe(1);
       called = true;
@@ -802,7 +802,7 @@ describe('Mixed Types ', () => {
 
     inst = mixed().when(['$prop', '$other'], {
       is: 5,
-      then: mixed().required(),
+      then: (s) => s.required(),
     });
 
     return expect(
@@ -813,7 +813,7 @@ describe('Mixed Types ', () => {
   it('should require context when needed', async function () {
     let inst = mixed().when('$prop', {
       is: 5,
-      then: mixed().required('from context'),
+      then: (s) => s.required('from context'),
     });
 
     await expect(
@@ -827,11 +827,9 @@ describe('Mixed Types ', () => {
     ).resolves.toBeDefined();
 
     inst = string().when('$prop', {
-      is: function (val) {
-        return val === 5;
-      },
-      then: string().required(),
-      otherwise: string().min(4),
+      is: (val) => val === 5,
+      then: (s) => s.required(),
+      otherwise: (s) => s.min(4),
     });
 
     await expect(
@@ -849,7 +847,7 @@ describe('Mixed Types ', () => {
     let inst = object({
       prop: string().when('$prop', {
         is: 5,
-        then: string().required('from context'),
+        then: (s) => s.required('from context'),
       }),
     });
 
@@ -859,7 +857,7 @@ describe('Mixed Types ', () => {
   it('should support self references in conditions', async function () {
     let inst = number().when('.', {
       is: (value) => value > 0,
-      then: number().min(5),
+      then: (s) => s.min(5),
     });
 
     await expect(inst.validate(4)).rejects.toThrowError(
@@ -875,7 +873,7 @@ describe('Mixed Types ', () => {
   it('should support conditional single argument as options shortcut', async function () {
     let inst = number().when({
       is: (value) => value > 0,
-      then: number().min(5),
+      then: (s) => s.min(5),
     });
 
     await expect(inst.validate(4)).rejects.toThrowError(
@@ -893,7 +891,7 @@ describe('Mixed Types ', () => {
       is: (value) => typeof value === 'string',
       then: string().when('$check', {
         is: (value) => /hello/.test(value),
-        then: lazy(() => string().min(6)),
+        then: () => lazy(() => string().min(6)),
       }),
     });
 

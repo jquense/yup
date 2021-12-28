@@ -649,7 +649,9 @@ describe('Object types', () => {
           if (v === 4) return this.max(6);
         }),
       stats: object({ isBig: bool() }),
-      other: number().min(1).when('stats', { is: 5, then: number() }),
+      other: number()
+        .min(1)
+        .when('stats', { is: 5, then: (s) => s }),
     });
 
     return Promise.all([
@@ -689,7 +691,7 @@ describe('Object types', () => {
     let inst = object().shape({
       value: number().when('isRequired', {
         is: true,
-        then: number().required(),
+        then: (s) => s.required(),
       }),
     });
 
@@ -725,7 +727,7 @@ describe('Object types', () => {
       knownDependency: bool(),
       value: number().when(['unknownDependency', 'knownDependency'], {
         is: true,
-        then: number().required(),
+        then: (s) => s.required(),
       }),
     });
 
@@ -748,10 +750,10 @@ describe('Object types', () => {
   it('should allow opt out of topo sort on specific edges', () => {
     expect(() => {
       object().shape({
-        orgID: number().when('location', function (v) {
+        orgID: number().when('location', (v) => {
           if (v == null) return this.required();
         }),
-        location: string().when('orgID', function (v) {
+        location: string().when('orgID', (v) => {
           if (v == null) return this.required();
         }),
       });
@@ -787,11 +789,11 @@ describe('Object types', () => {
       {
         a1: string().when('a2', {
           is: undefined,
-          then: string().required(),
+          then: (s) => s.required(),
         }),
         a2: string().when('a1', {
           is: undefined,
-          then: string().required(),
+          then: (s) => s.required(),
         }),
       },
       [['a1', 'a2']],
@@ -814,7 +816,7 @@ describe('Object types', () => {
         count: countSchema,
       })
         .default(undefined)
-        .when('other', { is: true, then: object().required() }),
+        .when('other', { is: true, then: (s) => s.required() }),
     });
 
     return Promise.all([

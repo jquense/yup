@@ -225,14 +225,6 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  // withContext<C extends AnyObject>(): BaseSchema<
-  //   TType,
-  //   C,
-  //   TOut
-  // > {
-  //   return this as any;
-  // }
-
   withMutation<T>(fn: (schema: this) => T): T {
     let before = this._mutate;
     this._mutate = true;
@@ -255,12 +247,6 @@ export default abstract class BaseSchema<
     let combined = schema.clone();
 
     const mergedSpec = { ...base.spec, ...combined.spec };
-
-    // if (combined.spec.nullable === UNSET)
-    //   mergedSpec.nullable = base.spec.nullable;
-
-    // if (combined.spec.presence === UNSET)
-    //   mergedSpec.presence = base.spec.presence;
 
     combined.spec = mergedSpec;
     combined.internalTests = {
@@ -305,7 +291,7 @@ export default abstract class BaseSchema<
     return this._typeCheck(v);
   }
 
-  resolve(options: ResolveOptions) {
+  resolve(options: ResolveOptions<TContext>) {
     let schema = this;
 
     if (schema.conditions.length) {
