@@ -466,7 +466,7 @@ let schema = object({
       loose: boolean(),
       bar: string().when('loose', {
         is: true,
-        otherwise: (s) => s.strict(),
+        otherwise: (schema) => schema.strict(),
       }),
     }),
   ),
@@ -634,7 +634,7 @@ await schema.isValid(42); // => false
 await schema.isValid(new Date()); // => true
 ```
 
-#### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
+#### `mixed.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object
 literal where the key `is` is value or a matcher function, `then` provides the true schema and/or
@@ -652,8 +652,8 @@ let schema = object({
   count: number()
     .when('isBig', {
       is: true, // alternatively: (val) => val == true
-      then: yup.number().min(5),
-      otherwise: yup.number().min(0),
+      then: (schema) => schema..min(5),
+      otherwise: (schema) => schema..min(0),
     })
     .when('$other', (other, schema) => (other === 4 ? schema.max(6) : schema)),
 });
@@ -669,8 +669,8 @@ let schema = object({
   isBig: boolean(),
   count: number().when(['isBig', 'isSpecial'], {
     is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
-    then: yup.number().min(5),
-    otherwise: yup.number().min(0),
+    then: (schema) => schema..min(5),
+    otherwise: (schema) => schema..min(0),
   }),
 });
 
