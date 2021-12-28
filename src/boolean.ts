@@ -1,5 +1,5 @@
 import BaseSchema from './schema';
-import type { AnyObject, Maybe, Message } from './types';
+import type { AnyObject, Maybe, Message, Optionals } from './types';
 import type {
   Defined,
   Flags,
@@ -7,6 +7,7 @@ import type {
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import { boolean as locale } from './locale';
 import isAbsent from './util/isAbsent';
@@ -48,7 +49,7 @@ export default class BooleanSchema<
 
   isTrue(
     message = locale.isValue,
-  ): BooleanSchema<TType | true, TContext, TFlags> {
+  ): BooleanSchema<true | Optionals<TType>, TContext, TFlags> {
     return this.test({
       message,
       name: 'is-value',
@@ -62,7 +63,7 @@ export default class BooleanSchema<
 
   isFalse(
     message = locale.isValue,
-  ): BooleanSchema<TType | false, TContext, TFlags> {
+  ): BooleanSchema<false | Optionals<TType>, TContext, TFlags> {
     return this.test({
       message,
       name: 'is-value',
@@ -106,8 +107,14 @@ export default class BooleanSchema<
     return super.nonNullable(msg);
   }
 
-  strip(): BooleanSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>> {
-    return super.strip();
+  strip(
+    enabled: false,
+  ): BooleanSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): BooleanSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(v: any) {
+    return super.strip(v);
   }
 }
 

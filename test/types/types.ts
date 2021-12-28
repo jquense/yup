@@ -90,24 +90,6 @@ Mixed: {
 
   // $ExpectType "foo" | undefined
   mixed<string>().notRequired().concat(string<'foo'>()).cast('');
-
-  // $ExpectType "foo" | null
-  string<'foo'>()
-    .notRequired()
-    .concat(string().nullable().default('bar'))
-    .cast('');
-
-  // $ExpectType never
-  string<'bar'>().concat(string<'foo'>().defined()).cast('');
-
-  // $ExpectType never
-  string<'bar'>().concat(string<'foo'>()).cast('');
-
-  // $ExpectType "foo" | "bar" | undefined
-  string().oneOf(['foo', 'bar']).__outputType;
-
-  // $ExpectType "foo" | "bar" | null | undefined
-  string().nullable().oneOf(['foo', 'bar', null]).__outputType;
 }
 
 Strings: {
@@ -203,6 +185,12 @@ Strings: {
 
   // $ExpectType never
   string<'bar'>().concat(string<'foo'>()).cast('');
+
+  // $ExpectType "foo" | "bar" | undefined
+  string().oneOf(['foo', 'bar']).__outputType;
+
+  // $ExpectType "foo" | "bar" | null | undefined
+  string().nullable().oneOf(['foo', 'bar', null]).__outputType;
 }
 
 Numbers: {
@@ -354,6 +342,78 @@ date: {
 
   // $ExpectType Date | undefined
   date().strip().strip(false).cast(undefined);
+}
+
+date: {
+  const blRequired = bool().required();
+
+  // $ExpectType boolean
+  blRequired.cast(undefined);
+
+  // $ExpectType boolean | null
+  blRequired.nullable().cast(undefined);
+
+  // $ExpectType boolean
+  blRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const blOptional = bool().optional();
+
+  // $ExpectType boolean | undefined
+  blOptional.cast(undefined);
+
+  // $ExpectType boolean
+  blOptional.defined().cast(undefined);
+
+  //
+  const blNullableOptional = bool().nullable().optional();
+
+  // $ExpectType boolean | null | undefined
+  blNullableOptional.cast('');
+
+  // $ExpectType boolean
+  blNullableOptional.required().validateSync('');
+
+  //
+  //
+  const blNullable = bool().nullable();
+
+  // $ExpectType boolean | null | undefined
+  blNullable.validateSync('');
+
+  const blDefined = bool().default(false);
+
+  // $ExpectType boolean
+  blDefined.getDefault();
+
+  // $ExpectType false | undefined
+  bool().isFalse().cast(undefined);
+
+  // $ExpectType true | undefined
+  bool().isTrue().cast(undefined);
+
+  const blDefault = bool().nullable().default(true).nullable();
+
+  // $ExpectType boolean | null
+  blDefault.cast('');
+
+  // $ExpectType boolean | null
+  blDefault.validateSync('');
+
+  //
+  const blDefaultRequired = bool().nullable().required().default(true);
+
+  // $ExpectType boolean
+  blDefaultRequired.cast('');
+
+  // $ExpectType boolean
+  blDefaultRequired.validateSync(null);
+
+  // $ExpectType never
+  bool().strip().cast(undefined);
+
+  // $ExpectType boolean | undefined
+  bool().strip().strip(false).cast(undefined);
 }
 
 Lazy: {
