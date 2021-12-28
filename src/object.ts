@@ -2,7 +2,13 @@
 import { getter, normalizePath, join } from 'property-expr';
 import { camelCase, snakeCase } from 'tiny-case';
 
-import { Flags, ISchema, SetFlag, ToggleDefault } from './util/types';
+import {
+  Flags,
+  ISchema,
+  SetFlag,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
 
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
@@ -86,7 +92,12 @@ export default interface ObjectSchema<
   nullable(msg?: Message): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
   nonNullable(): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
 
-  strip(): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(
+    enabled: false,
+  ): ObjectSchema<TIn, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
 export default class ObjectSchema<
@@ -443,8 +454,10 @@ export default class ObjectSchema<
     });
   }
 
-  noUnknown(noAllow = true, message = locale.noUnknown) {
-    if (typeof noAllow === 'string') {
+  noUnknown(message?: Message): this;
+  noUnknown(noAllow: boolean, message?: Message): this;
+  noUnknown(noAllow: Message | boolean = true, message = locale.noUnknown) {
+    if (typeof noAllow !== 'boolean') {
       message = noAllow;
       noAllow = true;
     }

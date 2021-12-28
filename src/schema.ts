@@ -302,7 +302,7 @@ export default abstract class BaseSchema<
       schema = conditions.reduce(
         (prevSchema, condition) => condition.resolve(prevSchema, options),
         schema,
-      ) as this;
+      ) as any as this;
 
       schema = schema.resolve(options);
     }

@@ -60,9 +60,9 @@
     ],
     "testRegex": "\\.(j|t)s$",
     "testPathIgnorePatterns": [
-      "helpers\\.js",
+      "helpers\\.ts",
       "\\.eslintrc\\.js",
-      "types\\.ts"
+      "types2?\\.ts"
     ]
   },
   "devDependencies": {

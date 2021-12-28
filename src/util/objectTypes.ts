@@ -10,14 +10,6 @@ export type TypeFromShape<S extends ObjectShape, C> = {
   [K in keyof S]: S[K] extends ISchema<any, C> ? S[K]['__outputType'] : unknown;
 };
 
-// type DefaultedKeys<S extends ObjectShape> = {
-//   [K in keyof S]: S[K] extends ISchema<any>
-//     ? undefined extends S[K]['__default']
-//       ? never
-//       : K
-//     : never;
-// }[keyof S];
-
 export type DefaultFromShape<Shape extends ObjectShape> = {
   [K in keyof Shape]: Shape[K] extends ISchema<any>
     ? Shape[K]['__default']

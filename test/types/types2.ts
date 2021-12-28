@@ -71,6 +71,9 @@ Mixed: {
   mixed<string>().strip().cast(undefined);
 
   // $ExpectType string | undefined
+  mixed<string>().strip().strip(false).cast(undefined);
+
+  // $ExpectType string | undefined
   mixed<string>().optional().concat(mixed<string>()).cast('');
 
   // $ExpectType string
@@ -166,6 +169,9 @@ Strings: {
   string().strip().cast(undefined);
 
   // $ExpectType string | undefined
+  string().strip().strip(false).cast(undefined);
+
+  // $ExpectType string | undefined
   string().optional().concat(string()).cast('');
 
   // $ExpectType string
@@ -255,6 +261,9 @@ Numbers: {
   // $ExpectType never
   number().strip().cast(undefined);
 
+  // $ExpectType number | undefined
+  number().strip().strip(false).cast(undefined);
+
   // $ExpectType 1 | undefined
   number().notRequired().concat(number<1>()).cast('');
 
@@ -336,6 +345,9 @@ date: {
 
   // $ExpectType never
   date().strip().cast(undefined);
+
+  // $ExpectType Date | undefined
+  date().strip().strip(false).cast(undefined);
 }
 
 Lazy: {
@@ -455,6 +467,9 @@ Array: {
   // $ExpectType never
   array().strip().cast(undefined);
 
+  // $ExpectType any[] | undefined
+  array().strip().strip(false).cast(undefined);
+
   ArrayConcat: {
     const arrReq = array(number()).required();
 
@@ -563,6 +578,9 @@ Object: {
 
   // $ExpectType never
   object().strip().cast(undefined);
+
+  // $ExpectType {}
+  object().strip().strip(false).cast(undefined);
 
   //
   // Object Defaults

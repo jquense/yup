@@ -3,11 +3,6 @@ import * as TestHelpers from './helpers';
 import { number, NumberSchema } from '../src';
 
 describe('Number types', function () {
-  // it('is newable', () => {
-  //   let schema = new number();
-  //   schema.integer().required();
-  // });
-
   it('is extensible', () => {
     class MyNumber extends NumberSchema {
       foo() {
@@ -32,12 +27,14 @@ describe('Number types', function () {
     });
 
     it('should round', () => {
-      // schema.round('floor').cast(45.99999).should.equal(45);
+      // @ts-expect-error stricter type than accepted
       expect(schema.round('ceIl').cast(45.1111)).toBe(46);
+
       expect(schema.round().cast(45.444444)).toBe(45);
 
       expect(schema.nullable().integer().round().cast(null)).toBeNull();
       expect(function () {
+        // @ts-expect-error testing incorrectness
         schema.round('fasf');
       }).toThrowError(TypeError);
     });
@@ -54,14 +51,14 @@ describe('Number types', function () {
   });
 
   it('should handle DEFAULT', function () {
-    var inst = number().default(0);
+    let inst = number().default(0);
 
     expect(inst.getDefault()).toBe(0);
     expect(inst.default(5).required().getDefault()).toBe(5);
   });
 
   it('should type check', function () {
-    var inst = number();
+    let inst = number();
 
     expect(inst.isType(5)).toBe(true);
     expect(inst.isType(new Number(5))).toBe(true);
@@ -73,7 +70,7 @@ describe('Number types', function () {
   });
 
   it('should VALIDATE correctly', function () {
-    var inst = number().required().min(4);
+    let inst = number().required().min(4);
 
     return Promise.all([
       expect(number().isValid(null)).resolves.toBe(false),
@@ -86,7 +83,7 @@ describe('Number types', function () {
       expect(inst.isValid(5)).resolves.toBe(true),
       expect(inst.isValid(2)).resolves.toBe(false),
 
-      expect(inst.validate()).rejects.toEqual(
+      expect(inst.validate(undefined)).rejects.toEqual(
         TestHelpers.validationErrorWithMessages(
           expect.stringContaining('required'),
         ),
@@ -95,7 +92,7 @@ describe('Number types', function () {
   });
 
   describe('min', () => {
-    var schema = number().min(5);
+    let schema = number().min(5);
 
     TestHelpers.validateAll(schema, {
       valid: [7, 35738787838, [null, schema.nullable()]],
@@ -104,7 +101,7 @@ describe('Number types', function () {
   });
 
   describe('max', () => {
-    var schema = number().max(5);
+    let schema = number().max(5);
 
     TestHelpers.validateAll(schema, {
       valid: [4, -5222, [null, schema.nullable()]],
@@ -113,7 +110,7 @@ describe('Number types', function () {
   });
 
   describe('lessThan', () => {
-    var schema = number().lessThan(5);
+    let schema = number().lessThan(5);
 
     TestHelpers.validateAll(schema, {
       valid: [4, -10, [null, schema.nullable()]],
@@ -128,7 +125,7 @@ describe('Number types', function () {
   });
 
   describe('moreThan', () => {
-    var schema = number().moreThan(5);
+    let schema = number().moreThan(5);
 
     TestHelpers.validateAll(schema, {
       valid: [6, 56445435, [null, schema.nullable()]],
@@ -145,7 +142,7 @@ describe('Number types', function () {
   });
 
   describe('integer', () => {
-    var schema = number().integer();
+    let schema = number().integer();
 
     TestHelpers.validateAll(schema, {
       valid: [4, -5222, 3.12312e51],
@@ -160,7 +157,7 @@ describe('Number types', function () {
   });
 
   it('should check POSITIVE correctly', function () {
-    var v = number().positive();
+    let v = number().positive();
 
     return Promise.all([
       expect(v.isValid(7)).resolves.toBe(true),
@@ -176,7 +173,7 @@ describe('Number types', function () {
   });
 
   it('should check NEGATIVE correctly', function () {
-    var v = number().negative();
+    let v = number().negative();
 
     return Promise.all([
       expect(v.isValid(-4)).resolves.toBe(true),

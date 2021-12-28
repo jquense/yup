@@ -61,13 +61,13 @@ describe('String types', () => {
   });
 
   it('should handle DEFAULT', function () {
-    var inst = string();
+    let inst = string();
 
     expect(inst.default('my_value').required().getDefault()).toBe('my_value');
   });
 
   it('should type check', function () {
-    var inst = string();
+    let inst = string();
 
     expect(inst.isType('5')).toBe(true);
     expect(inst.isType(new String('5'))).toBe(true);
@@ -77,14 +77,12 @@ describe('String types', () => {
   });
 
   it('should VALIDATE correctly', function () {
-    var inst = string().required().min(4).strict();
+    let inst = string().required().min(4).strict();
 
     return Promise.all([
       expect(string().strict().isValid(null)).resolves.toBe(false),
 
-      expect(string().strict().nullable(true).isValid(null)).resolves.toBe(
-        true,
-      ),
+      expect(string().strict().nullable().isValid(null)).resolves.toBe(true),
 
       expect(inst.isValid('hello')).resolves.toBe(true),
 
@@ -97,7 +95,7 @@ describe('String types', () => {
   });
 
   it('should check MATCHES correctly', function () {
-    var v = string().matches(/(hi|bye)/, 'A message');
+    let v = string().matches(/(hi|bye)/, 'A message');
 
     return Promise.all([
       expect(v.isValid('hi')).resolves.toBe(true),
@@ -107,7 +105,7 @@ describe('String types', () => {
   });
 
   it('should check MATCHES correctly with global and sticky flags', function () {
-    var v = string().matches(/hi/gy);
+    let v = string().matches(/hi/gy);
 
     return Promise.all([
       expect(v.isValid('hi')).resolves.toBe(true),
@@ -134,8 +132,8 @@ describe('String types', () => {
   });
 
   it('should check MIN correctly', function () {
-    var v = string().min(5);
-    var obj = object({
+    let v = string().min(5);
+    let obj = object({
       len: number(),
       name: string().min(ref('len')),
     });
@@ -153,8 +151,8 @@ describe('String types', () => {
   });
 
   it('should check MAX correctly', function () {
-    var v = string().max(5);
-    var obj = object({
+    let v = string().max(5);
+    let obj = object({
       len: number(),
       name: string().max(ref('len')),
     });
@@ -172,8 +170,8 @@ describe('String types', () => {
   });
 
   it('should check LENGTH correctly', function () {
-    var v = string().length(5);
-    var obj = object({
+    let v = string().length(5);
+    let obj = object({
       len: number(),
       name: string().length(ref('len')),
     });
@@ -191,7 +189,7 @@ describe('String types', () => {
   });
 
   it('should check url correctly', function () {
-    var v = string().url();
+    let v = string().url();
 
     return Promise.all([
       expect(v.isValid('//www.github.com/')).resolves.toBe(true),
@@ -201,7 +199,7 @@ describe('String types', () => {
   });
 
   it('should check UUID correctly', function () {
-    var v = string().uuid();
+    let v = string().uuid();
 
     return Promise.all([
       expect(v.isValid('0c40428c-d88d-4ff0-a5dc-a6755cb4f4d1')).resolves.toBe(

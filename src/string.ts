@@ -10,6 +10,7 @@ import type {
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema from './schema';
 
@@ -263,5 +264,11 @@ export default interface StringSchema<
     msg?: Message<any>,
   ): StringSchema<TType | null, TContext, TDefault, TFlags>;
   nonNullable(): StringSchema<NotNull<TType>, TContext, TDefault, TFlags>;
-  strip(): StringSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+
+  strip(
+    enabled: false,
+  ): StringSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): StringSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

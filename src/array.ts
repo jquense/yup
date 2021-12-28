@@ -20,6 +20,7 @@ import {
   Thunk,
   ToggleDefault,
   ISchema,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
@@ -314,5 +315,10 @@ export default interface ArraySchema<
   ): ArraySchema<T, TContext, TDefault, TFlags, TIn | null>;
   nonNullable(): ArraySchema<T, TContext, TDefault, TFlags, NotNull<TIn>>;
 
-  strip(): ArraySchema<T, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(
+    enabled: false,
+  ): ArraySchema<T, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): ArraySchema<T, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

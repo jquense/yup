@@ -3,10 +3,10 @@ import Reference from './Reference';
 import type { ISchema } from './util/types';
 
 export interface ConditionBuilder<T extends ISchema<any, any>> {
-  (this: T, value: any, schema: T): ISchema<any, any>;
-  (v1: any, v2: any, schema: T): ISchema<any, any>;
-  (v1: any, v2: any, v3: any, schema: T): ISchema<any, any>;
-  (v1: any, v2: any, v3: any, v4: any, schema: T): ISchema<any, any>;
+  (this: T, value: any, schema: T): ISchema<any, any> | void;
+  (v1: any, v2: any, schema: T): ISchema<any, any> | void;
+  (v1: any, v2: any, v3: any, schema: T): ISchema<any, any> | void;
+  (v1: any, v2: any, v3: any, v4: any, schema: T): ISchema<any, any> | void;
 }
 
 export type ConditionConfig<T extends ISchema<any>> = {
@@ -52,6 +52,7 @@ class Condition<T extends ISchema<any, any> = ISchema<any, any>> {
         : (...values: any[]) => values.every((value) => value === is);
 
     this.fn = function (...args: any[]) {
+      let _opts = args.pop();
       let schema = args.pop();
       let branch = check(...args) ? then : otherwise;
 
@@ -65,7 +66,7 @@ class Condition<T extends ISchema<any, any> = ISchema<any, any>> {
       ref.getValue(options?.value, options?.parent, options?.context),
     );
 
-    let schema = this.fn.apply(base, values.concat(base) as any);
+    let schema = this.fn.apply(base, values.concat(base, options) as any);
 
     if (schema === undefined || schema === base) return base;
 

@@ -18,7 +18,7 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   __outputType: T;
   __default: D;
 
-  cast(value: any, options: CastOptions<C>): T;
+  cast(value: any, options?: CastOptions<C>): T;
   validate(
     value: any,
     options?: ValidateOptions<C>,
@@ -28,6 +28,8 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   describe(options?: ResolveOptions<C>): SchemaFieldDescription;
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
 }
+
+export type InferType<T extends ISchema<any, any>> = T['__outputType'];
 
 export type Thunk<T> = T | (() => T);
 

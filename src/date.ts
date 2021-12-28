@@ -11,6 +11,7 @@ import type {
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema from './schema';
 
@@ -131,5 +132,10 @@ export default interface DateSchema<
   nullable(msg?: Message): DateSchema<TType | null, TContext, TDefault, TFlags>;
   nonNullable(): DateSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
-  strip(): DateSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(
+    enabled: false,
+  ): DateSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): DateSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

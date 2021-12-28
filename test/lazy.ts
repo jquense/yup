@@ -1,13 +1,14 @@
-import { lazy, mixed } from '../src';
+import { lazy, mixed, AnyObject, MixedSchemaClass } from '../src';
 
 describe('lazy', function () {
   it('should throw on a non-schema value', () => {
-    expect(() => lazy(() => undefined).validate()).toThrowError();
+    // @ts-expect-error testing incorrect usage
+    expect(() => lazy(() => undefined).validate(undefined)).toThrowError();
   });
 
   describe('mapper', () => {
     const value = 1;
-    let mapper;
+    let mapper: jest.Mock<MixedSchemaClass<any, AnyObject, undefined, ''>, []>;
 
     beforeEach(() => {
       mapper = jest.fn(() => mixed());
@@ -22,8 +23,9 @@ describe('lazy', function () {
       const context = {
         a: 1,
       };
-      lazy(mapper).validate(value, context);
-      expect(mapper).toHaveBeenCalledWith(value, context);
+      let options = { context };
+      lazy(mapper).validate(value, options);
+      expect(mapper).toHaveBeenCalledWith(value, options);
     });
 
     it('should allow meta', () => {

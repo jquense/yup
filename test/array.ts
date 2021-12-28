@@ -1,4 +1,4 @@
-import { string, number, object, array, StringSchema } from '../src';
+import { string, number, object, array, StringSchema, AnySchema } from '../src';
 
 describe('Array types', () => {
   describe('casting', () => {
@@ -34,7 +34,7 @@ describe('Array types', () => {
   });
 
   it('should type check', () => {
-    var inst = array();
+    let inst = array();
 
     expect(inst.isType([])).toBe(true);
     expect(inst.isType({})).toBe(false);
@@ -56,7 +56,7 @@ describe('Array types', () => {
 
     let merged = array(number()).concat(array(number().required()));
 
-    expect(merged.innerType.type).toBe('number');
+    expect((merged.innerType as AnySchema).type).toBe('number');
 
     await expect(merged.validateAt('[0]', undefined)).rejects.toThrowError();
   });
@@ -75,7 +75,7 @@ describe('Array types', () => {
       ['required', null, array().required()],
       ['null', null, array()],
       ['length', [1, 2, 3], array().length(2)],
-    ])('Basic validations fail: %s %p', async (type, value, schema) => {
+    ])('Basic validations fail: %s %p', async (_, value, schema) => {
       expect(await schema.isValid(value)).toBe(false);
     });
 
@@ -83,12 +83,14 @@ describe('Array types', () => {
       ['required', [], array().required()],
       ['nullable', null, array().nullable()],
       ['length', [1, 2, 3], array().length(3)],
-    ])('Basic validations pass: %s %p', async (type, value, schema) => {
+    ])('Basic validations pass: %s %p', async (_, value, schema) => {
       expect(await schema.isValid(value)).toBe(true);
     });
 
     it('should allow undefined', async () => {
-      await expect(array().of(number().max(5)).isValid()).resolves.toBe(true);
+      await expect(
+        array().of(number().max(5)).isValid(undefined),
+      ).resolves.toBe(true);
     });
 
     it('max should replace earlier tests', async () => {
@@ -100,7 +102,7 @@ describe('Array types', () => {
     });
 
     it('should respect subtype validations', async () => {
-      var inst = array().of(number().max(5));
+      let inst = array().of(number().max(5));
 
       await expect(inst.isValid(['gg', 3])).resolves.toBe(false);
       await expect(inst.isValid([7, 3])).resolves.toBe(false);
@@ -111,9 +113,10 @@ describe('Array types', () => {
     });
 
     it('should prevent recursive casting', async () => {
+      // @ts-ignore
       let castSpy = jest.spyOn(StringSchema.prototype, '_cast');
 
-      let value = await array(string()).validate([5]);
+      let value = await array(string()).defined().validate([5]);
 
       expect(value[0]).toBe('5');
 
@@ -123,7 +126,7 @@ describe('Array types', () => {
   });
 
   it('should respect abortEarly', async () => {
-    var inst = array()
+    let inst = array()
       .of(object({ str: string().required() }))
       .test('name', 'oops', () => false);
 
@@ -145,7 +148,7 @@ describe('Array types', () => {
   });
 
   it('should compact arrays', () => {
-    var arr = ['', 1, 0, 4, false, null],
+    let arr = ['', 1, 0, 4, false, null],
       inst = array();
 
     expect(inst.compact().cast(arr)).toEqual([1, 4]);
@@ -160,7 +163,7 @@ describe('Array types', () => {
   });
 
   it('should ensure arrays', () => {
-    var inst = array().ensure();
+    let inst = array().ensure();
 
     const a = [1, 4];
     expect(inst.cast(a)).toBe(a);
@@ -192,7 +195,8 @@ describe('Array types', () => {
     sparseArray[1] = 1;
     let value = await array().of(number()).validate(sparseArray);
     expect(0 in sparseArray).toBe(false);
-    expect(0 in value).toBe(false);
+    expect(0 in value!).toBe(false);
+
     // eslint-disable-next-line no-sparse-arrays
     expect(value).toEqual([, 1]);
   });

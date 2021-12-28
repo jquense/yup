@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { setLocale } from '../src';
 
 describe('Custom locale', () => {
@@ -25,7 +26,9 @@ describe('Custom locale', () => {
   });
 
   it('should not allow prototype pollution', () => {
-    const payload = JSON.parse('{"__proto__":{"polluted":"Yes! Its Polluted"}}');
+    const payload = JSON.parse(
+      '{"__proto__":{"polluted":"Yes! Its Polluted"}}',
+    );
 
     expect(() => setLocale(payload)).toThrowError();
 
@@ -33,7 +36,7 @@ describe('Custom locale', () => {
   });
 
   it('should not pollute Object.prototype builtins', () => {
-    const payload = { toString: { polluted: 'oh no' } };
+    const payload: any = { toString: { polluted: 'oh no' } };
 
     expect(() => setLocale(payload)).toThrowError();
 

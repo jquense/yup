@@ -1,10 +1,8 @@
 import type { AnySchema } from './schema';
-import type Lazy from './Lazy';
-import { ISchema } from './util/types';
+import type { AnyObject } from './util/objectTypes';
+import type { ISchema } from './util/types';
 
-export type AnyObject = Record<string, any>;
-
-export type SchemaLike = AnySchema | Lazy<any>;
+export type { ISchema, AnyObject, AnySchema };
 
 export type Callback<T = any> = (err: Error | null, value?: T) => void;
 

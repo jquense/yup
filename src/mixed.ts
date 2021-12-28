@@ -5,6 +5,7 @@ import type {
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema from './schema';
 
@@ -47,7 +48,12 @@ export declare class MixedSchema<
 
   nonNullable(): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
 
-  strip(): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(
+    enabled: false,
+  ): MixedSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
 const Mixed: typeof MixedSchema = BaseSchema as any;

@@ -1,12 +1,12 @@
 import { ref, date } from '../src';
 
-function isValidDate(date) {
+function isValidDate(date: any): date is Date {
   return date instanceof Date && !isNaN(date.getTime());
 }
 
 describe('Date types', () => {
   it('should CAST correctly', () => {
-    var inst = date();
+    let inst = date();
 
     expect(inst.cast(new Date())).toBeInstanceOf(Date);
     expect(inst.cast('jan 15 2014')).toEqual(new Date(2014, 0, 15));
@@ -22,14 +22,14 @@ describe('Date types', () => {
   });
 
   it('should return invalid date for failed casts', function () {
-    var inst = date();
+    let inst = date();
 
     expect(isValidDate(inst.cast(null, { assert: false }))).toBe(false);
     expect(isValidDate(inst.cast('', { assert: false }))).toBe(false);
   });
 
   it('should type check', () => {
-    var inst = date();
+    let inst = date();
 
     expect(inst.isType(new Date())).toBe(true);
     expect(inst.isType(false)).toBe(false);
@@ -39,7 +39,7 @@ describe('Date types', () => {
   });
 
   it('should VALIDATE correctly', () => {
-    var inst = date().required().max(new Date(2014, 5, 15));
+    let inst = date().required().max(new Date(2014, 5, 15));
 
     return Promise.all([
       expect(date().isValid(null)).resolves.toBe(false),
@@ -49,7 +49,7 @@ describe('Date types', () => {
       expect(inst.isValid(new Date(2014, 7, 15))).resolves.toBe(false),
       expect(inst.isValid('5')).resolves.toBe(true),
 
-      expect(inst.validate()).rejects.toEqual(
+      expect(inst.validate(undefined)).rejects.toEqual(
         expect.objectContaining({
           errors: ['this is a required field'],
         }),
@@ -58,7 +58,7 @@ describe('Date types', () => {
   });
 
   it('should check MIN correctly', () => {
-    var min = new Date(2014, 3, 15),
+    let min = new Date(2014, 3, 15),
       invalid = new Date(2014, 1, 15),
       valid = new Date(2014, 5, 15);
     expect(function () {
@@ -87,7 +87,7 @@ describe('Date types', () => {
   });
 
   it('should check MAX correctly', () => {
-    var max = new Date(2014, 7, 15),
+    let max = new Date(2014, 7, 15),
       invalid = new Date(2014, 9, 15),
       valid = new Date(2014, 5, 15);
     expect(function () {
@@ -100,7 +100,7 @@ describe('Date types', () => {
     return Promise.all([
       expect(date().max(max).isValid(valid)).resolves.toBe(true),
       expect(date().max(max).isValid(invalid)).resolves.toBe(false),
-      expect(date().max(max).nullable(true).isValid(null)).resolves.toBe(true),
+      expect(date().max(max).nullable().isValid(null)).resolves.toBe(true),
 
       expect(
         date()

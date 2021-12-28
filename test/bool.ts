@@ -1,4 +1,5 @@
 import { bool } from '../src';
+import * as TestHelpers from './helpers';
 
 describe('Boolean types', () => {
   it('should CAST correctly', () => {
@@ -47,7 +48,7 @@ describe('Boolean types', () => {
       expect(bool().isValid('1')).resolves.toBe(true),
       expect(bool().strict().isValid(null)).resolves.toBe(false),
       expect(bool().nullable().isValid(null)).resolves.toBe(true),
-      expect(inst.validate()).rejects.toEqual(
+      expect(inst.validate(undefined)).rejects.toEqual(
         expect.objectContaining({
           errors: ['this is a required field'],
         }),

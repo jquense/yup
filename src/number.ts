@@ -10,6 +10,7 @@ import type {
   SetFlag,
   Thunk,
   ToggleDefault,
+  UnsetFlag,
 } from './util/types';
 import BaseSchema from './schema';
 
@@ -125,20 +126,20 @@ export default class NumberSchema<
     return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
   }
 
-  round(method: 'ceil' | 'floor' | 'round' | 'trunc') {
+  round(method?: 'ceil' | 'floor' | 'round' | 'trunc') {
     let avail = ['ceil', 'floor', 'round', 'trunc'];
     method = (method?.toLowerCase() as any) || ('round' as const);
 
     // this exists for symemtry with the new Math.trunc
     if (method === 'trunc') return this.truncate();
 
-    if (avail.indexOf(method.toLowerCase()) === -1)
+    if (avail.indexOf(method!.toLowerCase()) === -1)
       throw new TypeError(
         'Only valid options for round() are: ' + avail.join(', '),
       );
 
     return this.transform((value) =>
-      !isAbsent(value) ? Math[method](value) : value,
+      !isAbsent(value) ? Math[method!](value) : value,
     );
   }
 }
@@ -155,8 +156,6 @@ export default interface NumberSchema<
   TDefault = undefined,
   TFlags extends Flags = '',
 > extends BaseSchema<TType, TContext, TDefault, TFlags> {
-  strip(): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
-
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
@@ -185,4 +184,11 @@ export default interface NumberSchema<
     msg?: Message,
   ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
   nonNullable(): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): NumberSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
