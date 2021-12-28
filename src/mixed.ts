@@ -16,7 +16,7 @@ export declare class MixedSchema<
 > extends BaseSchema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): MixedSchema<TType, TContext, TDefault, ToggleDefault<TFlags, D>>;
+  ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<IT, IC, ID, IF extends Flags>(
     schema: MixedSchema<IT, IC, ID, IF>,

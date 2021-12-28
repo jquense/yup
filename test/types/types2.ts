@@ -4,7 +4,102 @@ import { array, number, string, date, ref, mixed } from '../../src';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
-import { ISchema, _ } from '../../src/util/types';
+import { _ } from '../../src/util/types';
+
+Mixed: {
+  const mxRequired = mixed<string | number>().required();
+
+  // $ExpectType string | number
+  mxRequired.cast(undefined);
+
+  // $ExpectType string | number | null
+  mxRequired.nullable().cast(undefined);
+
+  // $ExpectType string | number
+  mxRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const mxOptional = mixed<string>().optional();
+
+  // $ExpectType string | undefined
+  mxOptional.cast(undefined);
+
+  // $ExpectType string
+  mxOptional.defined().cast(undefined);
+
+  //
+  const mxNullableOptional = mixed<string>().nullable().optional();
+
+  // $ExpectType string | null | undefined
+  mxNullableOptional.cast('');
+
+  // $ExpectType string
+  mxNullableOptional.required().validateSync('');
+
+  //
+  const mxNullable = mixed<string>().nullable();
+
+  // $ExpectType string | null | undefined
+  mxNullable.validateSync('');
+
+  const mxDefined = mixed<string>().default('');
+
+  // $ExpectType ""
+  mxDefined.getDefault();
+
+  const mxDefault = mixed<string>().nullable().default('').nullable();
+
+  // $ExpectType string | null
+  mxDefault.cast('');
+
+  // $ExpectType string | null
+  mxDefault.validateSync('');
+
+  // $ExpectType MixedSchema<string, AnyObject, "", "d">
+  const mxDefaultRequired = mixed<string>().nullable().required().default('');
+
+  // $ExpectType string
+  mxDefaultRequired.cast('');
+
+  // $ExpectType string
+  mxDefaultRequired.validateSync(null);
+
+  // $ExpectType "foo" | "bar"
+  string<'foo' | 'bar'>().defined().validateSync('foo');
+
+  // $ExpectType never
+  mixed<string>().strip().cast(undefined);
+
+  // $ExpectType string | undefined
+  mixed<string>().optional().concat(mixed<string>()).cast('');
+
+  // $ExpectType string
+  mixed<string>().optional().concat(mixed<string>().defined()).cast('');
+
+  // $ExpectType string | undefined
+  mixed<string>().nullable().concat(mixed<string>()).cast('');
+
+  // $ExpectType string | null | undefined
+  mixed<string>()
+    .nullable()
+    .concat(mixed<string>().optional().nullable())
+    .cast('');
+
+  // $ExpectType "foo" | undefined
+  mixed<string>().notRequired().concat(string<'foo'>()).cast('');
+
+  // $ExpectType "foo" | null
+  string<'foo'>()
+    .notRequired()
+    .concat(string().nullable().default('bar'))
+    .cast('');
+
+  // $ExpectType never
+  string<'bar'>().concat(string<'foo'>().defined()).cast('');
+
+  // $ExpectType never
+  string<'bar'>().concat(string<'foo'>()).cast('');
+}
 
 Strings: {
   const strRequired = string().required();
@@ -82,10 +177,10 @@ Strings: {
   // $ExpectType string | null | undefined
   string().nullable().concat(string().optional().nullable()).cast('');
 
-  // $ExpectType 'foo' | undefined
+  // $ExpectType "foo" | undefined
   string().notRequired().concat(string<'foo'>()).cast('');
 
-  // $ExpectType 'foo' | null
+  // $ExpectType "foo" | null
   string<'foo'>()
     .notRequired()
     .concat(string().nullable().default('bar'))
@@ -354,7 +449,7 @@ Array: {
   // $ExpectType number[]
   array(number()).default(numList).getDefault();
 
-  // $ExpectType (number | undefined)[] | undefined
+  // $ExpectType (number | undefined)[]
   array(number()).concat(array(number()).required()).validateSync([]);
 
   // $ExpectType never
@@ -383,7 +478,7 @@ Object: {
   //
   const objOptional = object().optional();
 
-  // $ExpectType {} | undefined
+  // $ExpectType {}
   objOptional.cast(undefined);
 
   // $ExpectType {}
@@ -405,17 +500,13 @@ Object: {
   // $ExpectType {} | null
   objNullable.validateSync('');
 
-  type InferType<TSchema extends ISchema<any, any>> = TSchema['__outputType'];
-
   const v = object({
     name: string().defined(),
     colors: array(string().defined()).required(),
-  }).optional();
+  }).nullable();
 
-  // $ExpectType { name: string; colors: string[]; } | undefined
+  // $ExpectType { name: string; colors: string[]; } | null
   v.cast({});
-
-  type _I = InferType<typeof v>;
 
   interface Person {
     name: string;
@@ -504,6 +595,9 @@ Object: {
     name: string(),
   });
 
+  // $ExpectType { name?: string | undefined; other: string; field: number; }
+  merge.cast({});
+
   // $ExpectType number
   merge.cast({}).field;
 
@@ -556,6 +650,9 @@ Object: {
 
     // $ExpectType number | undefined
     schema.pick(['age']).validateSync({ age: '1' }).age;
+
+    // $ExpectType { age?: number | undefined; }
+    schema.pick(['age']).validateSync({ age: '1' });
   }
 
   ObjectOmit: {
@@ -571,6 +668,9 @@ Object: {
 
     // $ExpectType string | undefined
     schema.omit(['age']).partial().validateSync({ name: '1' }).name;
+
+    // $ExpectType { name: string; }
+    schema.omit(['age']).validateSync({ name: '1' });
   }
 
   ObjectPartial: {
