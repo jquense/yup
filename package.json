@@ -62,7 +62,7 @@
     "testPathIgnorePatterns": [
       "helpers\\.ts",
       "\\.eslintrc\\.js",
-      "types2?\\.ts"
+      "types\\.ts"
     ]
   },
   "devDependencies": {
