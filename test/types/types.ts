@@ -622,6 +622,21 @@ Object: {
   // $ExpectType string
   merge.cast({}).other;
 
+  Concat: {
+    const obj1 = object({
+      field: string().required(),
+      other: string().default(''),
+    });
+
+    const obj2 = object({
+      field: number().default(1),
+      name: string(),
+    }).nullable();
+
+    // $ExpectType "foo" | null
+    obj1.concat(obj2).cast('');
+  }
+
   SchemaOfDate: {
     type Employee = {
       hire_date: Date;

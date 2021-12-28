@@ -3,6 +3,7 @@ import { getter, normalizePath, join } from 'property-expr';
 import { camelCase, snakeCase } from 'tiny-case';
 
 import {
+  Concat,
   Flags,
   ISchema,
   SetFlag,
@@ -311,12 +312,7 @@ export default class ObjectSchema<
 
   concat<IIn, IC, ID, IF extends Flags>(
     schema: ObjectSchema<IIn, IC, ID, IF>,
-  ): ObjectSchema<
-    NonNullable<TIn> | IIn,
-    TContext & IC,
-    TDefault & ID,
-    TFlags | IF
-  >;
+  ): ObjectSchema<Concat<TIn, IIn>, TContext & IC, TDefault & ID, TFlags | IF>;
   concat(schema: this): this;
   concat(schema: any): any {
     let next = super.concat(schema) as any;
