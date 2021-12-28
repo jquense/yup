@@ -79,10 +79,10 @@ import {
 
 > If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
 
-### Using a custom locale dictionary
+### Defining custom error messages
 
-Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
-If any message is missing in the custom dictionary the error message will default to Yup's one.
+`setLocale` allows you to customize the default messages used by Yup, when no message is provided with a validation test.
+If any message is missing in the custom dictionary the error message will default to Yup's one. **`setLocale` must be called before you define your schema.**
 
 ```js
 import { setLocale } from 'yup';
@@ -107,6 +107,7 @@ schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
   err.errors; // => ['Deve ser maior que 18']
 });
 ```
+### Using a custom locale dictionary
 
 If you need multi-language support, Yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
 
