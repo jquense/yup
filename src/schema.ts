@@ -304,7 +304,8 @@ export default abstract class BaseSchema<
       schema = schema.clone();
       schema.conditions = [];
       schema = conditions.reduce(
-        (prevSchema, condition) => condition.resolve(prevSchema, options),
+        (prevSchema, condition) =>
+          condition.resolve(prevSchema, options) as any,
         schema,
       ) as any as this;
 
@@ -712,9 +713,9 @@ export default abstract class BaseSchema<
     });
 
     next.conditions.push(
-      typeof options === 'function'
+      (typeof options === 'function'
         ? new Condition(deps, options!)
-        : Condition.fromOptions(deps, options!),
+        : Condition.fromOptions(deps, options!)) as Condition,
     );
 
     return next;

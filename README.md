@@ -1,8 +1,14 @@
 # Yup
 
-Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
+Yup is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
 
-Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as its primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be performed together (such as HTML form validation) or seperately (such as deserializing trusted data from APIs).
+**Killer Features**:
+
+- Concise yet expressive schema interface, equipped to model simple to complex data models
+- Powerful TypeScript support. Infer static types from schema, or ensure schema correctly implement a type
+- Built-in async validation support. Model server-side and client-side validation equally well
+- Extensible: add your own type-safe methods and schema
+- Rich error details, make debugging a breeze
 
 ## Docs
 
@@ -17,47 +23,94 @@ Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leane
 npm install -S yup
 ```
 
-Yup always relies on the `Promise` global object to handle asynchronous values as well as `Set` and `Map`.
-For browsers that do not support these, you'll need to include a polyfill, such as core-js:
+or
 
-```js
-import 'core-js/es6/promise';
-import 'core-js/es6/set';
-import 'core-js/es6/map';
+```sh
+yarn install yup
 ```
 
 ## Usage
 
-You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object. When using es module syntax, yup exports everything as a named export
+Schema are comprised of parsing actions (transforms) as well as assertions (tests) about the input value.
+Validate an input value to parse it and run the configured set of assertions. Chain together methods to build a schema.
 
-```js
-import * as yup from 'yup';
+```ts
+import { object, string, string, date, InferType } from 'yup';
 
-let schema = yup.object().shape({
-  name: yup.string().required(),
-  age: yup.number().required().positive().integer(),
-  email: yup.string().email(),
-  website: yup.string().url(),
-  createdOn: yup.date().default(() => new Date()),
+let userSchema = object({
+  name: string().required(),
+  age: number().required().positive().integer(),
+  email: string().email(),
+  website: string().url().nullable(),
+  createdOn: date().default(() => new Date()),
 });
 
 // parse and assert validity
-const parsedValue = await schema.validate({
-  name: 'jimmy',
-  age: 24,
-});
+const user = await userSchema.validate(await fetchUser());
 
+type User = InferType<typeof userSchema>;
+/* {
+  name: string;
+  age: number;
+  email?: string | undefined
+  website?: string | null | undefined
+  createdOn: Date
+}*/
+```
+
+Use a schema to coerce or "cast" an input value into the correct type, and optionally
+transform that value into more concrete and specific values, without making further assertions.
+
+```ts
 // you can try and type cast objects to the defined schema
-schema.cast({
+const parsedUser = userSchema.cast({
   name: 'jimmy',
   age: '24',
   createdOn: '2014-09-23T19:25:25Z',
 });
-
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
-The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
+Know that your input value is already parsed? You can "strictly" validate an input, and avoid the overhead
+of running parsing logic.
+
+```ts
+// run asserts about integers, types, presence and anything else
+const parsedUser = await userSchema.validate(
+  {
+    name: 'jimmy',
+    age: '24',
+    createdOn: '2014-09-23T19:25:25Z',
+  },
+  { strict: true },
+);
+
+const parsedUser = await userSchema.validate(
+  {
+    name: 'jimmy',
+    age: '24',
+  },
+  { strict: true },
+);
+// Throws ValidationError("age is not a number")
+```
+
+### Composition
+
+Schema are immutable, each method call returns a new schema object. Reuse and pass them around without
+fear.
+
+```ts
+const optionalString = string().optional();
+
+const definedString = optionalString.defined();
+
+const value = undefined;
+optionalString.isValid(value); // true
+definedString.isValid(value); // false
+```
+
+<!-- The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
 If you need access to the actual schema classes, they are also exported:
 
 ```js
@@ -70,11 +123,213 @@ import {
   ObjectSchema,
   StringSchema,
 } from 'yup';
+``` -->
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [TypeScript integration](#typescript-integration)
+  - [Schema defaults](#schema-defaults)
+  - [Ensuring a schema matches an existing type](#ensuring-a-schema-matches-an-existing-type)
+  - [Extending built-in schema with new methods](#extending-built-in-schema-with-new-methods)
+  - [TypeScript configuration](#typescript-configuration)
+- [Error message customization and localization](#error-message-customization-and-localization)
+- [API](#api)
+  - [`yup`](#yup)
+    - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
+    - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
+    - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
+    - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
+    - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
+  - [mixed](#mixed)
+    - [`mixed.clone(): Schema`](#mixedclone-schema)
+    - [`mixed.label(label: string): Schema`](#mixedlabellabel-string-schema)
+    - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
+    - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
+    - [`mixed.concat(schema: Schema): Schema`](#mixedconcatschema-schema-schema)
+    - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
+    - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
+    - [`mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-options-object-promiseany-validationerror)
+    - [`mixed.validateSyncAt(path: string, value: any, options?: object): any`](#mixedvalidatesyncatpath-string-value-any-options-object-any)
+    - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
+    - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
+    - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-options---any)
+    - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
+    - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
+    - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
+    - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
+    - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
+    - [`mixed.getDefault(options?: object): Any`](#mixedgetdefaultoptions-object-any)
+    - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
+    - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
+    - [`mixed.notRequired(): Schema` Alias: `optional()`](#mixednotrequired-schema-alias-optional)
+    - [`mixed.defined(): Schema`](#mixeddefined-schema)
+    - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
+    - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
+    - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-message-string--function)
+    - [`mixed.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`](#mixedwhenkeys-string--string-builder-object--values-any-schema--schema-schema)
+    - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
+    - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
+    - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
+  - [string](#string)
+    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
+    - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
+    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
+    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
+    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
+    - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
+    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
+    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
+    - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+    - [`string.ensure(): Schema`](#stringensure-schema)
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
+    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
+    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
+  - [number](#number)
+    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
+    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
+    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
+    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
+    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
+    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
+    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
+    - [`number.truncate(): Schema`](#numbertruncate-schema)
+    - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
+  - [boolean](#boolean)
+  - [date](#date)
+    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
+    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
+  - [array](#array)
+    - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
+    - [`array.length(length: number | Ref, message?: string | function): Schema`](#arraylengthlength-number--ref-message-string--function-schema)
+    - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
+    - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
+    - [`array.ensure(): Schema`](#arrayensure-schema)
+    - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
+  - [object](#object)
+    - [Object schema defaults](#object-schema-defaults)
+    - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.concat(schemaB: ObjectSchema): ObjectSchema`](#objectconcatschemab-objectschema-objectschema)
+    - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
+    - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
+    - [`object.getDefaultFromShape(): Record<string, unknown>`](#objectgetdefaultfromshape-recordstring-unknown)
+    - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
+    - [`object.camelCase(): Schema`](#objectcamelcase-schema)
+    - [`object.constantCase(): Schema`](#objectconstantcase-schema)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## TypeScript integration
+
+Yup schema produce correct, static TypeScript interfaces. Use `InferType` to extract that interface:
+
+```ts
+import * as yup from 'yup';
+
+const personSchema = yup.object({
+  firstName: yup.string().defined(),
+  nickName: yup.string().default('').nullable(),
+  sex: yup
+    .mixed()
+    .oneOf(['male', 'female', 'other'] as const)
+    .defined(),
+  email: yup.string().nullable().email(),
+  birthDate: yup.date().nullable().min(new Date(1900, 0, 1)),
+});
+
+interface Person extends yup.InferType<typeof personSchema> {}
 ```
 
-### Using a custom locale dictionary
+### Schema defaults
 
-Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
+a schema's default is used when casting produces an `undefined` putput value. Because of this,
+setting a default affects the output type of the schema, effectively marking it as "defined()".
+
+```ts
+import { string } from 'yup';
+
+const value: string = string().default('hi').validate(undefined);
+
+// vs
+
+const value: string | undefined = string().validate(undefined);
+```
+
+### Ensuring a schema matches an existing type
+
+In some cases, the TypeScript type already exists, and you want to ensure that
+your schema produces a compatible type:
+
+```ts
+import { object, number string, ObjectSchema } from 'yup';
+
+interface Person {
+  name: string;
+  age?: number;
+  sex: 'male' | 'female' | 'other' | null;
+}
+
+// will raise a compile-time type error if the schema does not produce a valid Person
+const schema: ObjectSchema<Person> = object({
+  name: string().defined(),
+  age: number().optional(),
+  sex: string<'male' | 'female' | 'other'>().nullable().defined();
+});
+
+// ❌ errors:
+// "Type 'number | undefined' is not assignable to type 'string'."
+const badSchema: ObjectSchema<Person> = object({
+  name: number(),
+});
+
+```
+
+### Extending built-in schema with new methods
+
+You can use TypeScript's interface merging behavior to extend the schema types
+if needed. Type extensions should go in an "ambient" type definition file such as your
+`globals.d.ts`. Remember to actually extend the yup type in your application code!
+
+> Watch out! merging only works if the type definition is _exactly_ the same, including
+> generics. Consult the yup source code for each type to ensure you are defining it correctly
+
+```ts
+// globals.d.ts
+declare module 'yup' {
+  interface StringSchema<TType, TContext, TDefault, TFlags> {
+    append(appendStr: string): this;
+  }
+}
+
+// app.ts
+import { addMethod, string } from 'yup';
+
+addMethod(string, 'append', function append(appendStr: string) {
+  return this.transform((value) => `${value}${appendStr}`);
+});
+
+string().append('~~~~').cast('hi'); // 'hi~~~~'
+```
+
+### TypeScript configuration
+
+You MUST have the `strictNullChecks` compiler option enabled.
+
+We also recommend settings `strictFunctionTypes` to `false`, for functionally better types. Yes
+this reduces overall soundness, however TypeScript already disables this check
+anyway for methods and constructors (note from TS docs):
+
+> During development of this feature, we discovered a large number of inherently
+> unsafe class hierarchies, including some in the DOM. Because of this,
+> the setting only applies to functions written in function syntax, not to those in method syntax:
+
+Your mileage will vary, but we've found that this check doesn't prevent many of
+real bugs, while increasing the amount of onerous explicit type casting in apps.
+
+## Error message customization and localization
+
+Default error messages can be customized for when no message is provided with a validation test.
 If any message is missing in the custom dictionary the error message will default to Yup's one.
 
 ```js
@@ -103,7 +358,8 @@ try {
 }
 ```
 
-If you need multi-language support, Yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
+If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to
+generate error objects with translation keys and values. Then feed it into your favorite i18n library.
 
 ```js
 import { setLocale } from 'yup';
@@ -135,93 +391,6 @@ try {
 ```
 
 ## API
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [`yup`](#yup)
-  - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
-  - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
-  - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
-  - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
-  - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
-- [mixed](#mixed)
-  - [`mixed.clone(): Schema`](#mixedclone-schema)
-  - [`mixed.label(label: string): Schema`](#mixedlabellabel-string-schema)
-  - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
-  - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
-  - [`mixed.concat(schema: Schema): Schema`](#mixedconcatschema-schema-schema)
-  - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
-  - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
-  - [`mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-options-object-promiseany-validationerror)
-  - [`mixed.validateSyncAt(path: string, value: any, options?: object): any`](#mixedvalidatesyncatpath-string-value-any-options-object-any)
-  - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
-  - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
-  - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-options---any)
-  - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
-  - [`mixed.strict(isStrict: boolean = true): Schema`](#mixedstrictisstrict-boolean--false-schema)
-  - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
-  - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
-  - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
-  - [`mixed.getDefault(options?: object): Any`](#mixedgetdefaultoptions-object-any)
-  - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
-  - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
-  - [`mixed.notRequired(): Schema` Alias: `optional()`](#mixednotrequired-schema-alias-optional)
-  - [`mixed.defined(): Schema`](#mixeddefined-schema)
-  - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
-  - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
-  - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-message-string--function)
-  - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
-  - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
-  - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
-  - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
-- [string](#string)
-  - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
-  - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
-  - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
-  - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
-  - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
-  - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
-  - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
-  - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
-  - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
-  - [`string.ensure(): Schema`](#stringensure-schema)
-  - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
-  - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
-  - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
-- [number](#number)
-  - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
-  - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
-  - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
-  - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
-  - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
-  - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
-  - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
-  - [`number.truncate(): Schema`](#numbertruncate-schema)
-  - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
-- [boolean](#boolean)
-- [date](#date)
-  - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
-  - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
-- [array](#array)
-  - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
-  - [`array.length(length: number | Ref, message?: string | function): Schema`](#arraylengthlength-number--ref-message-string--function-schema)
-  - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
-  - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
-  - [`array.ensure(): Schema`](#arrayensure-schema)
-  - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
-- [object](#object)
-  - [Object schema defaults](#object-schema-defaults)
-  - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
-  - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
-  - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
-  - [`object.getDefaultFromShape(): Record<string, unknown>`](#objectgetdefaultfromshape-recordstring-unknown)
-  - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
-  - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
-  - [`object.camelCase(): Schema`](#objectcamelcase-schema)
-  - [`object.constantCase(): Schema`](#objectconstantcase-schema)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### `yup`
 
