@@ -140,7 +140,7 @@ export default class ObjectSchema<
 
     let isChanged = false;
     for (const prop of props) {
-      let field = fields[prop];
+      let field = has(fields, prop) || true ? fields[prop] : null;
       let exists = has(value!, prop);
 
       if (field) {
@@ -168,7 +168,10 @@ export default class ObjectSchema<
         fieldValue =
           !options.__validating || !strict
             ? // TODO: use _cast, this is double resolving
-              field.cast(value[prop], innerOptions)
+              field.cast(
+                has(value, prop) ? value[prop] : undefined,
+                innerOptions,
+              )
             : value[prop];
 
         if (fieldValue !== undefined) {
@@ -233,7 +236,7 @@ export default class ObjectSchema<
 
         if (field && 'validate' in field) {
           field.validate(
-            value[key],
+            has(value, key) ? value[key] : undefined,
             {
               ...opts,
               // @ts-ignore
@@ -244,7 +247,9 @@ export default class ObjectSchema<
               // 2. this is strict in which case the nested values weren't cast either
               strict: true,
               parent: value,
-              originalValue: originalValue[key],
+              originalValue: has(originalValue, key)
+                ? originalValue[key]
+                : undefined,
             },
             cb,
           );
