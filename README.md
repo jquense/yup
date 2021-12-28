@@ -60,6 +60,14 @@ schema.cast({
   createdOn: '2014-09-23T19:25:25Z',
 });
 // => { name: 'jimmy', age: 24, createdOn: Date }
+
+// interpolate with default values
+let schema = yup.object().shape({
+  count: yup.number().required().positive().integer(),
+  version: yup.string().default("v1")
+});
+schema.validateSync({ count: 1 });
+// => { version: 'v1', count: 1 }
 ```
 
 The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
@@ -391,6 +399,8 @@ Creates a new instance of the schema by combining two schemas. Only schemas of t
 Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise.
 This method is **asynchronous** and returns a Promise object, that is fulfilled with the value, or rejected
 with a `ValidationError`.
+
+The object returned by `validate()` contains defaults specified in the schema.
 
 The `options` argument is an object hash containing any schema options you may want to override
 (or specify for the first time).
