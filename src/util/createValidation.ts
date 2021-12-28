@@ -21,6 +21,7 @@ export type CreateErrorOptions = {
 export type TestContext<TContext = {}> = {
   path: string;
   options: ValidateOptions<TContext>;
+  originalValue: any;
   parent: any;
   from?: Array<{ schema: ISchema<any, TContext>; value: any }>;
   schema: any; // TODO: Schema<any>;
