@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
-import { array, number, string, date, ref, mixed } from '../../src';
+import { array, number, string, date, ref, mixed, bool } from '../../src';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
@@ -719,4 +719,35 @@ Object: {
     // $ExpectType string | undefined
     deepPartial.validateSync({})!.address!.line1;
   }
+}
+
+Conditions: {
+  // $ExpectType StringSchema<string, AnyObject, undefined, ""> | NumberSchema<number | undefined, AnyObject, undefined, "">
+  string().when('foo', ([foo], schema) => (foo ? schema.required() : number()));
+
+  // $ExpectType StringSchema<string | undefined, AnyObject, undefined, "">
+  string().when('foo', ([foo], schema) => (foo ? schema.required() : schema));
+
+  // $ExpectType StringSchema<string, AnyObject, undefined, ""> | NumberSchema<number | undefined, AnyObject, undefined, "">
+  string().when('foo', {
+    is: true,
+    then: () => number(),
+    otherwise: (s) => s.required(),
+  });
+
+  const result = object({
+    foo: bool().defined(),
+    polyField: mixed<string>().when('foo', {
+      is: true,
+      then: () => number(),
+      otherwise: (s) => s.required(),
+    }),
+  }).cast({ foo: true, polyField: '1' });
+
+  // $ExpectType { polyField?: string | number | undefined; foo: boolean; }
+  result;
+
+  mixed()
+    .when('foo', ([foo]) => (foo ? string() : number()))
+    .min(1);
 }

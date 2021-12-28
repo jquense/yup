@@ -764,12 +764,12 @@ describe('Mixed Types ', () => {
 
   it('should handle multiple conditionals', function () {
     let called = false;
-    let inst = mixed().when(['$prop', '$other'], (prop, other) => {
+    let inst = mixed().when(['$prop', '$other'], ([prop, other], schema) => {
       expect(other).toBe(true);
       expect(prop).toBe(1);
       called = true;
 
-      return mixed();
+      return schema;
     });
 
     inst.cast({}, { context: { prop: 1, other: true } });

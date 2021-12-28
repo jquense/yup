@@ -2,7 +2,11 @@
 import cloneDeep from 'nanoclone';
 
 import { mixed as locale } from './locale';
-import Condition, { ConditionOptions, ResolveOptions } from './Condition';
+import Condition, {
+  ConditionBuilder,
+  ConditionConfig,
+  ResolveOptions,
+} from './Condition';
 import runTests from './util/runTests';
 import createValidation, {
   TestFunction,
@@ -670,11 +674,29 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  when(options: ConditionOptions<this>): this;
-  when(keys: string | string[], options: ConditionOptions<this>): this;
+  when<U extends ISchema<any> = this>(builder: ConditionBuilder<this, U>): U;
+  when<U extends ISchema<any> = this>(
+    keys: string | string[],
+    builder: ConditionBuilder<this, U>,
+  ): U;
+  when<
+    UThen extends ISchema<any> = this,
+    UOtherwise extends ISchema<any> = this,
+  >(options: ConditionConfig<this, UThen, UOtherwise>): UThen | UOtherwise;
+  when<
+    UThen extends ISchema<any> = this,
+    UOtherwise extends ISchema<any> = this,
+  >(
+    keys: string | string[],
+    options: ConditionConfig<this, UThen, UOtherwise>,
+  ): UThen | UOtherwise;
   when(
-    keys: string | string[] | ConditionOptions<this>,
-    options?: ConditionOptions<this>,
+    keys:
+      | string
+      | string[]
+      | ConditionBuilder<this, any>
+      | ConditionConfig<this, any, any>,
+    options?: ConditionBuilder<this, any> | ConditionConfig<this, any, any>,
   ) {
     if (!Array.isArray(keys) && typeof keys !== 'string') {
       options = keys;
@@ -689,7 +711,11 @@ export default abstract class BaseSchema<
       if (dep.isSibling) next.deps.push(dep.key);
     });
 
-    next.conditions.push(new Condition(deps, options!) as Condition);
+    next.conditions.push(
+      typeof options === 'function'
+        ? new Condition(deps, options!)
+        : Condition.fromOptions(deps, options!),
+    );
 
     return next;
   }
