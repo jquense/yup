@@ -774,7 +774,7 @@ export default abstract class BaseSchema<
   }
 
   notOneOf<U extends TType>(
-    enums: Array<Maybe<U> | Reference>,
+    enums: ReadonlyArray<Maybe<U> | Reference>,
     message = locale.notOneOf,
   ): this {
     let next = this.clone();

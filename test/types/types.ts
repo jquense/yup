@@ -102,6 +102,12 @@ Mixed: {
 
   // $ExpectType never
   string<'bar'>().concat(string<'foo'>()).cast('');
+
+  // $ExpectType "foo" | "bar" | undefined
+  string().oneOf(['foo', 'bar']).__outputType;
+
+  // $ExpectType "foo" | "bar" | null | undefined
+  string().nullable().oneOf(['foo', 'bar', null]).__outputType;
 }
 
 Strings: {

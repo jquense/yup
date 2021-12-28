@@ -367,7 +367,7 @@ export default class ObjectSchema<
 
   shape<U extends ObjectShape>(
     additions: U,
-    excludes: [string, string][] = [],
+    excludes: readonly [string, string][] = [],
   ) {
     type UIn = TypeFromShape<U, TContext>;
     type UDefault = Extract<TFlags, 'd'> extends never
@@ -411,7 +411,7 @@ export default class ObjectSchema<
     return this.setFields<PartialDeep<TIn>, TDefault>(partial);
   }
 
-  pick<TKey extends keyof TIn>(keys: TKey[]) {
+  pick<TKey extends keyof TIn>(keys: readonly TKey[]) {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
@@ -420,7 +420,7 @@ export default class ObjectSchema<
     return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(picked);
   }
 
-  omit<TKey extends keyof TIn>(keys: TKey[]) {
+  omit<TKey extends keyof TIn>(keys: readonly TKey[]) {
     const fields = { ...this.fields };
 
     for (const key of keys) {

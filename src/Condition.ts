@@ -56,7 +56,10 @@ class Condition<
     );
   }
 
-  constructor(public refs: Reference[], builder: ConditionBuilder<TIn, TOut>) {
+  constructor(
+    public refs: readonly Reference[],
+    builder: ConditionBuilder<TIn, TOut>,
+  ) {
     this.refs = refs;
     this.fn = builder;
   }

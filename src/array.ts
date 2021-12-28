@@ -25,7 +25,11 @@ import {
 import BaseSchema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 
-export type RejectorFn = (value: any, index: number, array: any[]) => boolean;
+export type RejectorFn = (
+  value: any,
+  index: number,
+  array: readonly any[],
+) => boolean;
 
 export function create<C extends AnyObject = AnyObject, T = any>(
   type?: ISchema<T, C>,
@@ -254,7 +258,7 @@ export default class ArraySchema<
       ? (v) => !!v
       : (v, i, a) => !rejector(v, i, a);
 
-    return this.transform((values: any[]) =>
+    return this.transform((values: readonly any[]) =>
       values != null ? values.filter(reject) : values,
     );
   }
