@@ -633,8 +633,17 @@ Object: {
       name: string(),
     }).nullable();
 
-    // $ExpectType "foo" | null
+    // $ExpectType { name?: string | undefined; other: string; field: number; } | null
     obj1.concat(obj2).cast('');
+
+    // $ExpectType { name?: string | undefined; other: string; field: number; }
+    obj1.nullable().concat(obj2.nonNullable()).cast('');
+
+    // $ExpectType { field: 1; other: ""; name: undefined; }
+    obj1.nullable().concat(obj2.nonNullable()).getDefault();
+
+    // $ExpectType null
+    obj1.concat(obj2.default(null)).getDefault();
   }
 
   SchemaOfDate: {
