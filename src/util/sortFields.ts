@@ -4,7 +4,7 @@ import { split } from 'property-expr';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';
-import { ObjectShape } from '../object';
+import { ObjectShape } from './objectTypes';
 
 export default function sortFields(
   fields: ObjectShape,
@@ -28,7 +28,7 @@ export default function sortFields(
 
     if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
     else if (isSchema(value) && 'deps' in value)
-      value.deps.forEach((path) => addNode(path, key));
+      (value as any).deps.forEach((path: string) => addNode(path, key));
   }
 
   return toposort.array(Array.from(nodes), edges).reverse() as string[];
