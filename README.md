@@ -1,6 +1,6 @@
 # Yup
 
-Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
+Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
 
 Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as its primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be performed together (such as HTML form validation) or seperately (such as deserializing trusted data from APIs).
 
@@ -38,20 +38,14 @@ let schema = yup.object().shape({
   age: yup.number().required().positive().integer(),
   email: yup.string().email(),
   website: yup.string().url(),
-  createdOn: yup.date().default(function () {
-    return new Date();
-  }),
+  createdOn: yup.date().default(() => new Date()),
 });
 
-// check validity
-schema
-  .isValid({
-    name: 'jimmy',
-    age: 24,
-  })
-  .then(function (valid) {
-    valid; // => true
-  });
+// parse and assert validity
+const parsedValue = await schema.validate({
+  name: 'jimmy',
+  age: 24,
+});
 
 // you can try and type cast objects to the defined schema
 schema.cast({
@@ -59,6 +53,7 @@ schema.cast({
   age: '24',
   createdOn: '2014-09-23T19:25:25Z',
 });
+
 // => { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
@@ -76,8 +71,6 @@ import {
   StringSchema,
 } from 'yup';
 ```
-
-> If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
 
 ### Using a custom locale dictionary
 
@@ -102,10 +95,12 @@ let schema = yup.object().shape({
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
+try {
+  await schema.validate({ name: 'jimmy', age: 11 });
+} catch (err) {
   err.name; // => 'ValidationError'
   err.errors; // => ['Deve ser maior que 18']
-});
+}
 ```
 
 If you need multi-language support, Yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
@@ -131,10 +126,12 @@ let schema = yup.object().shape({
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
+try {
+  await schema.validate({ name: 'jimmy', age: 11 });
+} catch (err) {
   err.name; // => 'ValidationError'
   err.errors; // => [{ key: 'field_too_short', values: { min: 18 } }]
-});
+}
 ```
 
 ## API
@@ -385,6 +382,16 @@ SchemaDescription {
 #### `mixed.concat(schema: Schema): Schema`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
+`concat` is not a "merge" function in the sense that all settings from the provided schema, override ones in the
+base, including type, presence and nullability.
+
+```ts
+mixed<string>().defined().concat(mixed<number>().nullable());
+
+// produces the equivalent to:
+
+mixed<number>().defined().nullable();
+```
 
 #### `mixed.validate(value: any, options?: object): Promise<any, ValidationError>`
 
@@ -1158,6 +1165,12 @@ object({
   c: number(),
 });
 ```
+
+#### `object.concat(schemaB: ObjectSchema): ObjectSchema`
+
+Creates a object schema, by applying all settings and fields from `schemaB` to the base, producing a new schema.
+The object shape is shallowly merged with common fields from `schemaB` taking precedence over the base
+fields.
 
 #### `object.pick(keys: string[]): Schema`
 

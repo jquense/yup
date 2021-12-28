@@ -20,6 +20,15 @@ export type MergeObjectTypes<T extends Maybe<AnyObject>, U extends AnyObject> =
   | ({ [P in keyof T]: P extends keyof U ? U[P] : T[P] } & U)
   | Optionals<T>;
 
+export type ConcatObjectTypes<
+  T extends Maybe<AnyObject>,
+  U extends Maybe<AnyObject>,
+> =
+  | ({
+      [P in keyof T]: P extends keyof NonNullable<U> ? NonNullable<U>[P] : T[P];
+    } & U)
+  | Optionals<U>;
+
 export type PartialDeep<T> = T extends
   | string
   | number

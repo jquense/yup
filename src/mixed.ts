@@ -1,5 +1,6 @@
-import { AnyObject, Maybe, Message, Optionals } from './types';
+import { AnyObject, Maybe, Message } from './types';
 import type {
+  Concat,
   Defined,
   Flags,
   SetFlag,
@@ -21,15 +22,10 @@ export declare class MixedSchema<
 
   concat<IT, IC, ID, IF extends Flags>(
     schema: MixedSchema<IT, IC, ID, IF>,
-  ): MixedSchema<NonNullable<TType> | IT, TContext & IC, ID, TFlags | IF>;
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
   concat<IT, IC, ID, IF extends Flags>(
     schema: BaseSchema<IT, IC, ID, IF>,
-  ): MixedSchema<
-    NonNullable<TType> | Optionals<IT>,
-    TContext & IC,
-    ID,
-    TFlags | IF
-  >;
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
   concat(schema: this): this;
 
   defined(

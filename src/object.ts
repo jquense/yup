@@ -9,7 +9,6 @@ import {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
@@ -22,6 +21,7 @@ import BaseSchema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 import type {
   AnyObject,
+  ConcatObjectTypes,
   DefaultFromShape,
   MakePartial,
   MergeObjectTypes,
@@ -73,7 +73,7 @@ export default interface ObjectSchema<
   // important that this is `any` so that using `ObjectSchema<MyType>`'s default
   // will match object schema regardless of defaults
   TDefault = any,
-  TFlags extends Flags = 'd',
+  TFlags extends Flags = '',
 > extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
@@ -104,14 +104,14 @@ export default class ObjectSchema<
   TIn extends Maybe<AnyObject>,
   TContext = AnyObject,
   TDefault = any,
-  TFlags extends Flags = 'd',
+  TFlags extends Flags = '',
 > extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
 
   private _sortErrors = defaultSort;
-  private _nodes: string[] = []; //readonly (keyof TIn & string)[]
+  private _nodes: string[] = [];
 
   private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
 
@@ -312,9 +312,9 @@ export default class ObjectSchema<
   concat<IIn, IC, ID, IF extends Flags>(
     schema: ObjectSchema<IIn, IC, ID, IF>,
   ): ObjectSchema<
-    NonNullable<TIn> | IIn,
+    ConcatObjectTypes<TIn, IIn>,
     TContext & IC,
-    TDefault & ID,
+    Extract<IF, 'd'> extends never ? _<ConcatObjectTypes<TDefault, ID>> : ID,
     TFlags | IF
   >;
   concat(schema: this): this;
@@ -324,14 +324,7 @@ export default class ObjectSchema<
     let nextFields = next.fields;
     for (let [field, schemaOrRef] of Object.entries(this.fields)) {
       const target = nextFields[field];
-      if (target === undefined) {
-        nextFields[field] = schemaOrRef;
-      } else if (
-        target instanceof BaseSchema &&
-        schemaOrRef instanceof BaseSchema
-      ) {
-        nextFields[field] = schemaOrRef.concat(target);
-      }
+      nextFields[field] = target === undefined ? schemaOrRef : target;
     }
 
     return next.withMutation((s: any) =>

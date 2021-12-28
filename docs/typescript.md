@@ -1,22 +1,8 @@
 ## TypeScript Support
 
-`yup` comes with robust typescript support! However, because of how dynamic `yup` is
-not everything can be statically typed safely, but for most cases it's "Good Enough".
-
-Note that `yup` schema actually produce _two_ different types: the result of casting an input, and the value after validation.
-Why are these types different? Because a schema can produce a value via casting that
-would not pass validation!
-
-```js
-const schema = string().nullable().required();
-
-schema.cast(null); // -> null
-schema.validateSync(null); // ValidationError this is required!
-```
-
-By itself this seems weird, but has it's uses when handling user input. To get a
-TypeScript type that matches all possible `cast()` values, use `yup.TypeOf<typeof schema>`.
-To produce a type that matches a valid object for the schema use `yup.Asserts<typeof schema>>`
+`yup` comes with robust typescript support, producing values and types from schema that
+provide compile time type safety as well as runtime parsing and validation. Schema refine
+their output as
 
 ```ts
 import * as yup from 'yup';
@@ -46,12 +32,11 @@ const personSchema = yup.object({
 You can derive a type for the final validated object as follows:
 
 ```ts
-import type { Asserts } from 'yup';
+import type { InferType } from 'yup';
 
-// you can also use a type alias by this displays better in tooling
-interface Person extends Asserts<typeof personSchema> {}
+type Person = InferType<typeof personSchema>;
 
-const validated: Person = personSchema.validateSync(parsed);
+const validated: Person = await personSchema.validate(value);
 ```
 
 If you want the type produced by casting:
