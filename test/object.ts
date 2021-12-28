@@ -675,9 +675,7 @@ describe('Object types', () => {
     let inst = object().shape({
       noteDate: number()
         .when('stats.isBig', { is: true, then: (s) => s.min(5) })
-        .when('other', function (v) {
-          if (v === 4) return this.max(6);
-        }),
+        .when('other', ([v], schema) => (v === 4 ? schema.max(6) : schema)),
       stats: object({ isBig: bool() }),
       other: number()
         .min(1)
@@ -780,11 +778,11 @@ describe('Object types', () => {
   it('should allow opt out of topo sort on specific edges', () => {
     expect(() => {
       object().shape({
-        orgID: number().when('location', (v, schema) => {
-          if (v == null) return schema.required();
+        orgID: number().when('location', ([v], schema) => {
+          return v == null ? schema.required() : schema;
         }),
         location: string().when('orgID', (v, schema) => {
-          if (v == null) return schema.required();
+          return v == null ? schema.required() : schema;
         }),
       });
     }).toThrowError('Cyclic dependency, node was:"location"');
@@ -792,11 +790,11 @@ describe('Object types', () => {
     expect(() => {
       object().shape(
         {
-          orgID: number().when('location', function (v) {
-            if (v == null) return this.required();
+          orgID: number().when('location', ([v], schema) => {
+            return v == null ? schema.required() : schema;
           }),
-          location: string().when('orgID', function (v) {
-            if (v == null) return this.required();
+          location: string().when('orgID', ([v], schema) => {
+            return v == null ? schema.required() : schema;
           }),
         },
         [['location', 'orgID']],

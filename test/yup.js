@@ -118,13 +118,13 @@ describe('Yup', function () {
       inst = object().shape({
         num: number().max(4),
         nested: object().shape({
-          arr: array().when('$bar', function (bar) {
+          arr: array().when('$bar', function ([bar]) {
             return bar !== 3
               ? array().of(number())
               : array().of(
                   object().shape({
                     foo: number(),
-                    num: number().when('foo', (foo) => {
+                    num: number().when('foo', ([foo]) => {
                       if (foo === 5) return num;
                     }),
                   }),

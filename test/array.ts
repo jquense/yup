@@ -181,8 +181,8 @@ describe('Array types', () => {
     let value = ['2', '3'];
     let expectedPaths = ['[0]', '[1]'];
 
-    let itemSchema = string().when([], function (_, context) {
-      let path = context.path;
+    let itemSchema = string().when([], function (_, _s, opts: any) {
+      let path = opts.path;
       expect(expectedPaths).toContain(path);
       return string().required();
     });
