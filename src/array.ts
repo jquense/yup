@@ -9,6 +9,7 @@ import type {
   Callback,
   Message,
   Maybe,
+  Optionals,
 } from './types';
 import ValidationError from './ValidationError';
 import type Reference from './Reference';
@@ -27,6 +28,8 @@ import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 import parseJson from 'parse-json';
 
+type InnerType<T> = T extends Array<infer I> ? I : never;
+
 export type RejectorFn = (
   value: any,
   index: number,
@@ -36,19 +39,18 @@ export type RejectorFn = (
 export function create<C extends AnyObject = AnyObject, T = any>(
   type?: ISchema<T, C>,
 ) {
-  return new ArraySchema<T, C>(type as any);
+  return new ArraySchema<T[] | undefined, C>(type as any);
 }
 
 export default class ArraySchema<
-  T,
+  TIn extends any[] | null | undefined,
   TContext,
   TDefault = undefined,
   TFlags extends Flags = '',
-  TIn extends any[] | null | undefined = T[] | undefined,
 > extends Schema<TIn, TContext, TDefault, TFlags> {
-  innerType?: ISchema<T, TContext>;
+  readonly innerType?: ISchema<InnerType<TIn>, TContext>;
 
-  constructor(type?: ISchema<T, TContext>) {
+  constructor(type?: ISchema<InnerType<TIn>, TContext>) {
     super({
       type: 'array',
       check(v: any): v is NonNullable<TIn> {
@@ -60,15 +62,13 @@ export default class ArraySchema<
     this.innerType = type;
   }
 
-  private get _subType() {
-    return this.innerType;
-  }
-
   protected _cast(_value: any, _opts: InternalOptions<TContext>) {
     const value = super._cast(_value, _opts);
 
-    //should ignore nulls here
-    if (!this._typeCheck(value) || !this.innerType) return value;
+    // should ignore nulls here
+    if (!this._typeCheck(value) || !this.innerType) {
+      return value;
+    }
 
     let isChanged = false;
     const castArray = value.map((v, idx) => {
@@ -151,6 +151,7 @@ export default class ArraySchema<
 
   clone(spec?: SchemaSpec<any>) {
     const next = super.clone(spec);
+    // @ts-expect-error readonly
     next.innerType = this.innerType;
     return next;
   }
@@ -160,22 +161,23 @@ export default class ArraySchema<
     return this.transform(parseJson);
   }
 
-  concat<IT, IC, ID, IF extends Flags, IIn extends Maybe<IT[]>>(
-    schema: ArraySchema<IT, IC, ID, IF, IIn>,
+  concat<IIn extends Maybe<any[]>, IC, ID, IF extends Flags>(
+    schema: ArraySchema<IIn, IC, ID, IF>,
   ): ArraySchema<
-    Concat<T, IT>,
+    Concat<TIn, IIn>,
     TContext & IC,
     Extract<IF, 'd'> extends never ? TDefault : ID,
-    TFlags | IF,
-    Concat<TIn, IIn>
+    TFlags | IF
   >;
   concat(schema: this): this;
   concat(schema: any): any {
     let next = super.concat(schema) as this;
 
+    // @ts-expect-error readonly
     next.innerType = this.innerType;
 
     if (schema.innerType)
+      // @ts-expect-error readonly
       next.innerType = next.innerType
         ? // @ts-expect-error Lazy doesn't have concat and will break
           next.innerType.concat(schema.innerType)
@@ -184,7 +186,9 @@ export default class ArraySchema<
     return next;
   }
 
-  of<U>(schema: ISchema<U, TContext>): ArraySchema<U, TContext, TFlags> {
+  of<U>(
+    schema: ISchema<U, TContext>,
+  ): ArraySchema<U[] | Optionals<TIn>, TContext, TFlags> {
     // FIXME: this should return a new instance of array without the default to be
     let next = this.clone();
 
@@ -194,8 +198,8 @@ export default class ArraySchema<
           printValue(schema),
       );
 
-    // FIXME(ts):
-    next.innerType = schema as any;
+    // @ts-expect-error readonly
+    next.innerType = schema;
 
     return next as any;
   }
@@ -243,8 +247,6 @@ export default class ArraySchema<
     });
   }
 
-  //  ArraySchema<T, TContext, T[], SetFlag<TFlags, 'd'>, NonNullable<TIn>>
-
   ensure() {
     return this.default<TIn>(() => [] as any).transform(
       (val: TIn, original: any) => {
@@ -285,35 +287,30 @@ export default class ArraySchema<
 create.prototype = ArraySchema.prototype;
 
 export default interface ArraySchema<
-  T,
+  TIn extends any[] | null | undefined,
   TContext,
   TDefault = undefined,
   TFlags extends Flags = '',
-  TIn extends any[] | null | undefined = T[] | undefined,
 > extends Schema<TIn, TContext, TDefault, TFlags> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
-  ): ArraySchema<T, TContext, D, ToggleDefault<TFlags, D>, TIn>;
+  ): ArraySchema<TIn, TContext, D, ToggleDefault<TFlags, D>>;
 
-  defined(
-    msg?: Message,
-  ): ArraySchema<T, TContext, TDefault, TFlags, Defined<TIn>>;
-  optional(): ArraySchema<T, TContext, TDefault, TFlags, TIn | undefined>;
+  defined(msg?: Message): ArraySchema<Defined<TIn>, TContext, TDefault, TFlags>;
+  optional(): ArraySchema<TIn | undefined, TContext, TDefault, TFlags>;
 
   required(
     msg?: Message,
-  ): ArraySchema<T, TContext, TDefault, TFlags, NonNullable<TIn>>;
-  notRequired(): ArraySchema<T, TContext, TDefault, TFlags, Maybe<TIn>>;
+  ): ArraySchema<NonNullable<TIn>, TContext, TDefault, TFlags>;
+  notRequired(): ArraySchema<Maybe<TIn>, TContext, TDefault, TFlags>;
 
-  nullable(
-    msg?: Message,
-  ): ArraySchema<T, TContext, TDefault, TFlags, TIn | null>;
-  nonNullable(): ArraySchema<T, TContext, TDefault, TFlags, NotNull<TIn>>;
+  nullable(msg?: Message): ArraySchema<TIn | null, TContext, TDefault, TFlags>;
+  nonNullable(): ArraySchema<NotNull<TIn>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,
-  ): ArraySchema<T, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  ): ArraySchema<TIn, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
   strip(
     enabled?: true,
-  ): ArraySchema<T, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  ): ArraySchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

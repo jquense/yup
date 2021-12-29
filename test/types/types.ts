@@ -392,7 +392,7 @@ date: {
 
   const blDefined = bool().default(false);
 
-  // $ExpectType boolean
+  // $ExpectType false
   blDefined.getDefault();
 
   // $ExpectType false | undefined
@@ -501,6 +501,9 @@ Array: {
 
   // $ExpectType (string | undefined)[] | undefined
   array(string()).cast(null);
+
+  // $ExpectType (string | undefined)[] | null
+  array().defined().nullable().of(string()).cast(null);
 
   // $ExpectType string[] | undefined
   array(string().required()).validateSync(null);
