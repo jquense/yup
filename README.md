@@ -108,7 +108,7 @@ import {
     - [`Schema.clone(): Schema`](#schemaclone-schema)
     - [`Schema.label(label: string): Schema`](#schemalabellabel-string-schema)
     - [`Schema.meta(metadata: object): Schema`](#schemametametadata-object-schema)
-    - [`Schema.describe(): SchemaDescription`](#schemadescribe-schemadescription)
+    - [`Schema.describe(options?: ResolveOptions): SchemaDescription`](#schemadescribeoptions-resolveoptions-schemadescription)
     - [`Schema.concat(schema: Schema): Schema`](#schemaconcatschema-schema-schema)
     - [`Schema.validate(value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidatevalue-any-options-object-promiseinfertypeschema-validationerror)
     - [`Schema.validateSync(value: any, options?: object): InferType<Schema>`](#schemavalidatesyncvalue-any-options-object-infertypeschema)
