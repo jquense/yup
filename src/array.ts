@@ -25,6 +25,7 @@ import {
 } from './util/types';
 import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
+import parseJson from 'parse-json';
 
 export type RejectorFn = (
   value: any,
@@ -55,24 +56,8 @@ export default class ArraySchema<
       },
     });
 
-    // `undefined` specifically means uninitialized, as opposed to
-    // "no subtype"
+    // `undefined` specifically means uninitialized, as opposed to "no subtype"
     this.innerType = type;
-
-    this.withMutation(() => {
-      this.transform((values, _, ctx) => {
-        if (!ctx.spec.coarce) return values;
-        if (typeof values === 'string') {
-          try {
-            values = JSON.parse(values);
-          } catch (err) {
-            values = null;
-          }
-        }
-
-        return ctx.isType(values) ? values : null;
-      });
-    });
   }
 
   private get _subType() {
@@ -168,6 +153,11 @@ export default class ArraySchema<
     const next = super.clone(spec);
     next.innerType = this.innerType;
     return next;
+  }
+
+  /** Parse an input JSON string to an object */
+  json() {
+    return this.transform(parseJson);
   }
 
   concat<IT, IC, ID, IF extends Flags, IIn extends Maybe<IT[]>>(

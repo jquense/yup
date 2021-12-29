@@ -1420,24 +1420,28 @@ The default `cast` behavior for `array` is: [`JSON.parse`](https://developer.moz
 
 Failed casts return: `null`;
 
-#### `array.of(type: Schema): Schema`
+#### `array.of(type: Schema): this`
 
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
 
-#### `array.length(length: number | Ref, message?: string | function): Schema`
+#### `array.json(): this`
+
+Attempt to parse input string values as JSON using [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
+
+#### `array.length(length: number | Ref, message?: string | function): this`
 
 Set a specific length requirement for the array. The `${length}` interpolation can be used in the `message` argument.
 
-#### `array.min(limit: number | Ref, message?: string | function): Schema`
+#### `array.min(limit: number | Ref, message?: string | function): this`
 
 Set a minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(limit: number | Ref, message?: string | function): Schema`
+#### `array.max(limit: number | Ref, message?: string | function): this`
 
 Set a maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
-#### `array.ensure(): Schema`
+#### `array.ensure(): this`
 
 Ensures that the value is an array, by setting the default to `[]` and transforming `null` and `undefined`
 values to an empty array as well. Any non-empty, non-array value will be wrapped in an array.
@@ -1476,9 +1480,7 @@ yup.object({
 });
 ```
 
-The default `cast` behavior for `object` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
-
-Failed casts return: `null`;
+object schema do not have any default transforms applied.
 
 #### Object schema defaults
 
@@ -1545,6 +1547,10 @@ object({
   c: number(),
 });
 ```
+
+#### `object.json(): this`
+
+Attempt to parse input string values as JSON using [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
 
 #### `object.concat(schemaB: ObjectSchema): ObjectSchema`
 

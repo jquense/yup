@@ -29,6 +29,7 @@ import type {
   PartialDeep,
   TypeFromShape,
 } from './util/objectTypes';
+import parseJson from './util/parseJson';
 
 export type { AnyObject };
 
@@ -124,18 +125,6 @@ export default class ObjectSchema<
     });
 
     this.withMutation(() => {
-      this.transform((value, _raw, ctx) => {
-        if (typeof value === 'string') {
-          try {
-            value = JSON.parse(value);
-          } catch (err) {
-            value = null;
-          }
-        }
-        if (ctx.isType(value)) return value;
-        return null;
-      });
-
       if (spec) {
         this.shape(spec as any);
       }
@@ -440,6 +429,11 @@ export default class ObjectSchema<
 
       return newObj;
     });
+  }
+
+  /** Parse an input JSON string to an object */
+  json() {
+    return this.transform(parseJson);
   }
 
   noUnknown(message?: Message): this;

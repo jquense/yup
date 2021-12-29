@@ -3,13 +3,13 @@ import { string, number, object, array, StringSchema, AnySchema } from '../src';
 describe('Array types', () => {
   describe('casting', () => {
     it('should parse json strings', () => {
-      expect(array().cast('[2,3,5,6]')).toEqual([2, 3, 5, 6]);
+      expect(array().json().cast('[2,3,5,6]')).toEqual([2, 3, 5, 6]);
     });
 
-    it('should return null for failed casts', () => {
-      expect(array().cast('asfasf', { assert: false })).toBeNull();
+    it('should failed casts return input', () => {
+      expect(array().cast('asfasf', { assert: false })).toEqual('asfasf');
 
-      expect(array().cast(null, { assert: false })).toBeNull();
+      expect(array().cast('{}', { assert: false })).toEqual('{}');
     });
 
     it('should recursively cast fields', () => {

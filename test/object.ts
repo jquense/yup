@@ -36,13 +36,15 @@ describe('Object types', () => {
     });
 
     it('should parse json strings', () => {
-      expect(object({ hello: number() }).cast('{ "hello": "5" }')).toEqual({
+      expect(
+        object({ hello: number() }).json().cast('{ "hello": "5" }'),
+      ).toEqual({
         hello: 5,
       });
     });
 
-    it('should return null for failed casts', () => {
-      expect(object().cast('dfhdfh', { assert: false })).toBeNull();
+    it('should return input for failed casts', () => {
+      expect(object().cast('dfhdfh', { assert: false })).toBe('dfhdfh');
     });
 
     it('should recursively cast fields', () => {
