@@ -12,7 +12,7 @@ import type {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-import BaseSchema from './schema';
+import Schema from './schema';
 
 let rEmail =
   // eslint-disable-next-line
@@ -53,7 +53,7 @@ export default class StringSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({
       type: 'string',
@@ -231,7 +231,7 @@ export default interface StringSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): StringSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;

@@ -3,11 +3,11 @@ const { SynchronousPromise } = require('synchronous-promise');
 global.TestHelpers = require('./test/helpers');
 
 if (global.YUP_USE_SYNC) {
-  const { BaseSchema } = require('./src'); // eslint-disable-line global-require
+  const { Schema } = require('./src'); // eslint-disable-line global-require
 
-  const { validate } = BaseSchema.prototype;
+  const { validate } = Schema.prototype;
 
-  BaseSchema.prototype.validate = function (value, options = {}, maybeCb) {
+  Schema.prototype.validate = function (value, options = {}, maybeCb) {
     let run = false;
 
     options.sync = true;

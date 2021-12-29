@@ -12,7 +12,7 @@ import type {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-import BaseSchema from './schema';
+import Schema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
@@ -30,7 +30,7 @@ export default class NumberSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({
       type: 'number',
@@ -156,7 +156,7 @@ export default interface NumberSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;

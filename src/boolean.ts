@@ -1,4 +1,4 @@
-import BaseSchema from './schema';
+import Schema from './schema';
 import type { AnyObject, Maybe, Message, Optionals } from './types';
 import type {
   Defined,
@@ -26,7 +26,7 @@ export default class BooleanSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   constructor() {
     super({
       type: 'boolean',

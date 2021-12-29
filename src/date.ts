@@ -13,7 +13,7 @@ import type {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-import BaseSchema from './schema';
+import Schema from './schema';
 
 let invalidDate = new Date('');
 
@@ -34,7 +34,7 @@ export default class DateSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   static INVALID_DATE = invalidDate;
 
   constructor() {
@@ -113,7 +113,7 @@ export default interface DateSchema<
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): DateSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;

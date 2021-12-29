@@ -8,14 +8,42 @@ import type {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-import BaseSchema from './schema';
+import Schema from './schema';
 
-export declare class MixedSchema<
+const returnsTrue: any = () => true;
+
+export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
+export interface MixedOptions<TType> {
+  type?: string;
+  check?: TypeGuard<TType>;
+}
+export function create<TType = any>(
+  spec?: MixedOptions<TType> | TypeGuard<TType>,
+) {
+  return new MixedSchema<TType | undefined>(spec);
+}
+
+export default class MixedSchema<
   TType = any,
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
-> extends BaseSchema<TType, TContext, TDefault, TFlags> {
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor(spec?: MixedOptions<TType> | TypeGuard<TType>) {
+    super(
+      typeof spec === 'function'
+        ? { type: 'mixed', check: spec }
+        : { type: 'mixed', check: returnsTrue as TypeGuard<TType>, ...spec },
+    );
+  }
+}
+
+export default interface MixedSchema<
+  TType = any,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
   ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
@@ -24,7 +52,7 @@ export declare class MixedSchema<
     schema: MixedSchema<IT, IC, ID, IF>,
   ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
   concat<IT, IC, ID, IF extends Flags>(
-    schema: BaseSchema<IT, IC, ID, IF>,
+    schema: Schema<IT, IC, ID, IF>,
   ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
   concat(schema: this): this;
 
@@ -52,21 +80,4 @@ export declare class MixedSchema<
   ): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
-const Mixed: typeof MixedSchema = BaseSchema as any;
-
-export default Mixed;
-
-export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
-export interface MixedOptions<TType> {
-  type?: string;
-  check?: TypeGuard<TType>;
-}
-export function create<TType = any>(
-  spec?: MixedOptions<TType> | TypeGuard<TType>,
-) {
-  return new Mixed<TType | undefined>(
-    typeof spec === 'function' ? { check: spec } : spec,
-  );
-}
-// XXX: this is using the Base schema so that `addMethod(mixed)` works as a base class
-create.prototype = Mixed.prototype;
+create.prototype = MixedSchema.prototype;

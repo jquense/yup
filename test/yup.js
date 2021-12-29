@@ -9,6 +9,7 @@ import {
   number,
   boolean,
   date,
+  Schema,
   ObjectSchema,
   ArraySchema,
   StringSchema,
@@ -197,19 +198,14 @@ describe('Yup', function () {
   });
 
   describe('addMethod', () => {
-    it('extending mixed should make method accessible everywhere', () => {
-      addMethod(mixed, 'foo', () => 'here');
-
-      expect(string().foo()).toBe('here');
-    });
-
-    it('extending Mixed should make method accessible everywhere', () => {
-      addMethod(MixedSchema, 'foo', () => 'here');
+    it('extending Schema should make method accessible everywhere', () => {
+      addMethod(Schema, 'foo', () => 'here');
 
       expect(string().foo()).toBe('here');
     });
 
     test.each([
+      ['mixed', mixed],
       ['object', object],
       ['array', array],
       ['string', string],
@@ -223,6 +219,7 @@ describe('Yup', function () {
     });
 
     test.each([
+      ['mixed', MixedSchema],
       ['object', ObjectSchema],
       ['array', ArraySchema],
       ['string', StringSchema],
