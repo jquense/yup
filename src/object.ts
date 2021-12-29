@@ -17,7 +17,7 @@ import { InternalOptions, Callback, Maybe, Message } from './types';
 import ValidationError from './ValidationError';
 import type { Defined, Thunk, NotNull, _ } from './util/types';
 import type Reference from './Reference';
-import BaseSchema, { SchemaObjectDescription, SchemaSpec } from './schema';
+import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 import type {
   AnyObject,
@@ -74,7 +74,7 @@ export default interface ObjectSchema<
   // will match object schema regardless of defaults
   TDefault = any,
   TFlags extends Flags = '',
-> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
     def: Thunk<D>,
   ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
@@ -105,7 +105,7 @@ export default class ObjectSchema<
   TContext = AnyObject,
   TDefault = any,
   TFlags extends Flags = '',
-> extends BaseSchema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
@@ -184,7 +184,7 @@ export default class ObjectSchema<
           parent: intermediateValue,
         });
 
-        let fieldSpec = field instanceof BaseSchema ? field.spec : undefined;
+        let fieldSpec = field instanceof Schema ? field.spec : undefined;
         let strict = fieldSpec?.strict;
 
         if (fieldSpec?.strip) {
@@ -391,7 +391,7 @@ export default class ObjectSchema<
   partial() {
     const partial: any = {};
     for (const [key, schema] of Object.entries(this.fields)) {
-      partial[key] = schema instanceof BaseSchema ? schema.optional() : schema;
+      partial[key] = schema instanceof Schema ? schema.optional() : schema;
     }
 
     return this.setFields<Partial<TIn>, TDefault>(partial);
@@ -401,9 +401,7 @@ export default class ObjectSchema<
     const partial: any = {};
     for (const [key, schema] of Object.entries(this.fields)) {
       if (schema instanceof ObjectSchema) partial[key] = schema.deepPartial();
-      else
-        partial[key] =
-          schema instanceof BaseSchema ? schema.optional() : schema;
+      else partial[key] = schema instanceof Schema ? schema.optional() : schema;
     }
     return this.setFields<PartialDeep<TIn>, TDefault>(partial);
   }

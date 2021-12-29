@@ -31,14 +31,7 @@ import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import type {
-  Defined,
-  Flags,
-  ISchema,
-  ResolveFlags,
-  Thunk,
-  _,
-} from './util/types';
+import type { Flags, ISchema, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
 
 export type SchemaSpec<TDefault> = {
@@ -54,9 +47,9 @@ export type SchemaSpec<TDefault> = {
 };
 
 export type SchemaOptions<TType, TDefault> = {
-  type?: string;
+  type: string;
   spec?: SchemaSpec<TDefault>;
-  check?: (value: any) => value is NonNullable<TType>;
+  check: (value: any) => value is NonNullable<TType>;
 };
 
 export type AnySchema<
@@ -64,7 +57,7 @@ export type AnySchema<
   C = AnyObject,
   D = any,
   F extends Flags = Flags,
-> = BaseSchema<TType, C, D, F>;
+> = Schema<TType, C, D, F>;
 
 export interface CastOptions<C = {}> {
   parent?: any;
@@ -79,13 +72,6 @@ export interface SchemaRefDescription {
   type: 'ref';
   key: string;
 }
-
-export type Cast<T, D> = T extends undefined
-  ? // if default is undefined then it won't affect T
-    D extends undefined
-    ? T
-    : Defined<T>
-  : T;
 
 export interface SchemaInnerTypeDescription extends SchemaDescription {
   innerType?: SchemaFieldDescription;
@@ -119,7 +105,7 @@ export interface SchemaDescription {
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
 }
 
-export default abstract class BaseSchema<
+export default abstract class Schema<
   TType = any,
   TContext = AnyObject,
   TDefault = any,
@@ -153,7 +139,7 @@ export default abstract class BaseSchema<
 
   spec: SchemaSpec<any>;
 
-  constructor(options?: SchemaOptions<TType, any>) {
+  constructor(options: SchemaOptions<TType, any>) {
     this.tests = [];
     this.transforms = [];
 
@@ -161,9 +147,8 @@ export default abstract class BaseSchema<
       this.typeError(locale.notType);
     });
 
-    this.type = options?.type || ('mixed' as const);
-    this._typeCheck =
-      options?.check || ((v: any): v is NonNullable<TType> => true);
+    this.type = options.type;
+    this._typeCheck = options.check;
 
     this.spec = {
       strip: false,
@@ -800,7 +785,7 @@ export default abstract class BaseSchema<
     return next;
   }
 
-  //BaseSchema<TType, SetFlag<TFlags, 's'>>
+  //Schema<TType, SetFlag<TFlags, 's'>>
   strip(strip = true): any {
     let next = this.clone();
     next.spec.strip = strip;
@@ -834,7 +819,7 @@ export default abstract class BaseSchema<
   }
 }
 
-export default interface BaseSchema<
+export default interface Schema<
   /* eslint-disable @typescript-eslint/no-unused-vars */
   TType = any,
   TContext = AnyObject,
@@ -852,17 +837,17 @@ export default interface BaseSchema<
     value: any,
     options?: ValidateOptions<TContext>,
   ): any;
-  equals: BaseSchema['oneOf'];
-  is: BaseSchema['oneOf'];
-  not: BaseSchema['notOneOf'];
-  nope: BaseSchema['notOneOf'];
+  equals: Schema['oneOf'];
+  is: Schema['oneOf'];
+  not: Schema['notOneOf'];
+  nope: Schema['notOneOf'];
 }
 
 // @ts-expect-error
-BaseSchema.prototype.__isYupSchema__ = true;
+Schema.prototype.__isYupSchema__ = true;
 
 for (const method of ['validate', 'validateSync'])
-  BaseSchema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
+  Schema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
     function (path: string, value: any, options: ValidateOptions = {}) {
       const { parent, parentPath, schema } = getIn(
         this,
@@ -878,7 +863,7 @@ for (const method of ['validate', 'validateSync'])
     };
 
 for (const alias of ['equals', 'is'] as const)
-  BaseSchema.prototype[alias] = BaseSchema.prototype.oneOf;
+  Schema.prototype[alias] = Schema.prototype.oneOf;
 
 for (const alias of ['not', 'nope'] as const)
-  BaseSchema.prototype[alias] = BaseSchema.prototype.notOneOf;
+  Schema.prototype[alias] = Schema.prototype.notOneOf;

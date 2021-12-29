@@ -1,7 +1,7 @@
-import Mixed, {
+import MixedSchema, {
   create as mixedCreate,
-  MixedSchema,
   MixedOptions,
+  TypeGuard,
 } from './mixed';
 import BooleanSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
@@ -15,7 +15,7 @@ import ValidationError from './ValidationError';
 import reach from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
-import BaseSchema, { AnySchema } from './schema';
+import Schema, { AnySchema } from './schema';
 import type { InferType } from './util/types';
 
 function addMethod<T extends AnySchema>(
@@ -48,6 +48,7 @@ export type {
   InferType as Asserts,
   AnySchema,
   MixedOptions,
+  TypeGuard,
 };
 
 export {
@@ -69,9 +70,8 @@ export {
 };
 
 export {
-  BaseSchema,
-  Mixed as MixedSchema,
-  MixedSchema as MixedSchemaClass,
+  Schema,
+  MixedSchema,
   BooleanSchema,
   StringSchema,
   NumberSchema,

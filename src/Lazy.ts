@@ -8,7 +8,7 @@ import type {
   SchemaLazyDescription,
 } from './schema';
 import { Flags, ISchema } from './util/types';
-import { BaseSchema } from '.';
+import { Schema } from '.';
 
 export type LazyBuilder<
   T,
@@ -60,8 +60,8 @@ class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
   private _resolve = (
     value: any,
     options: ResolveOptions<TContext> = {},
-  ): BaseSchema<T, TContext, TDefault, TFlags> => {
-    let schema = this.builder(value, options) as BaseSchema<
+  ): Schema<T, TContext, TDefault, TFlags> => {
+    let schema = this.builder(value, options) as Schema<
       T,
       TContext,
       TDefault,

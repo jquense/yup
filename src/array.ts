@@ -22,7 +22,7 @@ import {
   ISchema,
   UnsetFlag,
 } from './util/types';
-import BaseSchema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
+import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 
 export type RejectorFn = (
@@ -43,7 +43,7 @@ export default class ArraySchema<
   TDefault = undefined,
   TFlags extends Flags = '',
   TIn extends any[] | null | undefined = T[] | undefined,
-> extends BaseSchema<TIn, TContext, TDefault, TFlags> {
+> extends Schema<TIn, TContext, TDefault, TFlags> {
   innerType?: ISchema<T, TContext>;
 
   constructor(type?: ISchema<T, TContext>) {
@@ -289,7 +289,7 @@ export default interface ArraySchema<
   TDefault = undefined,
   TFlags extends Flags = '',
   TIn extends any[] | null | undefined = T[] | undefined,
-> extends BaseSchema<TIn, TContext, TDefault, TFlags> {
+> extends Schema<TIn, TContext, TDefault, TFlags> {
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): ArraySchema<T, TContext, D, ToggleDefault<TFlags, D>, TIn>;
