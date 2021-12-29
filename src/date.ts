@@ -46,8 +46,8 @@ export default class DateSchema<
     });
 
     this.withMutation(() => {
-      this.transform(function (value) {
-        if (this.isType(value)) return value;
+      this.transform((value, _raw, ctx) => {
+        if (!ctx.spec.coarce || ctx.isType(value)) return value;
 
         value = isoParse(value);
 

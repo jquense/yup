@@ -59,19 +59,21 @@ export default class StringSchema<
       type: 'string',
       check(value): value is NonNullable<TType> {
         if (value instanceof String) value = value.valueOf();
-
         return typeof value === 'string';
       },
     });
 
     this.withMutation(() => {
-      this.transform(function (value) {
-        if (this.isType(value)) return value;
+      this.transform((value, _raw, ctx) => {
+        if (!ctx.spec.coarce || ctx.isType(value)) return value;
+
+        // don't ever convert arrays
         if (Array.isArray(value)) return value;
 
         const strValue =
           value != null && value.toString ? value.toString() : value;
 
+        // no one wants plain objects converted to [Object object]
         if (strValue === objStringTag) return value;
 
         return strValue;

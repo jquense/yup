@@ -603,15 +603,35 @@ Overrides the key name which is used in error messages.
 Adds to a metadata object, useful for storing data with a schema, that doesn't belong
 the cast object itself.
 
-#### `Schema.describe(): SchemaDescription`
+#### `Schema.describe(options?: ResolveOptions): SchemaDescription`
 
 Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
 
 ```ts
-const description = object({
+const schema = object({
   name: string().required(),
 });
+
+const description = schema.describe();
+```
+
+For schema with dynamic components (references, lazy, or conditions), describe requires
+more context to accurately return the schema description. In these cases provide `options`
+
+```ts
+import { ref, object, string, boolean } from 'yup';
+
+let schema = object({
+  isBig: boolean(),
+  count: number().when('isBig', {
+    is: true,
+    then: (schema) => schema.min(5),
+    otherwise: (schema) => schema.min(0),
+  }),
+});
+
+schema.describe({ value: { isBig: true } });
 ```
 
 And below is are the description types, which differ a bit depending on the schema type.
@@ -777,6 +797,10 @@ Provide `options` to more specifically control the behavior of `validate`.
 interface CastOptions<TContext extends {}> {
   // Remove undefined properties from objects
   stripUnknown: boolean = false;
+
+  // Throws a TypeError if casting doesn't produce a valid type
+  // note that the TS return type is inaccurate when this is `false`, use with caution
+  assert?: boolean = true;
 
   // External values that used to resolve conditions and references
   context?: TContext;
@@ -988,10 +1012,12 @@ let schema = object({
   count: number()
     .when('isBig', {
       is: true, // alternatively: (val) => val == true
-      then: (schema) => schema..min(5),
-      otherwise: (schema) => schema..min(0),
+      then: (schema) => schema.min(5),
+      otherwise: (schema) => schema.min(0),
     })
-    .when('$other', ([other], schema) => (other === 4 ? schema.max(6) : schema)),
+    .when('$other', ([other], schema) =>
+      other === 4 ? schema.max(6) : schema,
+    ),
 });
 
 await schema.validate(value, { context: { other: 4 } });

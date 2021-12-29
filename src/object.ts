@@ -124,7 +124,7 @@ export default class ObjectSchema<
     });
 
     this.withMutation(() => {
-      this.transform(function coerce(value) {
+      this.transform((value, _raw, ctx) => {
         if (typeof value === 'string') {
           try {
             value = JSON.parse(value);
@@ -132,7 +132,7 @@ export default class ObjectSchema<
             value = null;
           }
         }
-        if (this.isType(value)) return value;
+        if (ctx.isType(value)) return value;
         return null;
       });
 

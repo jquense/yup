@@ -42,9 +42,10 @@ export default class NumberSchema<
     });
 
     this.withMutation(() => {
-      this.transform(function (value) {
-        let parsed = value;
+      this.transform((value, _raw, ctx) => {
+        if (!ctx.spec.coarce) return value;
 
+        let parsed = value;
         if (typeof parsed === 'string') {
           parsed = parsed.replace(/\s/g, '');
           if (parsed === '') return NaN;
@@ -52,7 +53,7 @@ export default class NumberSchema<
           parsed = +parsed;
         }
 
-        if (this.isType(parsed)) return parsed;
+        if (ctx.isType(parsed)) return parsed;
 
         return parseFloat(parsed);
       });

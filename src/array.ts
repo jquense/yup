@@ -21,6 +21,7 @@ import {
   ToggleDefault,
   ISchema,
   UnsetFlag,
+  Concat,
 } from './util/types';
 import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
@@ -59,15 +60,17 @@ export default class ArraySchema<
     this.innerType = type;
 
     this.withMutation(() => {
-      this.transform(function (values) {
-        if (typeof values === 'string')
+      this.transform((values, _, ctx) => {
+        if (!ctx.spec.coarce) return values;
+        if (typeof values === 'string') {
           try {
             values = JSON.parse(values);
           } catch (err) {
             values = null;
           }
+        }
 
-        return this.isType(values) ? values : null;
+        return ctx.isType(values) ? values : null;
       });
     });
   }
@@ -167,8 +170,16 @@ export default class ArraySchema<
     return next;
   }
 
-  concat<TOther extends ArraySchema<any, any, any>>(schema: TOther): TOther;
-  concat(schema: any): any;
+  concat<IT, IC, ID, IF extends Flags, IIn extends Maybe<IT[]>>(
+    schema: ArraySchema<IT, IC, ID, IF, IIn>,
+  ): ArraySchema<
+    Concat<T, IT>,
+    TContext & IC,
+    Extract<IF, 'd'> extends never ? TDefault : ID,
+    TFlags | IF,
+    Concat<TIn, IIn>
+  >;
+  concat(schema: this): this;
   concat(schema: any): any {
     let next = super.concat(schema) as this;
 
@@ -293,17 +304,6 @@ export default interface ArraySchema<
   default<D extends Maybe<TIn>>(
     def: Thunk<D>,
   ): ArraySchema<T, TContext, D, ToggleDefault<TFlags, D>, TIn>;
-
-  concat<IT, IC, ID, IF extends Flags, IIn extends Maybe<IT[]>>(
-    schema: ArraySchema<IT, IC, ID, IF, IIn>,
-  ): ArraySchema<
-    NonNullable<T> | IT,
-    TContext & IC,
-    Extract<IF, 'd'> extends never ? TDefault : ID,
-    TFlags | IF,
-    IIn
-  >;
-  concat(schema: this): this;
 
   defined(
     msg?: Message,

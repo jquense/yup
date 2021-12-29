@@ -35,6 +35,7 @@ import type { Flags, ISchema, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
 
 export type SchemaSpec<TDefault> = {
+  coarce: boolean;
   nullable: boolean;
   optional: boolean;
   default?: TDefault | (() => TDefault);
@@ -157,6 +158,7 @@ export default abstract class Schema<
       recursive: true,
       nullable: false,
       optional: true,
+      coarce: true,
       ...options?.spec,
     };
 
