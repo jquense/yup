@@ -557,14 +557,35 @@ Thrown on failed validations, with the following properties
 
 ### mixed
 
-Creates a schema that matches all types. All types inherit from this base type
+Creates a schema that matches all types. All types inherit from this base type.
 
-```js
-let schema = yup.mixed();
+```ts
+import { mixed } from 'yup';
 
-schema.isValid(undefined, function (valid) {
-  valid; // => true
-});
+let schema = mixed();
+
+schema.validateSync('string'); // 'string';
+
+schema.validateSync(1); // 1;
+
+schema.validateSync(new Date()); // Date;
+```
+
+Custom types can be implemented by passing a type check function:
+
+```ts
+import { mixed } from 'yup';
+
+let objectIdSchema = yup
+  .mixed((input): input is ObjectId => input instanceof ObjectId)
+  .transform((value: any, input, ctx) => {
+    if (ctx.typeCheck(value)) return value;
+    return new ObjectId(value);
+  });
+
+await objectIdSchema.validate(ObjectId('507f1f77bcf86cd799439011')); // ObjectId("507f1f77bcf86cd799439011")
+
+await objectIdSchema.validate('507f1f77bcf86cd799439011'); // ObjectId("507f1f77bcf86cd799439011")
 ```
 
 #### `mixed.clone(): Schema`

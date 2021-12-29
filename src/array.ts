@@ -47,7 +47,12 @@ export default class ArraySchema<
   innerType?: ISchema<T, TContext>;
 
   constructor(type?: ISchema<T, TContext>) {
-    super({ type: 'array' });
+    super({
+      type: 'array',
+      check(v: any): v is NonNullable<TIn> {
+        return Array.isArray(v);
+      },
+    });
 
     // `undefined` specifically means uninitialized, as opposed to
     // "no subtype"
@@ -65,10 +70,6 @@ export default class ArraySchema<
         return this.isType(values) ? values : null;
       });
     });
-  }
-
-  protected _typeCheck(v: any): v is NonNullable<TIn> {
-    return Array.isArray(v);
   }
 
   private get _subType() {

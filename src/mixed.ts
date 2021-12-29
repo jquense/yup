@@ -56,8 +56,17 @@ const Mixed: typeof MixedSchema = BaseSchema as any;
 
 export default Mixed;
 
-export function create<TType = any>() {
-  return new Mixed<TType | undefined>();
+export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
+export interface MixedOptions<TType> {
+  type?: string;
+  check?: TypeGuard<TType>;
+}
+export function create<TType = any>(
+  spec?: MixedOptions<TType> | TypeGuard<TType>,
+) {
+  return new Mixed<TType | undefined>(
+    typeof spec === 'function' ? { check: spec } : spec,
+  );
 }
 // XXX: this is using the Base schema so that `addMethod(mixed)` works as a base class
 create.prototype = Mixed.prototype;

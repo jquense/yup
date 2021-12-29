@@ -58,6 +58,35 @@ describe('Mixed Types ', () => {
     expect(inst.getDefault({ context: { foo: 'greet' } })).toBe('hi');
   });
 
+  it('should use provided check', async () => {
+    let schema = mixed((v): v is string => typeof v === 'string');
+
+    // @ts-expect-error narrowed type
+    schema.default(1);
+
+    expect(schema.isType(1)).toBe(false);
+    expect(schema.isType('foo')).toBe(true);
+
+    await expect(schema.validate(1)).rejects.toThrowError(
+      /this must match the configured type\. The validated value was: `1`/,
+    );
+
+    schema = mixed({
+      type: 'string',
+      check: (v): v is string => typeof v === 'string',
+    });
+
+    // @ts-expect-error narrowed type
+    schema.default(1);
+
+    expect(schema.isType(1)).toBe(false);
+    expect(schema.isType('foo')).toBe(true);
+
+    await expect(schema.validate(1)).rejects.toThrowError(
+      /this must be a `string` type/,
+    );
+  });
+
   it('should warn about null types', async () => {
     await expect(string().strict().validate(null)).rejects.toThrowError(
       /this cannot be null/,

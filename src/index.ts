@@ -1,4 +1,8 @@
-import Mixed, { create as mixedCreate, MixedSchema } from './mixed';
+import Mixed, {
+  create as mixedCreate,
+  MixedSchema,
+  MixedOptions,
+} from './mixed';
 import BooleanSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
@@ -38,7 +42,13 @@ function addMethod(schemaType: any, name: string, fn: any) {
 
 export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
 
-export type { AnyObject, InferType, InferType as Asserts, AnySchema };
+export type {
+  AnyObject,
+  InferType,
+  InferType as Asserts,
+  AnySchema,
+  MixedOptions,
+};
 
 export {
   mixedCreate as mixed,

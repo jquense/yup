@@ -53,9 +53,10 @@ export type SchemaSpec<TDefault> = {
   meta?: any;
 };
 
-export type SchemaOptions<TDefault> = {
+export type SchemaOptions<TType, TDefault> = {
   type?: string;
   spec?: SchemaSpec<TDefault>;
+  check?: (value: any) => value is NonNullable<TType>;
 };
 
 export type AnySchema<
@@ -148,10 +149,11 @@ export default abstract class BaseSchema<
   protected _blacklist = new ReferenceSet();
 
   protected exclusiveTests: Record<string, boolean> = Object.create(null);
+  protected _typeCheck: (value: any) => value is NonNullable<TType>;
 
   spec: SchemaSpec<any>;
 
-  constructor(options?: SchemaOptions<any>) {
+  constructor(options?: SchemaOptions<TType, any>) {
     this.tests = [];
     this.transforms = [];
 
@@ -160,6 +162,8 @@ export default abstract class BaseSchema<
     });
 
     this.type = options?.type || ('mixed' as const);
+    this._typeCheck =
+      options?.check || ((v: any): v is NonNullable<TType> => true);
 
     this.spec = {
       strip: false,
@@ -181,10 +185,6 @@ export default abstract class BaseSchema<
     return this.type;
   }
 
-  protected _typeCheck(_value: any): _value is NonNullable<TType> {
-    return true;
-  }
-
   clone(spec?: Partial<SchemaSpec<any>>): this {
     if (this._mutate) {
       if (spec) Object.assign(this.spec, spec);
@@ -197,6 +197,7 @@ export default abstract class BaseSchema<
 
     // @ts-expect-error this is readonly
     next.type = this.type;
+    next._typeCheck = this._typeCheck;
 
     next._whitelist = this._whitelist.clone();
     next._blacklist = this._blacklist.clone();

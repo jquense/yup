@@ -55,7 +55,14 @@ export default class StringSchema<
   TFlags extends Flags = '',
 > extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
-    super({ type: 'string' });
+    super({
+      type: 'string',
+      check(value): value is NonNullable<TType> {
+        if (value instanceof String) value = value.valueOf();
+
+        return typeof value === 'string';
+      },
+    });
 
     this.withMutation(() => {
       this.transform(function (value) {
@@ -70,12 +77,6 @@ export default class StringSchema<
         return strValue;
       });
     });
-  }
-
-  protected _typeCheck(value: any): value is NonNullable<TType> {
-    if (value instanceof String) value = value.valueOf();
-
-    return typeof value === 'string';
   }
 
   protected _isPresent(value: any) {

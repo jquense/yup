@@ -118,6 +118,9 @@ export default class ObjectSchema<
   constructor(spec?: Shape<TIn, TContext>) {
     super({
       type: 'object',
+      check(value): value is NonNullable<MakeKeysOptional<TIn>> {
+        return isObject(value) || typeof value === 'function';
+      },
     });
 
     this.withMutation(() => {
@@ -137,12 +140,6 @@ export default class ObjectSchema<
         this.shape(spec as any);
       }
     });
-  }
-
-  protected _typeCheck(
-    value: any,
-  ): value is NonNullable<MakeKeysOptional<TIn>> {
-    return isObject(value) || typeof value === 'function';
   }
 
   protected _cast(_value: any, options: InternalOptions<TContext> = {}) {

@@ -38,7 +38,12 @@ export default class DateSchema<
   static INVALID_DATE = invalidDate;
 
   constructor() {
-    super({ type: 'date' });
+    super({
+      type: 'date',
+      check(v: any): v is NonNullable<TType> {
+        return isDate(v) && !isNaN(v.getTime());
+      },
+    });
 
     this.withMutation(() => {
       this.transform(function (value) {
@@ -50,10 +55,6 @@ export default class DateSchema<
         return !isNaN(value) ? new Date(value) : DateSchema.INVALID_DATE;
       });
     });
-  }
-
-  protected _typeCheck(v: any): v is NonNullable<TType> {
-    return isDate(v) && !isNaN(v.getTime());
   }
 
   private prepareParam(

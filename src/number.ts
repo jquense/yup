@@ -32,7 +32,14 @@ export default class NumberSchema<
   TFlags extends Flags = '',
 > extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
-    super({ type: 'number' });
+    super({
+      type: 'number',
+      check(value: any): value is NonNullable<TType> {
+        if (value instanceof Number) value = value.valueOf();
+
+        return typeof value === 'number' && !isNaN(value);
+      },
+    });
 
     this.withMutation(() => {
       this.transform(function (value) {
@@ -50,12 +57,6 @@ export default class NumberSchema<
         return parseFloat(parsed);
       });
     });
-  }
-
-  protected _typeCheck(value: any): value is NonNullable<TType> {
-    if (value instanceof Number) value = value.valueOf();
-
-    return typeof value === 'number' && !isNaN(value);
   }
 
   min(min: number | Reference<number>, message = locale.min) {

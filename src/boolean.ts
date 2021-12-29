@@ -28,7 +28,14 @@ export default class BooleanSchema<
   TFlags extends Flags = '',
 > extends BaseSchema<TType, TContext, TDefault, TFlags> {
   constructor() {
-    super({ type: 'boolean' });
+    super({
+      type: 'boolean',
+      check(v: any): v is NonNullable<TType> {
+        if (v instanceof Boolean) v = v.valueOf();
+
+        return typeof v === 'boolean';
+      },
+    });
 
     this.withMutation(() => {
       this.transform(function (value) {
@@ -39,12 +46,6 @@ export default class BooleanSchema<
         return value;
       });
     });
-  }
-
-  protected _typeCheck(v: any): v is NonNullable<TType> {
-    if (v instanceof Boolean) v = v.valueOf();
-
-    return typeof v === 'boolean';
   }
 
   isTrue(

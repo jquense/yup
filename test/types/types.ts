@@ -90,6 +90,15 @@ Mixed: {
 
   // $ExpectType "foo" | undefined
   mixed<string>().notRequired().concat(string<'foo'>()).cast('');
+
+  // $ExpectType MixedSchema<string | undefined, AnyObject, undefined, "">
+  mixed((value): value is string => typeof value === 'string');
+
+  // $ExpectType MixedSchema<string | undefined, AnyObject, undefined, "">
+  mixed({
+    type: 'string',
+    check: (value): value is string => typeof value === 'string',
+  });
 }
 
 Strings: {
