@@ -47,7 +47,7 @@ export default class DateSchema<
         value = isoParse(value);
 
         // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
-        return !isNaN(value) ? new Date(value) : invalidDate;
+        return !isNaN(value) ? new Date(value) : DateSchema.INVALID_DATE;
       });
     });
   }

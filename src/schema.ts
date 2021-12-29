@@ -316,11 +316,7 @@ export default abstract class BaseSchema<
   }
 
   /**
-   *
-   * @param {*} value
-   * @param {Object} options
-   * @param {*=} options.parent
-   * @param {*=} options.context
+   * Run the configured transform pipeline over an input value.
    */
   cast(value: any, options: CastOptions<TContext> = {}): this['__outputType'] {
     let resolvedSchema = this.resolve({

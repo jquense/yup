@@ -10,26 +10,7 @@ Yup is a schema builder for runtime value parsing and validation. Define a schem
 - Extensible: add your own type-safe methods and schema
 - Rich error details, make debugging a breeze
 
-## Docs
-
-- [API](#api)
-- [Extending yup](docs/extending.md)
-- [TypeScript support](docs/typescript.md)
-- [Playground](https://runkit.com/jquense/yup#)
-
-## Install
-
-```sh
-npm install -S yup
-```
-
-or
-
-```sh
-yarn install yup
-```
-
-## Usage
+## Getting Started
 
 Schema are comprised of parsing actions (transforms) as well as assertions (tests) about the input value.
 Validate an input value to parse it and run the configured set of assertions. Chain together methods to build a schema.
@@ -62,29 +43,20 @@ Use a schema to coerce or "cast" an input value into the correct type, and optio
 transform that value into more concrete and specific values, without making further assertions.
 
 ```ts
-// you can try and type cast objects to the defined schema
+// Attempts to coarce values to the correct type
 const parsedUser = userSchema.cast({
   name: 'jimmy',
   age: '24',
   createdOn: '2014-09-23T19:25:25Z',
 });
-// => { name: 'jimmy', age: 24, createdOn: Date }
+// ✅  { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
 Know that your input value is already parsed? You can "strictly" validate an input, and avoid the overhead
 of running parsing logic.
 
 ```ts
-// run asserts about integers, types, presence and anything else
-const parsedUser = await userSchema.validate(
-  {
-    name: 'jimmy',
-    age: '24',
-    createdOn: '2014-09-23T19:25:25Z',
-  },
-  { strict: true },
-);
-
+// ❌  ValidationError "age is not a number"
 const parsedUser = await userSchema.validate(
   {
     name: 'jimmy',
@@ -92,23 +64,9 @@ const parsedUser = await userSchema.validate(
   },
   { strict: true },
 );
-// Throws ValidationError("age is not a number")
 ```
 
-### Composition
-
-Schema are immutable, each method call returns a new schema object. Reuse and pass them around without
-fear.
-
-```ts
-const optionalString = string().optional();
-
-const definedString = optionalString.defined();
-
-const value = undefined;
-optionalString.isValid(value); // true
-definedString.isValid(value); // false
-```
+## Table of Contents
 
 <!-- The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
 If you need access to the actual schema classes, they are also exported:
@@ -128,12 +86,17 @@ import {
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+- [Schema basics](#schema-basics)
+  - [Parsing: Transforms](#parsing-transforms)
+  - [Validation: Tests](#validation-tests)
+  - [Composition and Reuse](#composition-and-reuse)
 - [TypeScript integration](#typescript-integration)
   - [Schema defaults](#schema-defaults)
   - [Ensuring a schema matches an existing type](#ensuring-a-schema-matches-an-existing-type)
   - [Extending built-in schema with new methods](#extending-built-in-schema-with-new-methods)
   - [TypeScript configuration](#typescript-configuration)
-- [Error message customization and localization](#error-message-customization-and-localization)
+- [Error message customization](#error-message-customization)
+  - [localization and i18n](#localization-and-i18n)
 - [API](#api)
   - [`yup`](#yup)
     - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
@@ -220,9 +183,91 @@ import {
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## Schema basics
+
+Schema definitions, are comprised of parsing "transforms" which manipulate inputs into the desired shape and type, "tests", which make assertions over parsed data. Schema also store a bunch of "metadata", details about the schema itself, which can be used to improve error messages, build tools that dynamically consume schema, or serialize schema into another format.
+
+In order to be maximally flexible yup allows running both parsing and assertions separately to match specific needs
+
+### Parsing: Transforms
+
+Each built-in type implements basic type parsing, which comes in handy when parsing serialized data, such as JSON.
+Additionally types implement type specific transforms that can be enabled.
+
+```ts
+const num = number().cast('1'); // 1
+
+const obj = object({
+  firstName: string().lowercase().trim(),
+})
+  .camelCase()
+  .cast('{"first_name": "jAnE "}'); // { firstName: 'jane' }
+```
+
+Custom transforms can be added
+
+```ts
+const reversedString = string()
+  .transform((currentValue) => currentValue.split('').reverse().join(''))
+  .cast('dlrow olleh'); // "hello world"
+```
+
+Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
+If the end value is `undefined` yup will apply the schema default if it's configured.
+
+> Watch out! values are not guaranteed to be valid types in tranform functions. Previous transforms
+> may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
+
+### Validation: Tests
+
+yup has robust support for assertions, or "tests", over input values. Tests check that inputs conform to some
+criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
+and are usually reserved for checks that are hard, if not impossible, to represent in static types.
+
+```ts
+string()
+  .min(3, 'must be at least 3 characters long')
+  .email('must be a valid email')
+  .validate('no'); // ValidationError
+```
+
+As with transforms, tests can be customized on the fly
+
+```ts
+const jamesSchema = string().test(
+  'is-james',
+  (d) => `${d.path} is not James`,
+  (value) => value == null || value === 'James',
+);
+
+jamesSchema.validateSync('James'); // "James"
+
+jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
+```
+
+> Heads up: unlike transforms, `value` in a custom test is guaranteed to be the correct type
+> (in this case an optional string). It still may be `undefined` or `null` depending on your schema
+> in those cases, you may want to return `true` for absent values unless your transform, makes presence
+> related assertions
+
+### Composition and Reuse
+
+Schema are immutable, each method call returns a new schema object. Reuse and pass them around without
+fear of mutating another instance.
+
+```ts
+const optionalString = string().optional();
+
+const definedString = optionalString.defined();
+
+const value = undefined;
+optionalString.isValid(value); // true
+definedString.isValid(value); // false
+```
+
 ## TypeScript integration
 
-Yup schema produce correct, static TypeScript interfaces. Use `InferType` to extract that interface:
+Yup schema produce, static TypeScript interfaces. Use `InferType` to extract that interface:
 
 ```ts
 import * as yup from 'yup';
@@ -327,7 +372,7 @@ anyway for methods and constructors (note from TS docs):
 Your mileage will vary, but we've found that this check doesn't prevent many of
 real bugs, while increasing the amount of onerous explicit type casting in apps.
 
-## Error message customization and localization
+## Error message customization
 
 Default error messages can be customized for when no message is provided with a validation test.
 If any message is missing in the custom dictionary the error message will default to Yup's one.
@@ -358,8 +403,9 @@ try {
 }
 ```
 
-If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to
-generate error objects with translation keys and values. Then feed it into your favorite i18n library.
+### localization and i18n
+
+If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. These can be fed it into your favorite i18n library.
 
 ```js
 import { setLocale } from 'yup';
@@ -376,7 +422,8 @@ setLocale({
   },
 });
 
-// now use Yup schemas AFTER you defined your custom dictionary
+// ...
+
 let schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
@@ -385,8 +432,7 @@ let schema = yup.object().shape({
 try {
   await schema.validate({ name: 'jimmy', age: 11 });
 } catch (err) {
-  err.name; // => 'ValidationError'
-  err.errors; // => [{ key: 'field_too_short', values: { min: 18 } }]
+  messages = err.errors.map((err) => i18next.t(err.key));
 }
 ```
 
@@ -476,7 +522,7 @@ Creates a schema that is evaluated at validation/cast time. Useful for creating
 recursive schema like Trees, for polymorphic fields and arrays.
 
 **CAUTION!** When defining parent-child recursive object schema, you want to reset the `default()`
-to `undefined` on the child—otherwise the object will infinitely nest itself when you cast it!
+to `null` on the child—otherwise the object will infinitely nest itself when you cast it!
 
 ```js
 let node = object({
