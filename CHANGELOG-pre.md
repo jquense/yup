@@ -1,3 +1,27 @@
+# [1.0.0-beta.0](https://github.com/jquense/yup/compare/v1.0.0-alpha.4...v1.0.0-beta.0) (2021-12-29)
+
+
+* feat!: add json() method and remove default object/array coercion ([94b73c4](https://github.com/jquense/yup/commit/94b73c438b3d355253f488325e06c69378e71fc1))
+
+
+### Features
+
+* Make Array generic consistent with others ([a82353f](https://github.com/jquense/yup/commit/a82353f37735daec6e42d18bd4cc0efe52a20f50))
+
+
+### BREAKING CHANGES
+
+* types only, `ArraySchema`  initial generic is the array type not the type of the array element. `array<T>()` is still the inner type.
+* object and array schema no longer parse JSON strings by default, nor do they return `null` for invalid casts.
+
+```ts
+object().json().cast('{}')
+array().json().cast('[]')
+```
+to mimic the previous behavior
+
+
+
 # [1.0.0-alpha.4](https://github.com/jquense/yup/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2021-12-29)
 
 ### Bug Fixes

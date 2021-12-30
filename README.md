@@ -1399,6 +1399,7 @@ and use the result as the limit.
 
 Define an array schema. Arrays can be typed or not, When specifying the element type, `cast` and `isValid`
 will apply to the elements as well. Options passed into `isValid` are passed also passed to child schemas.
+
 Inherits from [`Schema`](#Schema).
 
 ```js
@@ -1418,9 +1419,7 @@ array().of(yup.number());
 array(yup.number());
 ```
 
-The default `cast` behavior for `array` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
-
-Failed casts return: `null`;
+Arrays have no default casting behavior.
 
 #### `array.of(type: Schema): this`
 
