@@ -208,7 +208,7 @@ export default class ObjectSchema<
       recursive = this.spec.recursive,
     } = opts;
 
-    from = [{ schema: this, value: originalValue }, ...from];
+    from = [{ schema: this, value: originalValue }, ...from!];
 
     // this flag is needed for handling `strict` correctly in the context of
     // validation vs just casting. e.g strict() on a field is only used when validating

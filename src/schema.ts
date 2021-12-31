@@ -50,7 +50,7 @@ export type SchemaSpec<TDefault> = {
 
 export type SchemaOptions<TType, TDefault> = {
   type: string;
-  spec?: SchemaSpec<TDefault>;
+  spec?: Partial<SchemaSpec<TDefault>>;
   check: (value: any) => value is NonNullable<TType>;
 };
 
@@ -314,6 +314,16 @@ export default abstract class Schema<
     }
 
     return schema;
+  }
+
+  protected resolveOptions<T extends InternalOptions<any>>(options: T): T {
+    return {
+      ...options,
+      from: options.from || [],
+      strict: options.strict ?? this.spec.strict,
+      abortEarly: options.abortEarly ?? this.spec.abortEarly,
+      recursive: options.recursive ?? this.spec.recursive,
+    };
   }
 
   /**

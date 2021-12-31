@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
 import { array, number, string, date, ref, mixed, bool } from '../../src';
+import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
@@ -353,7 +354,7 @@ date: {
   date().strip().strip(false).cast(undefined);
 }
 
-date: {
+bool: {
   const blRequired = bool().required();
 
   // $ExpectType boolean
@@ -554,6 +555,14 @@ Array: {
     // $ExpectType (number | undefined)[]
     const _c1 = array(number()).concat(arrReq).validateSync([]);
   }
+}
+
+Tuple: {
+  const s = tuple([
+    number(),
+    string(),
+    object({ age: number().required() }),
+  ]).cast([3, 4]);
 }
 
 Object: {

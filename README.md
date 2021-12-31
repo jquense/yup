@@ -1231,6 +1231,7 @@ await schema.isValid('hello'); // => true
 ```
 
 By default, the `cast` logic of `string` is to call `toString` on the value if it exists.
+
 empty values are not coerced (use `ensure()` to coerce empty values to empty strings).
 
 Failed casts return the input value.
