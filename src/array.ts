@@ -6,12 +6,10 @@ import runTests, { RunTest } from './util/runTests';
 import type {
   AnyObject,
   InternalOptions,
-  Callback,
   Message,
   Maybe,
   Optionals,
 } from './types';
-import ValidationError from './ValidationError';
 import type Reference from './Reference';
 import {
   Defined,
@@ -27,6 +25,7 @@ import {
 import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 import parseJson from 'parse-json';
+import { ValidationError } from '.';
 
 type InnerType<T> = T extends Array<infer I> ? I : never;
 
@@ -89,28 +88,22 @@ export default class ArraySchema<
   protected _validate(
     _value: any,
     options: InternalOptions<TContext> = {},
-    callback: Callback,
+
+    panic: (err: Error, value: unknown) => void,
+    callback: (err: ValidationError[], value: unknown) => void,
   ) {
-    let errors = [] as ValidationError[];
-    let sync = options.sync;
-    let path = options.path;
+    // let sync = options.sync;
+    // let path = options.path;
     let innerType = this.innerType;
-    let endEarly = options.abortEarly ?? this.spec.abortEarly;
+    // let endEarly = options.abortEarly ?? this.spec.abortEarly;
     let recursive = options.recursive ?? this.spec.recursive;
 
     let originalValue =
       options.originalValue != null ? options.originalValue : _value;
 
-    super._validate(_value, options, (err, value) => {
-      if (err) {
-        if (!ValidationError.isError(err) || endEarly) {
-          return void callback(err, value);
-        }
-        errors.push(err);
-      }
-
+    super._validate(_value, options, panic, (arrayErrors, value) => {
       if (!recursive || !innerType || !this._typeCheck(value)) {
-        callback(errors[0] || null, value);
+        callback(arrayErrors, value);
         return;
       }
 
@@ -122,29 +115,24 @@ export default class ArraySchema<
         let item = value[idx];
         let path = `${options.path || ''}[${idx}]`;
 
-        // object._validate note for isStrict explanation
-        let innerOptions = {
+        tests[idx] = innerType!.asTest(item, {
           ...options,
           path,
-          strict: true,
           parent: value,
+          // FIXME
           index: idx,
           originalValue: originalValue[idx],
-        };
-
-        tests[idx] = (_, cb) => innerType!.validate(item, innerOptions, cb);
+        });
       }
 
       runTests(
         {
-          sync,
-          path,
           value,
-          errors,
-          endEarly,
           tests,
         },
-        callback,
+        panic,
+        (innerTypeErrors) =>
+          callback(innerTypeErrors.concat(arrayErrors), value),
       );
     });
   }

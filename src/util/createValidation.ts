@@ -4,12 +4,17 @@ import {
   ValidateOptions,
   Message,
   InternalOptions,
-  Callback,
   ExtraParams,
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
 import { ISchema } from './types';
+
+export type PanicCallback = (err: Error) => void;
+
+export type NextCallback = (
+  err: ValidationError[] | ValidationError | null,
+) => void;
 
 export type CreateErrorOptions = {
   path?: string;
@@ -53,8 +58,12 @@ export type TestConfig<TValue = unknown, TContext = {}> = {
   exclusive?: boolean;
 };
 
-export type Test = ((opts: TestOptions, cb: Callback) => void) & {
-  OPTIONS: TestConfig;
+export type Test = ((
+  opts: TestOptions,
+  panic: PanicCallback,
+  next: NextCallback,
+) => void) & {
+  OPTIONS?: TestConfig;
 };
 
 export default function createValidation(config: {
@@ -73,10 +82,11 @@ export default function createValidation(config: {
       sync,
       ...rest
     }: TestOptions<TSchema>,
-    cb: Callback,
+    panic: PanicCallback,
+    next: NextCallback,
   ) {
     const { name, test, params, message } = config;
-    let { parent, context } = options;
+    let { parent, context, abortEarly = rest.schema.spec.abortEarly } = options;
 
     function resolve<T>(item: T | Reference<T>) {
       return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
@@ -106,6 +116,11 @@ export default function createValidation(config: {
       return error;
     }
 
+    // function handleResult(validOrError: Error | boolean | void) {
+    //   if (!ValidationError.isError(validOrError)) panic(validOrError);
+    // }
+    const invalid = abortEarly ? panic : next;
+
     let ctx = {
       path,
       parent,
@@ -117,23 +132,30 @@ export default function createValidation(config: {
       ...rest,
     };
 
+    const handleResult = (validOrError: ReturnType<TestFunction>) => {
+      if (ValidationError.isError(validOrError)) invalid(validOrError);
+      else if (!validOrError) invalid(createError());
+      else next(null);
+    };
+
+    const catchError = (err: any) => {
+      if (ValidationError.isError(err)) invalid(err);
+      else panic(err);
+    };
+
     if (!sync) {
       try {
         Promise.resolve(test.call(ctx, value, ctx))
-          .then((validOrError) => {
-            if (ValidationError.isError(validOrError)) cb(validOrError);
-            else if (!validOrError) cb(createError());
-            else cb(null, validOrError);
-          })
-          .catch(cb);
+          .then(handleResult)
+          .catch(catchError);
       } catch (err: any) {
-        cb(err);
+        catchError(err);
       }
 
       return;
     }
 
-    let result;
+    let result: ReturnType<TestFunction>;
     try {
       result = test.call(ctx, value, ctx);
 
@@ -144,13 +166,11 @@ export default function createValidation(config: {
         );
       }
     } catch (err: any) {
-      cb(err);
+      catchError(err);
       return;
     }
 
-    if (ValidationError.isError(result)) cb(result);
-    else if (!result) cb(createError());
-    else cb(null, result);
+    handleResult(result);
   }
 
   validate.OPTIONS = config;

@@ -578,7 +578,7 @@ describe('Object types', () => {
       expect(inst.validate({ nest: { str: '' } })).rejects.toEqual(
         expect.objectContaining({
           value: { nest: { str: '' } },
-          path: 'nest',
+          // path: 'nest',
           errors: ['oops'],
         }),
       ),

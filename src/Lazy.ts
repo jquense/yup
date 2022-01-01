@@ -1,5 +1,5 @@
 import isSchema from './util/isSchema';
-import type { AnyObject, Callback, ValidateOptions } from './types';
+import type { AnyObject, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
 import type {
@@ -82,13 +82,12 @@ class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
     return this._resolve(value, options).cast(value, options);
   }
 
-  validate(
-    value: any,
-    options?: ValidateOptions,
-    maybeCb?: Callback,
-  ): Promise<T> {
-    // @ts-expect-error missing public callback on type
-    return this._resolve(value, options).validate(value, options, maybeCb);
+  asTest(value: any, options?: ValidateOptions<TContext>) {
+    return this._resolve(value, options).asTest(value, options);
+  }
+
+  validate(value: any, options?: ValidateOptions<TContext>): Promise<T> {
+    return this._resolve(value, options).validate(value, options);
   }
 
   validateSync(value: any, options?: ValidateOptions<TContext>): T {

@@ -1,73 +1,62 @@
-import ValidationError from '../ValidationError';
-import { TestOptions } from './createValidation';
-import { Callback } from '../types';
+import type ValidationError from '../ValidationError';
+import type {
+  NextCallback,
+  PanicCallback,
+  TestOptions,
+} from './createValidation';
 
-export type RunTest = (opts: TestOptions, cb: Callback) => void;
+export type RunTest = (
+  opts: TestOptions,
+  panic: PanicCallback,
+  next: NextCallback,
+) => void;
 
 export type TestRunOptions = {
-  endEarly?: boolean;
   tests: RunTest[];
   args?: TestOptions;
-  errors?: ValidationError[];
-  sort?: (a: ValidationError, b: ValidationError) => number;
-  path?: string;
   value: any;
-  sync?: boolean;
 };
 
-const once = <T extends (...args: any[]) => any>(cb: T) => {
+/**
+ * Executes a set of validations, either schema, produced Tests or a nested
+ * schema validate result. `args` is intended for schema validation tests, but
+ * isn't required to allow the helper to awkwardly be used to run nested array/object
+ * validations.
+ */
+export default function runTests(
+  options: TestRunOptions,
+  panic: (err: Error, value: unknown) => void,
+  next: (errors: ValidationError[], value: unknown) => void,
+): void {
   let fired = false;
-  return (...args: Parameters<T>) => {
+  let { tests, args, value } = options;
+
+  let panicOnce = (arg: Error) => {
     if (fired) return;
     fired = true;
-    cb(...args);
+    panic(arg, value);
   };
-};
 
-export default function runTests(options: TestRunOptions, cb: Callback): void {
-  let { endEarly, tests, args, value, errors, sort, path } = options;
+  let nextOnce = (arg: ValidationError[]) => {
+    if (fired) return;
+    fired = true;
+    next(arg, value);
+  };
 
-  let callback = once(cb);
   let count = tests.length;
-  const nestedErrors = [] as ValidationError[];
-  errors = errors ? errors : [];
+  let nestedErrors = [] as ValidationError[];
 
-  if (!count)
-    return errors.length
-      ? callback(new ValidationError(errors, value, path))
-      : callback(null, value);
+  if (!count) return nextOnce([]);
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
 
-    test(args!, function finishTestRun(err) {
+    test(args!, panicOnce, function finishTestRun(err) {
       if (err) {
-        // always return early for non validation errors
-        if (!ValidationError.isError(err)) {
-          return callback(err, value);
-        }
-        if (endEarly) {
-          err.value = value;
-          return callback(err, value);
-        }
-        nestedErrors.push(err);
+        nestedErrors = nestedErrors.concat(err);
       }
-
       if (--count <= 0) {
-        if (nestedErrors.length) {
-          if (sort) nestedErrors.sort(sort);
-
-          //show parent errors after the nested ones: name.first, name
-          if (errors!.length) nestedErrors.push(...errors!);
-          errors = nestedErrors;
-        }
-
-        if (errors!.length) {
-          callback(new ValidationError(errors!, value, path), value);
-          return;
-        }
-
-        callback(null, value);
+        nextOnce(nestedErrors);
       }
     });
   }

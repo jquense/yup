@@ -5,34 +5,18 @@ global.TestHelpers = require('./test/helpers');
 if (global.YUP_USE_SYNC) {
   const { Schema } = require('./src'); // eslint-disable-line global-require
 
-  const { validate } = Schema.prototype;
+  const { validateSync } = Schema.prototype;
 
-  Schema.prototype.validate = function (value, options = {}, maybeCb) {
-    let run = false;
+  Schema.prototype.validate = function (value, options = {}) {
+    return new SynchronousPromise((resolve, reject) => {
+      let result;
+      try {
+        result = validateSync.call(this, value, options);
+      } catch (err) {
+        reject(err);
+      }
 
-    options.sync = true;
-
-    if (maybeCb) {
-      return validate.call(this, value, options, (...args) => {
-        if (run) {
-          return maybeCb(new Error('Did not execute synchronously'));
-        }
-
-        maybeCb(...args);
-      });
-    }
-
-    const result = new SynchronousPromise((resolve, reject) => {
-      validate.call(this, value, options, (err, value) => {
-        if (run) {
-          throw new Error('Did not execute synchronously');
-        }
-        if (err) reject(err);
-        else resolve(value);
-      });
+      resolve(result);
     });
-
-    run = true;
-    return result;
   };
 }

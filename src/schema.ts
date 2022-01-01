@@ -7,7 +7,7 @@ import Condition, {
   ConditionConfig,
   ResolveOptions,
 } from './Condition';
-import runTests from './util/runTests';
+import runTests, { RunTest } from './util/runTests';
 import createValidation, {
   TestFunction,
   Test,
@@ -20,11 +20,11 @@ import {
   ValidateOptions,
   TransformFunction,
   Message,
-  Callback,
   InternalOptions,
   Maybe,
   ExtraParams,
   AnyObject,
+  Callback2,
 } from './types';
 
 import ValidationError from './ValidationError';
@@ -265,7 +265,7 @@ export default abstract class Schema<
     // the deduping logic is consistent
     combined.withMutation((next) => {
       schema.tests.forEach((fn) => {
-        next.test(fn.OPTIONS);
+        next.test(fn.OPTIONS!);
       });
     });
 
@@ -353,7 +353,8 @@ export default abstract class Schema<
   protected _validate(
     _value: any,
     options: InternalOptions<TContext> = {},
-    cb: Callback,
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
   ): void {
     let {
       sync,
@@ -361,15 +362,13 @@ export default abstract class Schema<
       from = [],
       originalValue = _value,
       strict = this.spec.strict,
-      abortEarly = this.spec.abortEarly,
     } = options;
 
     let value = _value;
     if (!strict) {
-      // this._validating = true;
       value = this._cast(value, { assert: false, ...options });
-      // this._validating = false;
     }
+
     // value is cast, we can check if it meets type requirements
     let args = {
       value,
@@ -391,53 +390,61 @@ export default abstract class Schema<
       {
         args,
         value,
-        path,
-        sync,
         tests: initialTests,
-        endEarly: abortEarly,
       },
-      (err) => {
-        if (err) return void cb(err, value);
+      panic,
+      (initialErrors) => {
+        // even if we aren't ending early we can't proceed further if the types aren't correct
+        if (initialErrors.length) {
+          return next(initialErrors, value);
+        }
 
         runTests(
           {
-            tests: this.tests,
             args,
-            path,
-            sync,
             value,
-            endEarly: abortEarly,
+            tests: this.tests,
           },
-          cb,
+          panic,
+          next,
         );
       },
     );
   }
 
-  // validate<U extends TType>(value: U, options?: ValidateOptions<TContext>): Promise<U>;
+  asTest(value: any, options?: ValidateOptions<TContext>): RunTest {
+    // Nested validations fields are always strict:
+    //    1. parent isn't strict so the casting will also have cast inner values
+    //    2. parent is strict in which case the nested values weren't cast either
+    const testOptions = { ...options, strict: true, value };
+
+    return (_: any, panic, next) =>
+      this.resolve(testOptions)._validate(value, testOptions, panic, next);
+  }
+
   validate(
     value: any,
     options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']>;
-  validate(
-    value: any,
-    options?: ValidateOptions<TContext>,
-    maybeCb?: Callback,
-  ) {
+  validate(value: any, options?: ValidateOptions<TContext>): any {
     let schema = this.resolve({ ...options, value });
 
-    // callback case is for nested validations
-    return typeof maybeCb === 'function'
-      ? schema._validate(value, options, maybeCb)
-      : new Promise((resolve, reject) =>
-          schema._validate(value, options, (err, validated) => {
-            if (err) reject(err);
-            else resolve(validated);
-          }),
-        );
+    return new Promise((resolve, reject) =>
+      schema._validate(
+        value,
+        options,
+        (error, parsed) => {
+          if (ValidationError.isError(error)) error.value = parsed;
+          reject(error);
+        },
+        (errors, validated) => {
+          if (errors.length) reject(new ValidationError(errors!, validated));
+          else resolve(validated);
+        },
+      ),
+    );
   }
 
-  // validateSync<U extends TType>(value: U, options?: ValidateOptions<TContext>): U;
   validateSync(
     value: any,
     options?: ValidateOptions<TContext>,
@@ -449,10 +456,18 @@ export default abstract class Schema<
     let schema = this.resolve({ ...options, value });
     let result: any;
 
-    schema._validate(value, { ...options, sync: true }, (err, validated) => {
-      if (err) throw err;
-      result = validated;
-    });
+    schema._validate(
+      value,
+      { ...options, sync: true },
+      (error, parsed) => {
+        if (ValidationError.isError(error)) error.value = parsed;
+        throw error;
+      },
+      (errors, validated) => {
+        if (errors.length) throw new ValidationError(errors!, value);
+        result = validated;
+      },
+    );
 
     return result;
   }
@@ -549,9 +564,6 @@ export default abstract class Schema<
     return this.optionality(false, message);
   }
 
-  // nullable(message?: Message): any
-  // nullable(nullable: true): any
-  // nullable(nullable: false, message?: Message): any
   nullable(): any {
     return this.nullability(true);
   }
@@ -578,7 +590,7 @@ export default abstract class Schema<
   notRequired(): any {
     return this.clone().withMutation((next) => {
       next.tests = next.tests.filter(
-        (test) => test.OPTIONS.name !== 'required',
+        (test) => test.OPTIONS!.name !== 'required',
       );
       return next.nullable().optional();
     });
@@ -647,9 +659,9 @@ export default abstract class Schema<
     if (opts.name) next.exclusiveTests[opts.name] = !!opts.exclusive;
 
     next.tests = next.tests.filter((fn) => {
-      if (fn.OPTIONS.name === opts.name) {
+      if (fn.OPTIONS!.name === opts.name) {
         if (isExclusive) return false;
-        if (fn.OPTIONS.test === validate.OPTIONS.test) return false;
+        if (fn.OPTIONS!.test === validate.OPTIONS.test) return false;
       }
       return true;
     });
@@ -811,7 +823,7 @@ export default abstract class Schema<
       oneOf: next._whitelist.describe(),
       notOneOf: next._blacklist.describe(),
       tests: next.tests
-        .map((fn) => ({ name: fn.OPTIONS.name, params: fn.OPTIONS.params }))
+        .map((fn) => ({ name: fn.OPTIONS!.name, params: fn.OPTIONS!.params }))
         .filter(
           (n, idx, list) => list.findIndex((c) => c.name === n.name) === idx,
         ),
