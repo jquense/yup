@@ -594,6 +594,49 @@ describe('Object types', () => {
     ]);
   });
 
+  it('should flatten validatio errors with abortEarly=false', async () => {
+    let inst = object({
+      str: string().required(),
+      nest: object({
+        str: string().required(),
+        num: number().moreThan(5),
+        other: number().test('nested', 'invalid', () => {
+          return string()
+            .email()
+            .min(3)
+            .validate('f', { abortEarly: false })
+            .then(() => true);
+        }),
+      }).test('name', 'oops', () => false),
+    });
+
+    const error = await inst
+      .validate(
+        { str: null, nest: { num: 2, str: undefined } },
+        { abortEarly: false },
+      )
+      .catch((e) => e);
+
+    expect(error.inner).toMatchInlineSnapshot(`
+      Array [
+        [ValidationError: str is a required field],
+        [ValidationError: nest.str is a required field],
+        [ValidationError: nest.num must be greater than 5],
+        [ValidationError: oops],
+        [ValidationError: this must be a valid email],
+        [ValidationError: this must be at least 3 characters],
+      ]
+    `);
+    expect(error.errors).toEqual([
+      'str is a required field',
+      'nest.str is a required field',
+      'nest.num must be greater than 5',
+      'oops',
+      'this must be a valid email',
+      'this must be at least 3 characters',
+    ]);
+  });
+
   it('should sort errors by insertion order', async () => {
     let inst = object({
       // use `when` to make sure it is validated second

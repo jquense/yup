@@ -7,11 +7,13 @@ import Condition, {
   ConditionConfig,
   ResolveOptions,
 } from './Condition';
-import runTests, { RunTest } from './util/runTests';
 import createValidation, {
   TestFunction,
   Test,
   TestConfig,
+  NextCallback,
+  PanicCallback,
+  TestOptions,
 } from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
@@ -24,7 +26,6 @@ import {
   Maybe,
   ExtraParams,
   AnyObject,
-  Callback2,
 } from './types';
 
 import ValidationError from './ValidationError';
@@ -68,6 +69,18 @@ export interface CastOptions<C = {}> {
   // XXX: should be private?
   path?: string;
 }
+
+export type RunTest = (
+  opts: TestOptions,
+  panic: PanicCallback,
+  next: NextCallback,
+) => void;
+
+export type TestRunOptions = {
+  tests: RunTest[];
+  args?: TestOptions;
+  value: any;
+};
 
 export interface SchemaRefDescription {
   type: 'ref';
@@ -386,7 +399,7 @@ export default abstract class Schema<
       if (test) initialTests.push(test);
     }
 
-    runTests(
+    this.runTests(
       {
         args,
         value,
@@ -399,7 +412,7 @@ export default abstract class Schema<
           return next(initialErrors, value);
         }
 
-        runTests(
+        this.runTests(
           {
             args,
             value,
@@ -410,6 +423,51 @@ export default abstract class Schema<
         );
       },
     );
+  }
+
+  /**
+   * Executes a set of validations, either schema, produced Tests or a nested
+   * schema validate result. `args` is intended for schema validation tests, but
+   * isn't required to allow the helper to awkwardly be used to run nested array/object
+   * validations.
+   */
+  protected runTests(
+    options: TestRunOptions,
+    panic: (err: Error, value: unknown) => void,
+    next: (errors: ValidationError[], value: unknown) => void,
+  ): void {
+    let fired = false;
+    let { tests, args, value } = options;
+
+    let panicOnce = (arg: Error) => {
+      if (fired) return;
+      fired = true;
+      panic(arg, value);
+    };
+
+    let nextOnce = (arg: ValidationError[]) => {
+      if (fired) return;
+      fired = true;
+      next(arg, value);
+    };
+
+    let count = tests.length;
+    let nestedErrors = [] as ValidationError[];
+
+    if (!count) return nextOnce([]);
+
+    for (let i = 0; i < tests.length; i++) {
+      const test = tests[i];
+
+      test(args!, panicOnce, function finishTestRun(err) {
+        if (err) {
+          nestedErrors = nestedErrors.concat(err);
+        }
+        if (--count <= 0) {
+          nextOnce(nestedErrors);
+        }
+      });
+    }
   }
 
   asTest(value: any, options?: ValidateOptions<TContext>): RunTest {

@@ -116,9 +116,6 @@ export default function createValidation(config: {
       return error;
     }
 
-    // function handleResult(validOrError: Error | boolean | void) {
-    //   if (!ValidationError.isError(validOrError)) panic(validOrError);
-    // }
     const invalid = abortEarly ? panic : next;
 
     let ctx = {
@@ -138,18 +135,19 @@ export default function createValidation(config: {
       else next(null);
     };
 
-    const catchError = (err: any) => {
+    const handleError = (err: any) => {
       if (ValidationError.isError(err)) invalid(err);
       else panic(err);
     };
 
     if (!sync) {
       try {
-        Promise.resolve(test.call(ctx, value, ctx))
-          .then(handleResult)
-          .catch(catchError);
+        Promise.resolve(test.call(ctx, value, ctx)).then(
+          handleResult,
+          handleError,
+        );
       } catch (err: any) {
-        catchError(err);
+        handleError(err);
       }
 
       return;
@@ -166,7 +164,7 @@ export default function createValidation(config: {
         );
       }
     } catch (err: any) {
-      catchError(err);
+      handleError(err);
       return;
     }
 

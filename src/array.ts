@@ -2,7 +2,6 @@ import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
 import { array as locale } from './locale';
-import runTests, { RunTest } from './util/runTests';
 import type {
   AnyObject,
   InternalOptions,
@@ -22,7 +21,11 @@ import {
   UnsetFlag,
   Concat,
 } from './util/types';
-import Schema, { SchemaInnerTypeDescription, SchemaSpec } from './schema';
+import Schema, {
+  RunTest,
+  SchemaInnerTypeDescription,
+  SchemaSpec,
+} from './schema';
 import { ResolveOptions } from './Condition';
 import parseJson from 'parse-json';
 import { ValidationError } from '.';
@@ -35,9 +38,7 @@ export type RejectorFn = (
   array: readonly any[],
 ) => boolean;
 
-export function create<C extends AnyObject = AnyObject, T = any>(
-  type?: ISchema<T, C>,
-) {
+export function create<C = AnyObject, T = any>(type?: ISchema<T, C>) {
   return new ArraySchema<T[] | undefined, C>(type as any);
 }
 
@@ -125,7 +126,7 @@ export default class ArraySchema<
         });
       }
 
-      runTests(
+      this.runTests(
         {
           value,
           tests,

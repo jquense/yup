@@ -12,7 +12,6 @@ import {
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import runTests from './util/runTests';
 import { InternalOptions, Maybe, Message } from './types';
 import type { Defined, Thunk, NotNull, _ } from './util/types';
 import Reference from './Reference';
@@ -255,7 +254,7 @@ export default class ObjectSchema<
         );
       }
 
-      runTests({ tests, value }, panic, (fieldErrors) =>
+      this.runTests({ tests, value }, panic, (fieldErrors) =>
         next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value),
       );
     });
