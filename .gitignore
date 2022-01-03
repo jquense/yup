@@ -1,7 +1,7 @@
 # Logs
 logs
 *.log
-
+dts/
 # Runtime data
 pids
 *.pid
@@ -39,7 +39,8 @@ node_modules
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*

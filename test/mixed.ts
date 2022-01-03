@@ -11,7 +11,7 @@ import {
   ValidationError,
 } from '../src';
 import ObjectSchema from '../src/object';
-import { ISchema } from '../src/util/types';
+import { ISchema } from '../src/types';
 import { ensureSync, validateAll } from './helpers';
 
 let noop = () => {};

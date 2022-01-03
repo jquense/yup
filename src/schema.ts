@@ -23,16 +23,16 @@ import {
   TransformFunction,
   Message,
   InternalOptions,
-  Maybe,
   ExtraParams,
   AnyObject,
+  ISchema,
 } from './types';
 
 import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import type { Flags, ISchema, ResolveFlags, Thunk, _ } from './util/types';
+import type { Flags, Maybe, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
 
 export type SchemaSpec<TDefault> = {

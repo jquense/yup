@@ -2,17 +2,11 @@
 import { getter, normalizePath, join } from 'property-expr';
 import { camelCase, snakeCase } from 'tiny-case';
 
-import {
-  Flags,
-  ISchema,
-  SetFlag,
-  ToggleDefault,
-  UnsetFlag,
-} from './util/types';
+import { Flags, Maybe, SetFlag, ToggleDefault, UnsetFlag } from './util/types';
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import { InternalOptions, Maybe, Message } from './types';
+import { InternalOptions, ISchema, Message } from './types';
 import type { Defined, Thunk, NotNull, _ } from './util/types';
 import Reference from './Reference';
 import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';

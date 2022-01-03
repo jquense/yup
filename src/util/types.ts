@@ -1,34 +1,12 @@
-import type { ResolveOptions } from '../Condition';
-import type { CastOptions, SchemaFieldDescription } from '../schema';
-import type {
-  AnyObject,
-  InternalOptions,
-  Optionals,
-  Preserve,
-  ValidateOptions,
-} from '../types';
-import { Test } from './createValidation';
+export type Maybe<T> = T | null | undefined;
+
+export type Preserve<T, U> = T extends U ? U : never;
+
+export type Optionals<T> = Extract<T, null | undefined>;
 
 export type Defined<T> = T extends undefined ? never : T;
 
 export type NotNull<T> = T extends null ? never : T;
-
-export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
-  __flags: F;
-  __context: C;
-  __outputType: T;
-  __default: D;
-
-  cast(value: any, options?: CastOptions<C>): T;
-  validate(value: any, options?: ValidateOptions<C>): Promise<T>;
-
-  asTest(value: any, options?: InternalOptions<C>): Test;
-
-  describe(options?: ResolveOptions<C>): SchemaFieldDescription;
-  resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
-}
-
-export type InferType<T extends ISchema<any, any>> = T['__outputType'];
 
 export type Thunk<T> = T | (() => T);
 
@@ -66,8 +44,3 @@ export type ResolveFlags<T, F extends Flags> = Preserve<F, 's'> extends never
 export type Concat<T, U> = NonNullable<T> & NonNullable<U> extends never
   ? never
   : (NonNullable<T> & NonNullable<U>) | Optionals<U>;
-
-// // $ExpectType string | null
-// type a = Concat<string | null, string>;
-
-// type b = string  & (string | undefined)

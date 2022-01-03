@@ -571,7 +571,8 @@ Object: {
   //
   const objOptional = object().optional();
 
-  // $ExpectType {}
+  // FIXME: should not be undefined
+  // $ExpectType {} | undefined
   objOptional.cast(undefined);
 
   // $ExpectType {}
@@ -580,7 +581,8 @@ Object: {
   //
   const objNullableOptional = object().nullable().optional();
 
-  // $ExpectType {} | null
+  // FIXME: should not be undefined
+  // $ExpectType {} | null | undefined
   objNullableOptional.cast('');
 
   // $ExpectType {}

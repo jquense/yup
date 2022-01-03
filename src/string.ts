@@ -1,7 +1,7 @@
 import { MixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
-import type { Message, Maybe, AnyObject, Optionals } from './types';
+import type { Message, AnyObject } from './types';
 import type {
   Concat,
   Defined,
@@ -11,6 +11,8 @@ import type {
   Thunk,
   ToggleDefault,
   UnsetFlag,
+  Maybe,
+  Optionals,
 } from './util/types';
 import Schema from './schema';
 

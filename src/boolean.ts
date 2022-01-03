@@ -1,5 +1,5 @@
 import Schema from './schema';
-import type { AnyObject, Maybe, Message, Optionals } from './types';
+import type { AnyObject, Message } from './types';
 import type {
   Defined,
   Flags,
@@ -8,6 +8,8 @@ import type {
   Thunk,
   ToggleDefault,
   UnsetFlag,
+  Maybe,
+  Optionals,
 } from './util/types';
 import { boolean as locale } from './locale';
 import isAbsent from './util/isAbsent';

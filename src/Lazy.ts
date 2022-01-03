@@ -1,5 +1,5 @@
 import isSchema from './util/isSchema';
-import type { AnyObject, ValidateOptions } from './types';
+import type { AnyObject, ISchema, ValidateOptions } from './types';
 import type { ResolveOptions } from './Condition';
 
 import type {
@@ -7,7 +7,7 @@ import type {
   SchemaFieldDescription,
   SchemaLazyDescription,
 } from './schema';
-import { Flags, ISchema } from './util/types';
+import { Flags } from './util/types';
 import { Schema } from '.';
 
 export type LazyBuilder<

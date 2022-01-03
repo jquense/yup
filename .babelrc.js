@@ -1,7 +1,7 @@
 module.exports = (api) => ({
   presets: [
     [
-      'babel-preset-jason/esm',
+      'babel-preset-env-modules',
       api.env() !== 'test'
         ? {
             ignoreBrowserslistConfig: true,
@@ -9,12 +9,9 @@ module.exports = (api) => ({
           }
         : {
             target: 'node',
-
-            // debug: true,
             targets: { node: 'current' },
           },
     ],
     ['@babel/preset-typescript', { allowDeclareFields: true }],
   ],
-  plugins: ['@babel/plugin-proposal-logical-assignment-operators'],
 });

@@ -4,9 +4,8 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['../tsconfig.json'],
   },
-
   plugins: ['ts-expect'],
   rules: {
-    'ts-expect/expect': 'warn',
+    'ts-expect/expect': 'error',
   },
 };

@@ -1,10 +1,11 @@
-import { AnyObject, Maybe, Message } from './types';
+import { AnyObject, Message } from './types';
 import type {
   Concat,
   Defined,
   Flags,
   SetFlag,
   Thunk,
+  Maybe,
   ToggleDefault,
   UnsetFlag,
 } from './util/types';

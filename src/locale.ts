@@ -128,7 +128,7 @@ export let array: Required<ArrayLocale> = {
   length: '${path} must have ${length} items',
 };
 
-export default Object.assign(Object.create(null) as {}, {
+export default Object.assign(Object.create(null), {
   mixed,
   string,
   number,
@@ -136,4 +136,4 @@ export default Object.assign(Object.create(null) as {}, {
   object,
   array,
   boolean,
-});
+}) as LocaleObject;

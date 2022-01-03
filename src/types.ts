@@ -1,8 +1,27 @@
-import type { AnySchema } from './schema';
+import type { ResolveOptions } from './Condition';
+import type { AnySchema, CastOptions, SchemaFieldDescription } from './schema';
+import type { Test } from './util/createValidation';
 import type { AnyObject } from './util/objectTypes';
-import type { ISchema } from './util/types';
+import type { Flags } from './util/types';
 
-export type { ISchema, AnyObject, AnySchema };
+export type { AnyObject, AnySchema };
+
+export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
+  __flags: F;
+  __context: C;
+  __outputType: T;
+  __default: D;
+
+  cast(value: any, options?: CastOptions<C>): T;
+  validate(value: any, options?: ValidateOptions<C>): Promise<T>;
+
+  asTest(value: any, options?: InternalOptions<C>): Test;
+
+  describe(options?: ResolveOptions<C>): SchemaFieldDescription;
+  resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
+}
+
+export type InferType<T extends ISchema<any, any>> = T['__outputType'];
 
 export type TransformFunction<T extends AnySchema> = (
   this: T,
@@ -61,9 +80,3 @@ export type Message<Extra extends Record<string, unknown> = any> =
 export type ExtraParams = Record<string, unknown>;
 
 export type AnyMessageParams = MessageParams & ExtraParams;
-
-export type Maybe<T> = T | null | undefined;
-
-export type Preserve<T, U> = T extends U ? U : never;
-
-export type Optionals<T> = Extract<T, null | undefined>;

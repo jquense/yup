@@ -1,6 +1,6 @@
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Maybe, Message } from './types';
+import type { AnyObject, Message } from './types';
 import type Reference from './Reference';
 import type {
   Concat,
@@ -9,6 +9,7 @@ import type {
   NotNull,
   SetFlag,
   Thunk,
+  Maybe,
   ToggleDefault,
   UnsetFlag,
 } from './util/types';

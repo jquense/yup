@@ -1,5 +1,4 @@
-import type { AnySchema } from '..';
-import type { TransformFunction } from '../types';
+import type { AnySchema, TransformFunction } from '../types';
 
 const parseJson: TransformFunction<any> = (value, _, ctx: AnySchema<any>) => {
   if (typeof value !== 'string') {

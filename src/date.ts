@@ -3,13 +3,14 @@ import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import Ref from './Reference';
-import type { AnyObject, Maybe, Message } from './types';
+import type { AnyObject, Message } from './types';
 import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
   Thunk,
+  Maybe,
   ToggleDefault,
   UnsetFlag,
 } from './util/types';

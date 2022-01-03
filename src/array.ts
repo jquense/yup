@@ -1,23 +1,19 @@
 import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
+import parseJson from './util/parseJson';
 import { array as locale } from './locale';
-import type {
-  AnyObject,
-  InternalOptions,
-  Message,
-  Maybe,
-  Optionals,
-} from './types';
+import type { AnyObject, InternalOptions, Message, ISchema } from './types';
 import type Reference from './Reference';
-import {
+import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
   Thunk,
+  Maybe,
+  Optionals,
   ToggleDefault,
-  ISchema,
   UnsetFlag,
   Concat,
 } from './util/types';
@@ -26,9 +22,8 @@ import Schema, {
   SchemaInnerTypeDescription,
   SchemaSpec,
 } from './schema';
-import { ResolveOptions } from './Condition';
-import parseJson from 'parse-json';
-import { ValidationError } from '.';
+import type { ResolveOptions } from './Condition';
+import type ValidationError from './ValidationError';
 
 type InnerType<T> = T extends Array<infer I> ? I : never;
 

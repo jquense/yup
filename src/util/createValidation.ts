@@ -5,10 +5,10 @@ import {
   Message,
   InternalOptions,
   ExtraParams,
+  ISchema,
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
-import { ISchema } from './types';
 
 export type PanicCallback = (err: Error) => void;
 

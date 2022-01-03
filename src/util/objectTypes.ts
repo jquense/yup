@@ -1,6 +1,6 @@
+import type { Maybe, Optionals } from './types';
 import type Reference from '../Reference';
-import type { Maybe, Optionals } from '../types';
-import type { ISchema } from './types';
+import type { ISchema } from '../types';
 
 export type ObjectShape = { [k: string]: ISchema<any> | Reference };
 

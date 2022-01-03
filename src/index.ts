@@ -12,11 +12,11 @@ import ArraySchema, { create as arrayCreate } from './array';
 import { create as refCreate } from './Reference';
 import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
-import reach from './util/reach';
+import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
 import Schema, { AnySchema } from './schema';
-import type { InferType } from './util/types';
+import type { InferType } from './types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,
@@ -63,6 +63,7 @@ export {
   refCreate as ref,
   lazyCreate as lazy,
   reach,
+  getIn,
   isSchema,
   addMethod,
   setLocale,

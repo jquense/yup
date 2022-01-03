@@ -1,6 +1,6 @@
 import isSchema from './util/isSchema';
 import Reference from './Reference';
-import type { ISchema } from './util/types';
+import type { ISchema } from './types';
 
 export type ConditionBuilder<
   T extends ISchema<any, any>,
