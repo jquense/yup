@@ -3,12 +3,11 @@ import ValidationError from '../ValidationError';
 function findIndex(arr: readonly string[], err: ValidationError) {
   let idx = Infinity;
   arr.some((key, ii) => {
-    if (err.path?.indexOf(key) !== -1) {
+    if (err.path?.includes(key)) {
       idx = ii;
       return true;
     }
   });
-
   return idx;
 }
 

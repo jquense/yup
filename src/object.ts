@@ -12,11 +12,9 @@ import {
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import runTests from './util/runTests';
-import { InternalOptions, Callback, Maybe, Message } from './types';
-import ValidationError from './ValidationError';
+import { InternalOptions, Maybe, Message } from './types';
 import type { Defined, Thunk, NotNull, _ } from './util/types';
-import type Reference from './Reference';
+import Reference from './Reference';
 import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
 import type {
@@ -30,6 +28,8 @@ import type {
   TypeFromShape,
 } from './util/objectTypes';
 import parseJson from './util/parseJson';
+import type { Test } from './util/createValidation';
+import type ValidationError from './ValidationError';
 
 export type { AnyObject };
 
@@ -205,14 +205,12 @@ export default class ObjectSchema<
   protected _validate(
     _value: any,
     opts: InternalOptions<TContext> = {},
-    callback: Callback,
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
   ) {
-    let errors = [] as ValidationError[];
     let {
-      sync,
       from = [],
       originalValue = _value,
-      abortEarly = this.spec.abortEarly,
       recursive = this.spec.recursive,
     } = opts;
 
@@ -224,64 +222,41 @@ export default class ObjectSchema<
     opts.originalValue = originalValue;
     opts.from = from;
 
-    super._validate(_value, opts, (err, value) => {
-      if (err) {
-        if (!ValidationError.isError(err) || abortEarly) {
-          return void callback(err, value);
-        }
-        errors.push(err);
-      }
-
+    super._validate(_value, opts, panic, (objectErrors, value) => {
       if (!recursive || !isObject(value)) {
-        callback(errors[0] || null, value);
+        next(objectErrors, value);
         return;
       }
 
       originalValue = originalValue || value;
 
-      let tests = this._nodes.map((key) => (__: any, cb: Callback) => {
+      let tests = [] as Test[];
+      for (let key of this._nodes) {
+        let field = this.fields[key];
+
+        if (!field || Reference.isRef(field)) {
+          continue;
+        }
+
         let path =
           key.indexOf('.') === -1
             ? (opts.path ? `${opts.path}.` : '') + key
             : `${opts.path || ''}["${key}"]`;
 
-        let field = this.fields[key];
+        tests.push(
+          field.asTest(value[key], {
+            ...opts,
+            path,
+            from,
+            parent: value,
+            originalValue: originalValue[key],
+          }),
+        );
+      }
 
-        if (field && 'validate' in field) {
-          field.validate(
-            value[key],
-            {
-              ...opts,
-              // @ts-ignore
-              path,
-              from,
-              // inner fields are always strict:
-              // 1. this isn't strict so the casting will also have cast inner values
-              // 2. this is strict in which case the nested values weren't cast either
-              strict: true,
-              parent: value,
-              originalValue: originalValue[key],
-            },
-            cb,
-          );
-          return;
-        }
-
-        cb(null);
+      this.runTests({ tests, value }, panic, (fieldErrors) => {
+        next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
       });
-
-      runTests(
-        {
-          sync,
-          tests,
-          value,
-          errors,
-          endEarly: abortEarly,
-          sort: this._sortErrors,
-          path: opts.path,
-        },
-        callback,
-      );
     });
   }
 

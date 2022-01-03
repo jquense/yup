@@ -4,8 +4,6 @@ import type { ISchema } from './util/types';
 
 export type { ISchema, AnyObject, AnySchema };
 
-export type Callback<T = any> = (err: Error | null, value?: T) => void;
-
 export type TransformFunction<T extends AnySchema> = (
   this: T,
   value: any,
@@ -40,6 +38,7 @@ export interface InternalOptions<TContext = {}>
   extends ValidateOptions<TContext> {
   __validating?: boolean;
   originalValue?: any;
+  index?: number;
   parent?: any;
   path?: string;
   sync?: boolean;

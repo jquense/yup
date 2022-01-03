@@ -2,11 +2,12 @@ import type { ResolveOptions } from '../Condition';
 import type { CastOptions, SchemaFieldDescription } from '../schema';
 import type {
   AnyObject,
-  Callback,
+  InternalOptions,
   Optionals,
   Preserve,
   ValidateOptions,
 } from '../types';
+import { Test } from './createValidation';
 
 export type Defined<T> = T extends undefined ? never : T;
 
@@ -19,11 +20,9 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   __default: D;
 
   cast(value: any, options?: CastOptions<C>): T;
-  validate(
-    value: any,
-    options?: ValidateOptions<C>,
-    maybeCb?: Callback,
-  ): Promise<T>;
+  validate(value: any, options?: ValidateOptions<C>): Promise<T>;
+
+  asTest(value: any, options?: InternalOptions<C>): Test;
 
   describe(options?: ResolveOptions<C>): SchemaFieldDescription;
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
