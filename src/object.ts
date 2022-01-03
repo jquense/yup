@@ -254,9 +254,9 @@ export default class ObjectSchema<
         );
       }
 
-      this.runTests({ tests, value }, panic, (fieldErrors) =>
-        next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value),
-      );
+      this.runTests({ tests, value }, panic, (fieldErrors) => {
+        next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
+      });
     });
   }
 

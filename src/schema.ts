@@ -857,7 +857,6 @@ export default abstract class Schema<
     return next;
   }
 
-  //Schema<TType, SetFlag<TFlags, 's'>>
   strip(strip = true): any {
     let next = this.clone();
     next.spec.strip = strip;
