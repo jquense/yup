@@ -1,3 +1,12 @@
+# [1.0.0-beta.1](https://github.com/jquense/yup/compare/v1.0.0-beta.0...v1.0.0-beta.1) (2022-01-03)
+
+
+### Features
+
+* flat bundles and size reductions ([753abdf](https://github.com/jquense/yup/commit/753abdf329e33e43c334e405baa9c71999079480))
+
+
+
 # [1.0.0-beta.0](https://github.com/jquense/yup/compare/v1.0.0-alpha.4...v1.0.0-beta.0) (2021-12-29)
 
 
