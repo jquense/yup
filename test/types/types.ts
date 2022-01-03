@@ -558,8 +558,9 @@ Array: {
 }
 
 Tuple: {
-  const s = tuple([
-    number(),
+  // $ExpectType [number, string | undefined, { age: number; }] | undefined
+  tuple([
+    number().defined(),
     string(),
     object({ age: number().required() }),
   ]).cast([3, 4]);

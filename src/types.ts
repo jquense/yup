@@ -15,7 +15,7 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   cast(value: any, options?: CastOptions<C>): T;
   validate(value: any, options?: ValidateOptions<C>): Promise<T>;
 
-  asTest(value: any, options?: InternalOptions<C>): Test;
+  asNestedTest(config: NestedTestConfig): Test;
 
   describe(options?: ResolveOptions<C>): SchemaFieldDescription;
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
@@ -30,6 +30,10 @@ export type TransformFunction<T extends AnySchema> = (
   schema: T,
 ) => any;
 
+export interface Ancester<TContext> {
+  schema: ISchema<any, TContext>;
+  value: any;
+}
 export interface ValidateOptions<TContext = {}> {
   /**
    * Only validate the input, skipping type casting and transformation. Default - false
@@ -58,10 +62,11 @@ export interface InternalOptions<TContext = {}>
   __validating?: boolean;
   originalValue?: any;
   index?: number;
+  key?: string;
   parent?: any;
   path?: string;
   sync?: boolean;
-  from?: { schema: ISchema<any, TContext>; value: any }[];
+  from?: Ancester<TContext>[];
 }
 
 export interface MessageParams {
@@ -80,3 +85,12 @@ export type Message<Extra extends Record<string, unknown> = any> =
 export type ExtraParams = Record<string, unknown>;
 
 export type AnyMessageParams = MessageParams & ExtraParams;
+
+export interface NestedTestConfig {
+  options: InternalOptions<any>;
+  parent: any;
+  originalParent: any;
+  parentPath: string | undefined;
+  key?: string;
+  index?: number;
+}

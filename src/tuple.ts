@@ -1,8 +1,5 @@
 // @ts-ignore
-import isoParse from './util/isodate';
-import { date as locale } from './locale';
-import isAbsent from './util/isAbsent';
-import Ref from './Reference';
+
 import type {
   AnyObject,
   InternalOptions,
@@ -19,18 +16,15 @@ import type {
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
-import Schema, { SchemaSpec } from './schema';
+import Schema, { RunTest, SchemaSpec } from './schema';
+import ValidationError from './ValidationError';
 
 type AnyTuple = [unknown, ...unknown[]];
-
-// type SchemaTuple<T extends AnyTuple> = {
-//   [K in keyof T]: ISchema<T[K]>;
-// };
 
 export function create<T extends AnyTuple>(schemas: {
   [K in keyof T]: ISchema<T[K]>;
 }) {
-  return new TupleSchema<T>(schemas);
+  return new TupleSchema<T | undefined>(schemas);
 }
 
 export default interface TupleSchema<
@@ -89,17 +83,16 @@ export default class TupleSchema<
       type: 'tuple',
       spec: { types: schemas } as any,
       check(v: any): v is NonNullable<TType> {
-        return (
-          Array.isArray(v) && v.length === (this.spec as any)!.types!.length
-        );
+        const types = (this.spec as TupleSchemaSpec<TType>).types;
+        return Array.isArray(v) && v.length === types.length;
       },
     });
   }
 
-  protected _cast(_value: any, _opts: InternalOptions<TContext>) {
+  protected _cast(inputValue: any, options: InternalOptions<TContext>) {
     const { types } = this.spec;
+    const value = super._cast(inputValue, options);
 
-    const value = super._cast(_value, _opts);
     if (!this._typeCheck(value)) {
       return value;
     }
@@ -107,18 +100,46 @@ export default class TupleSchema<
     let isChanged = false;
     const castArray = types.map((type, idx) => {
       const castElement = type.cast(value[idx], {
-        ..._opts,
-        path: `${_opts.path || ''}[${idx}]`,
+        ...options,
+        path: `${options.path || ''}[${idx}]`,
       });
-
-      if (castElement !== value[idx]) {
-        isChanged = true;
-      }
-
+      if (castElement !== value[idx]) isChanged = true;
       return castElement;
     });
 
     return isChanged ? castArray : value;
+  }
+
+  protected _validate(
+    _value: any,
+    options: InternalOptions<TContext> = {},
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
+  ) {
+    let itemTypes = this.spec.types;
+
+    super._validate(_value, options, panic, (tupleErrors, value) => {
+      // intentionally not respecting recursive
+      if (!this._typeCheck(value)) {
+        next(tupleErrors, value);
+        return;
+      }
+
+      let tests: RunTest[] = [];
+      for (let [index, itemSchema] of itemTypes.entries()) {
+        tests[index] = itemSchema!.asNestedTest({
+          options,
+          index,
+          parent: value,
+          parentPath: options.path,
+          originalParent: options.originalValue ?? _value,
+        });
+      }
+
+      this.runTests({ value, tests }, panic, (innerTypeErrors) =>
+        next(innerTypeErrors.concat(tupleErrors), value),
+      );
+    });
   }
 }
 

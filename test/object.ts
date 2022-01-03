@@ -717,7 +717,10 @@ describe('Object types', () => {
   it('should handle conditionals', () => {
     let inst = object().shape({
       noteDate: number()
-        .when('stats.isBig', { is: true, then: (s) => s.min(5) })
+        .when('stats.isBig', {
+          is: true,
+          then: (s) => s.min(5),
+        })
         .when('other', ([v], schema) => (v === 4 ? schema.max(6) : schema)),
       stats: object({ isBig: bool() }),
       other: number()
@@ -727,6 +730,7 @@ describe('Object types', () => {
 
     return Promise.all([
       expect(
+        // other makes noteDate too large
         inst.isValid({
           stats: { isBig: true },
           rand: 5,

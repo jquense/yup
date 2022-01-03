@@ -26,6 +26,7 @@ import {
   ExtraParams,
   AnyObject,
   ISchema,
+  NestedTestConfig,
 } from './types';
 
 import ValidationError from './ValidationError';
@@ -480,11 +481,41 @@ export default abstract class Schema<
     }
   }
 
-  asTest(value: any, options?: ValidateOptions<TContext>): RunTest {
-    // Nested validations fields are always strict:
-    //    1. parent isn't strict so the casting will also have cast inner values
-    //    2. parent is strict in which case the nested values weren't cast either
-    const testOptions = { ...options, strict: true, value };
+  asNestedTest({
+    key,
+    index,
+    parent,
+    parentPath,
+    originalParent,
+    options,
+  }: NestedTestConfig): RunTest {
+    const k = key ?? index;
+    if (k == null) {
+      throw TypeError('Must include `key` or `index` for nested validations');
+    }
+
+    const isIndex = typeof k === 'number';
+    let value = parent[k];
+
+    const testOptions = {
+      ...options,
+      // Nested validations fields are always strict:
+      //    1. parent isn't strict so the casting will also have cast inner values
+      //    2. parent is strict in which case the nested values weren't cast either
+      strict: true,
+      parent,
+      value,
+      originalValue: originalParent[k],
+      // FIXME: tests depend on `index` being passed around deeply,
+      //   we should not let the options.key/index bleed through
+      key: undefined,
+      // index: undefined,
+      [isIndex ? 'index' : 'key']: k,
+      path:
+        isIndex || k.includes('.')
+          ? `${parentPath || ''}[${value ? k : `"${k}"`}]`
+          : (parentPath ? `${parentPath}.` : '') + key,
+    };
 
     return (_: any, panic, next) =>
       this.resolve(testOptions)._validate(value, testOptions, panic, next);
