@@ -1,64 +1,48 @@
-import has from 'lodash/has';
-import snakeCase from 'lodash/snakeCase';
-import camelCase from 'lodash/camelCase';
-import mapKeys from 'lodash/mapKeys';
-import mapValues from 'lodash/mapValues';
-import { getter } from 'property-expr';
+// @ts-ignore
+import { getter, normalizePath, join } from 'property-expr';
+import { camelCase, snakeCase } from 'tiny-case';
 
-import { MixedLocale, object as locale } from './locale';
+import { Flags, Maybe, SetFlag, ToggleDefault, UnsetFlag } from './util/types';
+import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import runTests from './util/runTests';
-import { InternalOptions, Callback, Maybe, Optionals, Preserve } from './types';
-import ValidationError from './ValidationError';
-import type { TypedSchema, Defined } from './util/types';
-import type Reference from './Reference';
-import Lazy from './Lazy';
-import BaseSchema, {
-  AnySchema,
-  SchemaObjectDescription,
-  SchemaSpec,
-} from './schema';
+import { InternalOptions, ISchema, Message } from './types';
+import type { Defined, Thunk, NotNull, _ } from './util/types';
+import Reference from './Reference';
+import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';
+import { ResolveOptions } from './Condition';
+import type {
+  AnyObject,
+  ConcatObjectTypes,
+  DefaultFromShape,
+  MakePartial,
+  MergeObjectTypes,
+  ObjectShape,
+  PartialDeep,
+  TypeFromShape,
+} from './util/objectTypes';
+import parseJson from './util/parseJson';
+import type { Test } from './util/createValidation';
+import type ValidationError from './ValidationError';
 
-export type Assign<T extends {}, U extends {}> = {
-  [P in keyof T]: P extends keyof U ? U[P] : T[P];
-} & U;
+export type { AnyObject };
 
-export type AnyObject = Record<string, any>;
+type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
 
-export type ObjectShape = Record<
-  string,
-  AnySchema | Reference | Lazy<any, any>
->;
-
-export type DefaultFromShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends ObjectSchema<infer TShape>
-    ? DefaultFromShape<TShape>
-    : Shape[K] extends { getDefault: () => infer D }
-    ? Preserve<D, undefined> extends never
-      ? Defined<D>
-      : Preserve<D, undefined>
-    : undefined;
-};
-
-export type TypeOfShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__inputType']
-    : Shape[K] extends Reference
-    ? unknown
-    : never;
-};
-
-export type AssertsShape<Shape extends ObjectShape> = {
-  [K in keyof Shape]: Shape[K] extends TypedSchema
-    ? Shape[K]['__outputType']
-    : Shape[K] extends Reference
-    ? unknown
-    : never;
+export type Shape<T extends Maybe<AnyObject>, C = AnyObject> = {
+  [field in keyof T]: ISchema<T[field], C> | Reference;
 };
 
 export type ObjectSchemaSpec = SchemaSpec<any> & {
   noUnknown?: boolean;
+};
+
+const deepHas = (obj: any, p: string) => {
+  const path = [...normalizePath(p)];
+  if (path.length === 1) return path[0] in obj;
+  let last = path.pop()!;
+  let parent = getter(join(path), true)(obj);
+  return !!(parent && last in parent);
 };
 
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
@@ -71,49 +55,74 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
+export function create<C = AnyObject, S extends ObjectShape = {}>(spec?: S) {
+  type TIn = _<TypeFromShape<S, C>>;
+  type TDefault = _<DefaultFromShape<S>>;
+
+  return new ObjectSchema<TIn, C, TDefault>(spec as any);
+}
+
+export default interface ObjectSchema<
+  TIn extends Maybe<AnyObject>,
+  TContext = AnyObject,
+  // important that this is `any` so that using `ObjectSchema<MyType>`'s default
+  // will match object schema regardless of defaults
+  TDefault = any,
+  TFlags extends Flags = '',
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+  default<D extends Maybe<AnyObject>>(
+    def: Thunk<D>,
+  ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
+
+  defined(
+    msg?: Message,
+  ): ObjectSchema<Defined<TIn>, TContext, TDefault, TFlags>;
+  optional(): ObjectSchema<TIn | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): ObjectSchema<NonNullable<TIn>, TContext, TDefault, TFlags>;
+  notRequired(): ObjectSchema<Maybe<TIn>, TContext, TDefault, TFlags>;
+
+  nullable(msg?: Message): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
+  nonNullable(): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): ObjectSchema<TIn, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
 export default class ObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
-  TOut extends Maybe<AssertsShape<TShape>> =
-    | AssertsShape<TShape>
-    | Optionals<TIn>,
-> extends BaseSchema<TIn, TContext, TOut> {
-  fields: TShape = Object.create(null);
+  TIn extends Maybe<AnyObject>,
+  TContext = AnyObject,
+  TDefault = any,
+  TFlags extends Flags = '',
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+  fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
 
   private _sortErrors = defaultSort;
-  private _nodes: readonly string[] = [];
+  private _nodes: string[] = [];
 
   private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
 
-  constructor(spec?: TShape) {
+  constructor(spec?: Shape<TIn, TContext>) {
     super({
       type: 'object',
+      check(value): value is NonNullable<MakeKeysOptional<TIn>> {
+        return isObject(value) || typeof value === 'function';
+      },
     });
 
     this.withMutation(() => {
-      this.transform(function coerce(value) {
-        if (typeof value === 'string') {
-          try {
-            value = JSON.parse(value);
-          } catch (err) {
-            value = null;
-          }
-        }
-        if (this.isType(value)) return value;
-        return null;
-      });
-
       if (spec) {
-        this.shape(spec);
+        this.shape(spec as any);
       }
     });
-  }
-
-  protected _typeCheck(value: any): value is NonNullable<TIn> {
-    return isObject(value) || typeof value === 'function';
   }
 
   protected _cast(_value: any, options: InternalOptions<TContext> = {}) {
@@ -127,12 +136,13 @@ export default class ObjectSchema<
     let fields = this.fields;
 
     let strip = options.stripUnknown ?? this.spec.noUnknown;
-    let props = this._nodes.concat(
-      Object.keys(value).filter((v) => this._nodes.indexOf(v) === -1),
+    let props = ([] as string[]).concat(
+      this._nodes,
+      Object.keys(value).filter((v) => !this._nodes.includes(v)),
     );
 
     let intermediateValue: Record<string, unknown> = {}; // is filled during the transform below
-    let innerOptions: InternalOptions = {
+    let innerOptions: InternalOptions<TContext> = {
       ...options,
       parent: intermediateValue,
       __validating: options.__validating || false,
@@ -141,7 +151,7 @@ export default class ObjectSchema<
     let isChanged = false;
     for (const prop of props) {
       let field = fields[prop];
-      let exists = has(value!, prop);
+      let exists = prop in value!;
 
       if (field) {
         let fieldValue;
@@ -157,7 +167,7 @@ export default class ObjectSchema<
           parent: intermediateValue,
         });
 
-        let fieldSpec = 'spec' in field ? field.spec : undefined;
+        let fieldSpec = field instanceof Schema ? field.spec : undefined;
         let strict = fieldSpec?.strict;
 
         if (fieldSpec?.strip) {
@@ -189,14 +199,12 @@ export default class ObjectSchema<
   protected _validate(
     _value: any,
     opts: InternalOptions<TContext> = {},
-    callback: Callback,
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
   ) {
-    let errors = [] as ValidationError[];
     let {
-      sync,
       from = [],
       originalValue = _value,
-      abortEarly = this.spec.abortEarly,
       recursive = this.spec.recursive,
     } = opts;
 
@@ -208,64 +216,41 @@ export default class ObjectSchema<
     opts.originalValue = originalValue;
     opts.from = from;
 
-    super._validate(_value, opts, (err, value) => {
-      if (err) {
-        if (!ValidationError.isError(err) || abortEarly) {
-          return void callback(err, value);
-        }
-        errors.push(err);
-      }
-
+    super._validate(_value, opts, panic, (objectErrors, value) => {
       if (!recursive || !isObject(value)) {
-        callback(errors[0] || null, value);
+        next(objectErrors, value);
         return;
       }
 
       originalValue = originalValue || value;
 
-      let tests = this._nodes.map((key) => (_: any, cb: Callback) => {
+      let tests = [] as Test[];
+      for (let key of this._nodes) {
+        let field = this.fields[key];
+
+        if (!field || Reference.isRef(field)) {
+          continue;
+        }
+
         let path =
           key.indexOf('.') === -1
             ? (opts.path ? `${opts.path}.` : '') + key
             : `${opts.path || ''}["${key}"]`;
 
-        let field = this.fields[key];
+        tests.push(
+          field.asTest(value[key], {
+            ...opts,
+            path,
+            from,
+            parent: value,
+            originalValue: originalValue[key],
+          }),
+        );
+      }
 
-        if (field && 'validate' in field) {
-          field.validate(
-            value[key],
-            {
-              ...opts,
-              // @ts-ignore
-              path,
-              from,
-              // inner fields are always strict:
-              // 1. this isn't strict so the casting will also have cast inner values
-              // 2. this is strict in which case the nested values weren't cast either
-              strict: true,
-              parent: value,
-              originalValue: originalValue[key],
-            },
-            cb,
-          );
-          return;
-        }
-
-        cb(null);
+      this.runTests({ tests, value }, panic, (fieldErrors) => {
+        next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
       });
-
-      runTests(
-        {
-          sync,
-          tests,
-          value,
-          errors,
-          endEarly: abortEarly,
-          sort: this._sortErrors,
-          path: opts.path,
-        },
-        callback,
-      );
     });
   }
 
@@ -279,15 +264,14 @@ export default class ObjectSchema<
     return next;
   }
 
-  concat<TOther extends ObjectSchema<any, any, any>>(
-    schema: TOther,
-  ): TOther extends ObjectSchema<infer S, infer C, infer IType>
-    ? ObjectSchema<
-        TShape & S,
-        TContext & C,
-        TypeOfShape<TShape & S> | Optionals<IType>
-      >
-    : never;
+  concat<IIn, IC, ID, IF extends Flags>(
+    schema: ObjectSchema<IIn, IC, ID, IF>,
+  ): ObjectSchema<
+    ConcatObjectTypes<TIn, IIn>,
+    TContext & IC,
+    Extract<IF, 'd'> extends never ? _<ConcatObjectTypes<TDefault, ID>> : ID,
+    TFlags | IF
+  >;
   concat(schema: this): this;
   concat(schema: any): any {
     let next = super.concat(schema) as any;
@@ -295,26 +279,12 @@ export default class ObjectSchema<
     let nextFields = next.fields;
     for (let [field, schemaOrRef] of Object.entries(this.fields)) {
       const target = nextFields[field];
-      if (target === undefined) {
-        nextFields[field] = schemaOrRef;
-      } else if (
-        target instanceof BaseSchema &&
-        schemaOrRef instanceof BaseSchema
-      ) {
-        nextFields[field] = schemaOrRef.concat(target);
-      }
+      nextFields[field] = target === undefined ? schemaOrRef : target;
     }
 
-    return next.withMutation(() => next.shape(nextFields, this._excludedEdges));
-  }
-
-  getDefaultFromShape(): DefaultFromShape<TShape> {
-    let dft = {} as Record<string, unknown>;
-    this._nodes.forEach((key) => {
-      const field = this.fields[key];
-      dft[key] = 'default' in field ? field.getDefault() : undefined;
-    });
-    return dft as any;
+    return next.withMutation((s: any) =>
+      s.setFields(nextFields, this._excludedEdges),
+    );
   }
 
   protected _getDefault() {
@@ -326,65 +296,100 @@ export default class ObjectSchema<
     if (!this._nodes.length) {
       return undefined;
     }
-    return this.getDefaultFromShape();
+
+    let dft: any = {};
+    this._nodes.forEach((key) => {
+      const field = this.fields[key] as any;
+      dft[key] = 'getDefault' in field ? field.getDefault() : undefined;
+    });
+
+    return dft;
   }
 
-  shape<TNextShape extends ObjectShape>(
-    additions: TNextShape,
-    excludes: [string, string][] = [],
-  ): ObjectSchema<
-    Assign<TShape, TNextShape>,
-    TContext,
-    TypeOfShape<Assign<TShape, TNextShape>> | Optionals<TIn>
-  > {
-    let next = this.clone();
-    let fields = Object.assign(next.fields, additions);
+  private setFields<TInNext extends Maybe<AnyObject>, TDefaultNext>(
+    shape: Shape<TInNext, TContext>,
+    excludedEdges?: readonly [string, string][],
+  ): ObjectSchema<TInNext, TContext, TDefaultNext, TFlags> {
+    let next = this.clone() as any;
+    next.fields = shape;
 
-    next.fields = fields;
-    next._sortErrors = sortByKeyOrder(Object.keys(fields));
+    next._nodes = sortFields(shape, excludedEdges);
+    next._sortErrors = sortByKeyOrder(Object.keys(shape));
+    // XXX: this carries over edges which may not be what you want
+    if (excludedEdges) next._excludedEdges = excludedEdges;
+    return next;
+  }
 
-    if (excludes.length) {
-      // this is a convenience for when users only supply a single pair
-      if (!Array.isArray(excludes[0])) excludes = [excludes as any];
+  shape<U extends ObjectShape>(
+    additions: U,
+    excludes: readonly [string, string][] = [],
+  ) {
+    type UIn = TypeFromShape<U, TContext>;
+    type UDefault = Extract<TFlags, 'd'> extends never
+      ? // not defaulted then assume the default is derived and should be merged
+        _<TDefault & DefaultFromShape<U>>
+      : TDefault;
 
-      next._excludedEdges = [...next._excludedEdges, ...excludes];
+    return this.clone().withMutation((next) => {
+      let edges = next._excludedEdges;
+      if (excludes.length) {
+        if (!Array.isArray(excludes[0])) excludes = [excludes as any];
+
+        edges = [...next._excludedEdges, ...excludes];
+      }
+
+      // XXX: excludes here is wrong
+      return next.setFields<_<MergeObjectTypes<TIn, UIn>>, UDefault>(
+        Object.assign(next.fields, additions) as any,
+        edges,
+      );
+    });
+  }
+
+  partial() {
+    const partial: any = {};
+    for (const [key, schema] of Object.entries(this.fields)) {
+      partial[key] = schema instanceof Schema ? schema.optional() : schema;
     }
 
-    next._nodes = sortFields(fields, next._excludedEdges);
-
-    return next as any;
+    return this.setFields<Partial<TIn>, TDefault>(partial);
   }
 
-  pick(keys: string[]) {
+  deepPartial() {
+    const partial: any = {};
+    for (const [key, schema] of Object.entries(this.fields)) {
+      if (schema instanceof ObjectSchema) partial[key] = schema.deepPartial();
+      else partial[key] = schema instanceof Schema ? schema.optional() : schema;
+    }
+    return this.setFields<PartialDeep<TIn>, TDefault>(partial);
+  }
+
+  pick<TKey extends keyof TIn>(keys: readonly TKey[]) {
     const picked: any = {};
     for (const key of keys) {
       if (this.fields[key]) picked[key] = this.fields[key];
     }
 
-    return this.clone().withMutation((next: any) => {
-      next.fields = {};
-      return next.shape(picked);
-    }) as any;
+    return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(picked);
   }
 
-  omit(keys: string[]): any {
-    const next = this.clone() as any;
-    const fields = next.fields;
-    next.fields = {};
+  omit<TKey extends keyof TIn>(keys: readonly TKey[]) {
+    const fields = { ...this.fields };
+
     for (const key of keys) {
       delete fields[key];
     }
 
-    return next.withMutation(() => next.shape(fields));
+    return this.setFields<Omit<TIn, TKey>, TDefault>(fields);
   }
 
-  from(from: string, to: keyof TShape, alias?: boolean) {
+  from(from: string, to: keyof TIn, alias?: boolean) {
     let fromGetter = getter(from, true);
 
     return this.transform((obj) => {
-      if (obj == null) return obj;
+      if (!obj) return obj;
       let newObj = obj;
-      if (has(obj, from)) {
+      if (deepHas(obj, from)) {
         newObj = { ...obj };
         if (!alias) delete newObj[from];
 
@@ -395,8 +400,15 @@ export default class ObjectSchema<
     });
   }
 
-  noUnknown(noAllow = true, message = locale.noUnknown) {
-    if (typeof noAllow === 'string') {
+  /** Parse an input JSON string to an object */
+  json() {
+    return this.transform(parseJson);
+  }
+
+  noUnknown(message?: Message): this;
+  noUnknown(noAllow: boolean, message?: Message): this;
+  noUnknown(noAllow: Message | boolean = true, message = locale.noUnknown) {
+    if (typeof noAllow !== 'boolean') {
       message = noAllow;
       noAllow = true;
     }
@@ -426,7 +438,12 @@ export default class ObjectSchema<
   }
 
   transformKeys(fn: (key: string) => string) {
-    return this.transform((obj) => obj && mapKeys(obj, (_, key) => fn(key)));
+    return this.transform((obj) => {
+      if (!obj) return obj;
+      const result: AnyObject = {};
+      for (const key of Object.keys(obj)) result[fn(key)] = obj[key];
+      return result;
+    });
   }
 
   camelCase() {
@@ -441,143 +458,22 @@ export default class ObjectSchema<
     return this.transformKeys((key) => snakeCase(key).toUpperCase());
   }
 
-  describe() {
-    let base = super.describe() as SchemaObjectDescription;
-    base.fields = mapValues(this.fields, (value) => value.describe());
+  describe(options?: ResolveOptions<TContext>) {
+    let base = super.describe(options) as SchemaObjectDescription;
+    base.fields = {};
+    for (const [key, value] of Object.entries(this.fields)) {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+      base.fields[key] = value.describe(innerOptions);
+    }
     return base;
   }
 }
 
-export function create<TShape extends ObjectShape>(spec?: TShape) {
-  return new ObjectSchema<TShape>(spec) as OptionalObjectSchema<TShape>;
-}
-
 create.prototype = ObjectSchema.prototype;
-
-export interface OptionalObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject = AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>> = TypeOfShape<TShape>,
-> extends ObjectSchema<TShape, TContext, TIn> {
-  default<TNextDefault extends Maybe<AnyObject>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? ObjectSchema<TShape, TContext, TIn | undefined>
-    : ObjectSchema<TShape, TContext, Defined<TIn>>;
-
-  defined(
-    msg?: MixedLocale['defined'],
-  ): DefinedObjectSchema<TShape, TContext, TIn>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredObjectSchema<TShape, TContext, TIn>;
-  optional(): this;
-  notRequired(): this;
-  nullable(
-    isNullable?: true,
-  ): OptionalObjectSchema<TShape, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): OptionalObjectSchema<TShape, TContext, Exclude<TIn, null>>;
-
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): OptionalObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): OptionalObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
-}
-
-export interface DefinedObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>,
-> extends ObjectSchema<
-    TShape,
-    TContext,
-    TIn,
-    AssertsShape<TShape> | Extract<TIn, null>
-  > {
-  default<TNextDefault extends Maybe<AnyObject>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? DefinedObjectSchema<TShape, TContext, TIn | undefined>
-    : DefinedObjectSchema<TShape, TContext, Defined<TIn>>;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredObjectSchema<TShape, TContext, TIn>;
-
-  optional(): OptionalObjectSchema<TShape, TContext, TIn>;
-  notRequired(): OptionalObjectSchema<TShape, TContext, TIn>;
-  nullable(
-    isNullable?: true,
-  ): DefinedObjectSchema<TShape, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): DefinedObjectSchema<TShape, TContext, Exclude<TIn, null>>;
-
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): DefinedObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): DefinedObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
-}
-
-export interface RequiredObjectSchema<
-  TShape extends ObjectShape,
-  TContext extends AnyObject,
-  TIn extends Maybe<TypeOfShape<TShape>>,
-> extends ObjectSchema<TShape, TContext, TIn, AssertsShape<TShape>> {
-  default<TNextDefault extends Maybe<AnyObject>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? RequiredObjectSchema<TShape, TContext, TIn | undefined>
-    : RequiredObjectSchema<TShape, TContext, Defined<TIn>>;
-
-  defined(
-    msg?: MixedLocale['defined'],
-  ): DefinedObjectSchema<TShape, TContext, TIn>;
-  required(msg?: MixedLocale['required']): this;
-  optional(): OptionalObjectSchema<TShape, TContext, TIn>;
-  notRequired(): OptionalObjectSchema<TShape, TContext, TIn>;
-  nullable(
-    isNullable?: true,
-  ): RequiredObjectSchema<TShape, TContext, TIn | null>;
-  nullable(
-    isNullable: false,
-  ): RequiredObjectSchema<TShape, TContext, Exclude<TIn, null>>;
-
-  pick<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): RequiredObjectSchema<
-    Pick<TShape, TKey>,
-    TContext,
-    TypeOfShape<Pick<TShape, TKey>> | Optionals<TIn>
-  >;
-  omit<TKey extends keyof TShape>(
-    keys: TKey[],
-  ): RequiredObjectSchema<
-    Omit<TShape, TKey>,
-    TContext,
-    TypeOfShape<Omit<TShape, TKey>> | Optionals<TIn>
-  >;
-}

@@ -3,6 +3,9 @@
   "env": {
     "browser": true
   },
+  "parserOptions": {
+    "requireConfigFile": false
+  },
   "rules": {
     "@typescript-eslint/no-shadow": "off",
     "@typescript-eslint/no-empty-interface": "off"
@@ -14,10 +17,6 @@
       "env": {
         "jest/globals": true
       },
-      "globals": {
-        "TestHelpers": false,
-        "sinon": true
-      },
       "rules": {
         "global-require": "off",
         "no-await-in-loop": "off",
@@ -25,7 +24,7 @@
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",
         "jest/prefer-to-have-length": "warn",
-        "jest/valid-expect": "off"
+        "@typescript-eslint/no-empty-function": "off"
       }
     }
   ]

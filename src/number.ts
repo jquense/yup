@@ -1,28 +1,52 @@
-import { MixedLocale, number as locale } from './locale';
+import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Maybe } from './types';
+import type { AnyObject, Message } from './types';
 import type Reference from './Reference';
-import type { Defined, If, Thunk } from './util/types';
-import BaseSchema from './schema';
+import type {
+  Concat,
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  Thunk,
+  Maybe,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
+import Schema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
+export function create(): NumberSchema;
+export function create<T extends number, TContext = AnyObject>(): NumberSchema<
+  T | undefined,
+  TContext
+>;
 export function create() {
   return new NumberSchema();
 }
 
 export default class NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TContext extends AnyObject = AnyObject,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
   constructor() {
-    super({ type: 'number' });
+    super({
+      type: 'number',
+      check(value: any): value is NonNullable<TType> {
+        if (value instanceof Number) value = value.valueOf();
+
+        return typeof value === 'number' && !isNaN(value);
+      },
+    });
 
     this.withMutation(() => {
-      this.transform(function (value) {
-        let parsed = value;
+      this.transform((value, _raw, ctx) => {
+        if (!ctx.spec.coarce) return value;
 
+        let parsed = value;
         if (typeof parsed === 'string') {
           parsed = parsed.replace(/\s/g, '');
           if (parsed === '') return NaN;
@@ -30,17 +54,11 @@ export default class NumberSchema<
           parsed = +parsed;
         }
 
-        if (this.isType(parsed)) return parsed;
+        if (ctx.isType(parsed)) return parsed;
 
         return parseFloat(parsed);
       });
     });
-  }
-
-  protected _typeCheck(value: any): value is NonNullable<TType> {
-    if (value instanceof Number) value = value.valueOf();
-
-    return typeof value === 'number' && !isNaN(value);
   }
 
   min(min: number | Reference<number>, message = locale.min) {
@@ -111,20 +129,20 @@ export default class NumberSchema<
     return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
   }
 
-  round(method: 'ceil' | 'floor' | 'round' | 'trunc') {
+  round(method?: 'ceil' | 'floor' | 'round' | 'trunc') {
     let avail = ['ceil', 'floor', 'round', 'trunc'];
     method = (method?.toLowerCase() as any) || ('round' as const);
 
     // this exists for symemtry with the new Math.trunc
     if (method === 'trunc') return this.truncate();
 
-    if (avail.indexOf(method.toLowerCase()) === -1)
+    if (avail.indexOf(method!.toLowerCase()) === -1)
       throw new TypeError(
         'Only valid options for round() are: ' + avail.join(', '),
       );
 
     return this.transform((value) =>
-      !isAbsent(value) ? Math[method](value) : value,
+      !isAbsent(value) ? Math[method!](value) : value,
     );
   }
 }
@@ -137,75 +155,43 @@ create.prototype = NumberSchema.prototype;
 
 export default interface NumberSchema<
   TType extends Maybe<number> = number | undefined,
-  TContext extends AnyObject = AnyObject,
-  TOut extends TType = TType
-> extends BaseSchema<TType, TContext, TOut> {
-  concat<TOther extends NumberSchema<any, any, any>>(schema: TOther): TOther;
-
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
     def: Thunk<D>,
-  ): If<
-    D,
-    NumberSchema<TType | undefined, TContext>,
-    NumberSchema<Defined<TType>, TContext>
-  >;
+  ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
+  concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
+    schema: NumberSchema<UType, UContext, UDefault, UFlags>,
+  ): NumberSchema<
+    Concat<TType, UType>,
+    TContext & UContext,
+    UDefault,
+    TFlags | UFlags
+  >;
+  concat(schema: this): this;
+
+  defined(
+    msg?: Message,
+  ): NumberSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): NumberSchema<TType | undefined, TContext, TDefault, TFlags>;
 
   required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
+    msg?: Message,
+  ): NumberSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(isNullable?: true): NumberSchema<TType | null, TContext>;
-  nullable(isNullable: false): NumberSchema<Exclude<TType, null>, TContext>;
-}
-
-export interface DefinedNumberSchema<
-  TType extends Maybe<number>,
-  TContext extends AnyObject = AnyObject
-> extends NumberSchema<TType, TContext, Defined<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    DefinedNumberSchema<TType | undefined, TContext>,
-    DefinedNumberSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): this;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
   nullable(
-    isNullable: false,
-  ): RequiredNumberSchema<Exclude<TType, null>, TContext>;
-}
+    msg?: Message,
+  ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
-export interface RequiredNumberSchema<
-  TType extends Maybe<number>,
-  TContext extends AnyObject = AnyObject
-> extends NumberSchema<TType, TContext, NonNullable<TType>> {
-  default<D extends Maybe<TType>>(
-    def: Thunk<D>,
-  ): If<
-    D,
-    RequiredNumberSchema<TType | undefined, TContext>,
-    RequiredNumberSchema<Defined<TType>, TContext>
-  >;
-
-  defined(msg?: MixedLocale['defined']): DefinedNumberSchema<TType, TContext>;
-  required(
-    msg?: MixedLocale['required'],
-  ): RequiredNumberSchema<TType, TContext>;
-  optional(): NumberSchema<TType, TContext>;
-  notRequired(): NumberSchema<TType, TContext>;
-  nullable(isNullable?: true): RequiredNumberSchema<TType | null, TContext>;
-  nullable(
-    isNullable: false,
-  ): RequiredNumberSchema<Exclude<TType, null>, TContext>;
+  strip(
+    enabled: false,
+  ): NumberSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }

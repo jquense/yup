@@ -6,6 +6,7 @@ export interface MixedLocale {
   required?: Message;
   oneOf?: Message<{ values: any }>;
   notOneOf?: Message<{ values: any }>;
+  notNull?: Message;
   notType?: Message;
   defined?: Message;
 }
@@ -65,24 +66,24 @@ export interface LocaleObject {
 export let mixed: Required<MixedLocale> = {
   default: '${path} is invalid',
   required: '${path} is a required field',
+  defined: '${path} must be defined',
+  notNull: '${path} cannot be null',
   oneOf: '${path} must be one of the following values: ${values}',
   notOneOf: '${path} must not be one of the following values: ${values}',
   notType: ({ path, type, value, originalValue }) => {
-    let isCast = originalValue != null && originalValue !== value;
-    let msg =
-      `${path} must be a \`${type}\` type, ` +
-      `but the final value was: \`${printValue(value, true)}\`` +
-      (isCast
+    const castMsg =
+      originalValue != null && originalValue !== value
         ? ` (cast from the value \`${printValue(originalValue, true)}\`).`
-        : '.');
+        : '.';
 
-    if (value === null) {
-      msg += `\n If "null" is intended as an empty value be sure to mark the schema as \`.nullable()\``;
-    }
-
-    return msg;
+    return type !== 'mixed'
+      ? `${path} must be a \`${type}\` type, ` +
+          `but the final value was: \`${printValue(value, true)}\`` +
+          castMsg
+      : `${path} must match the configured type. ` +
+          `The validated value was: \`${printValue(value, true)}\`` +
+          castMsg;
   },
-  defined: '${path} must be defined',
 };
 
 export let string: Required<StringLocale> = {
@@ -135,4 +136,4 @@ export default Object.assign(Object.create(null), {
   object,
   array,
   boolean,
-});
+}) as LocaleObject;

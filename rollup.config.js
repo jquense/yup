@@ -1,41 +1,36 @@
-const nodeResolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const filesize = require('rollup-plugin-filesize');
+import nodeResolve from '@rollup/plugin-node-resolve';
+import babel from '@rollup/plugin-babel';
+import dts from 'rollup-plugin-dts';
+import filesize from 'rollup-plugin-filesize';
 
 const base = {
-  input: './src/index.js',
+  input: './src/index.ts',
   plugins: [
-    nodeResolve(),
+    nodeResolve({ extensions: ['.js', '.ts'] }),
     babel({
-      babelrc: false,
-      presets: [['jason', { modules: false, runtime: false }]],
+      babelrc: true,
+      envName: 'esm',
+      extensions: ['.js', '.ts'],
     }),
   ],
-  external: [
-    'lodash/has',
-    'lodash/cloneDeepWith',
-    'lodash/toArray',
-    'lodash/mapKeys',
-    'lodash/mapValues',
-    'lodash/snakeCase',
-    'lodash/camelCase',
-    'toposort',
-    'fn-name',
-    'synchronous-promise',
-    'property-expr',
-  ],
+  external: ['tiny-case', 'toposort', 'fn-name', 'property-expr'],
 };
 
 module.exports = [
   {
+    input: './dts/index.d.ts',
+    output: [{ file: 'lib/index.d.ts', format: 'es' }],
+    plugins: [dts()],
+  },
+  {
     ...base,
     output: [
       {
-        file: 'dist/yup.js',
+        file: 'lib/index.js',
         format: 'cjs',
       },
       {
-        file: 'dist/yup.esm.js',
+        file: 'lib/index.esm.js',
         format: 'es',
       },
     ],
