@@ -79,5 +79,34 @@ describe('Array types', () => {
 
       expect(await inst.validate(['4', 3])).toEqual([4, '3']);
     });
+
+    it('should use labels', async () => {
+      let schema = tuple([
+        string().label('name'),
+        number().positive().integer().label('age'),
+      ]);
+
+      await expect(schema.validate(['James', -24.55])).rejects.toThrow(
+        'age must be a positive number',
+      );
+    });
+
+    it('should throw useful type error for lenght', async () => {
+      let schema = tuple([string().label('name'), number().label('age')]);
+
+      // expect(() => schema.cast(['James'])).toThrowError(
+      //   'this tuple value has too few items, expected a length of 2 but got 1 for value',
+      // );
+      await expect(schema.validate(['James'])).rejects.toThrowError(
+        'this tuple value has too few items, expected a length of 2 but got 1 for value',
+      );
+
+      await expect(schema.validate(['James', 2, 4])).rejects.toThrowError(
+        'this tuple value has too many items, expected a length of 2 but got 3 for value',
+      );
+      // expect(() => schema.validate(['James', 2, 4])).rejects.toThrowError(
+      //   'this tuple value has too many items, expected a length of 2 but got 3 for value',
+      // );
+    });
   });
 });

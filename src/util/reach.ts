@@ -1,8 +1,21 @@
 import { forEach } from 'property-expr';
+import { AnySchema } from '..';
+import type ArraySchema from '../array';
+import type { ISchema } from '../types';
 
 let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
-export function getIn(schema: any, path: string, value?: any, context = value) {
+let isInnerTypeChema = (
+  schema: AnySchema<any, any>,
+): schema is ArraySchema<any, any, any, any> =>
+  'innerType' in schema && schema.type === 'array';
+
+export function getIn<C = any>(
+  schema: ISchema<any, C>,
+  path: string,
+  value?: any,
+  context: C = value,
+) {
   let parent: any, lastPart: string, lastPartDebug: string;
 
   // root path: ''
@@ -35,7 +48,7 @@ export function getIn(schema: any, path: string, value?: any, context = value) {
       if (!schema.fields || !schema.fields[part])
         throw new Error(
           `The schema does not contain the path: ${path}. ` +
-            `(failed at: ${lastPartDebug} which is a type: "${schema._type}")`,
+            `(failed at: ${lastPartDebug} which is a type: "${schema.type}")`,
         );
 
       parent = value;

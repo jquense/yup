@@ -1,12 +1,6 @@
 // @ts-ignore
 
-import type {
-  AnyObject,
-  InternalOptions,
-  ISchema,
-  Maybe,
-  Message,
-} from './types';
+import type { AnyObject, InternalOptions, ISchema, Message } from './types';
 import type {
   Defined,
   Flags,
@@ -15,9 +9,11 @@ import type {
   Thunk,
   ToggleDefault,
   UnsetFlag,
+  Maybe,
 } from './util/types';
 import Schema, { RunTest, SchemaSpec } from './schema';
 import ValidationError from './ValidationError';
+import { tuple as tupleLocale } from './locale';
 
 type AnyTuple = [unknown, ...unknown[]];
 
@@ -86,6 +82,10 @@ export default class TupleSchema<
         const types = (this.spec as TupleSchemaSpec<TType>).types;
         return Array.isArray(v) && v.length === types.length;
       },
+    });
+
+    this.withMutation(() => {
+      this.typeError(tupleLocale.notType);
     });
   }
 

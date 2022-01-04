@@ -1,5 +1,10 @@
 import type { ResolveOptions } from './Condition';
-import type { AnySchema, CastOptions, SchemaFieldDescription } from './schema';
+import type {
+  AnySchema,
+  CastOptions,
+  SchemaFieldDescription,
+  SchemaSpec,
+} from './schema';
 import type { Test } from './util/createValidation';
 import type { AnyObject } from './util/objectTypes';
 import type { Flags } from './util/types';
@@ -75,6 +80,7 @@ export interface MessageParams {
   originalValue: any;
   label: string;
   type: string;
+  spec: SchemaSpec<any> & Record<string, unknown>;
 }
 
 export type Message<Extra extends Record<string, unknown> = any> =

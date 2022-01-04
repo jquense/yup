@@ -1470,6 +1470,29 @@ array()
   .cast(['', 1, 0, 4, false, null]); // => ['', 1, 0, 4, false]
 ```
 
+### tuple
+
+Tuples, are fixed length arrays where each item has a distinct type.
+
+Inherits from [`Schema`](#Schema).
+
+```js
+import { tuple, string, number, InferType } from 'yup';
+
+let schema = tuple([
+  string().label('name'),
+  number().label('age').positive().integer(),
+]);
+
+await schema.validate(['James', 3]); // ['James', 3]
+
+await schema.validate(['James', -24]); // => ValidationError: age must be a positive number
+
+InferType<typeof schema> // [string, number] | undefined
+```
+
+tuples have no default casting behavior.
+
 ### object
 
 Define an object schema. Options passed into `isValid` are also passed to child schemas.

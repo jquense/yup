@@ -1,6 +1,3 @@
-// @ts-ignore
-import cloneDeep from 'nanoclone';
-
 import { mixed as locale } from './locale';
 import Condition, {
   ConditionBuilder,
@@ -35,6 +32,7 @@ import Reference from './Reference';
 import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
+import cloneDeep from './util/cloneDeep';
 
 export type SchemaSpec<TDefault> = {
   coarce: boolean;
@@ -347,7 +345,7 @@ export default abstract class Schema<
         `The value of ${
           options.path || 'field'
         } could not be cast to a value ` +
-          `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
+          `that satisfies the schema type: "${resolvedSchema.type}". \n\n` +
           `attempted value: ${formattedValue} \n` +
           (formattedResult !== formattedValue
             ? `result of cast: ${formattedResult}`
@@ -401,6 +399,7 @@ export default abstract class Schema<
       originalValue,
       schema: this,
       label: this.spec.label,
+      spec: this.spec,
       sync,
       from,
     };
@@ -826,7 +825,7 @@ export default abstract class Schema<
         if (!isAbsent(value) && !this.schema._typeCheck(value))
           return this.createError({
             params: {
-              type: this.schema._type,
+              type: this.schema.type,
             },
           });
         return true;
@@ -967,7 +966,7 @@ for (const method of ['validate', 'validateSync'])
         value,
         options.context,
       );
-      return schema[method](parent && parent[parentPath], {
+      return (schema as any)[method](parent && parent[parentPath], {
         ...options,
         parent,
         path,

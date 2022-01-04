@@ -1,5 +1,6 @@
 import printValue from './util/printValue';
 import { Message } from './types';
+import ValidationError from './ValidationError';
 
 export interface MixedLocale {
   default?: Message;
@@ -47,6 +48,10 @@ export interface ArrayLocale {
   length?: Message<{ length: number }>;
   min?: Message<{ min: number }>;
   max?: Message<{ max: number }>;
+}
+
+export interface TupleLocale {
+  notType?: Message;
 }
 
 export interface BooleanLocale {
@@ -126,6 +131,25 @@ export let array: Required<ArrayLocale> = {
   min: '${path} field must have at least ${min} items',
   max: '${path} field must have less than or equal to ${max} items',
   length: '${path} must have ${length} items',
+};
+
+export let tuple: Required<TupleLocale> = {
+  notType: (params) => {
+    const { path, value, spec } = params;
+    const typeLen = spec.types.length;
+    if (Array.isArray(value)) {
+      if (value.length < typeLen)
+        return `${path} tuple value has too few items, expected a length of ${typeLen} but got ${
+          value.length
+        } for value: \`${printValue(value, true)}\``;
+      if (value.length > typeLen)
+        return `${path} tuple value has too many items, expected a length of ${typeLen} but got ${
+          value.length
+        } for value: \`${printValue(value, true)}\``;
+    }
+
+    return ValidationError.formatError(mixed.notType, params);
+  },
 };
 
 export default Object.assign(Object.create(null), {

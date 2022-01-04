@@ -685,7 +685,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().default('hi');
 
     expect(function () {
-      expect(inst.concat(string())._type).toBe('string');
+      expect(inst.concat(string()).type).toBe('string');
     }).not.toThrowError(TypeError);
   });
 
