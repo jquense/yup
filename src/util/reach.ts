@@ -1,17 +1,9 @@
 import { forEach } from 'property-expr';
-import { AnySchema } from '..';
-import type ArraySchema from '../array';
-import type { ISchema } from '../types';
 
 let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
-let isInnerTypeChema = (
-  schema: AnySchema<any, any>,
-): schema is ArraySchema<any, any, any, any> =>
-  'innerType' in schema && schema.type === 'array';
-
 export function getIn<C = any>(
-  schema: ISchema<any, C>,
+  schema: any,
   path: string,
   value?: any,
   context: C = value,
@@ -26,9 +18,14 @@ export function getIn<C = any>(
 
     schema = schema.resolve({ context, parent, value });
 
-    if (schema.innerType) {
-      let idx = isArray ? parseInt(part, 10) : 0;
+    let isTuple = schema.type === 'tuple';
+    let idx = isArray ? parseInt(part, 10) : 0;
 
+    if (schema.innerType || isTuple) {
+      if (isTuple && !isArray)
+        throw new Error(
+          `Yup.reach cannot implicitly index into a tuple type. the path part "${lastPartDebug}" must contain an index to the tuple element, e.g. "${lastPartDebug}[0]"`,
+        );
       if (value && idx >= value.length) {
         throw new Error(
           `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
@@ -37,7 +34,7 @@ export function getIn<C = any>(
       }
       parent = value;
       value = value && value[idx];
-      schema = schema.innerType;
+      schema = isTuple ? schema.spec.types[idx] : schema.innerType!;
     }
 
     // sometimes the array index part of a path doesn't exist: "nested.arr.child"
@@ -63,7 +60,7 @@ export function getIn<C = any>(
   return { schema, parent, parentPath: lastPart! };
 }
 
-const reach = (obj: {}, path: string, value?: any, context?: any) =>
+const reach = (obj: any, path: string, value?: any, context?: any) =>
   getIn(obj, path, value, context).schema;
 
 export default reach;

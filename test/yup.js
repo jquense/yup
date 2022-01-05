@@ -18,6 +18,7 @@ import {
   DateSchema,
   mixed,
   MixedSchema,
+  tuple,
 } from '../src';
 
 describe('Yup', function () {
@@ -96,22 +97,27 @@ describe('Yup', function () {
     let inst = object({
       num: number().max(4),
 
-      nested: object({
-        arr: array().of(shape),
-      }),
+      nested: tuple([
+        string(),
+        object({
+          arr: array().of(shape),
+        }),
+      ]),
     });
 
     expect(reach(inst, '')).toBe(inst);
 
-    expect(reach(inst, 'nested.arr[0].num')).toBe(num);
-    expect(reach(inst, 'nested.arr[].num')).toBe(num);
-    expect(reach(inst, 'nested.arr[1].num')).toBe(num);
-    expect(reach(inst, 'nested.arr[1]')).toBe(shape);
+    expect(reach(inst, 'nested[1].arr[0].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr.num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[1].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[1]')).toBe(shape);
 
-    expect(reach(inst, 'nested["arr"][1].num')).not.toBe(number());
+    expect(() => reach(inst, 'nested.arr[1].num')).toThrowError(
+      'Yup.reach cannot implicitly index into a tuple type. the path part ".nested" must contain an index to the tuple element, e.g. ".nested[0]"',
+    );
 
-    let valid = await reach(inst, 'nested.arr[0].num').isValid(5);
-    expect(valid).toBe(true);
+    expect(reach(inst, 'nested[1].arr[0].num').isValid(5)).resolves.toBe(true);
   });
 
   it('should REACH conditionally correctly', async function () {
