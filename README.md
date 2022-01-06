@@ -294,7 +294,7 @@ interface Person extends yup.InferType<typeof personSchema> {}
 
 ### Schema defaults
 
-a schema's default is used when casting produces an `undefined` putput value. Because of this,
+a schema's default is used when casting produces an `undefined` output value. Because of this,
 setting a default affects the output type of the schema, effectively marking it as "defined()".
 
 ```ts
