@@ -18,7 +18,7 @@ Schema are comprised of parsing actions (transforms) as well as assertions (test
 Validate an input value to parse it and run the configured set of assertions. Chain together methods to build a schema.
 
 ```ts
-import { object, string, string, date, InferType } from 'yup';
+import { object, string, number, date, InferType } from 'yup';
 
 let userSchema = object({
   name: string().required(),
