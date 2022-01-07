@@ -2,7 +2,12 @@ import { forEach } from 'property-expr';
 
 let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
-export function getIn(schema: any, path: string, value?: any, context = value) {
+export function getIn<C = any>(
+  schema: any,
+  path: string,
+  value?: any,
+  context: C = value,
+) {
   let parent: any, lastPart: string, lastPartDebug: string;
 
   // root path: ''
@@ -13,9 +18,14 @@ export function getIn(schema: any, path: string, value?: any, context = value) {
 
     schema = schema.resolve({ context, parent, value });
 
-    if (schema.innerType) {
-      let idx = isArray ? parseInt(part, 10) : 0;
+    let isTuple = schema.type === 'tuple';
+    let idx = isArray ? parseInt(part, 10) : 0;
 
+    if (schema.innerType || isTuple) {
+      if (isTuple && !isArray)
+        throw new Error(
+          `Yup.reach cannot implicitly index into a tuple type. the path part "${lastPartDebug}" must contain an index to the tuple element, e.g. "${lastPartDebug}[0]"`,
+        );
       if (value && idx >= value.length) {
         throw new Error(
           `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
@@ -24,7 +34,7 @@ export function getIn(schema: any, path: string, value?: any, context = value) {
       }
       parent = value;
       value = value && value[idx];
-      schema = schema.innerType;
+      schema = isTuple ? schema.spec.types[idx] : schema.innerType!;
     }
 
     // sometimes the array index part of a path doesn't exist: "nested.arr.child"
@@ -35,7 +45,7 @@ export function getIn(schema: any, path: string, value?: any, context = value) {
       if (!schema.fields || !schema.fields[part])
         throw new Error(
           `The schema does not contain the path: ${path}. ` +
-            `(failed at: ${lastPartDebug} which is a type: "${schema._type}")`,
+            `(failed at: ${lastPartDebug} which is a type: "${schema.type}")`,
         );
 
       parent = value;
@@ -50,7 +60,7 @@ export function getIn(schema: any, path: string, value?: any, context = value) {
   return { schema, parent, parentPath: lastPart! };
 }
 
-const reach = (obj: {}, path: string, value?: any, context?: any) =>
+const reach = (obj: any, path: string, value?: any, context?: any) =>
   getIn(obj, path, value, context).schema;
 
 export default reach;

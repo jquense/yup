@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
 import { array, number, string, date, ref, mixed, bool } from '../../src';
+import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
@@ -353,7 +354,7 @@ date: {
   date().strip().strip(false).cast(undefined);
 }
 
-date: {
+bool: {
   const blRequired = bool().required();
 
   // $ExpectType boolean
@@ -554,6 +555,91 @@ Array: {
     // $ExpectType (number | undefined)[]
     const _c1 = array(number()).concat(arrReq).validateSync([]);
   }
+}
+
+Tuple: {
+  // $ExpectType [number, string | undefined, { age: number; }] | undefined
+  tuple([
+    number().defined(),
+    string(),
+    object({ age: number().required() }),
+  ]).cast([3, 4]);
+
+  const tplRequired = tuple([
+    string().required(),
+    string().required(),
+  ]).required();
+
+  // $ExpectType [string, string]
+  tplRequired.cast(undefined);
+
+  // $ExpectType [string, string] | null
+  tplRequired.nullable().cast(undefined);
+
+  // $ExpectType [string, string]
+  tplRequired.nullable().nonNullable().cast(undefined);
+
+  //
+  const tplOptional = tuple([
+    string().required(),
+    string().required(),
+  ]).optional();
+
+  // $ExpectType [string, string] | undefined
+  tplOptional.cast(undefined);
+
+  // $ExpectType [string, string]
+  tplOptional.defined().cast(undefined);
+
+  //
+  const tplNullableOptional = tuple([string().required(), string().required()])
+    .nullable()
+    .optional();
+
+  // $ExpectType [string, string] | null | undefined
+  tplNullableOptional.cast('');
+
+  // $ExpectType [string, string]
+  tplNullableOptional.required().validateSync('');
+
+  //
+  const tplNullable = tuple([
+    string().required(),
+    string().required(),
+  ]).nullable();
+
+  // $ExpectType [string, string] | null | undefined
+  tplNullable.validateSync('');
+
+  const tplDefined = tuple([string().required(), string().required()]).default(
+    () => ['', ''],
+  );
+
+  // $ExpectType [string, string]
+  tplDefined.getDefault();
+
+  const tplDefault = tuple([string().required(), string().required()])
+    .nullable()
+    .default(['', ''])
+    .nullable();
+
+  // $ExpectType [string, string] | null
+  tplDefault.cast('');
+
+  // $ExpectType [string, string] | null
+  tplDefault.validateSync('');
+
+  // $ExpectType TupleSchema<[string, string], AnyObject, [string, string], "d">
+  const tplDefaultRequired = tuple([string().required(), string().required()])
+    .nullable()
+    .required()
+    .default(() => ['', '']);
+
+  // $ExpectType [string, string]
+  tplDefaultRequired.cast('');
+
+  // $ExpectType [string, string]
+  tplDefaultRequired.validateSync(null);
 }
 
 Object: {

@@ -6,6 +6,7 @@ import {
   InternalOptions,
   ExtraParams,
   ISchema,
+  MessageParams,
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
@@ -29,7 +30,7 @@ export type TestContext<TContext = {}> = {
   originalValue: any;
   parent: any;
   from?: Array<{ schema: ISchema<any, TContext>; value: any }>;
-  schema: any; // TODO: Schema<any>;
+  schema: any;
   resolve: <T>(value: T | Reference<T>) => T;
   createError: (params?: CreateErrorOptions) => ValidationError;
 };
@@ -48,6 +49,7 @@ export type TestOptions<TSchema extends AnySchema = AnySchema> = {
   originalValue: any;
   schema: TSchema;
   sync?: boolean;
+  spec: MessageParams['spec'];
 };
 
 export type TestConfig<TValue = unknown, TContext = {}> = {
@@ -79,6 +81,7 @@ export default function createValidation(config: {
       label,
       options,
       originalValue,
+      spec,
       sync,
       ...rest
     }: TestOptions<TSchema>,
@@ -98,6 +101,7 @@ export default function createValidation(config: {
         originalValue,
         label,
         path: overrides.path || path,
+        spec,
         ...params,
         ...overrides.params,
       };

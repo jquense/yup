@@ -1,6 +1,3 @@
-// @ts-ignore
-import cloneDeep from 'nanoclone';
-
 import { mixed as locale } from './locale';
 import Condition, {
   ConditionBuilder,
@@ -26,6 +23,7 @@ import {
   ExtraParams,
   AnyObject,
   ISchema,
+  NestedTestConfig,
 } from './types';
 
 import ValidationError from './ValidationError';
@@ -34,6 +32,7 @@ import Reference from './Reference';
 import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
+import cloneDeep from './util/cloneDeep';
 
 export type SchemaSpec<TDefault> = {
   coarce: boolean;
@@ -50,7 +49,7 @@ export type SchemaSpec<TDefault> = {
 
 export type SchemaOptions<TType, TDefault> = {
   type: string;
-  spec?: SchemaSpec<TDefault>;
+  spec?: Partial<SchemaSpec<TDefault>>;
   check: (value: any) => value is NonNullable<TType>;
 };
 
@@ -316,6 +315,16 @@ export default abstract class Schema<
     return schema;
   }
 
+  protected resolveOptions<T extends InternalOptions<any>>(options: T): T {
+    return {
+      ...options,
+      from: options.from || [],
+      strict: options.strict ?? this.spec.strict,
+      abortEarly: options.abortEarly ?? this.spec.abortEarly,
+      recursive: options.recursive ?? this.spec.recursive,
+    };
+  }
+
   /**
    * Run the configured transform pipeline over an input value.
    */
@@ -336,7 +345,7 @@ export default abstract class Schema<
         `The value of ${
           options.path || 'field'
         } could not be cast to a value ` +
-          `that satisfies the schema type: "${resolvedSchema._type}". \n\n` +
+          `that satisfies the schema type: "${resolvedSchema.type}". \n\n` +
           `attempted value: ${formattedValue} \n` +
           (formattedResult !== formattedValue
             ? `result of cast: ${formattedResult}`
@@ -390,6 +399,7 @@ export default abstract class Schema<
       originalValue,
       schema: this,
       label: this.spec.label,
+      spec: this.spec,
       sync,
       from,
     };
@@ -470,11 +480,41 @@ export default abstract class Schema<
     }
   }
 
-  asTest(value: any, options?: ValidateOptions<TContext>): RunTest {
-    // Nested validations fields are always strict:
-    //    1. parent isn't strict so the casting will also have cast inner values
-    //    2. parent is strict in which case the nested values weren't cast either
-    const testOptions = { ...options, strict: true, value };
+  asNestedTest({
+    key,
+    index,
+    parent,
+    parentPath,
+    originalParent,
+    options,
+  }: NestedTestConfig): RunTest {
+    const k = key ?? index;
+    if (k == null) {
+      throw TypeError('Must include `key` or `index` for nested validations');
+    }
+
+    const isIndex = typeof k === 'number';
+    let value = parent[k];
+
+    const testOptions = {
+      ...options,
+      // Nested validations fields are always strict:
+      //    1. parent isn't strict so the casting will also have cast inner values
+      //    2. parent is strict in which case the nested values weren't cast either
+      strict: true,
+      parent,
+      value,
+      originalValue: originalParent[k],
+      // FIXME: tests depend on `index` being passed around deeply,
+      //   we should not let the options.key/index bleed through
+      key: undefined,
+      // index: undefined,
+      [isIndex ? 'index' : 'key']: k,
+      path:
+        isIndex || k.includes('.')
+          ? `${parentPath || ''}[${value ? k : `"${k}"`}]`
+          : (parentPath ? `${parentPath}.` : '') + key,
+    };
 
     return (_: any, panic, next) =>
       this.resolve(testOptions)._validate(value, testOptions, panic, next);
@@ -785,7 +825,7 @@ export default abstract class Schema<
         if (!isAbsent(value) && !this.schema._typeCheck(value))
           return this.createError({
             params: {
-              type: this.schema._type,
+              type: this.schema.type,
             },
           });
         return true;
@@ -926,7 +966,7 @@ for (const method of ['validate', 'validateSync'])
         value,
         options.context,
       );
-      return schema[method](parent && parent[parentPath], {
+      return (schema as any)[method](parent && parent[parentPath], {
         ...options,
         parent,
         path,

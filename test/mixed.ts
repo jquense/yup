@@ -323,8 +323,8 @@ describe('Mixed Types ', () => {
     let inst = mixed().test('test', noop);
 
     expect(inst.tests).toHaveLength(1);
-    expect(inst.tests[0].OPTIONS.test).toBe(noop);
-    expect(inst.tests[0].OPTIONS.message).toBe('${path} is invalid');
+    expect(inst.tests[0]!.OPTIONS!.test).toBe(noop);
+    expect(inst.tests[0]!.OPTIONS!.message).toBe('${path} is invalid');
   });
 
   it('should fallback to default message', async () => {
@@ -338,7 +338,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().test('test', message, () => false);
 
     expect(inst.tests).toHaveLength(1);
-    expect(inst.tests[0].OPTIONS.message).toBe(message);
+    expect(inst.tests[0]!.OPTIONS!.message).toBe(message);
 
     let err = await inst.validate('foo').catch((err) => err);
     expect(err.message).toEqual(message);
@@ -348,7 +348,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().test('test', ' ', noop).test('test', 'asdasd', noop);
 
     expect(inst.tests).toHaveLength(1);
-    expect(inst.tests[0].OPTIONS.message).toBe('asdasd');
+    expect(inst.tests[0]!.OPTIONS!.message).toBe('asdasd');
   });
 
   it('should not dedupe tests with the same test function and different type', () => {
@@ -685,7 +685,7 @@ describe('Mixed Types ', () => {
     let inst = mixed().default('hi');
 
     expect(function () {
-      expect(inst.concat(string())._type).toBe('string');
+      expect(inst.concat(string()).type).toBe('string');
     }).not.toThrowError(TypeError);
   });
 

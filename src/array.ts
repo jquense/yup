@@ -86,7 +86,7 @@ export default class ArraySchema<
     options: InternalOptions<TContext> = {},
 
     panic: (err: Error, value: unknown) => void,
-    callback: (err: ValidationError[], value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
   ) {
     // let sync = options.sync;
     // let path = options.path;
@@ -99,7 +99,7 @@ export default class ArraySchema<
 
     super._validate(_value, options, panic, (arrayErrors, value) => {
       if (!recursive || !innerType || !this._typeCheck(value)) {
-        callback(arrayErrors, value);
+        next(arrayErrors, value);
         return;
       }
 
@@ -107,17 +107,13 @@ export default class ArraySchema<
 
       // #950 Ensure that sparse array empty slots are validated
       let tests: RunTest[] = new Array(value.length);
-      for (let idx = 0; idx < value.length; idx++) {
-        let item = value[idx];
-        let path = `${options.path || ''}[${idx}]`;
-
-        tests[idx] = innerType!.asTest(item, {
-          ...options,
-          path,
+      for (let index = 0; index < value.length; index++) {
+        tests[index] = innerType!.asNestedTest({
+          options,
+          index,
           parent: value,
-          // FIXME
-          index: idx,
-          originalValue: originalValue[idx],
+          parentPath: options.path,
+          originalParent: options.originalValue ?? _value,
         });
       }
 
@@ -127,8 +123,7 @@ export default class ArraySchema<
           tests,
         },
         panic,
-        (innerTypeErrors) =>
-          callback(innerTypeErrors.concat(arrayErrors), value),
+        (innerTypeErrors) => next(innerTypeErrors.concat(arrayErrors), value),
       );
     });
   }

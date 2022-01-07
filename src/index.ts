@@ -9,6 +9,7 @@ import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
 import ObjectSchema, { AnyObject, create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
+import TupleSchema, { create as tupleCreate } from './tuple';
 import { create as refCreate } from './Reference';
 import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
@@ -62,6 +63,7 @@ export {
   arrayCreate as array,
   refCreate as ref,
   lazyCreate as lazy,
+  tupleCreate as tuple,
   reach,
   getIn,
   isSchema,
@@ -79,6 +81,7 @@ export {
   DateSchema,
   ObjectSchema,
   ArraySchema,
+  TupleSchema,
 };
 
 export type {

@@ -1,5 +1,10 @@
 import isSchema from './util/isSchema';
-import type { AnyObject, ISchema, ValidateOptions } from './types';
+import type {
+  AnyObject,
+  ISchema,
+  ValidateOptions,
+  NestedTestConfig,
+} from './types';
 import type { ResolveOptions } from './Condition';
 
 import type {
@@ -82,8 +87,9 @@ class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
     return this._resolve(value, options).cast(value, options);
   }
 
-  asTest(value: any, options?: ValidateOptions<TContext>) {
-    return this._resolve(value, options).asTest(value, options);
+  asNestedTest(options: NestedTestConfig) {
+    let value = options.parent[options.index ?? options.key!];
+    return this._resolve(value, options).asNestedTest(options);
   }
 
   validate(value: any, options?: ValidateOptions<TContext>): Promise<T> {

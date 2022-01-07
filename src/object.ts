@@ -198,7 +198,7 @@ export default class ObjectSchema<
 
   protected _validate(
     _value: any,
-    opts: InternalOptions<TContext> = {},
+    options: InternalOptions<TContext> = {},
     panic: (err: Error, value: unknown) => void,
     next: (err: ValidationError[], value: unknown) => void,
   ) {
@@ -206,17 +206,15 @@ export default class ObjectSchema<
       from = [],
       originalValue = _value,
       recursive = this.spec.recursive,
-    } = opts;
+    } = options;
 
-    from = [{ schema: this, value: originalValue }, ...from];
-
+    options.from = [{ schema: this, value: originalValue }, ...from];
     // this flag is needed for handling `strict` correctly in the context of
     // validation vs just casting. e.g strict() on a field is only used when validating
-    opts.__validating = true;
-    opts.originalValue = originalValue;
-    opts.from = from;
+    options.__validating = true;
+    options.originalValue = originalValue;
 
-    super._validate(_value, opts, panic, (objectErrors, value) => {
+    super._validate(_value, options, panic, (objectErrors, value) => {
       if (!recursive || !isObject(value)) {
         next(objectErrors, value);
         return;
@@ -232,18 +230,13 @@ export default class ObjectSchema<
           continue;
         }
 
-        let path =
-          key.indexOf('.') === -1
-            ? (opts.path ? `${opts.path}.` : '') + key
-            : `${opts.path || ''}["${key}"]`;
-
         tests.push(
-          field.asTest(value[key], {
-            ...opts,
-            path,
-            from,
+          field.asNestedTest({
+            options,
+            key,
             parent: value,
-            originalValue: originalValue[key],
+            parentPath: options.path,
+            originalParent: originalValue,
           }),
         );
       }
