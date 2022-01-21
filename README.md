@@ -175,6 +175,7 @@ import {
     - [`array.max(limit: number | Ref, message?: string | function): this`](#arraymaxlimit-number--ref-message-string--function-this)
     - [`array.ensure(): this`](#arrayensure-this)
     - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
+  - [tuple](#tuple)
   - [object](#object)
     - [Object schema defaults](#object-schema-defaults)
     - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
