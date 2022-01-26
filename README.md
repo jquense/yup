@@ -1525,7 +1525,7 @@ schema.default(); // -> { name: '' }
 
 This may be a bit suprising, but is usually helpful since it allows large, nested
 schema to create default values that fill out the whole shape and not just the root object. There is
-one gotcha! though. For nested object schema that are optional but include non optional fields
+one "gotcha" though: optional nested object schema that include non-optional fields
 may fail in unexpected ways:
 
 ```js
