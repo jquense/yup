@@ -1036,8 +1036,8 @@ let schema = object({
   isBig: boolean(),
   count: number().when(['isBig', 'isSpecial'], {
     is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
-    then: (schema) => schema..min(5),
-    otherwise: (schema) => schema..min(0),
+    then: (schema) => schema.min(5),
+    otherwise: (schema) => schema.min(0),
   }),
 });
 
