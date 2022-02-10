@@ -48,6 +48,10 @@ export default class NumberSchema<
 
         let parsed = value;
         if (typeof parsed === 'string') {
+          // replace arabic and persian number to english
+          parsed = parsed.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+          parsed = parsed.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+
           parsed = parsed.replace(/\s/g, '');
           if (parsed === '') return NaN;
           // don't use parseFloat to avoid positives on alpha-numeric strings
