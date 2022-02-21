@@ -1,19 +1,23 @@
-import MixedSchema, { create as mixedCreate } from './mixed';
+import MixedSchema, {
+  create as mixedCreate,
+  MixedOptions,
+  TypeGuard,
+} from './mixed';
 import BooleanSchema, { create as boolCreate } from './boolean';
 import StringSchema, { create as stringCreate } from './string';
 import NumberSchema, { create as numberCreate } from './number';
 import DateSchema, { create as dateCreate } from './date';
 import ObjectSchema, { AnyObject, create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
+import TupleSchema, { create as tupleCreate } from './tuple';
 import { create as refCreate } from './Reference';
-import Lazy, { create as lazyCreate } from './Lazy';
+import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
-import reach from './util/reach';
+import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale from './setLocale';
-import BaseSchema, { AnySchema } from './schema';
-import type { TypeOf, Asserts } from './util/types';
-import { Maybe } from './types';
+import Schema, { AnySchema } from './schema';
+import type { InferType } from './types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,
@@ -37,30 +41,16 @@ function addMethod(schemaType: any, name: string, fn: any) {
   schemaType.prototype[name] = fn;
 }
 
-type ObjectSchemaOf<T extends AnyObject, CustomTypes = never> = ObjectSchema<
-  {
-    [k in keyof T]-?: T[k] extends Array<infer E>
-      ? ArraySchema<SchemaOf<E, CustomTypes> | Lazy<SchemaOf<E, CustomTypes>>>
-      : T[k] extends Date | CustomTypes
-      ? BaseSchema<Maybe<T[k]>, AnyObject, T[k]>
-      : T[k] extends AnyObject
-      ? // we can't use  ObjectSchema<{ []: SchemaOf<T[k]> }> b/c TS produces a union of two schema
-        ObjectSchemaOf<T[k], CustomTypes> | Lazy<ObjectSchemaOf<T[k], CustomTypes>>
-      : BaseSchema<Maybe<T[k]>, AnyObject, T[k]>;
-  }
->;
-
-type SchemaOf<T, CustomTypes = never> = T extends Array<infer E>
-  ? ArraySchema<SchemaOf<E, CustomTypes> | Lazy<SchemaOf<E, CustomTypes>>>
-  : T extends Date | CustomTypes
-  ? BaseSchema<Maybe<T>, AnyObject, T>
-  : T extends AnyObject
-  ? ObjectSchemaOf<T, CustomTypes>
-  : BaseSchema<Maybe<T>, AnyObject, T>;
-
 export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
 
-export type { SchemaOf, TypeOf, Asserts, Asserts as InferType, AnySchema };
+export type {
+  AnyObject,
+  InferType,
+  InferType as Asserts,
+  AnySchema,
+  MixedOptions,
+  TypeGuard,
+};
 
 export {
   mixedCreate as mixed,
@@ -73,7 +63,9 @@ export {
   arrayCreate as array,
   refCreate as ref,
   lazyCreate as lazy,
+  tupleCreate as tuple,
   reach,
+  getIn,
   isSchema,
   addMethod,
   setLocale,
@@ -81,7 +73,7 @@ export {
 };
 
 export {
-  BaseSchema,
+  Schema,
   MixedSchema,
   BooleanSchema,
   StringSchema,
@@ -89,6 +81,7 @@ export {
   DateSchema,
   ObjectSchema,
   ArraySchema,
+  TupleSchema,
 };
 
 export type {

@@ -7,5 +7,5 @@
   "setupFilesAfterEnv": ["./test-setup.js"],
   "roots": ["test"],
   "testRegex": "\\.(t|j)s$",
-  "testPathIgnorePatterns": ["helpers\\.js", "\\.eslintrc\\.js", "types\\.ts"]
+  "testPathIgnorePatterns": ["helpers\\.ts", "\\.eslintrc\\.js", "types\\.ts"]
 }

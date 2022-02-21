@@ -1,3 +1,82 @@
+# [1.0.0-beta.2](https://github.com/jquense/yup/compare/v0.32.11...v1.0.0-beta.2) (2022-01-21)
+
+
+### Bug Fixes
+
+* add originalValue to TestContext type ([#1527](https://github.com/jquense/yup/issues/1527)) ([fcc5ae7](https://github.com/jquense/yup/commit/fcc5ae710a1b3ef4b799532291faf894bdbcc11b)), closes [/github.com/abnersajr/DefinitelyTyped/blob/a186d99d0c3a92424691a82130374a1b9145c7cd/types/yup/index.d.ts#L446](https://github.com//github.com/abnersajr/DefinitelyTyped/blob/a186d99d0c3a92424691a82130374a1b9145c7cd/types/yup/index.d.ts/issues/L446)
+
+
+* Merge next into master (#1547) ([366f7d8](https://github.com/jquense/yup/commit/366f7d8e280b021bbd7a4a4d3cfc8fa0cce00c8b)), closes [#1547](https://github.com/jquense/yup/issues/1547) [#1542](https://github.com/jquense/yup/issues/1542) [#1541](https://github.com/jquense/yup/issues/1541) [#1543](https://github.com/jquense/yup/issues/1543) [#1545](https://github.com/jquense/yup/issues/1545)
+
+
+### Features
+
+*  add Tuple type ([#1546](https://github.com/jquense/yup/issues/1546)) ([a8febdd](https://github.com/jquense/yup/commit/a8febddcfbe42358e63194ae8da582e66b746edf))
+
+
+### BREAKING CHANGES
+
+* The function version of `when()` has been changed to make it easier to type. values are always passed as an array and schema, and options always the second and third argument. `this` is no longer set to the schema instance.  and all functions _must_ return a schema to be type safe
+
+```diff
+ string()
+-   .when('other', function (other) => {
+-      if (other) return this.required()
++   .when('other', ([other], schema) => {
++     return other ? schema.required() : schema
+  })
+```
+* concat works shallowly now. Previously concat functioned like a deep merge for object, which produced confusing behavior with incompatible concat'ed schema. Now concat for objects works similar to how it works for other types, the provided schema is applied on top of the existing schema, producing a new schema that is the same as calling each builder method in order
+
+* docs: update readme
+
+* chore: update to readonly arrays and test string type narrowing
+
+* test: add boolean tests
+
+* docs: more docs
+
+* feat: allow mixed schema to specify type check
+* `mixed` schema are no longer treated as the base class for other schema types. It hasn't been for a while, but we've done some nasty prototype slinging to make it behave like it was. Now typescript types should be 1 to 1 with the actual classes yup exposes. 
+
+In general this should not affect anything unless you are extending (via `addMethod` or otherwise) `mixed` prototype. 
+
+```diff
+import {
+-  mixed,
++  Schema,
+} from 'yup';
+
+- addMethod(mixed, 'method', impl)
++ addMethod(Schema, 'method', impl)
+```
+
+* chore: prep work for toggling coercion
+
+* Publish v1.0.0-alpha.4
+
+* chore: docs
+
+* feat!: add json() method and remove default object/array coercion
+* object and array schema no longer parse JSON strings by default, nor do they return `null` for invalid casts.
+
+```ts
+object().json().cast('{}')
+array().json().cast('[]')
+```
+to mimic the previous behavior
+
+* feat: Make Array generic consistent with others
+* types only, `ArraySchema`  initial generic is the array type not the type of the array element. `array<T>()` is still the inner type.
+
+* Publish v1.0.0-beta.0
+
+* docs
+
+
+
+
+
 ## [0.32.11](https://github.com/jquense/yup/compare/v0.32.10...v0.32.11) (2021-10-12)
 
 

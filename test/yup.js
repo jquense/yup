@@ -9,7 +9,7 @@ import {
   number,
   boolean,
   date,
-  ValidationError,
+  Schema,
   ObjectSchema,
   ArraySchema,
   StringSchema,
@@ -18,24 +18,29 @@ import {
   DateSchema,
   mixed,
   MixedSchema,
+  tuple,
 } from '../src';
 
 describe('Yup', function () {
   it('cast should not assert on undefined', () => {
-    (() => string().cast(undefined)).should.not.throw();
+    expect(() => string().cast(undefined)).not.toThrowError();
   });
 
   it('cast should assert on undefined cast results', () => {
-    (() =>
+    expect(() =>
       string()
+        .defined()
         .transform(() => undefined)
-        .cast('foo')).should.throw();
+        .cast('foo'),
+    ).toThrowError(
+      'The value of field could not be cast to a value that satisfies the schema type: "string".',
+    );
   });
 
   it('cast should respect assert option', () => {
-    (() => string().cast(null)).should.throw();
+    expect(() => string().cast(null)).toThrowError();
 
-    (() => string().cast(null, { assert: false })).should.not.throw();
+    expect(() => string().cast(null, { assert: false })).not.toThrowError();
   });
 
   it('should getIn correctly', async () => {
@@ -56,9 +61,9 @@ describe('Yup', function () {
       value,
     );
 
-    expect(schema).to.equal(num);
-    expect(parentPath).to.equal('num-1');
-    expect(parent).to.equal(value.nested.arr[1]);
+    expect(schema).toBe(num);
+    expect(parentPath).toBe('num-1');
+    expect(parent).toBe(value.nested.arr[1]);
   });
 
   it('should getIn array correctly', async () => {
@@ -80,9 +85,9 @@ describe('Yup', function () {
 
     const { schema, parent, parentPath } = getIn(inst, 'nested.arr[1]', value);
 
-    expect(schema).to.equal(shape);
-    expect(parentPath).to.equal('1');
-    expect(parent).to.equal(value.nested.arr);
+    expect(schema).toBe(shape);
+    expect(parentPath).toBe('1');
+    expect(parent).toBe(value.nested.arr);
   });
 
   it('should REACH correctly', async () => {
@@ -92,36 +97,41 @@ describe('Yup', function () {
     let inst = object({
       num: number().max(4),
 
-      nested: object({
-        arr: array().of(shape),
-      }),
+      nested: tuple([
+        string(),
+        object({
+          arr: array().of(shape),
+        }),
+      ]),
     });
 
-    reach(inst, '').should.equal(inst);
+    expect(reach(inst, '')).toBe(inst);
 
-    reach(inst, 'nested.arr[0].num').should.equal(num);
-    reach(inst, 'nested.arr[].num').should.equal(num);
-    reach(inst, 'nested.arr[1].num').should.equal(num);
-    reach(inst, 'nested.arr[1]').should.equal(shape);
+    expect(reach(inst, 'nested[1].arr[0].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr.num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[1].num')).toBe(num);
+    expect(reach(inst, 'nested[1].arr[1]')).toBe(shape);
 
-    reach(inst, 'nested["arr"][1].num').should.not.equal(number());
+    expect(() => reach(inst, 'nested.arr[1].num')).toThrowError(
+      'Yup.reach cannot implicitly index into a tuple type. the path part ".nested" must contain an index to the tuple element, e.g. ".nested[0]"',
+    );
 
-    let valid = await reach(inst, 'nested.arr[0].num').isValid(5);
-    valid.should.equal(true);
+    expect(reach(inst, 'nested[1].arr[0].num').isValid(5)).resolves.toBe(true);
   });
 
   it('should REACH conditionally correctly', async function () {
-    var num = number().oneOf([4]),
+    let num = number().oneOf([4]),
       inst = object().shape({
         num: number().max(4),
         nested: object().shape({
-          arr: array().when('$bar', function (bar) {
+          arr: array().when('$bar', function ([bar]) {
             return bar !== 3
               ? array().of(number())
               : array().of(
                   object().shape({
                     foo: number(),
-                    num: number().when('foo', (foo) => {
+                    num: number().when('foo', ([foo]) => {
                       if (foo === 5) return num;
                     }),
                   }),
@@ -141,35 +151,36 @@ describe('Yup', function () {
     let options = {};
     options.parent = value.nested.arr[0];
     options.value = options.parent.num;
-    reach(inst, 'nested.arr.num', value).resolve(options).should.equal(num);
-    reach(inst, 'nested.arr[].num', value).resolve(options).should.equal(num);
+    expect(reach(inst, 'nested.arr.num', value).resolve(options)).toBe(num);
+    expect(reach(inst, 'nested.arr[].num', value).resolve(options)).toBe(num);
 
     options.context = context;
-    reach(inst, 'nested.arr.num', value, context)
-      .resolve(options)
-      .should.equal(num);
-    reach(inst, 'nested.arr[].num', value, context)
-      .resolve(options)
-      .should.equal(num);
-    reach(inst, 'nested.arr[0].num', value, context)
-      .resolve(options)
-      .should.equal(num);
+    expect(reach(inst, 'nested.arr.num', value, context).resolve(options)).toBe(
+      num,
+    );
+    expect(
+      reach(inst, 'nested.arr[].num', value, context).resolve(options),
+    ).toBe(num);
+    expect(
+      reach(inst, 'nested.arr[0].num', value, context).resolve(options),
+    ).toBe(num);
 
     // // should fail b/c item[1] is used to resolve the schema
     options.parent = value.nested.arr[1];
     options.value = options.parent.num;
-    reach(inst, 'nested["arr"][1].num', value, context)
-      .resolve(options)
-      .should.not.equal(num);
+    expect(
+      reach(inst, 'nested["arr"][1].num', value, context).resolve(options),
+    ).not.toBe(num);
 
     let reached = reach(inst, 'nested.arr[].num', value, context);
 
-    await reached.validate(5, { context, parent: { foo: 4 } }).should.be
-      .fulfilled;
+    await expect(
+      reached.validate(5, { context, parent: { foo: 4 } }),
+    ).resolves.toBeDefined();
 
-    await reached
-      .validate(5, { context, parent: { foo: 5 } })
-      .should.be.rejectedWith(ValidationError, /one of the following/);
+    await expect(
+      reached.validate(5, { context, parent: { foo: 5 } }),
+    ).rejects.toThrowError(/one of the following/);
   });
 
   it('should reach through lazy', async () => {
@@ -178,34 +189,29 @@ describe('Yup', function () {
       2: object({ foo: number() }),
     };
 
-    let err = await object({
-      x: array(lazy((val) => types[val.type])),
-    })
-      .strict()
-      .validate({
-        x: [
-          { type: 1, foo: '4' },
-          { type: 2, foo: '5' },
-        ],
+    await expect(
+      object({
+        x: array(lazy((val) => types[val.type])),
       })
-      .should.be.rejected();
-    err.message.should.match(/must be a `number` type/);
+        .strict()
+        .validate({
+          x: [
+            { type: 1, foo: '4' },
+            { type: 2, foo: '5' },
+          ],
+        }),
+    ).rejects.toThrowError(/must be a `number` type/);
   });
 
   describe('addMethod', () => {
-    it('extending mixed should make method accessible everywhere', () => {
-      addMethod(mixed, 'foo', () => 'here');
+    it('extending Schema should make method accessible everywhere', () => {
+      addMethod(Schema, 'foo', () => 'here');
 
-      expect(string().foo()).to.equal('here');
-    });
-
-    it('extending Mixed should make method accessible everywhere', () => {
-      addMethod(MixedSchema, 'foo', () => 'here');
-
-      expect(string().foo()).to.equal('here');
+      expect(string().foo()).toBe('here');
     });
 
     test.each([
+      ['mixed', mixed],
       ['object', object],
       ['array', array],
       ['string', string],
@@ -215,10 +221,11 @@ describe('Yup', function () {
     ])('should work with factories: %s', (_msg, factory) => {
       addMethod(factory, 'foo', () => 'here');
 
-      expect(factory().foo()).to.equal('here');
+      expect(factory().foo()).toBe('here');
     });
 
     test.each([
+      ['mixed', MixedSchema],
       ['object', ObjectSchema],
       ['array', ArraySchema],
       ['string', StringSchema],
@@ -228,7 +235,7 @@ describe('Yup', function () {
     ])('should work with classes: %s', (_msg, ctor) => {
       addMethod(ctor, 'foo', () => 'here');
 
-      expect(new ctor().foo()).to.equal('here');
+      expect(new ctor().foo()).toBe('here');
     });
   });
 });

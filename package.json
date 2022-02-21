@@ -1,9 +1,9 @@
 {
   "name": "yup",
-  "version": "0.32.11",
+  "version": "1.0.0-beta.2",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
-  "module": "es/index.js",
+  "module": "lib/index.esm.js",
   "runkitExampleFilename": "./runkit-example.js",
   "scripts": {
     "test": "yarn lint && yarn test-all --runInBand",
@@ -15,13 +15,10 @@
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
     "release": "rollout",
-    "build": "yarn 4c build && yarn toc",
+    "build:dts": "yarn tsc --emitDeclarationOnly -p . --outDir dts",
+    "build": "rm -rf dts && yarn build:dts && yarn rollup -c rollup.config.js  && yarn toc",
     "prepublishOnly": "yarn build"
   },
-  "files": [
-    "es",
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jquense/yup.git"
@@ -35,7 +32,8 @@
   },
   "homepage": "https://github.com/jquense/yup",
   "release": {
-    "conventionalCommits": true
+    "conventionalCommits": true,
+    "publishDir": "lib"
   },
   "prettier": {
     "singleQuote": true,
@@ -60,7 +58,7 @@
     ],
     "testRegex": "\\.(j|t)s$",
     "testPathIgnorePatterns": [
-      "helpers\\.js",
+      "helpers\\.ts",
       "\\.eslintrc\\.js",
       "types\\.ts"
     ]
@@ -69,54 +67,42 @@
     "@4c/cli": "^3.0.1",
     "@4c/rollout": "^3.0.1",
     "@4c/tsconfig": "^0.4.0",
-    "@babel/cli": "^7.15.7",
-    "@babel/core": "^7.15.8",
-    "@babel/plugin-proposal-logical-assignment-operators": "^7.14.5",
-    "@babel/preset-typescript": "^7.15.0",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "babel-eslint": "^10.1.0",
-    "babel-jest": "^27.2.5",
-    "babel-plugin-transform-rename-import": "^2.3.0",
-    "babel-preset-jason": "^6.3.0",
-    "benchmark": "^2.1.4",
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "dirty-chai": "^2.0.1",
-    "doctoc": "^2.0.1",
-    "eslint": "^7.12.0",
-    "eslint-config-jason": "^8.1.1",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jest": "^25.0.1",
-    "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "eslint-plugin-ts-expect": "^2.0.0",
+    "@babel/cli": "^7.17.3",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-typescript": "^7.16.7",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@types/jest": "^27.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "babel-jest": "^27.5.1",
+    "babel-preset-env-modules": "^1.0.1",
+    "doctoc": "^2.1.0",
+    "dts-bundle-generator": "^6.5.0",
+    "eslint": "^8.9.0",
+    "eslint-config-jason": "^8.2.2",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jest": "^25.7.0",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-ts-expect": "^2.1.0",
     "eslint-plugin-typescript": "^0.14.0",
     "hookem": "^2.0.1",
-    "jest": "^27.2.5",
-    "lint-staged": "^11.2.3",
-    "prettier": "^2.4.1",
-    "rollup": "^2.58.0",
+    "jest": "^27.5.1",
+    "lint-staged": "^12.3.4",
+    "prettier": "^2.5.1",
+    "rollup": "^2.67.3",
     "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-filesize": "^9.1.1",
+    "rollup-plugin-dts": "^4.1.0",
+    "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-size-snapshot": "^0.12.0",
-    "sinon": "^11.1.2",
-    "sinon-chai": "^3.7.0",
     "synchronous-promise": "^2.0.15",
-    "typescript": "^4.4.3"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@babel/runtime": "^7.15.4",
-    "@types/lodash": "^4.14.175",
-    "lodash": "^4.17.21",
-    "lodash-es": "^4.17.21",
-    "nanoclone": "^0.2.1",
     "property-expr": "^2.0.4",
+    "tiny-case": "^1.0.2",
     "toposort": "^2.0.2"
-  },
-  "engines": {
-    "node": ">=10"
   }
 }

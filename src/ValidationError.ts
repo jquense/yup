@@ -28,12 +28,13 @@ export default class ValidationError extends Error {
 
     return message;
   }
+
   static isError(err: any): err is ValidationError {
     return err && err.name === 'ValidationError';
   }
 
   constructor(
-    errorOrErrors: string | ValidationError | ValidationError[],
+    errorOrErrors: string | ValidationError | readonly ValidationError[],
     value?: any,
     field?: string,
     type?: string,

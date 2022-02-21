@@ -1,11 +1,10 @@
-import has from 'lodash/has';
 // @ts-expect-error
 import toposort from 'toposort';
 import { split } from 'property-expr';
 
 import Ref from '../Reference';
 import isSchema from './isSchema';
-import { ObjectShape } from '../object';
+import { ObjectShape } from './objectTypes';
 
 export default function sortFields(
   fields: ObjectShape,
@@ -22,16 +21,15 @@ export default function sortFields(
     if (!excludes.has(`${key}-${node}`)) edges.push([key, node]);
   }
 
-  for (const key in fields)
-    if (has(fields, key)) {
-      let value = fields[key];
+  for (const key of Object.keys(fields)) {
+    let value = fields[key];
 
-      nodes.add(key);
+    nodes.add(key);
 
-      if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
-      else if (isSchema(value) && 'deps' in value)
-        value.deps.forEach((path) => addNode(path, key));
-    }
+    if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
+    else if (isSchema(value) && 'deps' in value)
+      (value as any).deps.forEach((path: string) => addNode(path, key));
+  }
 
   return toposort.array(Array.from(nodes), edges).reverse() as string[];
 }

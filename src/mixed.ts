@@ -1,46 +1,84 @@
-import type { MixedLocale } from './locale';
+import { AnyObject, Message } from './types';
+import type {
+  Concat,
+  Defined,
+  Flags,
+  SetFlag,
+  Thunk,
+  Maybe,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
+import Schema from './schema';
 
-import { AnyObject, Maybe, Optionals } from './types';
-import type { Defined } from './util/types';
-import BaseSchema from './schema';
+const returnsTrue: any = () => true;
 
-export declare class MixedSchema<
+export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
+export interface MixedOptions<TType> {
+  type?: string;
+  check?: TypeGuard<TType>;
+}
+export function create<TType = any>(
+  spec?: MixedOptions<TType> | TypeGuard<TType>,
+) {
+  return new MixedSchema<TType | undefined>(spec);
+}
+
+export default class MixedSchema<
   TType = any,
   TContext = AnyObject,
-  TOut = TType
-> extends BaseSchema<TType, TContext, TOut> {
-  default<TNextDefault extends Maybe<TType>>(
-    def: TNextDefault | (() => TNextDefault),
-  ): TNextDefault extends undefined
-    ? MixedSchema<TType | undefined, TContext>
-    : MixedSchema<Defined<TType>, TContext>;
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor(spec?: MixedOptions<TType> | TypeGuard<TType>) {
+    super(
+      typeof spec === 'function'
+        ? { type: 'mixed', check: spec }
+        : { type: 'mixed', check: returnsTrue as TypeGuard<TType>, ...spec },
+    );
+  }
+}
 
+export default interface MixedSchema<
+  TType = any,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: Thunk<D>,
+  ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: MixedSchema<IT, IC, ID, IF>,
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: Schema<IT, IC, ID, IF>,
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
   concat(schema: this): this;
-  concat<IT, IC, IO>(
-    schema: BaseSchema<IT, IC, IO>,
-  ): MixedSchema<
-    TType | IT,
-    TContext & IC,
-    NonNullable<TOut> | IO | Optionals<IO>
-  >;
+
   defined(
-    msg?: MixedLocale['defined'],
-  ): MixedSchema<TType, TContext, Defined<TOut>>;
+    msg?: Message,
+  ): MixedSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): MixedSchema<TType | undefined, TContext, TDefault, TFlags>;
+
   required(
-    msg?: MixedLocale['required'],
-  ): MixedSchema<TType, TContext, NonNullable<TOut>>;
-  notRequired(): MixedSchema<TType, TContext>;
+    msg?: Message,
+  ): MixedSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): MixedSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
-  nullable(isNullable?: true): MixedSchema<TType | null, TContext>;
-  nullable(isNullable: false): MixedSchema<Exclude<TType, null>, TContext>;
+  nullable(
+    msg?: Message,
+  ): MixedSchema<TType | null, TContext, TDefault, TFlags>;
+
+  nonNullable(): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): MixedSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
 }
 
-const Mixed: typeof MixedSchema = BaseSchema as any;
-
-export default Mixed;
-
-export function create<TType = any>() {
-  return new Mixed<TType | undefined>();
-}
-// XXX: this is using the Base schema so that `addMethod(mixed)` works as a base class
-create.prototype = Mixed.prototype;
+create.prototype = MixedSchema.prototype;

@@ -1,16 +1,21 @@
+import { ISchema } from '../src/types';
 import printValue from '../src/util/printValue';
 
-export let castAndShouldFail = (schema, value) => {
-  (() => schema.cast(value)).should.throw(
-    TypeError,
-    /The value of (.+) could not be cast to a value that satisfies the schema type/gi,
-  );
+export let castAndShouldFail = (schema: ISchema<any>, value: any) => {
+  expect(() => schema.cast(value)).toThrowError(TypeError);
 };
 
-export let castAll = (inst, { invalid = [], valid = [] }) => {
+type Options = {
+  invalid?: any[];
+  valid?: any[];
+};
+export let castAll = (
+  inst: ISchema<any>,
+  { invalid = [], valid = [] }: Options,
+) => {
   valid.forEach(([value, result, schema = inst]) => {
     it(`should cast ${printValue(value)} to ${printValue(result)}`, () => {
-      expect(schema.cast(value)).to.equal(result);
+      expect(schema.cast(value)).toBe(result);
     });
   });
 
@@ -21,7 +26,10 @@ export let castAll = (inst, { invalid = [], valid = [] }) => {
   });
 };
 
-export let validateAll = (inst, { valid = [], invalid = [] }) => {
+export let validateAll = (
+  inst: ISchema<any>,
+  { valid = [], invalid = [] }: Options,
+) => {
   describe('valid:', () => {
     runValidations(valid, true);
   });
@@ -30,7 +38,7 @@ export let validateAll = (inst, { valid = [], invalid = [] }) => {
     runValidations(invalid, false);
   });
 
-  function runValidations(arr, isValid) {
+  function runValidations(arr: any[], isValid: boolean) {
     arr.forEach((config) => {
       let message = '',
         value = config,
@@ -39,19 +47,25 @@ export let validateAll = (inst, { valid = [], invalid = [] }) => {
       if (Array.isArray(config)) [value, schema, message = ''] = config;
 
       it(`${printValue(value)}${message && `  (${message})`}`, async () => {
-        await schema.isValid(value).should.become(isValid);
+        await expect((schema as any).isValid(value)).resolves.toEqual(isValid);
       });
     });
   }
 };
 
-export function ensureSync(fn) {
+export function validationErrorWithMessages(...errors: any[]) {
+  return expect.objectContaining({
+    errors,
+  });
+}
+
+export function ensureSync(fn: () => Promise<any>) {
   let run = false;
-  let resolve = (t) => {
+  let resolve = (t: any) => {
     if (!run) return t;
     throw new Error('Did not execute synchronously');
   };
-  let err = (t) => {
+  let err = (t: any) => {
     if (!run) throw t;
     throw new Error('Did not execute synchronously');
   };

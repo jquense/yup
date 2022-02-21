@@ -1,68 +1,76 @@
 # Yup
 
-Yup is a JavaScript schema builder for value parsing and validation. Define a schema, transform a value to match, validate the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformations.
+Yup is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
 
-Yup's API is heavily inspired by [Joi](https://github.com/hapijs/joi), but leaner and built with client-side validation as its primary use-case. Yup separates the parsing and validating functions into separate steps. `cast()` transforms data while `validate` checks that the input is the correct shape. Each can be performed together (such as HTML form validation) or seperately (such as deserializing trusted data from APIs).
+> **You are viewing docs for the v1.0.0 pre-release of yup, pre-v1 docs are available: [here](https://github.com/jquense/yup/tree/pre-v1)**
 
-## Docs
+**Killer Features**:
 
-- [API](#api)
-- [Extending yup](docs/extending.md)
-- [TypeScript support](docs/typescript.md)
-- [Playground](https://runkit.com/jquense/yup#)
+- Concise yet expressive schema interface, equipped to model simple to complex data models
+- Powerful TypeScript support. Infer static types from schema, or ensure schema correctly implement a type
+- Built-in async validation support. Model server-side and client-side validation equally well
+- Extensible: add your own type-safe methods and schema
+- Rich error details, make debugging a breeze
 
-## Install
+## Getting Started
 
-```sh
-npm install -S yup
-```
+Schema are comprised of parsing actions (transforms) as well as assertions (tests) about the input value.
+Validate an input value to parse it and run the configured set of assertions. Chain together methods to build a schema.
 
-Yup always relies on the `Promise` global object to handle asynchronous values as well as `Set` and `Map`.
-For browsers that do not support these, you'll need to include a polyfill, such as core-js:
+```ts
+import { object, string, number, date, InferType } from 'yup';
 
-```js
-import 'core-js/es6/promise';
-import 'core-js/es6/set';
-import 'core-js/es6/map';
-```
-
-## Usage
-
-You define and create schema objects. Schema objects are immutable, so each call of a method returns a _new_ schema object. When using es module syntax, yup exports everything as a named export
-
-```js
-import * as yup from 'yup';
-
-let schema = yup.object().shape({
-  name: yup.string().required(),
-  age: yup.number().required().positive().integer(),
-  email: yup.string().email(),
-  website: yup.string().url(),
-  createdOn: yup.date().default(function () {
-    return new Date();
-  }),
+let userSchema = object({
+  name: string().required(),
+  age: number().required().positive().integer(),
+  email: string().email(),
+  website: string().url().nullable(),
+  createdOn: date().default(() => new Date()),
 });
 
-// check validity
-schema
-  .isValid({
-    name: 'jimmy',
-    age: 24,
-  })
-  .then(function (valid) {
-    valid; // => true
-  });
+// parse and assert validity
+const user = await userSchema.validate(await fetchUser());
 
-// you can try and type cast objects to the defined schema
-schema.cast({
+type User = InferType<typeof userSchema>;
+/* {
+  name: string;
+  age: number;
+  email?: string | undefined
+  website?: string | null | undefined
+  createdOn: Date
+}*/
+```
+
+Use a schema to coerce or "cast" an input value into the correct type, and optionally
+transform that value into more concrete and specific values, without making further assertions.
+
+```ts
+// Attempts to coarce values to the correct type
+const parsedUser = userSchema.cast({
   name: 'jimmy',
   age: '24',
   createdOn: '2014-09-23T19:25:25Z',
 });
-// => { name: 'jimmy', age: 24, createdOn: Date }
+// ✅  { name: 'jimmy', age: 24, createdOn: Date }
 ```
 
-The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
+Know that your input value is already parsed? You can "strictly" validate an input, and avoid the overhead
+of running parsing logic.
+
+```ts
+// ❌  ValidationError "age is not a number"
+const parsedUser = await userSchema.validate(
+  {
+    name: 'jimmy',
+    age: '24',
+  },
+  { strict: true },
+);
+```
+
+## Table of Contents
+
+<!-- The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
 If you need access to the actual schema classes, they are also exported:
 
 ```js
@@ -75,13 +83,305 @@ import {
   ObjectSchema,
   StringSchema,
 } from 'yup';
+``` -->
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Schema basics](#schema-basics)
+  - [Parsing: Transforms](#parsing-transforms)
+  - [Validation: Tests](#validation-tests)
+  - [Composition and Reuse](#composition-and-reuse)
+- [TypeScript integration](#typescript-integration)
+  - [Schema defaults](#schema-defaults)
+  - [Ensuring a schema matches an existing type](#ensuring-a-schema-matches-an-existing-type)
+  - [Extending built-in schema with new methods](#extending-built-in-schema-with-new-methods)
+  - [TypeScript configuration](#typescript-configuration)
+- [Error message customization](#error-message-customization)
+  - [localization and i18n](#localization-and-i18n)
+- [API](#api)
+  - [`yup`](#yup)
+    - [`reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#reachschema-schema-path-string-value-object-context-object-schema)
+    - [`addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#addmethodschematype-schema-name-string-method--schema-void)
+    - [`ref(path: string, options: { contextPrefix: string }): Ref`](#refpath-string-options--contextprefix-string--ref)
+    - [`lazy((value: any) => Schema): Lazy`](#lazyvalue-any--schema-lazy)
+    - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
+  - [`Schema`](#schema)
+    - [`Schema.clone(): Schema`](#schemaclone-schema)
+    - [`Schema.label(label: string): Schema`](#schemalabellabel-string-schema)
+    - [`Schema.meta(metadata: object): Schema`](#schemametametadata-object-schema)
+    - [`Schema.describe(options?: ResolveOptions): SchemaDescription`](#schemadescribeoptions-resolveoptions-schemadescription)
+    - [`Schema.concat(schema: Schema): Schema`](#schemaconcatschema-schema-schema)
+    - [`Schema.validate(value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidatevalue-any-options-object-promiseinfertypeschema-validationerror)
+    - [`Schema.validateSync(value: any, options?: object): InferType<Schema>`](#schemavalidatesyncvalue-any-options-object-infertypeschema)
+    - [`Schema.validateAt(path: string, value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidateatpath-string-value-any-options-object-promiseinfertypeschema-validationerror)
+    - [`Schema.validateSyncAt(path: string, value: any, options?: object): InferType<Schema>`](#schemavalidatesyncatpath-string-value-any-options-object-infertypeschema)
+    - [`Schema.isValid(value: any, options?: object): Promise<boolean>`](#schemaisvalidvalue-any-options-object-promiseboolean)
+    - [`Schema.isValidSync(value: any, options?: object): boolean`](#schemaisvalidsyncvalue-any-options-object-boolean)
+    - [`Schema.cast(value: any, options = {}): InferType<Schema>`](#schemacastvalue-any-options---infertypeschema)
+    - [`Schema.isType(value: any): value is InferType<Schema>`](#schemaistypevalue-any-value-is-infertypeschema)
+    - [`Schema.strict(enabled: boolean = false): Schema`](#schemastrictenabled-boolean--false-schema)
+    - [`Schema.strip(enabled: boolean = true): Schema`](#schemastripenabled-boolean--true-schema)
+    - [`Schema.withMutation(builder: (current: Schema) => void): void`](#schemawithmutationbuilder-current-schema--void-void)
+    - [`Schema.default(value: any): Schema`](#schemadefaultvalue-any-schema)
+    - [`Schema.getDefault(options?: object): Any`](#schemagetdefaultoptions-object-any)
+    - [`Schema.nullable(): Schema`](#schemanullable-schema)
+    - [`Schema.nonNullable(): Schema`](#schemanonnullable-schema)
+    - [`Schema.defined(): Schema`](#schemadefined-schema)
+    - [`Schema.optional(): Schema`](#schemaoptional-schema)
+    - [`Schema.required(message?: string | function): Schema`](#schemarequiredmessage-string--function-schema)
+    - [`Schema.notRequired(): Schema` Alias: `optional()`](#schemanotrequired-schema-alias-optional)
+    - [`Schema.typeError(message: string): Schema`](#schematypeerrormessage-string-schema)
+    - [`Schema.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#schemaoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
+    - [`Schema.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#schemanotoneofarrayofvalues-arrayany-message-string--function)
+    - [`Schema.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`](#schemawhenkeys-string--string-builder-object--values-any-schema--schema-schema)
+    - [`Schema.test(name: string, message: string | function | any, test: function): Schema`](#schematestname-string-message-string--function--any-test-function-schema)
+    - [`Schema.test(options: object): Schema`](#schematestoptions-object-schema)
+    - [`Schema.transform((currentValue: any, originalValue: any) => any): Schema`](#schematransformcurrentvalue-any-originalvalue-any--any-schema)
+  - [mixed](#mixed)
+  - [string](#string)
+    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
+    - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
+    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
+    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
+    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
+    - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
+    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
+    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
+    - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+    - [`string.ensure(): Schema`](#stringensure-schema)
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
+    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
+    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
+  - [number](#number)
+    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
+    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
+    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
+    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
+    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
+    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
+    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
+    - [`number.truncate(): Schema`](#numbertruncate-schema)
+    - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
+  - [boolean](#boolean)
+  - [date](#date)
+    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
+    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
+  - [array](#array)
+    - [`array.of(type: Schema): this`](#arrayoftype-schema-this)
+    - [`array.json(): this`](#arrayjson-this)
+    - [`array.length(length: number | Ref, message?: string | function): this`](#arraylengthlength-number--ref-message-string--function-this)
+    - [`array.min(limit: number | Ref, message?: string | function): this`](#arrayminlimit-number--ref-message-string--function-this)
+    - [`array.max(limit: number | Ref, message?: string | function): this`](#arraymaxlimit-number--ref-message-string--function-this)
+    - [`array.ensure(): this`](#arrayensure-this)
+    - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
+  - [tuple](#tuple)
+  - [object](#object)
+    - [Object schema defaults](#object-schema-defaults)
+    - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.json(): this`](#objectjson-this)
+    - [`object.concat(schemaB: ObjectSchema): ObjectSchema`](#objectconcatschemab-objectschema-objectschema)
+    - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
+    - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
+    - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
+    - [`object.camelCase(): Schema`](#objectcamelcase-schema)
+    - [`object.constantCase(): Schema`](#objectconstantcase-schema)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Schema basics
+
+Schema definitions, are comprised of parsing "transforms" which manipulate inputs into the desired shape and type, "tests", which make assertions over parsed data. Schema also store a bunch of "metadata", details about the schema itself, which can be used to improve error messages, build tools that dynamically consume schema, or serialize schema into another format.
+
+In order to be maximally flexible yup allows running both parsing and assertions separately to match specific needs
+
+### Parsing: Transforms
+
+Each built-in type implements basic type parsing, which comes in handy when parsing serialized data, such as JSON.
+Additionally types implement type specific transforms that can be enabled.
+
+```ts
+const num = number().cast('1'); // 1
+
+const obj = object({
+  firstName: string().lowercase().trim(),
+})
+  .camelCase()
+  .cast('{"first_name": "jAnE "}'); // { firstName: 'jane' }
 ```
 
-> If you're looking for an easily serializable DSL for yup schema, check out [yup-ast](https://github.com/WASD-Team/yup-ast)
+Custom transforms can be added
 
-### Using a custom locale dictionary
+```ts
+const reversedString = string()
+  .transform((currentValue) => currentValue.split('').reverse().join(''))
+  .cast('dlrow olleh'); // "hello world"
+```
 
-Allows you to customize the default messages used by Yup, when no message is provided with a validation test.
+Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
+If the end value is `undefined` yup will apply the schema default if it's configured.
+
+> Watch out! values are not guaranteed to be valid types in tranform functions. Previous transforms
+> may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
+
+### Validation: Tests
+
+yup has robust support for assertions, or "tests", over input values. Tests check that inputs conform to some
+criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
+and are usually reserved for checks that are hard, if not impossible, to represent in static types.
+
+```ts
+string()
+  .min(3, 'must be at least 3 characters long')
+  .email('must be a valid email')
+  .validate('no'); // ValidationError
+```
+
+As with transforms, tests can be customized on the fly
+
+```ts
+const jamesSchema = string().test(
+  'is-james',
+  (d) => `${d.path} is not James`,
+  (value) => value == null || value === 'James',
+);
+
+jamesSchema.validateSync('James'); // "James"
+
+jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
+```
+
+> Heads up: unlike transforms, `value` in a custom test is guaranteed to be the correct type
+> (in this case an optional string). It still may be `undefined` or `null` depending on your schema
+> in those cases, you may want to return `true` for absent values unless your transform, makes presence
+> related assertions
+
+### Composition and Reuse
+
+Schema are immutable, each method call returns a new schema object. Reuse and pass them around without
+fear of mutating another instance.
+
+```ts
+const optionalString = string().optional();
+
+const definedString = optionalString.defined();
+
+const value = undefined;
+optionalString.isValid(value); // true
+definedString.isValid(value); // false
+```
+
+## TypeScript integration
+
+Yup schema produce, static TypeScript interfaces. Use `InferType` to extract that interface:
+
+```ts
+import * as yup from 'yup';
+
+const personSchema = yup.object({
+  firstName: yup.string().defined(),
+  nickName: yup.string().default('').nullable(),
+  sex: yup
+    .mixed()
+    .oneOf(['male', 'female', 'other'] as const)
+    .defined(),
+  email: yup.string().nullable().email(),
+  birthDate: yup.date().nullable().min(new Date(1900, 0, 1)),
+});
+
+interface Person extends yup.InferType<typeof personSchema> {}
+```
+
+### Schema defaults
+
+a schema's default is used when casting produces an `undefined` output value. Because of this,
+setting a default affects the output type of the schema, effectively marking it as "defined()".
+
+```ts
+import { string } from 'yup';
+
+const value: string = string().default('hi').validate(undefined);
+
+// vs
+
+const value: string | undefined = string().validate(undefined);
+```
+
+### Ensuring a schema matches an existing type
+
+In some cases, the TypeScript type already exists, and you want to ensure that
+your schema produces a compatible type:
+
+```ts
+import { object, number string, ObjectSchema } from 'yup';
+
+interface Person {
+  name: string;
+  age?: number;
+  sex: 'male' | 'female' | 'other' | null;
+}
+
+// will raise a compile-time type error if the schema does not produce a valid Person
+const schema: ObjectSchema<Person> = object({
+  name: string().defined(),
+  age: number().optional(),
+  sex: string<'male' | 'female' | 'other'>().nullable().defined();
+});
+
+// ❌ errors:
+// "Type 'number | undefined' is not assignable to type 'string'."
+const badSchema: ObjectSchema<Person> = object({
+  name: number(),
+});
+
+```
+
+### Extending built-in schema with new methods
+
+You can use TypeScript's interface merging behavior to extend the schema types
+if needed. Type extensions should go in an "ambient" type definition file such as your
+`globals.d.ts`. Remember to actually extend the yup type in your application code!
+
+> Watch out! merging only works if the type definition is _exactly_ the same, including
+> generics. Consult the yup source code for each type to ensure you are defining it correctly
+
+```ts
+// globals.d.ts
+declare module 'yup' {
+  interface StringSchema<TType, TContext, TDefault, TFlags> {
+    append(appendStr: string): this;
+  }
+}
+
+// app.ts
+import { addMethod, string } from 'yup';
+
+addMethod(string, 'append', function append(appendStr: string) {
+  return this.transform((value) => `${value}${appendStr}`);
+});
+
+string().append('~~~~').cast('hi'); // 'hi~~~~'
+```
+
+### TypeScript configuration
+
+You **must** have the `strictNullChecks` compiler option enabled for type inference to work.
+
+We also recommend settings `strictFunctionTypes` to `false`, for functionally better types. Yes
+this reduces overall soundness, however TypeScript already disables this check
+anyway for methods and constructors (note from TS docs):
+
+> During development of this feature, we discovered a large number of inherently
+> unsafe class hierarchies, including some in the DOM. Because of this,
+> the setting only applies to functions written in function syntax, not to those in method syntax:
+
+Your mileage will vary, but we've found that this check doesn't prevent many of
+real bugs, while increasing the amount of onerous explicit type casting in apps.
+
+## Error message customization
+
+Default error messages can be customized for when no message is provided with a validation test.
 If any message is missing in the custom dictionary the error message will default to Yup's one.
 
 ```js
@@ -102,13 +402,17 @@ let schema = yup.object().shape({
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
+try {
+  await schema.validate({ name: 'jimmy', age: 11 });
+} catch (err) {
   err.name; // => 'ValidationError'
   err.errors; // => ['Deve ser maior que 18']
-});
+}
 ```
 
-If you need multi-language support, Yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. Just get this output and feed it into your favorite i18n library.
+### localization and i18n
+
+If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. These can be fed it into your favorite i18n library.
 
 ```js
 import { setLocale } from 'yup';
@@ -125,142 +429,70 @@ setLocale({
   },
 });
 
-// now use Yup schemas AFTER you defined your custom dictionary
+// ...
+
 let schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
 });
 
-schema.validate({ name: 'jimmy', age: 11 }).catch(function (err) {
-  err.name; // => 'ValidationError'
-  err.errors; // => [{ key: 'field_too_short', values: { min: 18 } }]
-});
+try {
+  await schema.validate({ name: 'jimmy', age: 11 });
+} catch (err) {
+  messages = err.errors.map((err) => i18next.t(err.key));
+}
 ```
 
 ## API
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [`yup`](#yup)
-  - [`yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#yupreachschema-schema-path-string-value-object-context-object-schema)
-  - [`yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#yupaddmethodschematype-schema-name-string-method--schema-void)
-  - [`yup.ref(path: string, options: { contextPrefix: string }): Ref`](#yuprefpath-string-options--contextprefix-string--ref)
-  - [`yup.lazy((value: any) => Schema): Lazy`](#yuplazyvalue-any--schema-lazy)
-  - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
-- [mixed](#mixed)
-  - [`mixed.clone(): Schema`](#mixedclone-schema)
-  - [`mixed.label(label: string): Schema`](#mixedlabellabel-string-schema)
-  - [`mixed.meta(metadata: object): Schema`](#mixedmetametadata-object-schema)
-  - [`mixed.describe(): SchemaDescription`](#mixeddescribe-schemadescription)
-  - [`mixed.concat(schema: Schema): Schema`](#mixedconcatschema-schema-schema)
-  - [`mixed.validate(value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidatevalue-any-options-object-promiseany-validationerror)
-  - [`mixed.validateSync(value: any, options?: object): any`](#mixedvalidatesyncvalue-any-options-object-any)
-  - [`mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`](#mixedvalidateatpath-string-value-any-options-object-promiseany-validationerror)
-  - [`mixed.validateSyncAt(path: string, value: any, options?: object): any`](#mixedvalidatesyncatpath-string-value-any-options-object-any)
-  - [`mixed.isValid(value: any, options?: object): Promise<boolean>`](#mixedisvalidvalue-any-options-object-promiseboolean)
-  - [`mixed.isValidSync(value: any, options?: object): boolean`](#mixedisvalidsyncvalue-any-options-object-boolean)
-  - [`mixed.cast(value: any, options = {}): any`](#mixedcastvalue-any-options---any)
-  - [`mixed.isType(value: any): boolean`](#mixedistypevalue-any-boolean)
-  - [`mixed.strict(isStrict: boolean = false): Schema`](#mixedstrictisstrict-boolean--false-schema)
-  - [`mixed.strip(stripField: boolean = true): Schema`](#mixedstripstripfield-boolean--true-schema)
-  - [`mixed.withMutation(builder: (current: Schema) => void): void`](#mixedwithmutationbuilder-current-schema--void-void)
-  - [`mixed.default(value: any): Schema`](#mixeddefaultvalue-any-schema)
-  - [`mixed.getDefault(options?: object): Any`](#mixedgetdefaultoptions-object-any)
-  - [`mixed.nullable(isNullable: boolean = true): Schema`](#mixednullableisnullable-boolean--true-schema)
-  - [`mixed.required(message?: string | function): Schema`](#mixedrequiredmessage-string--function-schema)
-  - [`mixed.notRequired(): Schema` Alias: `optional()`](#mixednotrequired-schema-alias-optional)
-  - [`mixed.defined(): Schema`](#mixeddefined-schema)
-  - [`mixed.typeError(message: string): Schema`](#mixedtypeerrormessage-string-schema)
-  - [`mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#mixedoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
-  - [`mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#mixednotoneofarrayofvalues-arrayany-message-string--function)
-  - [`mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)
-  - [`mixed.test(name: string, message: string | function, test: function): Schema`](#mixedtestname-string-message-string--function-test-function-schema)
-  - [`mixed.test(options: object): Schema`](#mixedtestoptions-object-schema)
-  - [`mixed.transform((currentValue: any, originalValue: any) => any): Schema`](#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
-- [string](#string)
-  - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
-  - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
-  - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
-  - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
-  - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
-  - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
-  - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
-  - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
-  - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
-  - [`string.hex(message?: string | function): Schema`](#stringhexmessage-string--function-schema)
-  - [`string.ensure(): Schema`](#stringensure-schema)
-  - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
-  - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
-  - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
-- [number](#number)
-  - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
-  - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
-  - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
-  - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
-  - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
-  - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
-  - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
-  - [`number.truncate(): Schema`](#numbertruncate-schema)
-  - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
-- [boolean](#boolean)
-- [date](#date)
-  - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
-  - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
-- [array](#array)
-  - [`array.of(type: Schema): Schema`](#arrayoftype-schema-schema)
-  - [`array.length(length: number | Ref, message?: string | function): Schema`](#arraylengthlength-number--ref-message-string--function-schema)
-  - [`array.min(limit: number | Ref, message?: string | function): Schema`](#arrayminlimit-number--ref-message-string--function-schema)
-  - [`array.max(limit: number | Ref, message?: string | function): Schema`](#arraymaxlimit-number--ref-message-string--function-schema)
-  - [`array.ensure(): Schema`](#arrayensure-schema)
-  - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
-- [object](#object)
-  - [Object schema defaults](#object-schema-defaults)
-  - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
-  - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
-  - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
-  - [`object.getDefaultFromShape(): Record<string, unknown>`](#objectgetdefaultfromshape-recordstring-unknown)
-  - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
-  - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
-  - [`object.camelCase(): Schema`](#objectcamelcase-schema)
-  - [`object.constantCase(): Schema`](#objectconstantcase-schema)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### `yup`
 
 The module export.
 
-```js
-let yup = require('yup');
+```ts
+// core schema
+import {
+  mixed,
+  string,
+  number,
+  boolean,
+  bool,
+  date,
+  object,
+  array,
+  ref,
+  lazy,
+} from 'yup';
 
-yup.mixed;
-yup.string;
-yup.number;
-yup.boolean; // also aliased as yup.bool
-yup.date;
-yup.object;
-yup.array;
+// Classes
+import {
+  Schema,
+  MixedSchema,
+  StringSchema,
+  NumberSchema,
+  BooleanSchema,
+  DateSchema,
+  ArraySchema,
+  ObjectSchema,
+} from 'yup';
 
-yup.reach;
-yup.addMethod;
-yup.ref;
-yup.lazy;
-yup.setLocale;
-yup.ValidationError;
+// Types
+import type { InferType, ISchema, AnySchema, AnyObjectSchema } from 'yup';
 ```
 
-#### `yup.reach(schema: Schema, path: string, value?: object, context?: object): Schema`
+#### `reach(schema: Schema, path: string, value?: object, context?: object): Schema`
 
-For nested schemas `yup.reach` will retrieve a nested schema based on the provided path.
+For nested schemas, `reach` will retrieve an inner schema based on the provided path.
 
 For nested schemas that need to resolve dynamically, you can provide a `value` and optionally
 a `context` object.
 
 ```js
-let schema = object().shape({
-  nested: object().shape({
-    arr: array().of(object().shape({ num: number().max(4) })),
+import { reach } from 'yup';
+
+let schema = object({
+  nested: object({
+    arr: array(object({ num: number().max(4) })),
   }),
 });
 
@@ -270,14 +502,16 @@ reach(schema, 'nested.arr[1].num');
 reach(schema, 'nested["arr"][1].num');
 ```
 
-#### `yup.addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`
+#### `addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`
 
 Adds a new method to the core schema types. A friendlier convenience method for `schemaType.prototype[name] = method`.
 
-```js
-yup.addMethod(yup.date, 'format', function (formats, parseStrict) {
-  return this.transform(function (value, originalValue) {
-    if (this.isType(value)) return value;
+```ts
+import { addMethod, date } from 'yup';
+
+addMethod(date, 'format', function format(formats, parseStrict) {
+  return this.transform((value, originalValue, ctx) => {
+    if (ctx.isType(value)) return value;
 
     value = Moment(originalValue, formats, parseStrict);
 
@@ -286,13 +520,23 @@ yup.addMethod(yup.date, 'format', function (formats, parseStrict) {
 });
 ```
 
-#### `yup.ref(path: string, options: { contextPrefix: string }): Ref`
+If you want to add a method to ALL schema types, extend the abstract base class: `Schema`
+
+```ts
+import { addMethod, Schema } from 'yup';
+
+addMethod(Schema, 'myMethod', ...)
+```
+
+#### `ref(path: string, options: { contextPrefix: string }): Ref`
 
 Creates a reference to another sibling or sibling descendant field. Refs are resolved
 at _validation/cast time_ and supported where specified. Refs are evaluated in the proper order so that
 the ref value is resolved before the field using the ref (be careful of circular dependencies!).
 
 ```js
+import { ref, object, string } from 'yup';
+
 let schema = object({
   baz: ref('foo.bar'),
   foo: object({
@@ -305,13 +549,13 @@ schema.cast({ foo: { bar: 'boom' } }, { context: { x: 5 } });
 // => { baz: 'boom',  x: 5, foo: { bar: 'boom' } }
 ```
 
-#### `yup.lazy((value: any) => Schema): Lazy`
+#### `lazy((value: any) => Schema): Lazy`
 
 Creates a schema that is evaluated at validation/cast time. Useful for creating
 recursive schema like Trees, for polymorphic fields and arrays.
 
 **CAUTION!** When defining parent-child recursive object schema, you want to reset the `default()`
-to `undefined` on the child—otherwise the object will infinitely nest itself when you cast it!
+to `null` on the child—otherwise the object will infinitely nest itself when you cast it!
 
 ```js
 let node = object({
@@ -344,88 +588,135 @@ Thrown on failed validations, with the following properties
   validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
   alternatively, `errors` will have all of the messages from each inner error.
 
-### mixed
+### `Schema`
 
-Creates a schema that matches all types. All types inherit from this base type
+`Schema` is the abstract base class that all schema type inherit from. It provides a number of base methods and properties
+to all other schema types.
 
-```js
-let schema = yup.mixed();
+> Note: unless you are creating a custom schema type, Schema should never be used directly. For unknown/any types use [`mixed()`](#mixed)
 
-schema.isValid(undefined, function (valid) {
-  valid; // => true
-});
-```
-
-#### `mixed.clone(): Schema`
+#### `Schema.clone(): Schema`
 
 Creates a deep copy of the schema. Clone is used internally to return a new schema with every schema state change.
 
-#### `mixed.label(label: string): Schema`
+#### `Schema.label(label: string): Schema`
 
 Overrides the key name which is used in error messages.
 
-#### `mixed.meta(metadata: object): Schema`
+#### `Schema.meta(metadata: object): Schema`
 
 Adds to a metadata object, useful for storing data with a schema, that doesn't belong
 the cast object itself.
 
-#### `mixed.describe(): SchemaDescription`
+#### `Schema.describe(options?: ResolveOptions): SchemaDescription`
 
 Collects schema details (like meta, labels, and active tests) into a serializable
 description object.
 
+```ts
+const schema = object({
+  name: string().required(),
+});
+
+const description = schema.describe();
 ```
-SchemaDescription {
-  type: string,
-  label: string,
-  meta: object,
-  tests: Array<{ name: string, params: object }>
+
+For schema with dynamic components (references, lazy, or conditions), describe requires
+more context to accurately return the schema description. In these cases provide `options`
+
+```ts
+import { ref, object, string, boolean } from 'yup';
+
+let schema = object({
+  isBig: boolean(),
+  count: number().when('isBig', {
+    is: true,
+    then: (schema) => schema.min(5),
+    otherwise: (schema) => schema.min(0),
+  }),
+});
+
+schema.describe({ value: { isBig: true } });
+```
+
+And below is are the description types, which differ a bit depending on the schema type.
+
+```ts
+interface SchemaDescription {
+  type: string;
+  label?: string;
+  meta: object | undefined;
+  oneOf: unknown[];
+  notOneOf: unknown[];
+  nullable: boolean;
+  optional: boolean;
+  tests: Array<{ name?: string; params: ExtraParams | undefined }>;
+
+  // Present on object schema descriptions
+  fields: Record<string, SchemaFieldDescription>;
+
+  // Present on array schema descriptions
+  innerType?: SchemaFieldDescription;
+}
+
+type SchemaFieldDescription =
+  | SchemaDescription
+  | SchemaRefDescription
+  | SchemaLazyDescription;
+
+interface SchemaRefDescription {
+  type: 'ref';
+  key: string;
+}
+
+interface SchemaLazyDescription {
+  type: string;
+  label?: string;
+  meta: object | undefined;
 }
 ```
 
-#### `mixed.concat(schema: Schema): Schema`
+#### `Schema.concat(schema: Schema): Schema`
 
 Creates a new instance of the schema by combining two schemas. Only schemas of the same type can be concatenated.
+`concat` is not a "merge" function in the sense that all settings from the provided schema, override ones in the
+base, including type, presence and nullability.
 
-#### `mixed.validate(value: any, options?: object): Promise<any, ValidationError>`
+```ts
+mixed<string>().defined().concat(mixed<number>().nullable());
 
-Returns the value (a cast value if `isStrict` is `false`) if the value is valid, and returns the errors otherwise.
-This method is **asynchronous** and returns a Promise object, that is fulfilled with the value, or rejected
+// produces the equivalent to:
+
+mixed<number>().defined().nullable();
+```
+
+#### `Schema.validate(value: any, options?: object): Promise<InferType<Schema>, ValidationError>`
+
+Returns the parses and validates an input value, returning the parsed value or throwing an error. This method is **asynchronous** and returns a Promise object, that is fulfilled with the value, or rejected
 with a `ValidationError`.
 
-The `options` argument is an object hash containing any schema options you may want to override
-(or specify for the first time).
+```js
+value = await schema.validate({ name: 'jimmy', age: 24 });
+```
+
+Provide `options` to more specifically control the behavior of `validate`.
 
 ```js
-Options = {
+interface Options {
+  // when true, parsing is skipped an the input is validated "as-is"
   strict: boolean = false;
+  // Throw on the first error or collect and return all
   abortEarly: boolean = true;
+  // Remove unspecified keys from objects
   stripUnknown: boolean = false;
+  // when `false` validations will be preformed shallowly
   recursive: boolean = true;
+  // External values that can be provided to validations and conditionals
   context?: object;
 }
 ```
 
-- `strict`: only validate the input, and skip any coercion or transformation
-- `abortEarly`: return from validation methods on the first error rather
-  than after all validations run.
-- `stripUnknown`: remove unspecified keys from objects.
-- `recursive`: when `false` validations will not descend into nested schema
-  (relevant for objects or arrays).
-- `context`: any context needed for validating schema conditions (see: [`when()`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema))
-
-```js
-schema.validate({ name: 'jimmy', age: 24 }).then(function (value) {
-  value; // => { name: 'jimmy',age: 24 }
-});
-
-schema.validate({ name: 'jimmy', age: 'hi' }).catch(function (err) {
-  err.name; // => 'ValidationError'
-  err.errors; // => ['age must be a number']
-});
-```
-
-#### `mixed.validateSync(value: any, options?: object): any`
+#### `Schema.validateSync(value: any, options?: object): InferType<Schema>`
 
 Runs validatations synchronously _if possible_ and returns the resulting value,
 or throws a ValidationError. Accepts all the same options as `validate`.
@@ -453,7 +744,7 @@ let schema = number().test('is-42', "this isn't the number i want", (value) =>
 schema.validateSync(42); // throws Error
 ```
 
-#### `mixed.validateAt(path: string, value: any, options?: object): Promise<any, ValidationError>`
+#### `Schema.validateAt(path: string, value: any, options?: object): Promise<InferType<Schema>, ValidationError>`
 
 Validate a deeply nested path within the schema. Similar to how `reach` works,
 but uses the resulting schema as the subject for validation.
@@ -467,7 +758,7 @@ let schema = object({
       loose: boolean(),
       bar: string().when('loose', {
         is: true,
-        otherwise: (s) => s.strict(),
+        otherwise: (schema) => schema.strict(),
       }),
     }),
   ),
@@ -482,43 +773,57 @@ await schema.validateAt('foo[0].bar', rootValue); // => ValidationError: must be
 await schema.validateAt('foo[1].bar', rootValue); // => '1'
 ```
 
-#### `mixed.validateSyncAt(path: string, value: any, options?: object): any`
+#### `Schema.validateSyncAt(path: string, value: any, options?: object): InferType<Schema>`
 
 Same as `validateAt` but synchronous.
 
-#### `mixed.isValid(value: any, options?: object): Promise<boolean>`
+#### `Schema.isValid(value: any, options?: object): Promise<boolean>`
 
 Returns `true` when the passed in value matches the schema. `isValid`
 is **asynchronous** and returns a Promise object.
 
 Takes the same options as `validate()`.
 
-#### `mixed.isValidSync(value: any, options?: object): boolean`
+#### `Schema.isValidSync(value: any, options?: object): boolean`
 
 Synchronously returns `true` when the passed in value matches the schema.
 
 Takes the same options as `validateSync()` and has the same caveats around async tests.
 
-#### `mixed.cast(value: any, options = {}): any`
+#### `Schema.cast(value: any, options = {}): InferType<Schema>`
 
 Attempts to coerce the passed in value to a value that matches the schema. For example: `'5'` will
 cast to `5` when using the `number()` type. Failed casts generally return `null`, but may also
 return results like `NaN` and unexpected strings.
 
-`options` parameter can be an object containing `context`. (For more info on `context` see `mixed.validate`)
+Provide `options` to more specifically control the behavior of `validate`.
 
-#### `mixed.isType(value: any): boolean`
+```js
+interface CastOptions<TContext extends {}> {
+  // Remove undefined properties from objects
+  stripUnknown: boolean = false;
+
+  // Throws a TypeError if casting doesn't produce a valid type
+  // note that the TS return type is inaccurate when this is `false`, use with caution
+  assert?: boolean = true;
+
+  // External values that used to resolve conditions and references
+  context?: TContext;
+}
+```
+
+#### `Schema.isType(value: any): value is InferType<Schema>`
 
 Runs a type check against the passed in `value`. It returns true if it matches,
 it does not cast the value. When `nullable()` is set `null` is considered a valid value of the type.
 You should use `isType` for all Schema type checks.
 
-#### `mixed.strict(isStrict: boolean = false): Schema`
+#### `Schema.strict(enabled: boolean = false): Schema`
 
 Sets the `strict` option to `true`. Strict schemas skip coercion and transformation attempts,
 validating the value "as is".
 
-#### `mixed.strip(stripField: boolean = true): Schema`
+#### `Schema.strip(enabled: boolean = true): Schema`
 
 Marks a schema to be removed from an output object. Only works as a nested schema.
 
@@ -531,7 +836,24 @@ let schema = object({
 schema.cast({ notThis: 'foo', useThis: 4 }); // => { useThis: 4 }
 ```
 
-#### `mixed.withMutation(builder: (current: Schema) => void): void`
+Schema with `strip` enabled have an inferred type of `never`, allowing them to be
+removed from the overall type:
+
+```ts
+let schema = object({
+  useThis: number(),
+  notThis: string().strip(),
+});
+
+InferType<typeof schema>; /*
+{
+   useThis?: number | undefined
+}
+*/
+
+```
+
+#### `Schema.withMutation(builder: (current: Schema) => void): void`
 
 First the legally required Rich Hickey quote:
 
@@ -539,10 +861,9 @@ First the legally required Rich Hickey quote:
 >
 > If a pure function mutates some local data in order to produce an immutable return value, is that ok?
 
-`withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change.
-Generally this isn't necessary since the vast majority of schema changes happen during the initial
+`withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change. Generally this isn't necessary since the vast majority of schema changes happen during the initial
 declaration, and only happen once over the lifetime of the schema, so performance isn't an issue.
-However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema)), or
+However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#Schemawhenkeys-string--arraystring-builder-object--value-schema-schema-schema)), or
 when instantiating a schema object.
 
 ```js
@@ -555,7 +876,7 @@ object()
   });
 ```
 
-#### `mixed.default(value: any): Schema`
+#### `Schema.default(value: any): Schema`
 
 Sets a default value to use when the value is `undefined`.
 Defaults are created after transformations are executed, but before validations, to help ensure that safe
@@ -573,45 +894,86 @@ yup.object.default(() => ({ number: 5 })); // this is cheaper
 yup.date.default(() => new Date()); // also helpful for defaults that change over time
 ```
 
-#### `mixed.getDefault(options?: object): Any`
+#### `Schema.getDefault(options?: object): Any`
 
-Retrieve a previously set default value. `getDefault` will resolve any conditions that may alter the default. Optionally pass `options` with `context` (for more info on `context` see `mixed.validate`).
+Retrieve a previously set default value. `getDefault` will resolve any conditions that may alter the default. Optionally pass `options` with `context` (for more info on `context` see `Schema.validate`).
 
-#### `mixed.nullable(isNullable: boolean = true): Schema`
+#### `Schema.nullable(): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
-`null` is treated as a different type and will fail `isType()` checks.
+`null` is treated as a different type and will fail `Schema.isType()` checks.
 
-#### `mixed.required(message?: string | function): Schema`
+```ts
+const schema = number().nullable()
 
-Mark the schema as required, which will not allow `undefined` or `null` as a value.
-Note that unless a schema is marked as `nullable()` a `null` value is treated as a type error, not a missing value. Mark a schema as `mixed().nullable().required()` treat `null` as missing.
+schema.cast(null); // null
+
+InferType<typeof schema> // number | null
+```
+
+#### `Schema.nonNullable(): Schema`
+
+The opposite of `nullable`, removes `null` from valid type values for the schema.
+**Schema are non nullable by default**.
+
+```ts
+const schema = number().nonNullable()
+
+schema.cast(null); // TypeError
+
+InferType<typeof schema> // number
+```
+
+#### `Schema.defined(): Schema`
+
+Require a value for the schema. All field values apart from `undefined` meet this requirement.
+
+```ts
+const schema = string().defined()
+
+schema.cast(undefined); // TypeError
+
+InferType<typeof schema> // string
+```
+
+#### `Schema.optional(): Schema`
+
+The opposite of `defined()` allows `undefined` values for the given type.
+
+```ts
+const schema = string().optional()
+
+schema.cast(undefined); // undefined
+
+InferType<typeof schema> // string | undefined
+```
+
+#### `Schema.required(message?: string | function): Schema`
+
+Mark the schema as required, which will not allow `undefined` or `null` as a value. `required`
+negates the effects of calling `optional()` and `nullable()`
 
 > Watch out! [`string().required`](#stringrequiredmessage-string--function-schema)) works a little
 > different and additionally prevents empty string values (`''`) when required.
 
-#### `mixed.notRequired(): Schema` Alias: `optional()`
+#### `Schema.notRequired(): Schema` Alias: `optional()`
 
-Mark the schema as not required. Passing `undefined` (or `null` for nullable schema) as value will not fail validation.
+Mark the schema as not required. This is a shortcut for `schema.nonNullable().defined()`;
 
-#### `mixed.defined(): Schema`
-
-Require a value for the schema. All field values apart from `undefined` meet this requirement.
-
-#### `mixed.typeError(message: string): Schema`
+#### `Schema.typeError(message: string): Schema`
 
 Define an error message for failed type checks. The `${value}` and `${type}` interpolation can
 be used in the `message` argument.
 
-#### `mixed.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
+#### `Schema.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`
 
-Whitelist a set of values. Values added are automatically removed from any blacklist if they are in it.
+Only allow values from set of values. Values added are removed from any `notOneOf` values if present.
 The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
 the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
 at validation time.
 
 Note that `undefined` does not fail this validator, even when `undefined` is not included in `arrayOfValues`.
-If you don't want `undefined` to be a valid value, you can use `mixed.required`.
+If you don't want `undefined` to be a valid value, you can use `Schema.required`.
 
 ```js
 let schema = yup.mixed().oneOf(['jimmy', 42]);
@@ -621,9 +983,9 @@ await schema.isValid('jimmy'); // => true
 await schema.isValid(new Date()); // => false
 ```
 
-#### `mixed.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
+#### `Schema.notOneOf(arrayOfValues: Array<any>, message?: string | function)`
 
-Blacklist a set of values. Values added are automatically removed from any whitelist if they are in it.
+Disallow values from a set of values. Values added are removed from `oneOf` values if present.
 The `${values}` interpolation can be used in the `message` argument. If a ref or refs are provided,
 the `${resolved}` interpolation can be used in the message argument to get the resolved values that were checked
 at validation time.
@@ -635,7 +997,7 @@ await schema.isValid(42); // => false
 await schema.isValid(new Date()); // => true
 ```
 
-#### `mixed.when(keys: string | Array<string>, builder: object | (value, schema)=> Schema): Schema`
+#### `Schema.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`
 
 Adjust the schema based on a sibling or sibling children fields. You can provide an object
 literal where the key `is` is value or a matcher function, `then` provides the true schema and/or
@@ -644,8 +1006,10 @@ literal where the key `is` is value or a matcher function, `then` provides the t
 `is` conditions are strictly compared (`===`) if you want to use a different form of equality you
 can provide a function like: `is: (value) => value == true`.
 
-Like joi you can also prefix properties with `$` to specify a property that is dependent
-on `context` passed in by `validate()` or `isValid`. `when` conditions are additive.
+You can also prefix properties with `$` to specify a property that is dependent
+on `context` passed in by `validate()` or `cast` instead of the input value.
+
+`when` conditions are additive.
 
 ```js
 let schema = object({
@@ -653,10 +1017,12 @@ let schema = object({
   count: number()
     .when('isBig', {
       is: true, // alternatively: (val) => val == true
-      then: yup.number().min(5),
-      otherwise: yup.number().min(0),
+      then: (schema) => schema.min(5),
+      otherwise: (schema) => schema.min(0),
     })
-    .when('$other', (other, schema) => (other === 4 ? schema.max(6) : schema)),
+    .when('$other', ([other], schema) =>
+      other === 4 ? schema.max(6) : schema,
+    ),
 });
 
 await schema.validate(value, { context: { other: 4 } });
@@ -670,8 +1036,8 @@ let schema = object({
   isBig: boolean(),
   count: number().when(['isBig', 'isSpecial'], {
     is: true, // alternatively: (isBig, isSpecial) => isBig && isSpecial
-    then: yup.number().min(5),
-    otherwise: yup.number().min(0),
+    then: (schema) => schema.min(5),
+    otherwise: (schema) => schema.min(0),
   }),
 });
 
@@ -682,13 +1048,12 @@ await schema.validate({
 });
 ```
 
-Alternatively you can provide a function that returns a schema
-(called with the value of the key and the current schema).
+Alternatively you can provide a function that returns a schema, called with an array of values for each provided key the current schema.
 
 ```js
 let schema = yup.object({
   isBig: yup.boolean(),
-  count: yup.number().when('isBig', (isBig, schema) => {
+  count: yup.number().when('isBig', ([isBig], schema) => {
     return isBig ? schema.min(5) : schema.min(0);
   }),
 });
@@ -696,7 +1061,7 @@ let schema = yup.object({
 await schema.validate({ isBig: false, count: 4 });
 ```
 
-#### `mixed.test(name: string, message: string | function, test: function): Schema`
+#### `Schema.test(name: string, message: string | function | any, test: function): Schema`
 
 Adds a test function to the validation chain. Tests are run after any object is cast.
 Many types have some tests built in, but you can create custom ones easily.
@@ -745,7 +1110,7 @@ it via `this` it won't work in an arrow function.
   validation error. Useful for dynamically setting the `path`, `params`, or more likely, the error `message`.
   If either option is omitted it will use the current path, or default message.
 
-#### `mixed.test(options: object): Schema`
+#### `Schema.test(options: object): Schema`
 
 Alternative `test(..)` signature. `options` is an object containing some of the following options:
 
@@ -759,7 +1124,7 @@ Options = {
   message: string;
   // values passed to message for interpolation
   params: ?object;
-  // mark the test as exclusive, meaning only one of the same can be active at once
+  // mark the test as exclusive, meaning only one test of the same name can be active at once
   exclusive: boolean = false;
 }
 ```
@@ -773,7 +1138,7 @@ the previous tests are removed and further tests of the same name will replace e
 
 ```js
 let max = 64;
-let schema = yup.mixed().test({
+let schema = yup.string().test({
   name: 'max',
   exclusive: true,
   params: { max },
@@ -782,17 +1147,17 @@ let schema = yup.mixed().test({
 });
 ```
 
-#### `mixed.transform((currentValue: any, originalValue: any) => any): Schema`
+#### `Schema.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](#mixedistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](#Schemaistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```js
-let schema = string().transform(function (value, originalvalue) {
+let schema = string().transform((value, originalvalue) => {
   return this.isType(value) && value !== null ? value.toUpperCase() : value;
 });
 
@@ -805,9 +1170,9 @@ date parsing strategy than the default one you could do that with a transform.
 
 ```js
 module.exports = function (formats = 'MMM dd, yyyy') {
-  return date().transform(function (value, originalValue) {
+  return date().transform((value, originalValue, context) => {
     // check to see if the previous transform already parsed the date
-    if (this.isType(value)) return value;
+    if (context.isType(value)) return value;
 
     // the default coercion failed so let's try it with Moment.js instead
     value = Moment(originalValue, formats);
@@ -818,9 +1183,47 @@ module.exports = function (formats = 'MMM dd, yyyy') {
 };
 ```
 
+### mixed
+
+Creates a schema that matches all types, or just the ones you configure. Inherits from [`Schema`](#Schema).
+
+```ts
+import { mixed, InferType } from 'yup';
+
+let schema = mixed();
+
+schema.validateSync('string'); // 'string';
+
+schema.validateSync(1); // 1;
+
+schema.validateSync(new Date()); // Date;
+
+InferType<typeof schema> // any
+```
+
+Custom types can be implemented by passing a type check function:
+
+```ts
+import { mixed, InferType } from 'yup';
+
+let objectIdSchema = yup
+  .mixed((input): input is ObjectId => input instanceof ObjectId)
+  .transform((value: any, input, ctx) => {
+    if (ctx.typeCheck(value)) return value;
+    return new ObjectId(value);
+  });
+
+await objectIdSchema.validate(ObjectId('507f1f77bcf86cd799439011')); // ObjectId("507f1f77bcf86cd799439011")
+
+await objectIdSchema.validate('507f1f77bcf86cd799439011'); // ObjectId("507f1f77bcf86cd799439011")
+
+
+InferType<typeof objectIdSchema> // ObjectId
+```
+
 ### string
 
-Define a string schema. Supports all the same methods as [`mixed`](#mixed).
+Define a string schema. Inherits from [`Schema`](#Schema).
 
 ```js
 let schema = yup.string();
@@ -829,6 +1232,7 @@ await schema.isValid('hello'); // => true
 ```
 
 By default, the `cast` logic of `string` is to call `toString` on the value if it exists.
+
 empty values are not coerced (use `ensure()` to coerce empty values to empty strings).
 
 Failed casts return the input value.
@@ -909,7 +1313,7 @@ will only validate that the value is uppercase.
 
 ### number
 
-Define a number schema. Supports all the same methods as [`mixed`](#mixed).
+Define a number schema. Inherits from [`Schema`](#Schema).
 
 ```js
 let schema = yup.number();
@@ -964,7 +1368,7 @@ Adjusts the value via the specified method of `Math` (defaults to 'round').
 
 ### boolean
 
-Define a boolean schema. Supports all the same methods as [`mixed`](#mixed).
+Define a boolean schema. Inherits from [`Schema`](#Schema).
 
 ```js
 let schema = yup.boolean();
@@ -976,7 +1380,7 @@ await schema.isValid(true); // => true
 
 Define a Date schema. By default ISO date strings will parse correctly,
 for more robust parsing options see the extending schema types at the end of the readme.
-Supports all the same methods as [`mixed`](#mixed).
+Inherits from [`Schema`](#Schema).
 
 ```js
 let schema = yup.date();
@@ -1003,7 +1407,8 @@ and use the result as the limit.
 
 Define an array schema. Arrays can be typed or not, When specifying the element type, `cast` and `isValid`
 will apply to the elements as well. Options passed into `isValid` are passed also passed to child schemas.
-Supports all the same methods as [`mixed`](#mixed).
+
+Inherits from [`Schema`](#Schema).
 
 ```js
 let schema = yup.array().of(yup.number().min(2));
@@ -1022,28 +1427,30 @@ array().of(yup.number());
 array(yup.number());
 ```
 
-The default `cast` behavior for `array` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
+Arrays have no default casting behavior.
 
-Failed casts return: `null`;
-
-#### `array.of(type: Schema): Schema`
+#### `array.of(type: Schema): this`
 
 Specify the schema of array elements. `of()` is optional and when omitted the array schema will
 not validate its contents.
 
-#### `array.length(length: number | Ref, message?: string | function): Schema`
+#### `array.json(): this`
+
+Attempt to parse input string values as JSON using [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
+
+#### `array.length(length: number | Ref, message?: string | function): this`
 
 Set a specific length requirement for the array. The `${length}` interpolation can be used in the `message` argument.
 
-#### `array.min(limit: number | Ref, message?: string | function): Schema`
+#### `array.min(limit: number | Ref, message?: string | function): this`
 
 Set a minimum length limit for the array. The `${min}` interpolation can be used in the `message` argument.
 
-#### `array.max(limit: number | Ref, message?: string | function): Schema`
+#### `array.max(limit: number | Ref, message?: string | function): this`
 
 Set a maximum length limit for the array. The `${max}` interpolation can be used in the `message` argument.
 
-#### `array.ensure(): Schema`
+#### `array.ensure(): this`
 
 Ensures that the value is an array, by setting the default to `[]` and transforming `null` and `undefined`
 values to an empty array as well. Any non-empty, non-array value will be wrapped in an array.
@@ -1068,13 +1475,36 @@ array()
   .cast(['', 1, 0, 4, false, null]); // => ['', 1, 0, 4, false]
 ```
 
+### tuple
+
+Tuples, are fixed length arrays where each item has a distinct type.
+
+Inherits from [`Schema`](#Schema).
+
+```js
+import { tuple, string, number, InferType } from 'yup';
+
+let schema = tuple([
+  string().label('name'),
+  number().label('age').positive().integer(),
+]);
+
+await schema.validate(['James', 3]); // ['James', 3]
+
+await schema.validate(['James', -24]); // => ValidationError: age must be a positive number
+
+InferType<typeof schema> // [string, number] | undefined
+```
+
+tuples have no default casting behavior.
+
 ### object
 
 Define an object schema. Options passed into `isValid` are also passed to child schemas.
-Supports all the same methods as [`mixed`](#mixed).
+Inherits from [`Schema`](#Schema).
 
 ```js
-yup.object().shape({
+yup.object({
   name: string().required(),
   age: number().required().positive().integer(),
   email: string().email(),
@@ -1082,21 +1512,7 @@ yup.object().shape({
 });
 ```
 
-You can also pass a shape to the object constructor as a convenience.
-
-```js
-object().shape({
-  num: number(),
-});
-// or
-object({
-  num: number(),
-});
-```
-
-The default `cast` behavior for `object` is: [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse)
-
-Failed casts return: `null`;
+object schema do not have any default transforms applied.
 
 #### Object schema defaults
 
@@ -1111,7 +1527,7 @@ const schema = object({
 schema.default(); // -> { name: '' }
 ```
 
-This may be a bit suprising, but is generally very helpful since it allows large, nested
+This may be a bit suprising, but is usually helpful since it allows large, nested
 schema to create default values that fill out the whole shape and not just the root object. There is
 one gotcha! though. For nested object schema that are optional but include non optional fields
 may fail in unexpected ways:
@@ -1142,9 +1558,9 @@ If you wish to avoid this behavior do one of the following:
 
 Define the keys of the object and the schemas for said keys.
 
-Note that you can chain `shape` method, which acts like object extends, for example:
+Note that you can chain `shape` method, which acts like `Object.assign`.
 
-```js
+```ts
 object({
   a: string(),
   b: number(),
@@ -1156,13 +1572,23 @@ object({
 
 would be exactly the same as:
 
-```js
+```ts
 object({
   a: string(),
   b: string(),
   c: number(),
 });
 ```
+
+#### `object.json(): this`
+
+Attempt to parse input string values as JSON using [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
+
+#### `object.concat(schemaB: ObjectSchema): ObjectSchema`
+
+Creates a object schema, by applying all settings and fields from `schemaB` to the base, producing a new schema.
+The object shape is shallowly merged with common fields from `schemaB` taking precedence over the base
+fields.
 
 #### `object.pick(keys: string[]): Schema`
 
@@ -1193,12 +1619,6 @@ const person = object({
 const nameAndAge = person.omit(['color']);
 nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
-
-#### `object.getDefaultFromShape(): Record<string, unknown>`
-
-Produces a default object value by walking the object shape and calling `default()`
-on each field. This is the default behavior of `getDefault()` but allows for
-building out an object skeleton regardless of the default().
 
 #### `object.from(fromKey: string, toKey: string, alias: boolean = false): this`
 
