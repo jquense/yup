@@ -193,7 +193,15 @@ describe('String types', () => {
 
     return Promise.all([
       expect(v.isValid('//www.github.com/')).resolves.toBe(true),
+      expect(v.isValid('http://www.github.com/')).resolves.toBe(true),
       expect(v.isValid('https://www.github.com/')).resolves.toBe(true),
+      expect(v.isValid('http://localhost:3000')).resolves.toBe(true),
+      expect(v.isValid('http://localhost:3000/')).resolves.toBe(true),
+      expect(v.isValid('http://localhost')).resolves.toBe(true),
+      expect(v.isValid('http://localhost/')).resolves.toBe(true),
+      expect(v.isValid('ftp://localhost:21')).resolves.toBe(true),
+      expect(v.isValid('ftp://localhost:3333/')).resolves.toBe(true),
+      expect(v.isValid('ftp://localhost')).resolves.toBe(true),
       expect(v.isValid('this is not a url')).resolves.toBe(false),
     ]);
   });
