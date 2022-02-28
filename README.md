@@ -314,7 +314,7 @@ In some cases, the TypeScript type already exists, and you want to ensure that
 your schema produces a compatible type:
 
 ```ts
-import { object, number string, ObjectSchema } from 'yup';
+import { object, number, string, ObjectSchema } from 'yup';
 
 interface Person {
   name: string;
