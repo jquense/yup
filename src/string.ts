@@ -153,10 +153,21 @@ export default class StringSchema<
       name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
-      test: (value: Maybe<string>) =>
-        isAbsent(value) ||
-        (value === '' && excludeEmptyString) ||
-        value.search(regex) !== -1,
+      test: (value: Maybe<string>) => {
+        const regexTest =
+          isAbsent(value) ||
+          (value === '' && excludeEmptyString) ||
+          value.search(regex) !== -1;
+
+        if (regexTest) return regexTest;
+
+        try {
+          new URL(value);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      },
     });
   }
 
