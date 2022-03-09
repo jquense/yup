@@ -1,3 +1,20 @@
+# [1.0.0-beta.3](https://github.com/jquense/yup/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2022-03-09)
+
+
+### Bug Fixes
+
+* correct minor typo in README ([#1582](https://github.com/jquense/yup/issues/1582)) ([facea53](https://github.com/jquense/yup/commit/facea53e3508d041d86076ef065fb80b8ec74286))
+* partial() ([1207261](https://github.com/jquense/yup/commit/120726175aa97a9066fb765155ae4fef15b1e0ad))
+
+
+### BREAKING CHANGES
+
+* 'required' no longer adds a test for most schema, to determine if a schema is required, check it's `spec.optional` and `spec.nullable` values, also accessible via `describe()`
+
+
+
+
+
 # [1.0.0-beta.2](https://github.com/jquense/yup/compare/v0.32.11...v1.0.0-beta.2) (2022-01-21)
 
 
