@@ -10,6 +10,7 @@ import {
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
+import isAbsent from './isAbsent';
 
 export type PanicCallback = (err: Error) => void;
 
@@ -58,6 +59,7 @@ export type TestConfig<TValue = unknown, TContext = {}> = {
   test: TestFunction<TValue, TContext>;
   params?: ExtraParams;
   exclusive?: boolean;
+  skipAbsent?: boolean;
 };
 
 export type Test = ((
@@ -73,6 +75,7 @@ export default function createValidation(config: {
   test: TestFunction;
   params?: ExtraParams;
   message?: Message<any>;
+  skipAbsent?: boolean;
 }) {
   function validate<TSchema extends AnySchema = AnySchema>(
     {
@@ -88,7 +91,7 @@ export default function createValidation(config: {
     panic: PanicCallback,
     next: NextCallback,
   ) {
-    const { name, test, params, message } = config;
+    const { name, test, params, message, skipAbsent } = config;
     let { parent, context, abortEarly = rest.schema.spec.abortEarly } = options;
 
     function resolve<T>(item: T | Reference<T>) {
@@ -144,9 +147,11 @@ export default function createValidation(config: {
       else panic(err);
     };
 
+    const shouldSkip = skipAbsent && isAbsent(value);
+
     if (!sync) {
       try {
-        Promise.resolve(test.call(ctx, value, ctx)).then(
+        Promise.resolve(!shouldSkip ? test.call(ctx, value, ctx) : true).then(
           handleResult,
           handleError,
         );
@@ -159,7 +164,7 @@ export default function createValidation(config: {
 
     let result: ReturnType<TestFunction>;
     try {
-      result = test.call(ctx, value, ctx);
+      result = !shouldSkip ? test.call(ctx, value, ctx) : true;
 
       if (typeof (result as any)?.then === 'function') {
         throw new Error(

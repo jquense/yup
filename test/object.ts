@@ -567,7 +567,7 @@ describe('Object types', () => {
     });
   });
 
-  it('should respect abortEarly', () => {
+  it('should respect abortEarly', async () => {
     let inst = object({
       nest: object({
         str: string().required(),
@@ -670,6 +670,51 @@ describe('Object types', () => {
         inst.validate(val, { abortEarly: false, recursive: false }),
       ).rejects.toEqual(validationErrorWithMessages('oops')),
     ]);
+  });
+
+  it('partial() should work', async () => {
+    let inst = object({
+      age: number().required(),
+      name: string().required(),
+    });
+
+    await expect(inst.isValid({ age: null, name: '' })).resolves.toEqual(false);
+
+    await expect(inst.partial().isValid({})).resolves.toEqual(true);
+
+    await expect(inst.partial().isValid({ age: null })).resolves.toEqual(false);
+    await expect(inst.partial().isValid({ name: '' })).resolves.toEqual(false);
+  });
+
+  xit('deepPartial() should work', async () => {
+    let inst = object({
+      age: number().required(),
+      name: string().required(),
+      contacts: array(
+        object({
+          name: string().required(),
+          age: number().required(),
+        }),
+      ).defined(),
+    });
+
+    await expect(inst.isValid({ age: 2, name: 'fs' })).resolves.toEqual(false);
+    await expect(
+      inst.isValid({ age: 2, name: 'fs', contacts: [{}] }),
+    ).resolves.toEqual(false);
+
+    await expect(inst.deepPartial().isValid({})).resolves.toEqual(true);
+    await expect(
+      inst.deepPartial().validate({ contacts: [{}] }),
+    ).resolves.toEqual(true);
+
+    await expect(
+      inst.deepPartial().isValid({ contacts: [{ age: null }] }),
+    ).resolves.toEqual(false);
+
+    await expect(
+      inst.deepPartial().isValid({ contacts: [{ age: null }] }),
+    ).resolves.toEqual(false);
   });
 
   it('should alias or move keys', () => {

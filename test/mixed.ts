@@ -711,10 +711,11 @@ describe('Mixed Types ', () => {
     await expect(inst.isValid('a')).resolves.toBe(true);
   });
 
-  it('concat should maintain explicit presence', async function () {
-    let inst = string().required().concat(string());
+  it('concat should override presence', async function () {
+    let inst = string().required().concat(string().nullable());
 
-    await expect(inst.isValid(undefined)).resolves.toBe(false);
+    await expect(inst.isValid(undefined)).resolves.toBe(true);
+    await expect(inst.isValid(null)).resolves.toBe(true);
   });
 
   it('gives whitelist precedence to second in concat', async function () {
@@ -968,12 +969,7 @@ describe('Mixed Types ', () => {
             label: undefined,
             nullable: false,
             optional: false,
-            tests: [
-              {
-                name: 'required',
-                params: undefined,
-              },
-            ],
+            tests: [],
             oneOf: [],
             notOneOf: [],
             innerType: {
@@ -1040,12 +1036,7 @@ describe('Mixed Types ', () => {
             label: undefined,
             nullable: false,
             optional: false,
-            tests: [
-              {
-                name: 'required',
-                params: undefined,
-              },
-            ],
+            tests: [],
             oneOf: [],
             notOneOf: [],
             innerType: {

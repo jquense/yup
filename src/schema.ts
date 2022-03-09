@@ -627,10 +627,6 @@ export default abstract class Schema<
     return this.clone({ strict: isStrict });
   }
 
-  protected _isPresent(value: any) {
-    return value != null;
-  }
-
   protected nullability(nullable: boolean, message?: Message<any>) {
     const next = this.clone({ nullable });
     next.internalTests.nullable = createValidation({
@@ -671,27 +667,11 @@ export default abstract class Schema<
 
   required(message: Message<any> = locale.required): any {
     return this.clone().withMutation((next) =>
-      next
-        .nonNullable(message)
-        .defined(message)
-        .test({
-          message,
-          name: 'required',
-          exclusive: true,
-          test(value: any) {
-            return this.schema._isPresent(value);
-          },
-        }),
-    ) as any;
+      next.nonNullable(message).defined(message),
+    );
   }
-
   notRequired(): any {
-    return this.clone().withMutation((next) => {
-      next.tests = next.tests.filter(
-        (test) => test.OPTIONS!.name !== 'required',
-      );
-      return next.nullable().optional();
-    });
+    return this.clone().withMutation((next) => next.nullable().optional());
   }
 
   transform(fn: TransformFunction<this>) {

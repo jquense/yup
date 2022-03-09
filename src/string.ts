@@ -1,4 +1,4 @@
-import { MixedLocale, string as locale } from './locale';
+import { MixedLocale, mixed as mixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
 import type { Message, AnyObject } from './types';
@@ -83,8 +83,22 @@ export default class StringSchema<
     });
   }
 
-  protected _isPresent(value: any) {
-    return super._isPresent(value) && !!value.length;
+  required(message?: Message<any>) {
+    return super.required(message).withMutation((schema: this) =>
+      schema.test({
+        message: message || mixedLocale.required,
+        name: 'required',
+        skipAbsent: true,
+        test: (value) => !!value!.length,
+      }),
+    );
+  }
+
+  notRequired() {
+    return super.notRequired().withMutation((schema: this) => {
+      schema.tests.filter((t) => t.OPTIONS!.name !== 'required');
+      return schema;
+    });
   }
 
   length(
@@ -96,8 +110,9 @@ export default class StringSchema<
       name: 'length',
       exclusive: true,
       params: { length },
+      skipAbsent: true,
       test(value: Maybe<string>) {
-        return isAbsent(value) || value.length === this.resolve(length);
+        return value!.length === this.resolve(length);
       },
     });
   }
@@ -111,8 +126,9 @@ export default class StringSchema<
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value: Maybe<string>) {
-        return isAbsent(value) || value.length >= this.resolve(min);
+        return value!.length >= this.resolve(min);
       },
     });
   }
@@ -126,8 +142,9 @@ export default class StringSchema<
       exclusive: true,
       message,
       params: { max },
+      skipAbsent: true,
       test(value: Maybe<string>) {
-        return isAbsent(value) || value.length <= this.resolve(max);
+        return value!.length <= this.resolve(max);
       },
     });
   }
@@ -153,10 +170,9 @@ export default class StringSchema<
       name: name || 'matches',
       message: message || locale.matches,
       params: { regex },
+      skipAbsent: true,
       test: (value: Maybe<string>) =>
-        isAbsent(value) ||
-        (value === '' && excludeEmptyString) ||
-        value.search(regex) !== -1,
+        (value === '' && excludeEmptyString) || value!.search(regex) !== -1,
     });
   }
 
@@ -206,6 +222,7 @@ export default class StringSchema<
       message,
       name: 'string_case',
       exclusive: true,
+      skipAbsent: true,
       test: (value: Maybe<string>) =>
         isAbsent(value) || value === value.toLowerCase(),
     });
@@ -218,6 +235,7 @@ export default class StringSchema<
       message,
       name: 'string_case',
       exclusive: true,
+      skipAbsent: true,
       test: (value: Maybe<string>) =>
         isAbsent(value) || value === value.toUpperCase(),
     });

@@ -1,7 +1,6 @@
 // @ts-ignore
 import isoParse from './util/isodate';
 import { date as locale } from './locale';
-import isAbsent from './util/isAbsent';
 import Ref from './Reference';
 import type { AnyObject, Message } from './types';
 import type {
@@ -85,8 +84,9 @@ export default class DateSchema<
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value >= this.resolve(limit);
+        return value! >= this.resolve(limit);
       },
     });
   }
@@ -99,8 +99,9 @@ export default class DateSchema<
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value <= this.resolve(limit);
+        return value! <= this.resolve(limit);
       },
     });
   }

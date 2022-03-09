@@ -67,8 +67,9 @@ export default class NumberSchema<
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       test(value: Maybe<number>) {
-        return isAbsent(value) || value >= this.resolve(min);
+        return value! >= this.resolve(min);
       },
     });
   }
@@ -79,8 +80,9 @@ export default class NumberSchema<
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value: Maybe<number>) {
-        return isAbsent(value) || value <= this.resolve(max);
+        return value! <= this.resolve(max);
       },
     });
   }
@@ -91,8 +93,9 @@ export default class NumberSchema<
       name: 'max',
       exclusive: true,
       params: { less },
+      skipAbsent: true,
       test(value: Maybe<number>) {
-        return isAbsent(value) || value < this.resolve(less);
+        return value! < this.resolve(less);
       },
     });
   }
@@ -103,8 +106,9 @@ export default class NumberSchema<
       name: 'min',
       exclusive: true,
       params: { more },
+      skipAbsent: true,
       test(value: Maybe<number>) {
-        return isAbsent(value) || value > this.resolve(more);
+        return value! > this.resolve(more);
       },
     });
   }
@@ -121,7 +125,8 @@ export default class NumberSchema<
     return this.test({
       name: 'integer',
       message,
-      test: (val) => isAbsent(val) || Number.isInteger(val),
+      skipAbsent: true,
+      test: (val) => Number.isInteger(val),
     });
   }
 

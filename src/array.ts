@@ -1,4 +1,3 @@
-import isAbsent from './util/isAbsent';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
 import parseJson from './util/parseJson';
@@ -192,8 +191,9 @@ export default class ArraySchema<
       name: 'length',
       exclusive: true,
       params: { length },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value.length === this.resolve(length);
+        return value!.length === this.resolve(length);
       },
     });
   }
@@ -206,9 +206,10 @@ export default class ArraySchema<
       name: 'min',
       exclusive: true,
       params: { min },
+      skipAbsent: true,
       // FIXME(ts): Array<typeof T>
       test(value) {
-        return isAbsent(value) || value.length >= this.resolve(min);
+        return value!.length >= this.resolve(min);
       },
     });
   }
@@ -220,8 +221,9 @@ export default class ArraySchema<
       name: 'max',
       exclusive: true,
       params: { max },
+      skipAbsent: true,
       test(value) {
-        return isAbsent(value) || value.length <= this.resolve(max);
+        return value!.length <= this.resolve(max);
       },
     });
   }
