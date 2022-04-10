@@ -1,3 +1,14 @@
+# [1.0.0-beta.4](https://github.com/jquense/yup/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2022-04-10)
+
+
+### Bug Fixes
+
+* **boolean:** calling optional made it non-optional ([4ba02a1](https://github.com/jquense/yup/commit/4ba02a15b649dccaa090a2e72476c1ea448a3fc1)), closes [#1627](https://github.com/jquense/yup/issues/1627)
+
+
+
+
+
 # [1.0.0-beta.3](https://github.com/jquense/yup/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2022-03-09)
 
 
