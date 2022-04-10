@@ -91,7 +91,7 @@ export default class BooleanSchema<
     return super.defined(msg);
   }
   optional(): BooleanSchema<TType | undefined, TContext, TDefault, TFlags> {
-    return super.defined();
+    return super.optional();
   }
   required(
     msg?: Message,
