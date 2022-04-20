@@ -1,13 +1,13 @@
 # Yup
 
-Yup is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
+Yup is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schemas are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
 
 > **You are viewing docs for the v1.0.0 pre-release of yup, pre-v1 docs are available: [here](https://github.com/jquense/yup/tree/pre-v1)**
 
 **Killer Features**:
 
 - Concise yet expressive schema interface, equipped to model simple to complex data models
-- Powerful TypeScript support. Infer static types from schema, or ensure schema correctly implement a type
+- Powerful TypeScript support. Infer static types from the schema, or ensure the schema correctly implements a type
 - Built-in async validation support. Model server-side and client-side validation equally well
 - Extensible: add your own type-safe methods and schema
 - Rich error details, make debugging a breeze
