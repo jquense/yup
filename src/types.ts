@@ -83,10 +83,33 @@ export interface MessageParams {
   spec: SchemaSpec<any> & Record<string, unknown>;
 }
 
+/**
+ * Placeholder to allow adding to the message union by type augmentation
+ *
+ * @example to add `ReactElement` to allowed message types
+ * ```ts
+ * declare module 'yup/lib/types' {
+ *   export interface CustomMessage extends BaseMessage {
+ *     type: ReactElement;
+ *   }
+ * }
+ * ```
+ * NB types cannot be removed from the message union with this, only added
+ */
+export interface CustomMessage {}
+export interface BaseMessage {
+  type: unknown;
+}
+
+type CustomMessageType = CustomMessage extends BaseMessage
+  ? CustomMessage['type']
+  : never;
+
 export type Message<Extra extends Record<string, unknown> = any> =
   | string
   | ((params: Extra & MessageParams) => unknown)
-  | Record<PropertyKey, unknown>;
+  | Record<PropertyKey, unknown>
+  | CustomMessageType;
 
 export type ExtraParams = Record<string, unknown>;
 
