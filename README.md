@@ -45,7 +45,7 @@ Use a schema to coerce or "cast" an input value into the correct type, and optio
 transform that value into more concrete and specific values, without making further assertions.
 
 ```ts
-// Attempts to coarce values to the correct type
+// Attempts to coerce values to the correct type
 const parsedUser = userSchema.cast({
   name: 'jimmy',
   age: '24',
