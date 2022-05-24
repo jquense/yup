@@ -148,7 +148,7 @@ import {
     - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
-    - [`string.uuid(message?: string | function, strict: boolean=true): Schema`](#stringuuidmessage-string--function-strict-bool--false-schema)
+    - [`string.uuid(message?: string | function, strict: boolean=true): Schema`](#stringuuidmessage-string--function-strict-booleantrue-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
     - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
