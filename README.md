@@ -148,7 +148,7 @@ import {
     - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
-    - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-strict-bool-schema)
+    - [`string.uuid(message?: string | function, strict: boolean=true): Schema`](#stringuuidmessage-string--function-strict-bool--false-schema)
     - [`string.ensure(): Schema`](#stringensure-schema)
     - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
@@ -1283,7 +1283,7 @@ Validates the value as an email address via a regex.
 
 Validates the value as a valid URL via a regex.
 
-#### `string.uuid(message?: string | function, strict: bool): Schema`
+#### `string.uuid(message?: string | function, strict: boolean=true): Schema`
 
 Validates the value as a valid UUID via a regex.  
 `strict=true` allows only the most common uuid versions (preferably uuid v3, v4), while `strict=false` allows anything that vaguely looks like an uuid. 
