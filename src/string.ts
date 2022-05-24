@@ -28,6 +28,9 @@ let rUrl =
 let rUUID =
   /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
 
+let rUUIDNotStrict =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 let isTrimmed = (value: Maybe<string>) =>
   isAbsent(value) || value === value.trim();
 
@@ -192,8 +195,8 @@ export default class StringSchema<
     });
   }
 
-  uuid(message = locale.uuid) {
-    return this.matches(rUUID, {
+  uuid(message = locale.uuid, strict=true) {
+    return this.matches(strict ? rUUID : rUUIDNotStrict, {
       name: 'uuid',
       message,
       excludeEmptyString: false,

@@ -1283,9 +1283,10 @@ Validates the value as an email address via a regex.
 
 Validates the value as a valid URL via a regex.
 
-#### `string.uuid(message?: string | function): Schema`
+#### `string.uuid(message?: string | function, strict: bool): Schema`
 
-Validates the value as a valid UUID via a regex.
+Validates the value as a valid UUID via a regex.  
+`strict=true` allows only the most common uuid versions (preferably uuid v3, v4), while `strict=false` allows anything that vaguely looks like an uuid. 
 
 #### `string.ensure(): Schema`
 
