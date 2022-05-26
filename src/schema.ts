@@ -719,7 +719,7 @@ export default abstract class Schema<
     if (opts.message === undefined) opts.message = locale.default;
 
     if (typeof opts.test !== 'function')
-      throw new TypeError('`test` is a required parameters');
+      throw new TypeError('The `test` function parameter is a required parameter');
 
     let next = this.clone();
     let validate = createValidation(opts);
