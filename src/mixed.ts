@@ -49,6 +49,11 @@ export default interface MixedSchema<
     def: Thunk<D>,
   ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
+  oneOf<U extends TType>(
+    arrayOfValues: ReadonlyArray<U | Reference>,
+    message?: MixedLocale['oneOf'],
+  ): MixedSchema<U, TContext, TDefault, TFlags>;
+
   concat<IT, IC, ID, IF extends Flags>(
     schema: MixedSchema<IT, IC, ID, IF>,
   ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
