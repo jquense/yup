@@ -227,7 +227,7 @@ If the end value is `undefined` yup will apply the schema default if it's config
 
 ### Validation: Tests
 
-yup has robust support for assertions, or "tests", over input values. Tests check that inputs conform to some
+Yup has robust support for assertions, or "tests", over input values. Tests check that inputs conform to some
 criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
 and are usually reserved for checks that are hard, if not impossible, to represent in static types.
 
@@ -295,7 +295,7 @@ interface Person extends yup.InferType<typeof personSchema> {}
 
 ### Schema defaults
 
-a schema's default is used when casting produces an `undefined` output value. Because of this,
+A schema's default is used when casting produces an `undefined` output value. Because of this,
 setting a default affects the output type of the schema, effectively marking it as "defined()".
 
 ```ts
