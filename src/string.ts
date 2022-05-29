@@ -67,7 +67,7 @@ export default class StringSchema<
 
     this.withMutation(() => {
       this.transform((value, _raw, ctx) => {
-        if (!ctx.spec.coarce || ctx.isType(value)) return value;
+        if (!ctx.spec.coerce || ctx.isType(value)) return value;
 
         // don't ever convert arrays
         if (Array.isArray(value)) return value;

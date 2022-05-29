@@ -41,7 +41,7 @@ export default class BooleanSchema<
 
     this.withMutation(() => {
       this.transform((value, _raw, ctx) => {
-        if (ctx.spec.coarce && !ctx.isType(value)) {
+        if (ctx.spec.coerce && !ctx.isType(value)) {
           if (/^(true|1)$/i.test(String(value))) return true;
           if (/^(false|0)$/i.test(String(value))) return false;
         }
