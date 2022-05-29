@@ -709,7 +709,7 @@ interface Options {
   abortEarly: boolean = true;
   // Remove unspecified keys from objects
   stripUnknown: boolean = false;
-  // when `false` validations will be preformed shallowly
+  // when `false` validations will be performed shallowly
   recursive: boolean = true;
   // External values that can be provided to validations and conditionals
   context?: object;
