@@ -1087,11 +1087,13 @@ let jimmySchema = string().test(
 );
 
 // or make it async by returning a promise
-let asyncJimmySchema = string().test(
-  'is-jimmy',
-  '${path} is not Jimmy',
-  async (value, testContext) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
-});
+let asyncJimmySchema = string()
+  .label('First name')
+  .test(
+    'is-jimmy',
+    ({ label }) => `${label} is not Jimmy`, // a message can also be a function
+    async (value, testContext) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+  });
 
 await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
