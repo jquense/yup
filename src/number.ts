@@ -44,7 +44,7 @@ export default class NumberSchema<
 
     this.withMutation(() => {
       this.transform((value, _raw, ctx) => {
-        if (!ctx.spec.coarce) return value;
+        if (!ctx.spec.coerce) return value;
 
         let parsed = value;
         if (typeof parsed === 'string') {

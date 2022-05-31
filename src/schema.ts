@@ -35,7 +35,7 @@ import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
 
 export type SchemaSpec<TDefault> = {
-  coarce: boolean;
+  coerce: boolean;
   nullable: boolean;
   optional: boolean;
   default?: TDefault | (() => TDefault);
@@ -170,7 +170,7 @@ export default abstract class Schema<
       recursive: true,
       nullable: false,
       optional: true,
-      coarce: true,
+      coerce: true,
       ...options?.spec,
     };
 
