@@ -1404,7 +1404,7 @@ and use the result as the limit.
 ### array
 
 Define an array schema. Arrays can be typed or not, When specifying the element type, `cast` and `isValid`
-will apply to the elements as well. Options passed into `isValid` are passed also passed to child schemas.
+will apply to the elements as well. Options passed into `isValid` are also passed to child schemas.
 
 Inherits from [`Schema`](#Schema).
 
