@@ -254,7 +254,7 @@ jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
 
 > Heads up: unlike transforms, `value` in a custom test is guaranteed to be the correct type
 > (in this case an optional string). It still may be `undefined` or `null` depending on your schema
-> in those cases, you may want to return `true` for absent values unless your transform, makes presence
+> in those cases, you may want to return `true` for absent values unless your transform makes presence
 > related assertions
 
 ### Composition and Reuse
@@ -274,7 +274,7 @@ definedString.isValid(value); // false
 
 ## TypeScript integration
 
-Yup schema produce, static TypeScript interfaces. Use `InferType` to extract that interface:
+Yup schema produce static TypeScript interfaces. Use `InferType` to extract that interface:
 
 ```ts
 import * as yup from 'yup';
@@ -296,7 +296,7 @@ interface Person extends yup.InferType<typeof personSchema> {}
 ### Schema defaults
 
 A schema's default is used when casting produces an `undefined` output value. Because of this,
-setting a default affects the output type of the schema, effectively marking it as "defined()".
+setting a default affects the output type of the schema, essentially marking it as "defined()".
 
 ```ts
 import { string } from 'yup';
@@ -310,7 +310,7 @@ const value: string | undefined = string().validate(undefined);
 
 ### Ensuring a schema matches an existing type
 
-In some cases, the TypeScript type already exists, and you want to ensure that
+In some cases a TypeScript type already exists, and you want to ensure that
 your schema produces a compatible type:
 
 ```ts
@@ -369,8 +369,8 @@ string().append('~~~~').cast('hi'); // 'hi~~~~'
 You **must** have the `strictNullChecks` compiler option enabled for type inference to work.
 
 We also recommend settings `strictFunctionTypes` to `false`, for functionally better types. Yes
-this reduces overall soundness, however TypeScript already disables this check
-anyway for methods and constructors (note from TS docs):
+this reduces overall soundness, however TypeScript already disables this check 
+for methods and constructors (note from TS docs):
 
 > During development of this feature, we discovered a large number of inherently
 > unsafe class hierarchies, including some in the DOM. Because of this,
