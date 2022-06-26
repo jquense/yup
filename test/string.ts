@@ -131,6 +131,38 @@ describe('String types', () => {
     return expect(v.isValid('')).resolves.toBe(true);
   });
 
+  it('EMAIL should NOT include special characters', () => {
+    let v = string().email();
+
+    return expect(v.isValid('“example”@email.com')).resolves.toBe(false);
+  });
+
+  it('EMAIL should NOT include qoutation characters', () => {
+    let v = string().email();
+
+    expect(v.isValid('“example”@email.com')).resolves.toBe(false);
+    expect(v.isValid('“obviously”not”correct@email.com')).resolves.toBe(false);
+  });
+
+  it('EMAIL should NOT include consecutive periods `....` characters', () => {
+    let v = string().email();
+
+    expect(v.isValid('example…example@email.com')).resolves.toBe(false);
+    expect(v.isValid('CAT…123@email.com')).resolves.toBe(false);
+  });
+
+  it('EMAIL should NOT include other languages characters', () => {
+    let v = string().email();
+
+    return expect(v.isValid('おえあいう@example.com')).resolves.toBe(false);
+  });
+
+  it('EMAIL should validate DNS resolve numbers email', () => {
+    let v = string().email();
+
+    return expect(v.isValid('example@111.222.333.44444')).resolves.toBe(true);
+  });
+
   it('should check MIN correctly', function () {
     let v = string().min(5);
     let obj = object({
