@@ -131,12 +131,6 @@ describe('String types', () => {
     return expect(v.isValid('')).resolves.toBe(true);
   });
 
-  it('EMAIL should NOT include special characters', () => {
-    let v = string().email();
-
-    return expect(v.isValid('“example”@email.com')).resolves.toBe(false);
-  });
-
   it('EMAIL should NOT include qoutation characters', () => {
     let v = string().email();
 
