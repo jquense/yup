@@ -52,6 +52,9 @@ export type {
   TypeGuard,
 };
 
+export type { ISchema } from './types';
+export type { ObjectShape } from "./util/objectTypes";
+
 export {
   mixedCreate as mixed,
   boolCreate as bool,
