@@ -30,12 +30,16 @@ export default class Reference<TValue = unknown> {
   declare readonly __isYupRef: boolean;
 
   constructor(key: string, options: ReferenceOptions<TValue> = {}) {
-    if (typeof key !== 'string')
-      throw new TypeError('ref must be a string, got: ' + key);
+    if (process.env.NODE_ENV !== "production") {
+      if (typeof key !== 'string')
+        throw new TypeError('ref must be a string, got: ' + key);
+    }
 
     this.key = key.trim();
 
-    if (key === '') throw new TypeError('ref must be a non-empty string');
+    if (process.env.NODE_ENV !== "production") {
+      if (key === '') throw new TypeError('ref must be a non-empty string');
+    }
 
     this.isContext = this.key[0] === prefixes.context;
     this.isValue = this.key[0] === prefixes.value;

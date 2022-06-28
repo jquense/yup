@@ -22,15 +22,17 @@ export function getIn<C = any>(
     let idx = isArray ? parseInt(part, 10) : 0;
 
     if (schema.innerType || isTuple) {
-      if (isTuple && !isArray)
-        throw new Error(
-          `Yup.reach cannot implicitly index into a tuple type. the path part "${lastPartDebug}" must contain an index to the tuple element, e.g. "${lastPartDebug}[0]"`,
-        );
-      if (value && idx >= value.length) {
-        throw new Error(
-          `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
-            `because there is no value at that index. `,
-        );
+      if (process.env.NODE_ENV !== "production") {
+        if (isTuple && !isArray)
+          throw new Error(
+            `Yup.reach cannot implicitly index into a tuple type. the path part "${lastPartDebug}" must contain an index to the tuple element, e.g. "${lastPartDebug}[0]"`,
+          );
+        if (value && idx >= value.length) {
+          throw new Error(
+            `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
+              `because there is no value at that index. `,
+          );
+        }
       }
       parent = value;
       value = value && value[idx];
@@ -42,11 +44,13 @@ export function getIn<C = any>(
     // in this iteration. For cases where the index signature is included this
     // check will fail and we'll handle the `child` part on the next iteration like normal
     if (!isArray) {
-      if (!schema.fields || !schema.fields[part])
-        throw new Error(
-          `The schema does not contain the path: ${path}. ` +
-            `(failed at: ${lastPartDebug} which is a type: "${schema.type}")`,
-        );
+      if (process.env.NODE_ENV !== "production") {
+        if (!schema.fields || !schema.fields[part])
+          throw new Error(
+            `The schema does not contain the path: ${path}. ` +
+              `(failed at: ${lastPartDebug} which is a type: "${schema.type}")`,
+          );
+      }
 
       parent = value;
       value = value && value[part];

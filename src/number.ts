@@ -141,10 +141,12 @@ export default class NumberSchema<
     // this exists for symemtry with the new Math.trunc
     if (method === 'trunc') return this.truncate();
 
-    if (avail.indexOf(method!.toLowerCase()) === -1)
-      throw new TypeError(
-        'Only valid options for round() are: ' + avail.join(', '),
-      );
+    if (process.env.NODE_ENV !== "production") {
+      if (avail.indexOf(method!.toLowerCase()) === -1)
+        throw new TypeError(
+          'Only valid options for round() are: ' + avail.join(', '),
+        );
+    }
 
     return this.transform((value) =>
       !isAbsent(value) ? Math[method!](value) : value,

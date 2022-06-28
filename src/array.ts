@@ -170,11 +170,13 @@ export default class ArraySchema<
     // FIXME: this should return a new instance of array without the default to be
     let next = this.clone();
 
-    if (!isSchema(schema))
-      throw new TypeError(
-        '`array.of()` sub-schema must be a valid yup schema not: ' +
-          printValue(schema),
-      );
+    if (process.env.NODE_ENV !== "production") {
+      if (!isSchema(schema))
+        throw new TypeError(
+          '`array.of()` sub-schema must be a valid yup schema not: ' +
+            printValue(schema),
+        );
+    }
 
     // @ts-expect-error readonly
     next.innerType = schema;

@@ -34,10 +34,12 @@ class Condition<
     TThen extends ISchema<any, any>,
     TOtherwise extends ISchema<any, any>,
   >(refs: Reference[], config: ConditionConfig<TIn, TThen, TOtherwise>) {
-    if (!config.then && !config.otherwise)
-      throw new TypeError(
-        'either `then:` or `otherwise:` is required for `when()` conditions',
-      );
+    if (process.env.NODE_ENV !== "production") {
+      if (!config.then && !config.otherwise)
+        throw new TypeError(
+          'either `then:` or `otherwise:` is required for `when()` conditions',
+        );
+    }
 
     let { is, then, otherwise } = config;
 
@@ -80,8 +82,10 @@ class Condition<
       return base;
     }
 
-    if (!isSchema(schema))
-      throw new TypeError('conditions must return a schema object');
+    if (process.env.NODE_ENV !== "production") {
+      if (!isSchema(schema))
+        throw new TypeError('conditions must return a schema object');
+    }
 
     return schema.resolve(options);
   }

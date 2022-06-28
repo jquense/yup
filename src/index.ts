@@ -30,14 +30,16 @@ function addMethod<T extends new (...args: any) => AnySchema>(
   fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
 ): void;
 function addMethod(schemaType: any, name: string, fn: any) {
-  if (!schemaType || !isSchema(schemaType.prototype))
-    throw new TypeError('You must provide a yup schema constructor function');
+  if (process.env.NODE_ENV !== "production") {
+    if (!schemaType || !isSchema(schemaType.prototype))
+      throw new TypeError('You must provide a yup schema constructor function');
 
-  if (typeof name !== 'string')
-    throw new TypeError('A Method name must be provided');
-  if (typeof fn !== 'function')
-    throw new TypeError('Method function must be provided');
-
+    if (typeof name !== 'string')
+      throw new TypeError('A Method name must be provided');
+    if (typeof fn !== 'function')
+      throw new TypeError('Method function must be provided');
+  }
+  
   schemaType.prototype[name] = fn;
 }
 

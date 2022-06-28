@@ -65,10 +65,12 @@ export default class DateSchema<
 
     if (!Ref.isRef(ref)) {
       let cast = this.cast(ref);
-      if (!this._typeCheck(cast))
-        throw new TypeError(
-          `\`${name}\` must be a Date or a value that can be \`cast()\` to a Date`,
-        );
+      if (process.env.NODE_ENV !== "production") {
+        if (!this._typeCheck(cast))
+          throw new TypeError(
+            `\`${name}\` must be a Date or a value that can be \`cast()\` to a Date`,
+          );
+      }
       param = cast;
     } else {
       param = ref as Ref<Date>;

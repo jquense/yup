@@ -166,11 +166,13 @@ export default function createValidation(config: {
     try {
       result = !shouldSkip ? test.call(ctx, value, ctx) : true;
 
-      if (typeof (result as any)?.then === 'function') {
-        throw new Error(
-          `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
-            `This test will finish after the validate call has returned`,
-        );
+      if (process.env.NODE_ENV !== "production") {
+        if (typeof (result as any)?.then === 'function') {
+          throw new Error(
+            `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
+              `This test will finish after the validate call has returned`,
+          );
+        }
       }
     } catch (err: any) {
       handleError(err);

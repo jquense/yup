@@ -73,9 +73,10 @@ class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
       TFlags
     >;
 
-    if (!isSchema(schema))
-      throw new TypeError('lazy() functions must return a valid schema');
-
+    if (process.env.NODE_ENV !== "production") {
+      if (!isSchema(schema))
+        throw new TypeError('lazy() functions must return a valid schema');
+    }
     return schema.resolve(options);
   };
 

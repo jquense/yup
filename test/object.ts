@@ -201,8 +201,10 @@ describe('Object types', () => {
       let base = MixedSchema.prototype.clone;
 
       MixedSchema.prototype.clone = function (...args) {
-        // @ts-expect-error private property
-        if (!this._mutate) throw new Error('should not call clone');
+        if (process.env.NODE_ENV !== "production") {
+          // @ts-expect-error private property
+          if (!this._mutate) throw new Error('should not call clone');
+        }
 
         return base.apply(this, args);
       };

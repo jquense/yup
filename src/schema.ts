@@ -242,10 +242,12 @@ export default abstract class Schema<
   concat(schema: AnySchema): AnySchema {
     if (!schema || schema === this) return this;
 
-    if (schema.type !== this.type && this.type !== 'mixed')
-      throw new TypeError(
-        `You cannot \`concat()\` schema's of different types: ${this.type} and ${schema.type}`,
-      );
+    if (process.env.NODE_ENV !== "production") {
+      if (schema.type !== this.type && this.type !== 'mixed')
+        throw new TypeError(
+          `You cannot \`concat()\` schema's of different types: ${this.type} and ${schema.type}`,
+        );
+    }
 
     let base = this;
     let combined = schema.clone();
@@ -338,21 +340,24 @@ export default abstract class Schema<
 
     let result = resolvedSchema._cast(value, options);
 
-    if (options.assert !== false && !resolvedSchema.isType(result)) {
-      let formattedValue = printValue(value);
-      let formattedResult = printValue(result);
-      throw new TypeError(
-        `The value of ${
-          options.path || 'field'
-        } could not be cast to a value ` +
-          `that satisfies the schema type: "${resolvedSchema.type}". \n\n` +
-          `attempted value: ${formattedValue} \n` +
-          (formattedResult !== formattedValue
-            ? `result of cast: ${formattedResult}`
-            : ''),
-      );
-    }
+    if (process.env.NODE_ENV !== "production") {
+      if (options.assert !== false && !resolvedSchema.isType(result)) {
+        let formattedValue = printValue(value);
+        let formattedResult = printValue(result);
 
+        throw new TypeError(
+          `The value of ${
+            options.path || 'field'
+          } could not be cast to a value ` +
+            `that satisfies the schema type: "${resolvedSchema.type}". \n\n` +
+            `attempted value: ${formattedValue} \n` +
+            (formattedResult !== formattedValue
+              ? `result of cast: ${formattedResult}`
+              : ''),
+        );
+      }
+    }
+      
     return result;
   }
 
@@ -718,8 +723,10 @@ export default abstract class Schema<
 
     if (opts.message === undefined) opts.message = locale.default;
 
-    if (typeof opts.test !== 'function')
-      throw new TypeError('`test` is a required parameters');
+    if (process.env.NODE_ENV !== "production") {
+      if (typeof opts.test !== 'function')
+        throw new TypeError('`test` is a required parameters');
+    }
 
     let next = this.clone();
     let validate = createValidation(opts);
@@ -727,11 +734,13 @@ export default abstract class Schema<
     let isExclusive =
       opts.exclusive || (opts.name && next.exclusiveTests[opts.name] === true);
 
-    if (opts.exclusive) {
-      if (!opts.name)
-        throw new TypeError(
-          'Exclusive tests must provide a unique `name` identifying the test',
-        );
+    if (process.env.NODE_ENV !== "production") {
+      if (opts.exclusive) {
+        if (!opts.name)
+          throw new TypeError(
+            'Exclusive tests must provide a unique `name` identifying the test',
+          );
+      }
     }
 
     if (opts.name) next.exclusiveTests[opts.name] = !!opts.exclusive;
