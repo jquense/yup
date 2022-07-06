@@ -1053,7 +1053,7 @@ Alternatively you can provide a function that returns a schema, called with an a
 ```js
 let schema = yup.object({
   isBig: yup.boolean(),
-  count: yup.number().when('isBig', ([isBig], schema) => {
+  count: yup.number().when('isBig', (isBig, schema) => {
     return isBig ? schema.min(5) : schema.min(0);
   }),
 });
