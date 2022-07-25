@@ -429,7 +429,15 @@ bool: {
 Lazy: {
   const l = lazy(() => string().default('asfasf'));
 
+  // $ExpectType string
   l.cast(null);
+
+  const l2 = lazy((v) =>
+    v ? string().default('asfasf') : number().required(),
+  );
+
+  // $ExpectType string | number
+  l2.cast(null);
 }
 
 Array: {

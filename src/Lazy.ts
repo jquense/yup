@@ -13,33 +13,26 @@ import type {
   SchemaLazyDescription,
 } from './schema';
 import { Flags } from './util/types';
-import { Schema } from '.';
+import { InferType, Schema } from '.';
 
 export type LazyBuilder<
-  T,
+  TSchema extends ISchema<TContext>,
   TContext = AnyObject,
-  TDefault = any,
-  TFlags extends Flags = any,
-> = (
-  value: any,
-  options: ResolveOptions,
-) => ISchema<T, TContext, TFlags, TDefault>;
+> = (value: any, options: ResolveOptions) => TSchema;
 
 export function create<
-  T,
+  TSchema extends ISchema<any, TContext>,
   TContext = AnyObject,
-  TFlags extends Flags = any,
-  TDefault = any,
->(builder: LazyBuilder<T, TContext, TDefault, TFlags>) {
-  return new Lazy<T, TContext, TDefault, TFlags>(builder);
+>(builder: (value: any, options: ResolveOptions<TContext>) => TSchema) {
+  return new Lazy<InferType<TSchema>, TContext>(builder);
 }
 
 export interface LazySpec {
   meta: Record<string, unknown> | undefined;
 }
 
-class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
-  implements ISchema<T, TContext, TFlags, TDefault>
+class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
+  implements ISchema<T, TContext, TFlags, undefined>
 {
   type = 'lazy' as const;
 
@@ -48,16 +41,16 @@ class Lazy<T, TContext = AnyObject, TDefault = any, TFlags extends Flags = any>
   declare readonly __outputType: T;
   declare readonly __context: TContext;
   declare readonly __flags: TFlags;
-  declare readonly __default: TDefault;
+  declare readonly __default: undefined;
 
   spec: LazySpec;
 
-  constructor(private builder: LazyBuilder<T, TContext, TDefault, TFlags>) {
+  constructor(private builder: any) {
     this.spec = { meta: undefined };
   }
 
-  clone(): Lazy<T, TContext, TDefault, TFlags> {
-    const next = create(this.builder);
+  clone(): Lazy<T, TContext, TFlags> {
+    const next = new Lazy<T, TContext, TFlags>(this.builder);
     next.spec = { ...this.spec };
     return next;
   }
