@@ -202,7 +202,7 @@ export default class ObjectSchema<
         fieldValue =
           !options.__validating || !strict
             ? // TODO: use _cast, this is double resolving
-              field.cast(value[prop], innerOptions)
+              (field as ISchema<any>).cast(value[prop], innerOptions)
             : value[prop];
 
         if (fieldValue !== undefined) {

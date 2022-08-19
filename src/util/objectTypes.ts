@@ -6,8 +6,10 @@ export type ObjectShape = { [k: string]: ISchema<any> | Reference };
 
 export type AnyObject = { [k: string]: any };
 
-export type TypeFromShape<S extends ObjectShape, C> = {
-  [K in keyof S]: S[K] extends ISchema<any, C> ? S[K]['__outputType'] : unknown;
+export type TypeFromShape<S extends ObjectShape, _C> = {
+  [K in keyof S]: S[K] extends ISchema<any, any>
+    ? S[K]['__outputType']
+    : unknown;
 };
 
 export type DefaultFromShape<Shape extends ObjectShape> = {
