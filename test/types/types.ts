@@ -893,6 +893,7 @@ Object: {
     const schema = object({
       // age: number(),
       name: string().required(),
+      lazy: lazy(() => number().defined()),
       address: object()
         .shape({
           line1: string().required(),
@@ -904,18 +905,24 @@ Object: {
     const partial = schema.partial();
 
     // $ExpectType string | undefined
-    partial.validateSync({ age: '1' })!.name;
+    partial.validateSync({})!.name;
 
     // $ExpectType string
     partial.validateSync({})!.address!.line1;
 
+    // $ExpectType number | undefined
+    partial.validateSync({})!.lazy;
+
     const deepPartial = schema.deepPartial();
 
     // $ExpectType string | undefined
-    deepPartial.validateSync({ age: '1' })!.name;
+    deepPartial.validateSync({})!.name;
 
     // $ExpectType string | undefined
     deepPartial.validateSync({})!.address!.line1;
+
+    // $ExpectType number | undefined
+    deepPartial.validateSync({})!.lazy;
   }
 }
 
