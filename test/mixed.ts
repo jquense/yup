@@ -87,6 +87,16 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should allow missing values with the "ignore-optionality" option', () => {
+    expect(
+      string().required().cast(null, { assert: 'ignore-optionality' }),
+    ).toBe(null);
+
+    expect(
+      string().required().cast(undefined, { assert: 'ignore-optionality' }),
+    ).toBe(undefined);
+  });
+
   it('should warn about null types', async () => {
     await expect(string().strict().validate(null)).rejects.toThrowError(
       /this cannot be null/,

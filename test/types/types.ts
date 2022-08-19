@@ -100,6 +100,12 @@ Mixed: {
     type: 'string',
     check: (value): value is string => typeof value === 'string',
   });
+
+  // $ExpectType string
+  mixed<string>().defined().cast('', { assert: true });
+
+  // $ExpectType string | null | undefined
+  mixed<string>().defined().cast('', { assert: 'ignore-optionality' });
 }
 
 Strings: {

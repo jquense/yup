@@ -69,6 +69,17 @@ export interface CastOptions<C = {}> {
   path?: string;
 }
 
+export interface CastOptionalityOptions<C = {}>
+  extends Omit<CastOptions<C>, 'assert'> {
+  /**
+   * Whether or not to throw TypeErrors if casting fails to produce a valid type.
+   * defaults to `true`. The `'ignore-optionality'` options is provided as a migration
+   * path from pre-v1 where `schema.nullable().required()` was allowed. When provided
+   * cast will only throw for values that are the wrong type *not* including `null` and `undefined`
+   */
+  assert: 'ignore-optionality';
+}
+
 export type RunTest = (
   opts: TestOptions,
   panic: PanicCallback,
@@ -328,19 +339,33 @@ export default abstract class Schema<
   /**
    * Run the configured transform pipeline over an input value.
    */
-  cast(value: any, options: CastOptions<TContext> = {}): this['__outputType'] {
+  cast(value: any, options?: CastOptions<TContext>): this['__outputType'];
+  cast(
+    value: any,
+    options: CastOptionalityOptions<TContext>,
+  ): this['__outputType'] | null | undefined;
+  cast(
+    value: any,
+    options: CastOptions<TContext> | CastOptionalityOptions<TContext> = {},
+  ): this['__outputType'] {
     let resolvedSchema = this.resolve({
       value,
       ...options,
       // parent: options.parent,
       // context: options.context,
     });
+    let allowOptionality = options.assert === 'ignore-optionality';
 
-    let result = resolvedSchema._cast(value, options);
+    let result = resolvedSchema._cast(value, options as any);
 
     if (options.assert !== false && !resolvedSchema.isType(result)) {
+      if (allowOptionality && isAbsent(result)) {
+        return result as any;
+      }
+
       let formattedValue = printValue(value);
       let formattedResult = printValue(result);
+
       throw new TypeError(
         `The value of ${
           options.path || 'field'
@@ -523,8 +548,7 @@ export default abstract class Schema<
   validate(
     value: any,
     options?: ValidateOptions<TContext>,
-  ): Promise<this['__outputType']>;
-  validate(value: any, options?: ValidateOptions<TContext>): any {
+  ): Promise<this['__outputType']> {
     let schema = this.resolve({ ...options, value });
 
     return new Promise((resolve, reject) =>
@@ -537,16 +561,12 @@ export default abstract class Schema<
         },
         (errors, validated) => {
           if (errors.length) reject(new ValidationError(errors!, validated));
-          else resolve(validated);
+          else resolve(validated as this['__outputType']);
         },
       ),
     );
   }
 
-  validateSync(
-    value: any,
-    options?: ValidateOptions<TContext>,
-  ): this['__outputType'];
   validateSync(
     value: any,
     options?: ValidateOptions<TContext>,

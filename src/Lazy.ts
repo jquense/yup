@@ -8,6 +8,7 @@ import type {
 import type { ResolveOptions } from './Condition';
 
 import type {
+  CastOptionalityOptions,
   CastOptions,
   SchemaFieldDescription,
   SchemaLazyDescription,
@@ -88,8 +89,16 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
     return this._resolve(options.value, options);
   }
 
-  cast(value: any, options?: CastOptions<TContext>): T {
-    return this._resolve(value, options).cast(value, options);
+  cast(value: any, options?: CastOptions<TContext>): T;
+  cast(
+    value: any,
+    options?: CastOptionalityOptions<TContext>,
+  ): T | null | undefined;
+  cast(
+    value: any,
+    options?: CastOptions<TContext> | CastOptionalityOptions<TContext>,
+  ): any {
+    return this._resolve(value, options).cast(value, options as any);
   }
 
   asNestedTest(options: NestedTestConfig) {
