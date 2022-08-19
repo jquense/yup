@@ -1093,7 +1093,7 @@ let asyncJimmySchema = string()
     'is-jimmy',
     ({ label }) => `${label} is not Jimmy`, // a message can also be a function
     async (value, testContext) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
-  });
+  );
 
 await schema.isValid('jimmy'); // => true
 await schema.isValid('john'); // => false
