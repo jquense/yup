@@ -24,7 +24,6 @@ import type {
 import parseJson from './util/parseJson';
 import type { Test } from './util/createValidation';
 import type ValidationError from './ValidationError';
-
 export type { AnyObject };
 
 type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
@@ -36,6 +35,31 @@ export type Shape<T extends Maybe<AnyObject>, C = AnyObject> = {
 export type ObjectSchemaSpec = SchemaSpec<any> & {
   noUnknown?: boolean;
 };
+
+function deepPartial(schema: any) {
+  if ('fields' in schema) {
+    const partial: any = {};
+    for (const [key, fieldSchema] of Object.entries(schema.fields)) {
+      partial[key] = deepPartial(fieldSchema);
+    }
+    return schema.setFields(partial);
+  }
+  if (schema.type === 'array') {
+    const nextArray = schema.optional();
+    if (nextArray.innerType)
+      nextArray.innerType = deepPartial(nextArray.innerType);
+    return nextArray;
+  }
+  if (schema.type === 'tuple') {
+    return schema
+      .optional()
+      .clone({ types: schema.spec.types.map(deepPartial) });
+  }
+  if ('optional' in schema) {
+    return schema.optional();
+  }
+  return schema;
+}
 
 const deepHas = (obj: any, p: string) => {
   const path = [...normalizePath(p)];
@@ -342,19 +366,18 @@ export default class ObjectSchema<
   partial() {
     const partial: any = {};
     for (const [key, schema] of Object.entries(this.fields)) {
-      partial[key] = schema instanceof Schema ? schema.optional() : schema;
+      partial[key] =
+        'optional' in schema && schema.optional instanceof Function
+          ? schema.optional()
+          : schema;
     }
 
     return this.setFields<Partial<TIn>, TDefault>(partial);
   }
 
-  deepPartial() {
-    const partial: any = {};
-    for (const [key, schema] of Object.entries(this.fields)) {
-      if (schema instanceof ObjectSchema) partial[key] = schema.deepPartial();
-      else partial[key] = schema instanceof Schema ? schema.optional() : schema;
-    }
-    return this.setFields<PartialDeep<TIn>, TDefault>(partial);
+  deepPartial(): ObjectSchema<PartialDeep<TIn>, TContext, TDefault, TFlags> {
+    const next = deepPartial(this);
+    return next;
   }
 
   pick<TKey extends keyof TIn>(keys: readonly TKey[]) {

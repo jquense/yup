@@ -686,7 +686,7 @@ describe('Object types', () => {
     await expect(inst.partial().isValid({ name: '' })).resolves.toEqual(false);
   });
 
-  xit('deepPartial() should work', async () => {
+  it('deepPartial() should work', async () => {
     let inst = object({
       age: number().required(),
       name: string().required(),
@@ -694,6 +694,7 @@ describe('Object types', () => {
         object({
           name: string().required(),
           age: number().required(),
+          lazy: lazy(() => number().required()),
         }),
       ).defined(),
     });
@@ -703,17 +704,24 @@ describe('Object types', () => {
       inst.isValid({ age: 2, name: 'fs', contacts: [{}] }),
     ).resolves.toEqual(false);
 
-    await expect(inst.deepPartial().isValid({})).resolves.toEqual(true);
-    await expect(
-      inst.deepPartial().validate({ contacts: [{}] }),
-    ).resolves.toEqual(true);
+    const instPartial = inst.deepPartial();
 
     await expect(
-      inst.deepPartial().isValid({ contacts: [{ age: null }] }),
+      inst.validate({ age: 1, name: 'f', contacts: [{ name: 'f', age: 1 }] }),
+    ).rejects.toThrowError('contacts[0].lazy is a required field');
+
+    await expect(instPartial.isValid({})).resolves.toEqual(true);
+
+    await expect(instPartial.isValid({ contacts: [{}] })).resolves.toEqual(
+      true,
+    );
+
+    await expect(
+      instPartial.isValid({ contacts: [{ age: null }] }),
     ).resolves.toEqual(false);
 
     await expect(
-      inst.deepPartial().isValid({ contacts: [{ age: null }] }),
+      instPartial.isValid({ contacts: [{ lazy: null }] }),
     ).resolves.toEqual(false);
   });
 

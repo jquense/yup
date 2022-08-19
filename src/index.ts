@@ -15,8 +15,16 @@ import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
 import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
-import setLocale from './setLocale';
-import Schema, { AnySchema } from './schema';
+import setLocale, { LocaleObject } from './setLocale';
+import Schema, {
+  AnySchema,
+  SchemaRefDescription,
+  SchemaInnerTypeDescription,
+  SchemaObjectDescription,
+  SchemaLazyDescription,
+  SchemaFieldDescription,
+  SchemaDescription,
+} from './schema';
 import type { InferType } from './types';
 
 function addMethod<T extends AnySchema>(
@@ -50,6 +58,13 @@ export type {
   AnySchema,
   MixedOptions,
   TypeGuard,
+  SchemaRefDescription,
+  SchemaInnerTypeDescription,
+  SchemaObjectDescription,
+  SchemaLazyDescription,
+  SchemaFieldDescription,
+  SchemaDescription,
+  LocaleObject,
 };
 
 export {
