@@ -1,3 +1,26 @@
+# [1.0.0-beta.5](https://github.com/jquense/yup/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2022-08-19)
+
+
+### Bug Fixes
+
+* coarce -> coerce ([#1677](https://github.com/jquense/yup/issues/1677)) ([99aa257](https://github.com/jquense/yup/commit/99aa25787a8ff15fe42e54db88ec3ed547357302))
+* **docs:** correct typo "coarce" to "coerce" ([#1654](https://github.com/jquense/yup/issues/1654)) ([f29ff71](https://github.com/jquense/yup/commit/f29ff71e4ae04927d85a00a993a014de652ae9fe))
+
+
+### Features
+
+* add cast nullability migration path. ([#1749](https://github.com/jquense/yup/issues/1749)) ([2bb099e](https://github.com/jquense/yup/commit/2bb099e26f62dd4734fe7bd525d011ce2b1583b5))
+* better Lazy types and deepPartial fixes ([#1748](https://github.com/jquense/yup/issues/1748)) ([e4ae6ed](https://github.com/jquense/yup/commit/e4ae6edeb171f25c43ca9367038ad5f09ce9de7c))
+
+
+### BREAKING CHANGES
+
+* The types for Lazy have changes a bit, it's unlikely that this affects anyone but it is technically a breaking change.
+
+
+
+
+
 # [1.0.0-beta.4](https://github.com/jquense/yup/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2022-04-10)
 
 
