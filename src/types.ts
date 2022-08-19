@@ -1,6 +1,7 @@
 import type { ResolveOptions } from './Condition';
 import type {
   AnySchema,
+  CastOptionalityOptions,
   CastOptions,
   SchemaFieldDescription,
   SchemaSpec,
@@ -18,6 +19,8 @@ export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
   __default: D;
 
   cast(value: any, options?: CastOptions<C>): T;
+  cast(value: any, options: CastOptionalityOptions<C>): T | null | undefined;
+
   validate(value: any, options?: ValidateOptions<C>): Promise<T>;
 
   asNestedTest(config: NestedTestConfig): Test;
