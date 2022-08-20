@@ -1,3 +1,9 @@
+# [1.0.0-beta.7](https://github.com/jquense/yup/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2022-08-20)
+
+
+
+
+
 # [1.0.0-beta.6](https://github.com/jquense/yup/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2022-08-20)
 
 
