@@ -18,14 +18,14 @@ export interface MixedOptions<TType> {
   type?: string;
   check?: TypeGuard<TType>;
 }
-export function create<TType = any>(
+export function create<TType = unknown>(
   spec?: MixedOptions<TType> | TypeGuard<TType>,
 ) {
   return new MixedSchema<TType | undefined>(spec);
 }
 
 export default class MixedSchema<
-  TType = any,
+  TType = unknown,
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
@@ -40,7 +40,7 @@ export default class MixedSchema<
 }
 
 export default interface MixedSchema<
-  TType = any,
+  TType = unknown,
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
