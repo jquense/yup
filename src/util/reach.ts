@@ -1,4 +1,6 @@
 import { forEach } from 'property-expr';
+import type Reference from '../Reference';
+import type { ISchema } from '../types';
 
 let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
 
@@ -7,7 +9,11 @@ export function getIn<C = any>(
   path: string,
   value?: any,
   context: C = value,
-) {
+): {
+  schema: ISchema<any> | Reference;
+  parent: any;
+  parentPath: string;
+} {
   let parent: any, lastPart: string, lastPartDebug: string;
 
   // root path: ''

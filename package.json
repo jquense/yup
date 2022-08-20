@@ -64,8 +64,8 @@
     ]
   },
   "devDependencies": {
-    "@4c/cli": "^3.0.1",
-    "@4c/rollout": "^3.0.1",
+    "@4c/cli": "^4.0.1",
+    "@4c/rollout": "^4.0.1",
     "@4c/tsconfig": "^0.4.1",
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
@@ -90,9 +90,9 @@
     "eslint-plugin-typescript": "^0.14.0",
     "hookem": "^2.0.1",
     "jest": "^27.5.1",
-    "lint-staged": "^12.5.0",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
-    "rollup": "^2.78.0",
+    "rollup": "^2.78.1",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-dts": "^4.2.2",
     "rollup-plugin-filesize": "^9.1.2",
@@ -101,8 +101,8 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "property-expr": "^2.0.4",
-    "tiny-case": "^1.0.2",
+    "property-expr": "^2.0.5",
+    "tiny-case": "^1.0.3",
     "toposort": "^2.0.2"
   }
 }

@@ -29,7 +29,7 @@ export type { AnyObject };
 type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
 
 export type Shape<T extends Maybe<AnyObject>, C = AnyObject> = {
-  [field in keyof T]: ISchema<T[field], C> | Reference;
+  [field in keyof T]-?: ISchema<T[field], C> | Reference;
 };
 
 export type ObjectSchemaSpec = SchemaSpec<any> & {
@@ -212,7 +212,10 @@ export default class ObjectSchema<
         intermediateValue[prop] = value[prop];
       }
 
-      if (intermediateValue[prop] !== value[prop]) {
+      if (
+        exists !== prop in intermediateValue ||
+        intermediateValue[prop] !== value[prop]
+      ) {
         isChanged = true;
       }
     }
