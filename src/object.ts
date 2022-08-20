@@ -320,7 +320,8 @@ export default class ObjectSchema<
     let dft: any = {};
     this._nodes.forEach((key) => {
       const field = this.fields[key] as any;
-      dft[key] = 'getDefault' in field ? field.getDefault() : undefined;
+      dft[key] =
+        field && 'getDefault' in field ? field.getDefault() : undefined;
     });
 
     return dft;
