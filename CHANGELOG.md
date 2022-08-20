@@ -1,3 +1,16 @@
+# [1.0.0-beta.6](https://github.com/jquense/yup/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2022-08-20)
+
+
+### Bug Fixes
+
+* change mixed generic to unknown from any ([5e8e8ef](https://github.com/jquense/yup/commit/5e8e8ef132574b31056bc7c504b8ba62c9ae4d1e))
+* count stripping unknown fields as changes for object casts ([2b4773c](https://github.com/jquense/yup/commit/2b4773ca8d4dc7b1f30e3927a113eb807d254f37)), closes [#1620](https://github.com/jquense/yup/issues/1620)
+* **types:** export more types ([433a452](https://github.com/jquense/yup/commit/433a45252cac4621c00adbeb3c9320caca55cced))
+
+
+
+
+
 # [1.0.0-beta.5](https://github.com/jquense/yup/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2022-08-19)
 
 
