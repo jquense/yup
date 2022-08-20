@@ -106,3 +106,10 @@ export type {
   TestOptions,
   TestConfig,
 } from './util/createValidation';
+
+export type {
+  ObjectShape,
+  TypeFromShape,
+  DefaultFromShape,
+  MakePartial,
+} from './util/objectTypes';
