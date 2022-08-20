@@ -55,15 +55,15 @@
     text-table "^0.2.0"
     yargs "^17.3.0"
 
-"@4c/cli@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@4c/cli/-/cli-4.0.1.tgz#ffa6bf139226e2085fb1fa116fe4fb6768635556"
-  integrity sha512-BNA9zlAXGop5+AIjVnnUrILyfes4p9znZriNITQeyYEhR2/CwoDgCeht0Kd9XT4oqGB5D4JALpcB8qdN330Hfg==
+"@4c/cli@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@4c/cli/-/cli-4.0.2.tgz#9e54d6534b90b06c102348b06a5bd90bd4c9ddf1"
+  integrity sha512-K5vK745EgGtWA1xmeHrRn/hwXZOQtuU47NxBxv7hHmztwpYkw43EZJbiJm/b47Aie5+NlCpgTKln/rxWXQbI7w==
   dependencies:
     "@4c/build" "^4.0.0"
     "@4c/init" "^5.0.0"
     "@4c/intl" "^3.0.0"
-    "@4c/rollout" "^4.0.1"
+    "@4c/rollout" "^4.0.2"
     "@4c/start" "^4.0.0"
     pedantic "^7.0.0"
     svg2c "^3.0.0"
@@ -102,10 +102,10 @@
     "@4c/cli-core" "^4.0.0"
     glob "^7.2.0"
 
-"@4c/rollout@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@4c/rollout/-/rollout-4.0.1.tgz#3f78b04e365ab41a68265a18af0d159f6cada31f"
-  integrity sha512-iwdwYeZfTz0OOyCqdhucVcgkW5zcHxmmELFabMAmHlKGKtIhKfolDvgebN9uA7CS4v81jaDQC7oywvJVRK5xpw==
+"@4c/rollout@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@4c/rollout/-/rollout-4.0.2.tgz#945f090a0a60bb11f42df9a06ab3c91974b7438f"
+  integrity sha512-vp2bZzzHAkxwgO0ak7GgHSEqn0ioQTZah/L57bUr13yhDE0T8A8HjMo6BKnkJv3axRrTQUtKDRsluxvFZM74Sg==
   dependencies:
     "@4c/cli-core" "^4.0.0"
     "@4c/file-butler" "^6.0.0"

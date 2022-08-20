@@ -64,8 +64,8 @@
     ]
   },
   "devDependencies": {
-    "@4c/cli": "^4.0.1",
-    "@4c/rollout": "^4.0.1",
+    "@4c/cli": "^4.0.2",
+    "@4c/rollout": "^4.0.2",
     "@4c/tsconfig": "^0.4.1",
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.18.10",
