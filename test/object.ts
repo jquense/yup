@@ -253,6 +253,35 @@ describe('Object types', () => {
     expect(inst.fields.prop).toBeDefined();
   });
 
+  describe('stripUnknown', () => {
+    it('should remove extra fields', () => {
+      const inst = object({
+        str: string(),
+      });
+
+      expect(
+        inst.cast(
+          { str: 'hi', extra: false, sneaky: undefined },
+          { stripUnknown: true },
+        ),
+      ).toStrictEqual({
+        str: 'hi',
+      });
+    });
+
+    it('should one undefined extra fields', () => {
+      const inst = object({
+        str: string(),
+      });
+
+      expect(
+        inst.cast({ str: 'hi', sneaky: undefined }, { stripUnknown: true }),
+      ).toStrictEqual({
+        str: 'hi',
+      });
+    });
+  });
+
   describe('object defaults', () => {
     const createSchema = () =>
       object({
