@@ -1,8 +1,7 @@
 import { forEach } from 'property-expr';
 import type Reference from '../Reference';
-import type { ISchema } from '../types';
-
-let trim = (part: string) => part.substr(0, part.length - 1).substr(1);
+import type { InferType, ISchema } from '../types';
+import type { Get } from 'type-fest';
 
 export function getIn<C = any>(
   schema: any,
@@ -10,7 +9,7 @@ export function getIn<C = any>(
   value?: any,
   context: C = value,
 ): {
-  schema: ISchema<any> | Reference;
+  schema: ISchema<any> | Reference<any>;
   parent: any;
   parentPath: string;
 } {
@@ -20,7 +19,7 @@ export function getIn<C = any>(
   if (!path) return { parent, parentPath: path, schema };
 
   forEach(path, (_part, isBracket, isArray) => {
-    let part = isBracket ? trim(_part) : _part;
+    let part = isBracket ? _part.slice(1, _part.length - 1) : _part;
 
     schema = schema.resolve({ context, parent, value });
 
@@ -66,7 +65,15 @@ export function getIn<C = any>(
   return { schema, parent, parentPath: lastPart! };
 }
 
-const reach = (obj: any, path: string, value?: any, context?: any) =>
-  getIn(obj, path, value, context).schema;
+function reach<P extends string, S extends ISchema<any>>(
+  obj: S,
+  path: P,
+  value?: any,
+  context?: any,
+):
+  | Reference<Get<InferType<S>, P>>
+  | ISchema<Get<InferType<S>, P>, S['__context']> {
+  return getIn(obj, path, value, context).schema as any;
+}
 
 export default reach;

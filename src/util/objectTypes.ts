@@ -9,6 +9,8 @@ export type AnyObject = { [k: string]: any };
 export type TypeFromShape<S extends ObjectShape, _C> = {
   [K in keyof S]: S[K] extends ISchema<any, any>
     ? S[K]['__outputType']
+    : S[K] extends Reference<infer T>
+    ? T
     : unknown;
 };
 

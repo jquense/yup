@@ -984,3 +984,30 @@ TypeAssigning: {
     toJSON: mixed<() => any>().required(),
   });
 }
+
+reach: {
+  const obj = object({
+    string: string<'foo'>().defined(),
+    number: number().default(1),
+    removed: number().strip(),
+    ref: ref<'foo'>('string'),
+    nest: array(
+      object({
+        other: string(),
+      }),
+    ),
+    nullObject: object({
+      other: string(),
+    }).default(null),
+    lazy: lazy(() => number().defined()),
+  });
+
+  // $ExpectType ISchema<string | undefined, AnyObject, any, any> | Reference<string | undefined>
+  const _1 = reach(obj, 'nest[0].other' as const);
+
+  // $ExpectType Reference<{ other?: string | undefined; } | undefined> | ISchema<{ other?: string | undefined; } | undefined, AnyObject, any, any>
+  const _2 = reach(obj, 'nest[0]' as const);
+
+  // $ExpectType Reference<"foo"> | ISchema<"foo", AnyObject, any, any>
+  const _3 = reach(obj, 'ref');
+}
