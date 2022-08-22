@@ -369,7 +369,7 @@ string().append('~~~~').cast('hi'); // 'hi~~~~'
 You **must** have the `strictNullChecks` compiler option enabled for type inference to work.
 
 We also recommend settings `strictFunctionTypes` to `false`, for functionally better types. Yes
-this reduces overall soundness, however TypeScript already disables this check 
+this reduces overall soundness, however TypeScript already disables this check
 for methods and constructors (note from TS docs):
 
 > During development of this feature, we discovered a large number of inherently
@@ -850,7 +850,6 @@ InferType<typeof schema>; /*
    useThis?: number | undefined
 }
 */
-
 ```
 
 #### `Schema.withMutation(builder: (current: Schema) => void): void`
@@ -904,11 +903,11 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `Schema.isType()` checks.
 
 ```ts
-const schema = number().nullable()
+const schema = number().nullable();
 
 schema.cast(null); // null
 
-InferType<typeof schema> // number | null
+InferType<typeof schema>; // number | null
 ```
 
 #### `Schema.nonNullable(): Schema`
@@ -917,11 +916,11 @@ The opposite of `nullable`, removes `null` from valid type values for the schema
 **Schema are non nullable by default**.
 
 ```ts
-const schema = number().nonNullable()
+const schema = number().nonNullable();
 
 schema.cast(null); // TypeError
 
-InferType<typeof schema> // number
+InferType<typeof schema>; // number
 ```
 
 #### `Schema.defined(): Schema`
@@ -929,11 +928,11 @@ InferType<typeof schema> // number
 Require a value for the schema. All field values apart from `undefined` meet this requirement.
 
 ```ts
-const schema = string().defined()
+const schema = string().defined();
 
 schema.cast(undefined); // TypeError
 
-InferType<typeof schema> // string
+InferType<typeof schema>; // string
 ```
 
 #### `Schema.optional(): Schema`
@@ -941,11 +940,11 @@ InferType<typeof schema> // string
 The opposite of `defined()` allows `undefined` values for the given type.
 
 ```ts
-const schema = string().optional()
+const schema = string().optional();
 
 schema.cast(undefined); // undefined
 
-InferType<typeof schema> // string | undefined
+InferType<typeof schema>; // string | undefined
 ```
 
 #### `Schema.required(message?: string | function): Schema`
@@ -1092,7 +1091,8 @@ let asyncJimmySchema = string()
   .test(
     'is-jimmy',
     ({ label }) => `${label} is not Jimmy`, // a message can also be a function
-    async (value, testContext) => (await fetch('/is-jimmy/' + value)).responseText === 'true',
+    async (value, testContext) =>
+      (await fetch('/is-jimmy/' + value)).responseText === 'true',
   );
 
 await schema.isValid('jimmy'); // => true
@@ -1200,7 +1200,7 @@ schema.validateSync(1); // 1;
 
 schema.validateSync(new Date()); // Date;
 
-InferType<typeof schema> // any
+InferType<typeof schema>; // any
 ```
 
 Custom types can be implemented by passing a type check function:
@@ -1219,8 +1219,7 @@ await objectIdSchema.validate(ObjectId('507f1f77bcf86cd799439011')); // ObjectId
 
 await objectIdSchema.validate('507f1f77bcf86cd799439011'); // ObjectId("507f1f77bcf86cd799439011")
 
-
-InferType<typeof objectIdSchema> // ObjectId
+InferType<typeof objectIdSchema>; // ObjectId
 ```
 
 ### string
@@ -1269,7 +1268,8 @@ await schema.isValid('nope'); // => false
 #### `string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`
 
 An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true,
-short circuits the regex test when the value is an empty string
+short circuits the regex test when the value is an empty string, making it a easier to avoid
+matching nothing without complicating the regex.
 
 ```js
 let schema = string().matches(/(hi|bye)/, { excludeEmptyString: true });
@@ -1279,7 +1279,26 @@ await schema.isValid(''); // => true
 
 #### `string.email(message?: string | function): Schema`
 
-Validates the value as an email address via a regex.
+Validates the value as an email address using the same regex as defined by the HTML spec.
+
+WATCH OUT: Validating email adresses is nearly impossible with just code. Different
+clients and servers accept different things and many diverge from the various specs defining
+"valid" emails. The ONLY real way to validate an email address is to send a verification email
+to it and check that the user got it. With that in mind, yup picks a relatively simple regex
+that does not cover all cases, but aligns with browser input validation behavior since HTML
+forms are a common use case for yup.
+
+If you have more specific needs please override the email method with your own logic or regex:
+
+```ts
+yup.addMethod(yup.string, 'email', function validateEmail(message) {
+  return this.matches(myEmailRegex, {
+    message,
+    name: 'email',
+    excludeEmptyString: true,
+  });
+});
+```
 
 #### `string.url(message?: string | function): Schema`
 
