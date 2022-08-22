@@ -1,4 +1,4 @@
-import { lazy, mixed, AnyObject, MixedSchemaClass } from '../src';
+import { lazy, mixed, AnyObject, MixedSchema } from '../src';
 
 describe('lazy', function () {
   it('should throw on a non-schema value', () => {
@@ -8,7 +8,7 @@ describe('lazy', function () {
 
   describe('mapper', () => {
     const value = 1;
-    let mapper: jest.Mock<MixedSchemaClass<any, AnyObject, undefined, ''>, []>;
+    let mapper: jest.Mock<MixedSchema<any, AnyObject, undefined, ''>, []>;
 
     beforeEach(() => {
       mapper = jest.fn(() => mixed());

@@ -13,19 +13,22 @@ import Schema from './schema';
 
 const returnsTrue: any = () => true;
 
+type AnyPresentValue = {};
+
 export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
 export interface MixedOptions<TType> {
   type?: string;
   check?: TypeGuard<TType>;
 }
-export function create<TType = unknown>(
+
+export function create<TType extends AnyPresentValue>(
   spec?: MixedOptions<TType> | TypeGuard<TType>,
 ) {
   return new MixedSchema<TType | undefined>(spec);
 }
 
 export default class MixedSchema<
-  TType = unknown,
+  TType extends Maybe<AnyPresentValue> = AnyPresentValue | undefined,
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',
@@ -40,7 +43,7 @@ export default class MixedSchema<
 }
 
 export default interface MixedSchema<
-  TType = unknown,
+  TType extends Maybe<AnyPresentValue> = AnyPresentValue | undefined,
   TContext = AnyObject,
   TDefault = undefined,
   TFlags extends Flags = '',

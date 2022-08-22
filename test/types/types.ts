@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
-import { array, number, string, date, ref, mixed, bool } from '../../src';
+import {
+  array,
+  number,
+  string,
+  date,
+  ref,
+  mixed,
+  bool,
+  reach,
+} from '../../src';
 import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
@@ -106,6 +115,9 @@ Mixed: {
 
   // $ExpectType string | null | undefined
   mixed<string>().defined().cast('', { assert: 'ignore-optionality' });
+
+  // $ExpectType AnyPresentValue | null
+  mixed().defined().nullable().cast('');
 }
 
 Strings: {
@@ -971,4 +983,31 @@ TypeAssigning: {
     mtime: date().nullable(),
     toJSON: mixed<() => any>().required(),
   });
+}
+
+reach: {
+  const obj = object({
+    string: string<'foo'>().defined(),
+    number: number().default(1),
+    removed: number().strip(),
+    ref: ref<'foo'>('string'),
+    nest: array(
+      object({
+        other: string(),
+      }),
+    ),
+    nullObject: object({
+      other: string(),
+    }).default(null),
+    lazy: lazy(() => number().defined()),
+  });
+
+  // $ExpectType ISchema<string | undefined, AnyObject, any, any> | Reference<string | undefined>
+  const _1 = reach(obj, 'nest[0].other' as const);
+
+  // $ExpectType Reference<{ other?: string | undefined; } | undefined> | ISchema<{ other?: string | undefined; } | undefined, AnyObject, any, any>
+  const _2 = reach(obj, 'nest[0]' as const);
+
+  // $ExpectType Reference<"foo"> | ISchema<"foo", AnyObject, any, any>
+  const _3 = reach(obj, 'ref');
 }
