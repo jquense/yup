@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
-import { array, number, string, date, ref, mixed, bool } from '../../src';
+import {
+  array,
+  number,
+  string,
+  date,
+  ref,
+  mixed,
+  bool,
+  reach,
+} from '../../src';
 import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
@@ -106,6 +115,9 @@ Mixed: {
 
   // $ExpectType string | null | undefined
   mixed<string>().defined().cast('', { assert: 'ignore-optionality' });
+
+  // $ExpectType AnyPresentValue | null
+  mixed().defined().nullable().cast('');
 }
 
 Strings: {

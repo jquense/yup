@@ -1188,11 +1188,13 @@ module.exports = function (formats = 'MMM dd, yyyy') {
 ### mixed
 
 Creates a schema that matches all types, or just the ones you configure. Inherits from [`Schema`](#Schema).
+Mixed types extends `{}` by default instead of `any` or `unknown`. This is because in TypeScript `{}` means
+anything that isn't `null` or `undefined` which yup treats distinctly.
 
 ```ts
 import { mixed, InferType } from 'yup';
 
-let schema = mixed();
+let schema = mixed().null;
 
 schema.validateSync('string'); // 'string';
 
@@ -1200,10 +1202,13 @@ schema.validateSync(1); // 1;
 
 schema.validateSync(new Date()); // Date;
 
-InferType<typeof schema>; // any
+InferType<typeof schema>; // {} | undefined
+
+InferType<typeof schema.nullable().defined()>; // {} | null
 ```
 
-Custom types can be implemented by passing a type check function:
+Custom types can be implemented by passing a type `check` function. This will also
+narrow the TypeScript type for the schema.
 
 ```ts
 import { mixed, InferType } from 'yup';
