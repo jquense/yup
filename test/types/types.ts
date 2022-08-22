@@ -964,12 +964,11 @@ Conditions: {
 }
 
 TypeAssigning: {
-  // $ExpectError unknown is not assignable to () => any
   const _schema: ObjectSchema<{
     mtime?: Date | null | undefined;
     toJSON: () => any;
   }> = object({
     mtime: date().nullable(),
-    toJSON: mixed().required(),
+    toJSON: mixed<() => any>().required(),
   });
 }

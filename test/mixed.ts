@@ -255,11 +255,11 @@ describe('Mixed Types ', () => {
     let inst = mixed().oneOf(['hello']);
 
     validateAll(inst, {
-      valid: [undefined, 'hello'],
+      valid: [undefined, 'hello', [null, inst.nullable()]],
       invalid: [
         'YOLO',
         [undefined, inst.required(), 'required'],
-        [null, inst.nullable()],
+        // [null, inst.nullable()],
         [null, inst.nullable().required(), 'required'],
       ],
     });

@@ -848,16 +848,16 @@ export default abstract class Schema<
     next.internalTests.whiteList = createValidation({
       message,
       name: 'oneOf',
+      skipAbsent: true,
       test(value) {
-        if (value === undefined) return true;
-        let valids = this.schema._whitelist;
+        let valids = (this.schema as Schema)._whitelist;
         let resolved = valids.resolveAll(this.resolve);
 
         return resolved.includes(value)
           ? true
           : this.createError({
               params: {
-                values: valids.toArray().join(', '),
+                values: Array.from(valids).join(', '),
                 resolved,
               },
             });
@@ -881,12 +881,12 @@ export default abstract class Schema<
       message,
       name: 'notOneOf',
       test(value) {
-        let invalids = this.schema._blacklist;
+        let invalids = (this.schema as Schema)._blacklist;
         let resolved = invalids.resolveAll(this.resolve);
         if (resolved.includes(value))
           return this.createError({
             params: {
-              values: invalids.toArray().join(', '),
+              values: Array.from(invalids).join(', '),
               resolved,
             },
           });
