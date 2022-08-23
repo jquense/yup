@@ -138,7 +138,7 @@ export default abstract class Schema<
 {
   readonly type: string;
 
-  declare readonly __outputType: ResolveFlags<TType, TFlags>;
+  declare readonly __outputType: ResolveFlags<TType, TFlags, TDefault>;
   declare readonly __context: TContext;
   declare readonly __flags: TFlags;
   declare readonly __isYupSchema__: boolean;

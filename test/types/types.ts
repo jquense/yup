@@ -850,6 +850,17 @@ Object: {
 
     // $ExpectType null
     obj1.concat(obj2.default(null)).getDefault();
+
+    const optionalNonDefaultedObj = object({
+      nested: object({
+        h: number().required(),
+      })
+        .default(undefined)
+        .optional(),
+    });
+
+    // $ExpectType { h: number; } | undefined
+    optionalNonDefaultedObj.cast({}).nested;
   }
 
   SchemaOfDate: {
@@ -959,13 +970,13 @@ Object: {
 }
 
 Conditions: {
-  // $ExpectType StringSchema<string, AnyObject, undefined, ""> | NumberSchema<number | undefined, AnyObject, undefined, "">
+  // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
   string().when('foo', ([foo], schema) => (foo ? schema.required() : number()));
 
   // $ExpectType StringSchema<string | undefined, AnyObject, undefined, "">
   string().when('foo', ([foo], schema) => (foo ? schema.required() : schema));
 
-  // $ExpectType StringSchema<string, AnyObject, undefined, ""> | NumberSchema<number | undefined, AnyObject, undefined, "">
+  // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
   string().when('foo', {
     is: true,
     then: () => number(),

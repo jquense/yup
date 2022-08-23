@@ -1,3 +1,5 @@
+export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
+
 export type Maybe<T> = T | null | undefined;
 
 export type Preserve<T, U> = T extends U ? U : never;
@@ -35,8 +37,13 @@ export type ToggleDefault<F extends Flags, D> = Preserve<
   ? SetFlag<F, 'd'>
   : UnsetFlag<F, 'd'>;
 
-export type ResolveFlags<T, F extends Flags> = Preserve<F, 's'> extends never
+export type ResolveFlags<T, F extends Flags, D = T> = Preserve<
+  F,
+  's'
+> extends never
   ? Extract<F, 'd'> extends never
+    ? T
+    : D extends undefined
     ? T
     : Defined<T>
   : never;
