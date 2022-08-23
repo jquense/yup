@@ -227,7 +227,7 @@ If the end value is `undefined` yup will apply the schema default if it's config
 
 ### Validation: Tests
 
-Yup has robust support for assertions, or "tests", over input values. Tests check that inputs conform to some
+Yup has robust support for assertions, or "tests", over input values. Tests assert that inputs conform to some
 criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
 and are usually reserved for checks that are hard, if not impossible, to represent in static types.
 
@@ -256,6 +256,41 @@ jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
 > (in this case an optional string). It still may be `undefined` or `null` depending on your schema
 > in those cases, you may want to return `true` for absent values unless your transform makes presence
 > related assertions
+
+#### Customizing errors
+
+In the simplest case a test function returns `true` or `false` depending on the whether the check
+passed. In the case of a failing test, yup will throw
+a [`ValidationError`](#validationerrorerrors-string--arraystring-value-any-path-string) with your (or the default)
+message for that test. ValidationErrors also contain a bunch of other metadata about the test,
+including it's name, what arguements (if any) it was called with, and the path to the failing field
+in the case of a nested validation.
+
+Error messages can also be constructed on the fly to customize how the schema fails.
+
+```ts
+const order = object({
+  no: number().required().
+  sku: string().test({
+    name: 'is-sku',
+    skipAbsent: true,
+    test(value, ctx) {
+      if (!value.startsWith('s-')) {
+        return ctx.createError({ message: 'SKU missing correct prefix' })
+      }
+      if (!value.endsWith('-42a')) {
+        return ctx.createError({ message: 'SKU missing correct suffix' })
+      }
+      if (value.length < 10) {
+        return ctx.createError({ message: 'SKU is not the right length' })
+      }
+      return true
+    }
+  })
+})
+
+order.validate({ no: 1234, sku: 's-1a45-14a' })
+```
 
 ### Composition and Reuse
 
@@ -290,7 +325,9 @@ const personSchema = yup.object({
   birthDate: yup.date().nullable().min(new Date(1900, 0, 1)),
 });
 
-interface Person extends yup.InferType<typeof personSchema> {}
+interface Person extends yup.InferType<typeof personSchema> {
+  // using interface instead of type generally gives nicer editor feedback
+}
 ```
 
 ### Schema defaults
@@ -412,7 +449,8 @@ try {
 
 ### localization and i18n
 
-If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to generate error objects with translation keys and values. These can be fed it into your favorite i18n library.
+If you need multi-language support, yup has got you covered. The function `setLocale` accepts functions that can be used to
+generate error objects with translation keys and values. These can be fed it into your favorite i18n library.
 
 ```js
 import { setLocale } from 'yup';
@@ -582,6 +620,9 @@ let renderables = array().of(renderable);
 Thrown on failed validations, with the following properties
 
 - `name`: "ValidationError"
+- `type`: the specific test type or test "name", that failed.
+- `value`: The field value that was tested;
+- `params`?: The test inputs, such as max value, regex, etc;
 - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
 - `errors`: array of error messages
 - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
