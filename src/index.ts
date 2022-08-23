@@ -25,7 +25,7 @@ import Schema, {
   SchemaFieldDescription,
   SchemaDescription,
 } from './schema';
-import type { InferType } from './types';
+import type { InferType, Message } from './types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,
@@ -55,9 +55,10 @@ export type {
   AnyObject,
   InferType,
   InferType as Asserts,
+  Message,
   AnySchema,
   MixedOptions,
-  TypeGuard,
+  TypeGuard as MixedTypeGuard,
   SchemaRefDescription,
   SchemaInnerTypeDescription,
   SchemaObjectDescription,
@@ -113,3 +114,15 @@ export type {
   DefaultFromShape,
   MakePartial,
 } from './util/objectTypes';
+
+export type {
+  Maybe,
+  Flags,
+  Optionals,
+  Thunk,
+  ToggleDefault,
+  Defined,
+  NotNull,
+  UnsetFlag,
+  SetFlag,
+} from './util/types';
