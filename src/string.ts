@@ -260,9 +260,13 @@ export default interface StringSchema<
   ): StringSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   oneOf<U extends TType>(
-    arrayOfValues: ReadonlyArray<U | Reference>,
+    arrayOfValues: ReadonlyArray<U | Reference<U>>,
     message?: MixedLocale['oneOf'],
   ): StringSchema<U | Optionals<TType>, TContext, TDefault, TFlags>;
+  oneOf(
+    enums: ReadonlyArray<TType | Reference>,
+    message?: Message<{ values: any }>,
+  ): this;
 
   concat<UType extends Maybe<string>, UContext, UDefault, UFlags extends Flags>(
     schema: StringSchema<UType, UContext, UDefault, UFlags>,

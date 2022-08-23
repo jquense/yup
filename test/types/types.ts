@@ -16,6 +16,20 @@ import ObjectSchema, { create as object } from '../../src/object';
 
 import { _ } from '../../src/util/types';
 
+Base_methods: {
+  // $ExpectType boolean | undefined
+  bool().oneOf([true, ref('$foo')]).__outputType;
+
+  // $ExpectType "asf" | "foo" | undefined
+  string().oneOf(['asf', ref<'foo'>('$foo')]).__outputType;
+
+  // $ExpectType Date | undefined
+  date().oneOf([new Date(), ref('$now')]).__outputType;
+
+  // $ExpectType number | undefined
+  number().oneOf([1, ref('$foo')]).__outputType;
+}
+
 Mixed: {
   const mxRequired = mixed<string | number>().required();
 
@@ -218,7 +232,7 @@ Strings: {
   string().oneOf(['foo', 'bar']).__outputType;
 
   // $ExpectType "foo" | "bar" | null | undefined
-  string().nullable().oneOf(['foo', 'bar', null]).__outputType;
+  string().nullable().oneOf(['foo', 'bar']).__outputType;
 }
 
 Numbers: {

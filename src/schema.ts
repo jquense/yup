@@ -836,6 +836,14 @@ export default abstract class Schema<
 
   oneOf<U extends TType>(
     enums: ReadonlyArray<U | Reference>,
+    message?: Message<{ values: any }>,
+  ): this;
+  oneOf(
+    enums: ReadonlyArray<TType | Reference>,
+    message: Message<{ values: any }>,
+  ): any;
+  oneOf<U extends TType>(
+    enums: ReadonlyArray<U | Reference>,
     message = locale.oneOf,
   ): any {
     let next = this.clone();

@@ -84,7 +84,6 @@ export default class BooleanSchema<
     return super.default(def);
   }
 
-  // concat<TOther extends BooleanSchema<any, any>>(schema: TOther): TOther;
   defined(
     msg?: Message,
   ): BooleanSchema<Defined<TType>, TContext, TDefault, TFlags> {
