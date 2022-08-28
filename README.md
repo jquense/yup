@@ -222,7 +222,7 @@ const reversedString = string()
 Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
 If the end value is `undefined` yup will apply the schema default if it's configured.
 
-> Watch out! values are not guaranteed to be valid types in tranform functions. Previous transforms
+> Watch out! values are not guaranteed to be valid types in transform functions. Previous transforms
 > may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
 
 ### Validation: Tests
@@ -263,7 +263,7 @@ In the simplest case a test function returns `true` or `false` depending on the 
 passed. In the case of a failing test, yup will throw
 a [`ValidationError`](#validationerrorerrors-string--arraystring-value-any-path-string) with your (or the default)
 message for that test. ValidationErrors also contain a bunch of other metadata about the test,
-including it's name, what arguements (if any) it was called with, and the path to the failing field
+including it's name, what arguments (if any) it was called with, and the path to the failing field
 in the case of a nested validation.
 
 Error messages can also be constructed on the fly to customize how the schema fails.
@@ -1327,7 +1327,7 @@ await schema.isValid(''); // => true
 
 Validates the value as an email address using the same regex as defined by the HTML spec.
 
-WATCH OUT: Validating email adresses is nearly impossible with just code. Different
+WATCH OUT: Validating email addresses is nearly impossible with just code. Different
 clients and servers accept different things and many diverge from the various specs defining
 "valid" emails. The ONLY real way to validate an email address is to send a verification email
 to it and check that the user got it. With that in mind, yup picks a relatively simple regex
@@ -1590,7 +1590,7 @@ const schema = object({
 schema.default(); // -> { name: '' }
 ```
 
-This may be a bit suprising, but is usually helpful since it allows large, nested
+This may be a bit surprising, but is usually helpful since it allows large, nested
 schema to create default values that fill out the whole shape and not just the root object. There is
 one gotcha! though. For nested object schema that are optional but include non optional fields
 may fail in unexpected ways:
