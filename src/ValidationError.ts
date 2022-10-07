@@ -39,6 +39,7 @@ export default class ValidationError extends Error {
     type?: string,
   ) {
     super();
+    Object.setPrototypeOf(this, ValidationError.prototype);
 
     this.name = 'ValidationError';
     this.value = value;
