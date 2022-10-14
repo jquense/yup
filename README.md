@@ -35,9 +35,9 @@ type User = InferType<typeof userSchema>;
 /* {
   name: string;
   age: number;
-  email?: string | undefined
-  website?: string | null | undefined
-  createdOn: Date
+  email?: string | undefined;
+  website?: string | null | undefined;
+  createdOn: Date;
 }*/
 ```
 
@@ -363,7 +363,7 @@ interface Person {
 const schema: ObjectSchema<Person> = object({
   name: string().defined(),
   age: number().optional(),
-  sex: string<'male' | 'female' | 'other'>().nullable().defined();
+  sex: string<'male' | 'female' | 'other'>().nullable().defined(),
 });
 
 // ❌ errors:
