@@ -94,6 +94,29 @@ export default class StringSchema<
       }),
     );
   }
+  
+  /*
+  CommentId: Zain:#1 (open)
+  Bug Detail: 
+  During Validation of any form Press Space bar and submit form, Form will be Submit,Empty String Should Validate False
+  */
+  stringNotEmpty(message?: Message<any>) {
+    return super.required(message).withMutation((schema: this) =>
+      schema.test({
+        message: message || mixedLocale.required,
+        name: 'required',
+        skipAbsent: true,
+        test: function(value) {
+          if(value !== undefined){
+              return value.trim() !== "";
+          } else if(value === undefined){
+              return false
+          }
+      },  
+      }),
+    );
+  }
+  //  CommentId: Zain:#1 (Closed)
 
   notRequired() {
     return super.notRequired().withMutation((schema: this) => {
