@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-labels */
 import {
+  addMethod,
   array,
   number,
   string,
@@ -1035,4 +1036,14 @@ reach: {
 
   // $ExpectType Reference<"foo"> | ISchema<"foo", AnyObject, any, any>
   const _3 = reach(obj, 'ref');
+}
+
+AddMethod: {
+  // NOTE: if this changes, update the doc https://github.com/jquense/yup#extending-built-in-schema-with-new-methods
+  addMethod(string, 'append', function append(appendStr: string) {
+    return this.transform((value) => `${value}${appendStr}`);
+  });
+  addMethod(string, 'mixed', function append(appendStr: string) {
+    return this.transform((value) => `${value}${appendStr}`);
+  });
 }
