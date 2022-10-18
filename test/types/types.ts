@@ -1040,10 +1040,10 @@ reach: {
 
 AddMethod: {
   // NOTE: if this changes, update the doc https://github.com/jquense/yup#extending-built-in-schema-with-new-methods
-  addMethod(string, 'append', function append(appendStr: string) {
+  addMethod(string, 'stringAppend', function append(appendStr: string) {
     return this.transform((value) => `${value}${appendStr}`);
   });
-  addMethod(string, 'mixed', function append(appendStr: string) {
+  addMethod(mixed, 'mixedAppend', function append(appendStr: string) {
     return this.transform((value) => `${value}${appendStr}`);
   });
 }
