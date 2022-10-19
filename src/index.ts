@@ -25,7 +25,7 @@ import Schema, {
   SchemaFieldDescription,
   SchemaDescription,
 } from './schema';
-import type { InferType, Message, ValidateOptions } from './types';
+import type { InferType, ISchema, Message, ValidateOptions } from './types';
 
 function addMethod<T extends AnySchema>(
   schemaType: (...arg: any[]) => T,
@@ -55,6 +55,7 @@ export type {
   AnyObject,
   InferType,
   InferType as Asserts,
+  ISchema,
   Message,
   AnySchema,
   MixedOptions,
