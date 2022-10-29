@@ -33,6 +33,7 @@ import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, Thunk, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
+import { isDeepStrictEqual } from 'util';
 
 export type SchemaSpec<TDefault> = {
   coerce: boolean;
@@ -903,6 +904,24 @@ export default abstract class Schema<
     });
 
     return next;
+  }
+
+  /**
+   * Turns any value in emptyValues into undefined.
+   * 
+   * emptyValues is either an array of values of a value
+   * 
+   * Note: If you want remove an array, put it in an array
+   * @param emptyValues 
+   * @returns A schema that turns the emptyValues into undefined
+   */
+  empty(emptyValues) {
+    if (!Array.isArray(emptyValues)) emptyValues = [emptyValues]
+    return this.transform((value) => {
+        if (emptyValues.some(e => isDeepStrictEqual(value, e)))
+            return undefined;
+        return value
+    })
   }
 
   strip(strip = true): any {

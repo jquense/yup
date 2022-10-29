@@ -1124,4 +1124,58 @@ describe('Mixed Types ', () => {
       await expect(inst.isValid({ prop: 'prop value' })).resolves.toBe(true);
     });
   });
+
+  describe('empty', () => {
+    it('turns its single value arguments into undefined', async () => {
+      let inst = mixed().empty(34);
+
+      await expect(inst.validate(34)).resolves.toBeUndefined();
+      await expect(inst.validate(24)).resolves.toBe(24);
+    });
+
+    it('turns its array of arguments into undefined', async () => {
+      let inst = mixed().empty(["none",  {}, null, 0, false, []]).nullable();
+
+      await expect(inst.validate({})).resolves.toBeUndefined();
+      await expect(inst.validate("none")).resolves.toBeUndefined();
+      await expect(inst.validate(null)).resolves.toBeUndefined();
+      await expect(inst.validate(0)).resolves.toBeUndefined();
+      await expect(inst.validate(false)).resolves.toBeUndefined();
+      await expect(inst.validate([])).resolves.toBeUndefined();
+
+      await expect(inst.validate(24)).resolves.toBe(24);
+      await expect(inst.validate('value')).resolves.toBe('value');
+      await expect(inst.validate(true)).resolves.toBe(true);
+      await expect(inst.validate({a: 3})).resolves.toEqual({a: 3});
+    });
+
+    // I will agree that this is potentially unwanted
+    // but we would need to make empty stop a transform reduce
+    // which is hard
+    it('throws when the next transform (or test) expect a defined value', async () => {
+      let inst = string().empty('').transform((value) => value.trim());
+
+      await expect(inst.validate('')).rejects.toEqual(expect.any(TypeError));
+    });
+
+    it('works with default', async () => {
+      let inst = string().empty('').default('value');
+
+      await expect(inst.validate('')).resolves.toBe('value');
+    })
+
+    it('happens in order', async () => {
+      let inst = string().lowercase().empty('value');
+
+      await expect(inst.validate('VALUE')).resolves.toBeUndefined();
+      await expect(inst.validate('value')).resolves.toBeUndefined();
+
+      inst = string().empty('value').lowercase();
+
+      await expect(inst.validate('VALUE')).resolves.toBe('value');
+      await expect(inst.validate('value')).resolves.toBeUndefined();
+    })
+  });
 });
+
+    
