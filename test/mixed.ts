@@ -1177,5 +1177,3 @@ describe('Mixed Types ', () => {
     })
   });
 });
-
-    
