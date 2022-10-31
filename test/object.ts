@@ -11,6 +11,7 @@ import {
   reach,
   StringSchema,
   MixedSchema,
+  ValidationError,
 } from '../src';
 import ObjectSchema from '../src/object';
 import { AnyObject } from '../src/types';
@@ -1071,4 +1072,31 @@ describe('Object types', () => {
       await inst.omit(['age', 'name']).validate({ color: 'mauve' }),
     ).toEqual({ color: 'mauve' });
   });
+});
+
+describe('defineCoercion', () => {
+  it('coerces arrays into objects if coerce function is correct', async () => {
+    const init = object({
+      squares: array(number()),
+      cubes: array(number().transform(x => x * 2)),
+    }).defineCoercion((data) => ({
+      squares: data.map((x: number) => x**2),
+      cubes: data.map((x: number) => x**3)
+    }))
+
+    const data = [1, 2, 3];
+
+    await expect(init.validate(data)).resolves.toEqual({
+      squares: [1, 4, 9],
+      cubes: [2, 16, 54],
+    })
+  })
+
+  it('guarantees that the end result is of the right type', async () => {
+    const init = object().defineCoercion((data) => data[0]);
+
+    const data = [1, 2, 3];
+
+    await expect(init.validate(data)).rejects.toEqual(expect.any(ValidationError));
+  })
 });

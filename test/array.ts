@@ -1,4 +1,4 @@
-import { string, number, object, array, StringSchema, AnySchema } from '../src';
+import { string, number, object, array, StringSchema, AnySchema, ValidationError } from '../src';
 
 describe('Array types', () => {
   describe('casting', () => {
@@ -208,4 +208,27 @@ describe('Array types', () => {
       array().of(number().required()).isValid(sparseArray),
     ).resolves.toEqual(false);
   });
+});
+
+describe('defineCoercion', () => {
+  it('coerces objects into arrays if coerce function is correct', async () => {
+    const init = array(string().uppercase()).defineCoercion((data) => data.europeCountries.concat(data.asiaCountries))
+
+    const data = {
+      europeCountries: ['France', 'Germany', 'Italy'],
+      asiaCountries: ['Japan', 'China', 'India'],
+    };
+
+    await expect(init.validate(data)).resolves.toEqual(['FRANCE', 'GERMANY', 'ITALY', 'JAPAN', 'CHINA', 'INDIA']);
+  })
+
+  it('guarantees that the end result is of the right type', async () => {
+    const init = array(number()).defineCoercion((data) => data.prop);
+
+    const data = {
+      prop: 3
+    };
+
+    await expect(init.validate(data)).rejects.toEqual(expect.any(ValidationError));
+  })
 });

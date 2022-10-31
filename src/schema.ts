@@ -905,6 +905,13 @@ export default abstract class Schema<
     return next;
   }
 
+  defineCoercion(fn: TransformFunction<AnySchema>) {
+    const next = this.clone();
+    next.transforms = [fn, ...next.transforms.slice(1)] // The first element of transforms is the coercion function
+    // The user is responsible to make the output in the right type (or not I don't know)
+    return next;
+  }
+
   strip(strip = true): any {
     let next = this.clone();
     next.spec.strip = strip;
