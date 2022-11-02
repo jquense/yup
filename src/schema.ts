@@ -67,6 +67,7 @@ export interface CastOptions<C = {}> {
   stripUnknown?: boolean;
   // XXX: should be private?
   path?: string;
+  resolved?: boolean;
 }
 
 export interface CastOptionalityOptions<C = {}>
@@ -449,9 +450,7 @@ export default abstract class Schema<
 
   /**
    * Executes a set of validations, either schema, produced Tests or a nested
-   * schema validate result. `args` is intended for schema validation tests, but
-   * isn't required to allow the helper to awkwardly be used to run nested array/object
-   * validations.
+   * schema validate result.
    */
   protected runTests(
     runOptions: TestRunOptions,

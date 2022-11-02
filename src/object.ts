@@ -183,7 +183,6 @@ export default class ObjectSchema<
 
         // safe to mutate since this is fired in sequence
         innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
-        // innerOptions.value = value[prop];
 
         field = field.resolve({
           value: inputValue,
@@ -268,9 +267,13 @@ export default class ObjectSchema<
         );
       }
 
-      this.runTests({ tests, value }, panic, (fieldErrors) => {
-        next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
-      });
+      this.runTests(
+        { tests, value, originalValue, options },
+        panic,
+        (fieldErrors) => {
+          next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
+        },
+      );
     });
   }
 

@@ -18,6 +18,7 @@ import isSchema from './util/isSchema';
 import setLocale, { LocaleObject } from './setLocale';
 import Schema, {
   AnySchema,
+  CastOptions as BaseCastOptions,
   SchemaRefDescription,
   SchemaInnerTypeDescription,
   SchemaObjectDescription,
@@ -51,6 +52,8 @@ function addMethod(schemaType: any, name: string, fn: any) {
 
 export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
 
+export type CastOptions = Omit<BaseCastOptions, 'path' | 'resolved'>;
+
 export type {
   AnyObject,
   InferType,
@@ -67,7 +70,7 @@ export type {
   SchemaFieldDescription,
   SchemaDescription,
   LocaleObject,
-  ValidateOptions
+  ValidateOptions,
 };
 
 export {
