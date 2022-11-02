@@ -6,7 +6,7 @@ import {
   InternalOptions,
   ExtraParams,
   ISchema,
-  MessageParams,
+  InferType,
 } from '../types';
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
@@ -45,12 +45,9 @@ export type TestFunction<T = unknown, TContext = {}> = (
 export type TestOptions<TSchema extends AnySchema = AnySchema> = {
   value: any;
   path?: string;
-  label?: string;
   options: InternalOptions;
   originalValue: any;
   schema: TSchema;
-  sync?: boolean;
-  spec: MessageParams['spec'];
 };
 
 export type TestConfig<TValue = unknown, TContext = {}> = {
@@ -78,21 +75,12 @@ export default function createValidation(config: {
   skipAbsent?: boolean;
 }) {
   function validate<TSchema extends AnySchema = AnySchema>(
-    {
-      value,
-      path = '',
-      label,
-      options,
-      originalValue,
-      spec,
-      sync,
-      ...rest
-    }: TestOptions<TSchema>,
+    { value, path = '', options, originalValue, schema }: TestOptions<TSchema>,
     panic: PanicCallback,
     next: NextCallback,
   ) {
     const { name, test, params, message, skipAbsent } = config;
-    let { parent, context, abortEarly = rest.schema.spec.abortEarly } = options;
+    let { parent, context, abortEarly = schema.spec.abortEarly } = options;
 
     function resolve<T>(item: T | Reference<T>) {
       return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
@@ -102,9 +90,9 @@ export default function createValidation(config: {
       const nextParams = {
         value,
         originalValue,
-        label,
+        label: schema.spec.label,
         path: overrides.path || path,
-        spec,
+        spec: schema.spec,
         ...params,
         ...overrides.params,
       };
@@ -133,7 +121,7 @@ export default function createValidation(config: {
       resolve,
       options,
       originalValue,
-      ...rest,
+      schema,
     };
 
     const handleResult = (validOrError: ReturnType<TestFunction>) => {
@@ -149,7 +137,7 @@ export default function createValidation(config: {
 
     const shouldSkip = skipAbsent && isAbsent(value);
 
-    if (!sync) {
+    if (!options.sync) {
       try {
         Promise.resolve(!shouldSkip ? test.call(ctx, value, ctx) : true).then(
           handleResult,
