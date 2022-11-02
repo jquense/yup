@@ -1,4 +1,4 @@
-import { lazy, mixed, AnyObject, MixedSchema } from '../src';
+import { lazy, object, mixed, AnyObject, MixedSchema } from '../src';
 
 describe('lazy', function () {
   it('should throw on a non-schema value', () => {
@@ -24,6 +24,19 @@ describe('lazy', function () {
         a: 1,
       };
       let options = { context };
+      lazy(mapper).validate(value, options);
+      expect(mapper).toHaveBeenCalledWith(value, options);
+    });
+
+    it('should call with context when nested: #1799', () => {
+      let context = { a: 1 };
+      let value = { lazy: 1 };
+      let options = { context };
+
+      object({
+        lazy: lazy(mapper),
+      }).validate(value, options);
+
       lazy(mapper).validate(value, options);
       expect(mapper).toHaveBeenCalledWith(value, options);
     });
