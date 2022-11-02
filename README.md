@@ -1643,6 +1643,41 @@ object({
 });
 ```
 
+##### Conditional fields and cyclical dependencies
+
+Object fields may declare dependencies between sibling or sibling descendents on other fields.
+
+Consider the following schema:
+
+```ts
+const order = object({
+  isExternal: boolean().required().transform((value, input) => {
+    if
+  }),
+  externalInvoiceNo: number().when('isExternal', {
+    is: false,
+    then: s => s.strip()
+  }),
+});
+```
+
+The field `externalInvoiceNo` is only applicable if `isExternal` is `true`. When `false`
+we strip the fields from the output.
+
+```ts
+const personSchema = object({
+  name: string().required(),
+  dateOfBirth: Date()
+  legalGuardian: string().when('dateOfBirth', {
+    is: (new Date().getFullYear() - value.getFullYear()) < 18,
+    then: (schema) => schema.required(),
+  }),
+});
+```
+
+The field `legalGuardian` is required is when the person is under the age of 18, and `age` may be input as a Date
+instead of a number. In order to properly
+
 #### `object.json(): this`
 
 Attempt to parse input string values as JSON using [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse).
