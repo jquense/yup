@@ -505,7 +505,7 @@ describe('Mixed Types ', () => {
     });
 
     await first.validate(testFixture);
-    // console.log(finalFrom);
+
     expect(finalFrom[0].value).toEqual(testFixture.second[finalOptions.index]);
     expect(finalFrom[0].schema).toBe(third);
     expect(finalFrom[1].value).toBe(testFixture);

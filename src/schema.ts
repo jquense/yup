@@ -88,7 +88,9 @@ export type RunTest = (
 
 export type TestRunOptions = {
   tests: RunTest[];
-  args?: TestOptions;
+  path?: string | undefined;
+  options: InternalOptions;
+  originalValue: any;
   value: any;
 };
 
@@ -403,31 +405,12 @@ export default abstract class Schema<
     panic: (err: Error, value: unknown) => void,
     next: (err: ValidationError[], value: unknown) => void,
   ): void {
-    let {
-      sync,
-      path,
-      from = [],
-      originalValue = _value,
-      strict = this.spec.strict,
-    } = options;
+    let { path, originalValue = _value, strict = this.spec.strict } = options;
 
     let value = _value;
     if (!strict) {
       value = this._cast(value, { assert: false, ...options });
     }
-
-    // value is cast, we can check if it meets type requirements
-    let args = {
-      value,
-      path,
-      options,
-      originalValue,
-      schema: this,
-      label: this.spec.label,
-      spec: this.spec,
-      sync,
-      from,
-    };
 
     let initialTests = [];
     for (let test of Object.values(this.internalTests)) {
@@ -436,8 +419,10 @@ export default abstract class Schema<
 
     this.runTests(
       {
-        args,
+        path,
         value,
+        originalValue,
+        options,
         tests: initialTests,
       },
       panic,
@@ -449,8 +434,10 @@ export default abstract class Schema<
 
         this.runTests(
           {
-            args,
+            path,
             value,
+            originalValue,
+            options,
             tests: this.tests,
           },
           panic,
@@ -467,12 +454,12 @@ export default abstract class Schema<
    * validations.
    */
   protected runTests(
-    options: TestRunOptions,
+    runOptions: TestRunOptions,
     panic: (err: Error, value: unknown) => void,
     next: (errors: ValidationError[], value: unknown) => void,
   ): void {
     let fired = false;
-    let { tests, args, value } = options;
+    let { tests, value, originalValue, path, options } = runOptions;
 
     let panicOnce = (arg: Error) => {
       if (fired) return;
@@ -490,6 +477,14 @@ export default abstract class Schema<
     let nestedErrors = [] as ValidationError[];
 
     if (!count) return nextOnce([]);
+
+    let args = {
+      value,
+      originalValue,
+      path,
+      options,
+      schema: this,
+    };
 
     for (let i = 0; i < tests.length; i++) {
       const test = tests[i];
