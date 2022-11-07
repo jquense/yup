@@ -97,7 +97,7 @@ export default class StringSchema<
 
   notRequired() {
     return super.notRequired().withMutation((schema: this) => {
-      schema.tests.filter((t) => t.OPTIONS!.name !== 'required');
+      schema.tests = schema.tests.filter((t) => t.OPTIONS!.name !== 'required');
       return schema;
     });
   }
