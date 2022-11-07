@@ -94,6 +94,15 @@ describe('String types', () => {
     ]);
   });
 
+  it('should handle NOTREQUIRED correctly', function () {
+    let v = string().required().notRequired();
+
+    return Promise.all([
+      expect(v.isValid(undefined)).resolves.toBe(true),
+      expect(v.isValid('')).resolves.toBe(true),
+    ]);
+  });
+
   it('should check MATCHES correctly', function () {
     let v = string().matches(/(hi|bye)/, 'A message');
 
