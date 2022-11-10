@@ -88,7 +88,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-ts-expect": "^2.1.0",
     "eslint-plugin-typescript": "^0.14.0",
-    "hookem": "^2.0.1",
+    "hookem": "^3.0.4",
     "jest": "^27.5.1",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
