@@ -33,13 +33,13 @@ Base_methods: {
 Mixed: {
   const mxRequired = mixed<string | number>().required();
 
-  // $ExpectType string | number
+  // $ExpectType NonNullable<string | number | undefined>
   mxRequired.cast(undefined);
 
-  // $ExpectType string | number | null
+  // $ExpectType NonNullable<string | number | undefined> | null
   mxRequired.nullable().cast(undefined);
 
-  // $ExpectType string | number
+  // $ExpectType NonNullable<string | number | undefined>
   mxRequired.nullable().nonNullable().cast(undefined);
 
   //
@@ -389,13 +389,13 @@ date: {
 bool: {
   const blRequired = bool().required();
 
-  // $ExpectType boolean
+  // $ExpectType NonNullable<boolean | undefined>
   blRequired.cast(undefined);
 
-  // $ExpectType boolean | null
+  // $ExpectType NonNullable<boolean | undefined> | null
   blRequired.nullable().cast(undefined);
 
-  // $ExpectType boolean
+  // $ExpectType NonNullable<boolean | undefined>
   blRequired.nullable().nonNullable().cast(undefined);
 
   //
@@ -413,7 +413,7 @@ bool: {
   // $ExpectType boolean | null | undefined
   blNullableOptional.cast('');
 
-  // $ExpectType boolean
+  // $ExpectType NonNullable<boolean | null | undefined>
   blNullableOptional.required().validateSync('');
 
   //
@@ -445,10 +445,10 @@ bool: {
   //
   const blDefaultRequired = bool().nullable().required().default(true);
 
-  // $ExpectType boolean
+  // $ExpectType NonNullable<boolean | null | undefined>
   blDefaultRequired.cast('');
 
-  // $ExpectType boolean
+  // $ExpectType NonNullable<boolean | null | undefined>
   blDefaultRequired.validateSync(null);
 
   // $ExpectType never
