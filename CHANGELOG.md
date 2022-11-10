@@ -1,3 +1,34 @@
+# [1.0.0-beta.8](https://github.com/jquense/yup/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2022-11-10)
+
+
+### Bug Fixes
+
+* check if field exists when generating defaults ([37f686c](https://github.com/jquense/yup/commit/37f686c217a9ee5d6f21f07a812a20467ee83578))
+* correct minor typo in README ([#1760](https://github.com/jquense/yup/issues/1760)) ([62786c4](https://github.com/jquense/yup/commit/62786c42ca07a2b84b05ca8c473bc01f0c868a94))
+* don't return any for oneOf ([74c5bc5](https://github.com/jquense/yup/commit/74c5bc54220cae5ff491ed92845ecd9c1ed7fbf3)), closes [#1675](https://github.com/jquense/yup/issues/1675)
+* export more types ([f250109](https://github.com/jquense/yup/commit/f250109dbf7158f1ee31ccd11f8309d660880252))
+* string().notRequired() ([#1824](https://github.com/jquense/yup/issues/1824)) ([dcb4b63](https://github.com/jquense/yup/commit/dcb4b6381eac21f8f28297066e71920a788c8a47))
+* TS 4.8 compat ([bc74c34](https://github.com/jquense/yup/commit/bc74c340721da2ea6e65cb27b967c2970af44d35))
+* **types:** undefined defaults produce optional outputs ([1afbac0](https://github.com/jquense/yup/commit/1afbac06edfd3277a8c76bb4c8874cf16d4d346d))
+
+
+### Features
+
+* add some more type exports ([d5e9c99](https://github.com/jquense/yup/commit/d5e9c99e6ef068bff4c4f92db5ccc0835f6b84b3))
+* Export ValidateOptions, ISchema for external use ([#1812](https://github.com/jquense/yup/issues/1812)) ([584df11](https://github.com/jquense/yup/commit/584df11b60e5d47876946872973764d0e0e0c9ed))
+* respect nullable() with oneOf ([#1757](https://github.com/jquense/yup/issues/1757)) ([61ec302](https://github.com/jquense/yup/commit/61ec3027caba72cb795ee64f571ca0a7aa6bc9a6)), closes [#768](https://github.com/jquense/yup/issues/768) [#104](https://github.com/jquense/yup/issues/104)
+* simplify email validation ([440db3e](https://github.com/jquense/yup/commit/440db3e6177d25c06be76995a1deff6e25a90c10))
+
+
+### BREAKING CHANGES
+
+* previously `oneOf` required adding `null` explicitly to allowed values when using oneOf. Folks have found this confusing and unintuitive so I am deferring and adjusting the behavior
+* Use a simpler regex for email addresses that aligns with browsers, and add docs about how to override.
+
+
+
+
+
 # [1.0.0-beta.7](https://github.com/jquense/yup/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2022-08-20)
 
 
