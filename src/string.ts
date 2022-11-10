@@ -41,10 +41,10 @@ export type MatchOptions = {
 let objStringTag = {}.toString();
 
 function create(): StringSchema;
-function create<T extends string, TContext = AnyObject>(): StringSchema<
-  T | undefined,
-  TContext
->;
+function create<
+  T extends string,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): StringSchema<T | undefined, TContext>;
 function create() {
   return new StringSchema();
 }

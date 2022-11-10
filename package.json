@@ -98,7 +98,7 @@
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "synchronous-promise": "^2.0.15",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "property-expr": "^2.0.5",

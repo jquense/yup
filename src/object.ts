@@ -28,7 +28,7 @@ export type { AnyObject };
 
 type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
 
-export type Shape<T extends Maybe<AnyObject>, C = AnyObject> = {
+export type Shape<T extends Maybe<AnyObject>, C = any> = {
   [field in keyof T]-?: ISchema<T[field], C> | Reference;
 };
 
@@ -79,7 +79,10 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
-export function create<C = AnyObject, S extends ObjectShape = {}>(spec?: S) {
+export function create<
+  C extends Maybe<AnyObject> = AnyObject,
+  S extends ObjectShape = {},
+>(spec?: S) {
   type TIn = _<TypeFromShape<S, C>>;
   type TDefault = _<DefaultFromShape<S>>;
 
@@ -287,12 +290,19 @@ export default class ObjectSchema<
     return next;
   }
 
-  concat<IIn, IC, ID, IF extends Flags>(
+  concat<IIn extends Maybe<AnyObject>, IC, ID, IF extends Flags>(
     schema: ObjectSchema<IIn, IC, ID, IF>,
   ): ObjectSchema<
     ConcatObjectTypes<TIn, IIn>,
     TContext & IC,
-    Extract<IF, 'd'> extends never ? _<ConcatObjectTypes<TDefault, ID>> : ID,
+    Extract<IF, 'd'> extends never
+      ? // this _attempts_ to cover the default from shape case
+        TDefault extends AnyObject
+        ? ID extends AnyObject
+          ? _<ConcatObjectTypes<TDefault, ID>>
+          : ID
+        : ID
+      : ID,
     TFlags | IF
   >;
   concat(schema: this): this;

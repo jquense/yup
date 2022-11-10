@@ -13,7 +13,7 @@ import type {
   SchemaFieldDescription,
   SchemaLazyDescription,
 } from './schema';
-import { Flags } from './util/types';
+import { Flags, Maybe } from './util/types';
 import { InferType, Schema } from '.';
 
 export type LazyBuilder<
@@ -23,7 +23,7 @@ export type LazyBuilder<
 
 export function create<
   TSchema extends ISchema<any, TContext>,
-  TContext = AnyObject,
+  TContext extends Maybe<AnyObject> = AnyObject,
 >(builder: (value: any, options: ResolveOptions<TContext>) => TSchema) {
   return new Lazy<InferType<TSchema>, TContext>(builder);
 }

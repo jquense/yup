@@ -136,8 +136,15 @@ export default class TupleSchema<
         });
       }
 
-      this.runTests({ value, tests }, panic, (innerTypeErrors) =>
-        next(innerTypeErrors.concat(tupleErrors), value),
+      this.runTests(
+        {
+          value,
+          tests,
+          originalValue: options.originalValue ?? _value,
+          options,
+        },
+        panic,
+        (innerTypeErrors) => next(innerTypeErrors.concat(tupleErrors), value),
       );
     });
   }

@@ -21,7 +21,6 @@ import {
   Message,
   InternalOptions,
   ExtraParams,
-  AnyObject,
   ISchema,
   NestedTestConfig,
 } from './types';
@@ -55,7 +54,7 @@ export type SchemaOptions<TType, TDefault> = {
 
 export type AnySchema<
   TType = any,
-  C = AnyObject,
+  C = any,
   D = any,
   F extends Flags = Flags,
 > = Schema<TType, C, D, F>;
@@ -134,7 +133,7 @@ export interface SchemaDescription {
 
 export default abstract class Schema<
   TType = any,
-  TContext = AnyObject,
+  TContext = any,
   TDefault = any,
   TFlags extends Flags = '',
 > implements ISchema<TType, TContext, TFlags, TDefault>
@@ -935,7 +934,7 @@ export default abstract class Schema<
 export default interface Schema<
   /* eslint-disable @typescript-eslint/no-unused-vars */
   TType = any,
-  TContext = AnyObject,
+  TContext = any,
   TDefault = any,
   TFlags extends Flags = '',
   /* eslint-enable @typescript-eslint/no-unused-vars */

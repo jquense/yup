@@ -12,7 +12,7 @@ import type { Flags } from './util/types';
 
 export type { AnyObject, AnySchema };
 
-export interface ISchema<T, C = AnyObject, F extends Flags = any, D = any> {
+export interface ISchema<T, C = any, F extends Flags = any, D = any> {
   __flags: F;
   __context: C;
   __outputType: T;
@@ -65,7 +65,7 @@ export interface ValidateOptions<TContext = {}> {
   context?: TContext;
 }
 
-export interface InternalOptions<TContext = {}>
+export interface InternalOptions<TContext = any>
   extends ValidateOptions<TContext> {
   __validating?: boolean;
   originalValue?: any;

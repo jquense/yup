@@ -32,7 +32,9 @@ export type RejectorFn = (
   array: readonly any[],
 ) => boolean;
 
-export function create<C = AnyObject, T = any>(type?: ISchema<T, C>) {
+export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
+  type?: ISchema<T, C>,
+) {
   return new ArraySchema<T[] | undefined, C>(type as any);
 }
 
@@ -120,6 +122,8 @@ export default class ArraySchema<
         {
           value,
           tests,
+          originalValue: options.originalValue ?? _value,
+          options,
         },
         panic,
         (innerTypeErrors) => next(innerTypeErrors.concat(arrayErrors), value),

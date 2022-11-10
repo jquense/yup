@@ -17,7 +17,7 @@ import isAbsent from './util/isAbsent';
 export function create(): BooleanSchema;
 export function create<
   T extends boolean,
-  TContext = AnyObject,
+  TContext extends Maybe<AnyObject> = AnyObject,
 >(): BooleanSchema<T | undefined, TContext>;
 export function create() {
   return new BooleanSchema();

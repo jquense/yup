@@ -21,10 +21,10 @@ let isDate = (obj: any): obj is Date =>
   Object.prototype.toString.call(obj) === '[object Date]';
 
 export function create(): DateSchema;
-export function create<T extends Date, TContext = AnyObject>(): DateSchema<
-  T | undefined,
-  TContext
->;
+export function create<
+  T extends Date,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): DateSchema<T | undefined, TContext>;
 export function create() {
   return new DateSchema();
 }
