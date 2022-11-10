@@ -91,6 +91,7 @@ import {
 - [Schema basics](#schema-basics)
   - [Parsing: Transforms](#parsing-transforms)
   - [Validation: Tests](#validation-tests)
+    - [Customizing errors](#customizing-errors)
   - [Composition and Reuse](#composition-and-reuse)
 - [TypeScript integration](#typescript-integration)
   - [Schema defaults](#schema-defaults)
