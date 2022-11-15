@@ -1236,7 +1236,7 @@ anything that isn't `null` or `undefined` which yup treats distinctly.
 ```ts
 import { mixed, InferType } from 'yup';
 
-let schema = mixed().null;
+let schema = mixed().nullable();
 
 schema.validateSync('string'); // 'string';
 
