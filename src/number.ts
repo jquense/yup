@@ -55,7 +55,7 @@ export default class NumberSchema<
           // don't use parseFloat to avoid positives on alpha-numeric strings
           parsed = +parsed;
         }
-        
+
         if (ctx.isType(parsed)) return parsed;
 
         return parseFloat(parsed);
