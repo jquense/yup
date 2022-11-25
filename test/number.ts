@@ -23,7 +23,7 @@ describe('Number types', function () {
         //[new Number(5), 5],
         [' 5.656 ', 5.656],
       ],
-      invalid: ['', false, true, new Date(), new Number('foo')],
+      invalid: ['', false, true, new Date(), new Number('foo'), [3, 'no no no']],
     });
 
     it('should round', () => {
@@ -46,6 +46,8 @@ describe('Number types', function () {
     it('should return NaN for failed casts', () => {
       expect(number().cast('asfasf', { assert: false })).toEqual(NaN);
 
+      expect(number().cast([3, 'not me pls'], { assert: false })).toEqual(NaN);
+
       expect(number().cast(null, { assert: false })).toEqual(NaN);
     });
   });
@@ -66,6 +68,7 @@ describe('Number types', function () {
     expect(inst.isType(false)).toBe(false);
     expect(inst.isType(null)).toBe(false);
     expect(inst.isType(NaN)).toBe(false);
+    expect(inst.isType([3, 'nope'])).toBe(false);
     expect(inst.nullable().isType(null)).toBe(true);
   });
 
@@ -79,6 +82,7 @@ describe('Number types', function () {
       expect(number().isValid('12abc')).resolves.toBe(false),
       expect(number().isValid(0xff)).resolves.toBe(true),
       expect(number().isValid('0xff')).resolves.toBe(true),
+      expect(number().isValid([3, 'no man !'])).resolves.toBe(false),
 
       expect(inst.isValid(5)).resolves.toBe(true),
       expect(inst.isValid(2)).resolves.toBe(false),

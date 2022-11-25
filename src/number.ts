@@ -46,6 +46,8 @@ export default class NumberSchema<
       this.transform((value, _raw, ctx) => {
         if (!ctx.spec.coerce) return value;
 
+        if ((typeof value === 'object' || typeof value === 'function') && value !== null) return NaN;
+
         let parsed = value;
         if (typeof parsed === 'string') {
           parsed = parsed.replace(/\s/g, '');
@@ -53,7 +55,7 @@ export default class NumberSchema<
           // don't use parseFloat to avoid positives on alpha-numeric strings
           parsed = +parsed;
         }
-
+        
         if (ctx.isType(parsed)) return parsed;
 
         return parseFloat(parsed);
