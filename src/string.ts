@@ -29,8 +29,11 @@ let rUrl =
 let rUUID =
   /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
 
-let isTrimmed = (value: Maybe<string>) =>
-  isAbsent(value) || value === value.trim();
+let isTrimmed = (value: Maybe<string>) => {
+  if (typeof value !== 'string') return false;
+
+  return isAbsent(value) || value === value.trim();
+}
 
 export type MatchOptions = {
   excludeEmptyString?: boolean;
@@ -209,7 +212,7 @@ export default class StringSchema<
   }
 
   trim(message = locale.trim) {
-    return this.transform((val) => (val != null ? val.trim() : val)).test({
+    return this.transform((val) => (typeof val === 'string' ? val.trim() : val)).test({
       message,
       name: 'trim',
       test: isTrimmed,
