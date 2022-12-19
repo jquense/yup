@@ -131,7 +131,7 @@ import {
     - [`Schema.defined(): Schema`](#schemadefined-schema)
     - [`Schema.optional(): Schema`](#schemaoptional-schema)
     - [`Schema.required(message?: string | function): Schema`](#schemarequiredmessage-string--function-schema)
-    - [`Schema.notRequired(): Schema` Alias: `optional()`](#schemanotrequired-schema-alias-optional)
+    - [`Schema.notRequired(): Schema`](#schemanotrequired-schema)
     - [`Schema.typeError(message: string): Schema`](#schematypeerrormessage-string-schema)
     - [`Schema.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#schemaoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
     - [`Schema.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#schemanotoneofarrayofvalues-arrayany-message-string--function)
@@ -997,9 +997,9 @@ negates the effects of calling `optional()` and `nullable()`
 > Watch out! [`string().required`](#stringrequiredmessage-string--function-schema)) works a little
 > different and additionally prevents empty string values (`''`) when required.
 
-#### `Schema.notRequired(): Schema` Alias: `optional()`
+#### `Schema.notRequired(): Schema`
 
-Mark the schema as not required. This is a shortcut for `schema.nonNullable().defined()`;
+Mark the schema as not required. This is a shortcut for `schema.nullable().optional()`;
 
 #### `Schema.typeError(message: string): Schema`
 
