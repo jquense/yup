@@ -89,13 +89,13 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
     return this._resolve(options.value, options);
   }
 
-  cast(value: any, options?: CastOptions<TContext>): T;
+  cast(value?: any, options?: CastOptions<TContext>): T;
   cast(
-    value: any,
+    value?: any,
     options?: CastOptionalityOptions<TContext>,
   ): T | null | undefined;
   cast(
-    value: any,
+    value?: any,
     options?: CastOptions<TContext> | CastOptionalityOptions<TContext>,
   ): any {
     return this._resolve(value, options).cast(value, options as any);
