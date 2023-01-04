@@ -208,4 +208,18 @@ describe('Array types', () => {
       array().of(number().required()).isValid(sparseArray),
     ).resolves.toEqual(false);
   });
+
+  it('should work with asContext and indexContextKey', async () => {
+    const schema = array()
+      .asContext('root')
+      .indexContextKey('idx')
+      .of(
+        number().when(['$root', '$idx'], ([root, idx], schema) =>
+          idx > 0 ? schema.moreThan(root[idx - 1]) : schema,
+        ),
+      );
+
+    await expect(schema.isValid([1, 2, 3])).resolves.toEqual(true);
+    await expect(schema.isValid([1, 3, 2])).resolves.toEqual(false);
+  });
 });
