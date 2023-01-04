@@ -192,11 +192,6 @@ export default abstract class Schema<
     });
   }
 
-  // TODO: remove
-  get _type() {
-    return this.type;
-  }
-
   clone(spec?: Partial<SchemaSpec<any>>): this {
     if (this._mutate) {
       if (spec) Object.assign(this.spec, spec);
