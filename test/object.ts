@@ -1071,4 +1071,17 @@ describe('Object types', () => {
       await inst.omit(['age', 'name']).validate({ color: 'mauve' }),
     ).toEqual({ color: 'mauve' });
   });
+
+  it('should work with asContext', async () => {
+    let inst = object({
+      foo: number(),
+      inner: object({
+        bar: number().moreThan(ref('$root.foo')),
+      }),
+    }).asContext('root');
+
+    await expect(inst.isValid({ foo: 3, inner: { bar: 5 } })).resolves.toBe(
+      true,
+    );
+  });
 });

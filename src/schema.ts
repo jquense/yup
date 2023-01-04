@@ -157,6 +157,8 @@ export default abstract class Schema<
 
   private internalTests: Record<string, Test | null> = {};
 
+  private asContextValue?: string;
+
   protected _whitelist = new ReferenceSet();
   protected _blacklist = new ReferenceSet();
 
@@ -217,6 +219,7 @@ export default abstract class Schema<
     next.tests = [...this.tests];
     next.transforms = [...this.transforms];
     next.spec = cloneDeep({ ...this.spec, ...spec });
+    next.asContextValue = this.asContextValue;
 
     return next as this;
   }
@@ -323,6 +326,26 @@ export default abstract class Schema<
     return schema;
   }
 
+  protected getContext<T extends InternalOptions<any>>(
+    options: T,
+    value: any,
+  ): T['context'] {
+    if (this.asContextValue) {
+      return {
+        ...options?.context,
+        [this.asContextValue]: value,
+      };
+    }
+    return options?.context;
+  }
+
+  protected getOptionsWithContext<T extends InternalOptions<any>>(
+    options: T,
+    value: any,
+  ) {
+    return { ...options, context: this.getContext(options, value) };
+  }
+
   protected resolveOptions<T extends InternalOptions<any>>(options: T): T {
     return {
       ...options,
@@ -345,6 +368,7 @@ export default abstract class Schema<
     value: any,
     options: CastOptions<TContext> | CastOptionalityOptions<TContext> = {},
   ): this['__outputType'] {
+    options = this.getOptionsWithContext(options, value);
     let resolvedSchema = this.resolve({
       value,
       ...options,
@@ -354,6 +378,8 @@ export default abstract class Schema<
     let allowOptionality = options.assert === 'ignore-optionality';
 
     let result = resolvedSchema._cast(value, options as any);
+
+    options = this.getOptionsWithContext(options, result);
 
     if (options.assert !== false && !resolvedSchema.isType(result)) {
       if (allowOptionality && isAbsent(result)) {
@@ -403,9 +429,11 @@ export default abstract class Schema<
     let { path, originalValue = _value, strict = this.spec.strict } = options;
 
     let value = _value;
+    options = this.getOptionsWithContext(options, value);
     if (!strict) {
       value = this._cast(value, { assert: false, ...options });
     }
+    options = this.getOptionsWithContext(options, value);
 
     let initialTests = [];
     for (let test of Object.values(this.internalTests)) {
@@ -537,6 +565,7 @@ export default abstract class Schema<
     value: any,
     options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']> {
+    options = this.getOptionsWithContext(options, value);
     let schema = this.resolve({ ...options, value });
 
     return new Promise((resolve, reject) =>
@@ -559,6 +588,7 @@ export default abstract class Schema<
     value: any,
     options?: ValidateOptions<TContext>,
   ): this['__outputType'] {
+    options = this.getOptionsWithContext(options, value);
     let schema = this.resolve({ ...options, value });
     let result: any;
 
@@ -579,6 +609,7 @@ export default abstract class Schema<
   }
 
   isValid(value: any, options?: ValidateOptions<TContext>): Promise<boolean> {
+    options = this.getOptionsWithContext(options, value);
     return this.validate(value, options).then(
       () => true,
       (err) => {
@@ -592,6 +623,7 @@ export default abstract class Schema<
     value: any,
     options?: ValidateOptions<TContext>,
   ): value is this['__outputType'] {
+    options = this.getOptionsWithContext(options, value);
     try {
       this.validateSync(value, options);
       return true;
@@ -897,6 +929,12 @@ export default abstract class Schema<
     let next = this.clone();
     next.spec.strip = strip;
     return next as any;
+  }
+
+  asContext(key: string): this {
+    let next = this.clone();
+    next.asContextValue = key;
+    return next;
   }
 
   /**
