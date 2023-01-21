@@ -956,6 +956,7 @@ describe('Mixed Types ', () => {
         foo: array(number().integer()).required(),
         bar: string()
           .max(2)
+          .default(()=> 'a')
           .meta({ input: 'foo' })
           .label('str!')
           .oneOf(['a', 'b'])
@@ -972,6 +973,11 @@ describe('Mixed Types ', () => {
         type: 'object',
         meta: undefined,
         label: undefined,
+        default: {
+          foo: undefined,
+          bar: 'a',
+          lazy: undefined
+        },
         nullable: false,
         optional: true,
         tests: [],
@@ -982,11 +988,13 @@ describe('Mixed Types ', () => {
             type: 'lazy',
             meta: undefined,
             label: undefined,
+            default: undefined,
           },
           foo: {
             type: 'array',
             meta: undefined,
             label: undefined,
+            default: undefined,
             nullable: false,
             optional: false,
             tests: [],
@@ -996,6 +1004,7 @@ describe('Mixed Types ', () => {
               type: 'number',
               meta: undefined,
               label: undefined,
+              default: undefined,
               nullable: false,
               optional: true,
               oneOf: [],
@@ -1011,6 +1020,7 @@ describe('Mixed Types ', () => {
           bar: {
             type: 'string',
             label: 'str!',
+            default: 'a',
             tests: [{ name: 'max', params: { max: 2 } }],
             meta: {
               input: 'foo',
@@ -1034,6 +1044,11 @@ describe('Mixed Types ', () => {
         type: 'object',
         meta: undefined,
         label: undefined,
+        default: {
+          foo: undefined,
+          bar: 'a',
+          lazy: undefined
+        },
         nullable: false,
         optional: true,
         tests: [],
@@ -1044,6 +1059,7 @@ describe('Mixed Types ', () => {
             type: 'string',
             meta: undefined,
             label: undefined,
+            default: undefined,
             nullable: true,
             optional: true,
             oneOf: [],
@@ -1054,6 +1070,7 @@ describe('Mixed Types ', () => {
             type: 'array',
             meta: undefined,
             label: undefined,
+            default: undefined,
             nullable: false,
             optional: false,
             tests: [],
@@ -1063,6 +1080,7 @@ describe('Mixed Types ', () => {
               type: 'number',
               meta: undefined,
               label: undefined,
+              default: undefined,
               nullable: false,
               optional: true,
               oneOf: [],
@@ -1078,6 +1096,7 @@ describe('Mixed Types ', () => {
           bar: {
             type: 'string',
             label: 'str!',
+            default: 'a',
             tests: [{ name: 'max', params: { max: 2 } }],
             meta: {
               input: 'foo',

@@ -126,6 +126,7 @@ export interface SchemaDescription {
   meta: object | undefined;
   oneOf: unknown[];
   notOneOf: unknown[];
+  default?: unknown;
   nullable: boolean;
   optional: boolean;
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
@@ -917,6 +918,7 @@ export default abstract class Schema<
       label,
       optional,
       nullable,
+      default: next.getDefault(options),
       type: next.type,
       oneOf: next._whitelist.describe(),
       notOneOf: next._blacklist.describe(),

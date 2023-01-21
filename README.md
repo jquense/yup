@@ -681,7 +681,7 @@ let schema = object({
 schema.describe({ value: { isBig: true } });
 ```
 
-And below is are the description types, which differ a bit depending on the schema type.
+And below are the description types, which differ a bit depending on the schema type.
 
 ```ts
 interface SchemaDescription {
@@ -690,6 +690,7 @@ interface SchemaDescription {
   meta: object | undefined;
   oneOf: unknown[];
   notOneOf: unknown[];
+  default?: unknown;
   nullable: boolean;
   optional: boolean;
   tests: Array<{ name?: string; params: ExtraParams | undefined }>;
