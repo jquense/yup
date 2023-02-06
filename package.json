@@ -73,8 +73,8 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/jest": "^27.5.2",
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@typescript-eslint/parser": "^5.49.0",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
     "babel-jest": "^27.5.1",
     "babel-preset-env-modules": "^1.0.1",
     "doctoc": "^2.2.1",
@@ -98,7 +98,7 @@
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "synchronous-promise": "^2.0.17",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
     "property-expr": "^2.0.5",
