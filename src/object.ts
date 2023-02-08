@@ -178,7 +178,7 @@ export default class ObjectSchema<
     let isChanged = false;
     for (const prop of props) {
       let field = fields[prop];
-      let exists = prop in value!;
+      let exists = prop in (value as {})!;
 
       if (field) {
         let fieldValue;
@@ -197,7 +197,7 @@ export default class ObjectSchema<
         let strict = fieldSpec?.strict;
 
         if (fieldSpec?.strip) {
-          isChanged = isChanged || prop in value;
+          isChanged = isChanged || prop in (value as {});
           continue;
         }
 

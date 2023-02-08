@@ -2,7 +2,7 @@
 
 Yup is a schema builder for runtime value parsing and validation. Define a schema, transform a value to match, assert the shape of an existing value, or both. Yup schema are extremely expressive and allow modeling complex, interdependent validations, or value transformation.
 
-> **You are viewing docs for the v1.0.0 pre-release of yup, pre-v1 docs are available: [here](https://github.com/jquense/yup/tree/pre-v1)**
+> **You are viewing docs for the v1.0.0 of yup, pre-v1 docs are available: [here](https://github.com/jquense/yup/tree/pre-v1)**
 
 **Killer Features**:
 
@@ -69,21 +69,6 @@ const parsedUser = await userSchema.validate(
 ```
 
 ## Table of Contents
-
-<!-- The exported functions are factory methods for constructing schema instances, but without the `new` keyword.
-If you need access to the actual schema classes, they are also exported:
-
-```js
-import {
-  BooleanSchema,
-  DateSchema,
-  MixedSchema,
-  NumberSchema,
-  ArraySchema,
-  ObjectSchema,
-  StringSchema,
-} from 'yup';
-``` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
