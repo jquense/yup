@@ -1202,7 +1202,7 @@ not to mutate the passed in value.** Transforms are run sequentially so each `va
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```js
-let schema = string().transform((value, originalvalue) => {
+let schema = string().transform((value, originalValue) => {
   return this.isType(value) && value !== null ? value.toUpperCase() : value;
 });
 
