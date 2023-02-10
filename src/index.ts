@@ -16,6 +16,7 @@ import ValidationError from './ValidationError';
 import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale, { LocaleObject } from './setLocale';
+import defaultLocale from './locale';
 import Schema, {
   AnySchema,
   CastOptions as BaseCastOptions,
@@ -90,6 +91,7 @@ export {
   isSchema,
   addMethod,
   setLocale,
+  defaultLocale,
   ValidationError,
 };
 
