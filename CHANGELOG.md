@@ -1,5 +1,6 @@
 # [1.0.0](https://github.com/jquense/yup/compare/v1.0.0-beta.8...v1.0.0) (2023-02-08)
 
+### Migrating from 0.x to 1.0.0: [#1906](https://github.com/jquense/yup/issues/1906)
 
 
 
@@ -123,6 +124,9 @@
 
 ### BREAKING CHANGES
 
+* The builder object version of `when()` requires `then` and `otherwise` to be
+  functions `(schema: Schema) => Schema`.
+
 * The function version of `when()` has been changed to make it easier to type. values are always passed as an array and schema, and options always the second and third argument. `this` is no longer set to the schema instance.  and all functions _must_ return a schema to be type safe
 
 ```diff
@@ -244,6 +248,8 @@ import {
 ```
 
 - concat works shallowly now. Previously concat functioned like a deep merge for object, which produced confusing behavior with incompatible concat'ed schema. Now concat for objects works similar to how it works for other types, the provided schema is applied on top of the existing schema, producing a new schema that is the same as calling each builder method in order
+- The builder object version of `when()` requires `then` and `otherwise` to be
+  functions `(schema: Schema) => Schema`.
 - The function version of `when()` has been changed to make it easier to type. values are always passed as an array and schema, and options always the second and third argument. `this` is no longer set to the schema instance. and all functions _must_ return a schema to be type safe
 
 ```diff
