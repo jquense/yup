@@ -78,7 +78,7 @@
     "babel-jest": "^27.5.1",
     "babel-preset-env-modules": "^1.0.1",
     "doctoc": "^2.2.1",
-    "dts-bundle-generator": "^6.13.0",
+    "dts-bundle-generator": "^7.2.0",
     "eslint": "^8.34.0",
     "eslint-config-jason": "^8.2.2",
     "eslint-config-prettier": "^8.6.0",
