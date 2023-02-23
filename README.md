@@ -1038,6 +1038,8 @@ on `context` passed in by `validate()` or `cast` instead of the input value.
 
 `when` conditions are additive.
 
+`then` and `otherwise` are specified functions `(schema: Schema) => Schema`.
+
 ```js
 let schema = object({
   isBig: boolean(),
