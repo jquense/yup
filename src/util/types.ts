@@ -46,6 +46,10 @@ export type ResolveFlags<T, F extends Flags, D = T> = Preserve<
     : D extends undefined
     ? T
     : Defined<T>
+  : // this case covers when every flag (Flags) is passed as F, normally it would extend 's' and result in never
+  // which isn't assignable to other schema. b/c it resolves to never in the output type
+  Flags extends F
+  ? any
   : never;
 
 export type Concat<T, U> = NonNullable<T> & NonNullable<U> extends never

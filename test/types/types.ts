@@ -9,6 +9,7 @@ import {
   mixed,
   bool,
   reach,
+  addMethod,
 } from '../../src';
 import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
@@ -1035,4 +1036,10 @@ reach: {
 
   // $ExpectType Reference<"foo"> | ISchema<"foo", AnyObject, any, any>
   const _3 = reach(obj, 'ref');
+}
+
+addMethod: {
+  addMethod(string, 'foo', function () {
+    return this.clone();
+  });
 }
