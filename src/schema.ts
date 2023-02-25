@@ -763,29 +763,13 @@ export default abstract class Schema<
     return next;
   }
 
-  when<U extends ISchema<any> = this>(builder: ConditionBuilder<this, U>): U;
-  when<U extends ISchema<any> = this>(
-    keys: string | string[],
-    builder: ConditionBuilder<this, U>,
-  ): U;
-  when<
-    UThen extends ISchema<any> = this,
-    UOtherwise extends ISchema<any> = this,
-  >(options: ConditionConfig<this, UThen, UOtherwise>): UThen | UOtherwise;
-  when<
-    UThen extends ISchema<any> = this,
-    UOtherwise extends ISchema<any> = this,
-  >(
-    keys: string | string[],
-    options: ConditionConfig<this, UThen, UOtherwise>,
-  ): UThen | UOtherwise;
+  when(builder: ConditionBuilder<this>): this;
+  when(keys: string | string[], builder: ConditionBuilder<this>): this;
+  when(options: ConditionConfig<this>): this;
+  when(keys: string | string[], options: ConditionConfig<this>): this;
   when(
-    keys:
-      | string
-      | string[]
-      | ConditionBuilder<this, any>
-      | ConditionConfig<this, any, any>,
-    options?: ConditionBuilder<this, any> | ConditionConfig<this, any, any>,
+    keys: string | string[] | ConditionBuilder<this> | ConditionConfig<this>,
+    options?: ConditionBuilder<this> | ConditionConfig<this>,
   ) {
     if (!Array.isArray(keys) && typeof keys !== 'string') {
       options = keys;

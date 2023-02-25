@@ -16,6 +16,7 @@ import ValidationError from './ValidationError';
 import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import setLocale, { LocaleObject } from './setLocale';
+import defaultLocale from './locale';
 import Schema, {
   AnySchema,
   CastOptions as BaseCastOptions,
@@ -28,12 +29,12 @@ import Schema, {
 } from './schema';
 import type { InferType, ISchema, Message, ValidateOptions } from './types';
 
-function addMethod<T extends AnySchema>(
+function addMethod<T extends ISchema<any>>(
   schemaType: (...arg: any[]) => T,
   name: string,
   fn: (this: T, ...args: any[]) => T,
 ): void;
-function addMethod<T extends new (...args: any) => AnySchema>(
+function addMethod<T extends new (...args: any) => ISchema<any>>(
   schemaType: T,
   name: string,
   fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
@@ -90,6 +91,7 @@ export {
   isSchema,
   addMethod,
   setLocale,
+  defaultLocale,
   ValidationError,
 };
 
