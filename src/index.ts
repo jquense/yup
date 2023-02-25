@@ -29,12 +29,12 @@ import Schema, {
 } from './schema';
 import type { InferType, ISchema, Message, ValidateOptions } from './types';
 
-function addMethod<T extends AnySchema<any, any, any>>(
+function addMethod<T extends ISchema<any>>(
   schemaType: (...arg: any[]) => T,
   name: string,
   fn: (this: T, ...args: any[]) => T,
 ): void;
-function addMethod<T extends new (...args: any) => AnySchema<any, any, any>>(
+function addMethod<T extends new (...args: any) => ISchema<any>>(
   schemaType: T,
   name: string,
   fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
