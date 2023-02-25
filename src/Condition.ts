@@ -2,19 +2,16 @@ import isSchema from './util/isSchema';
 import Reference from './Reference';
 import type { ISchema } from './types';
 
-export type ConditionBuilder<
-  T extends ISchema<any, any>,
-  U extends ISchema<any, any> = T,
-> = (values: any[], schema: T, options: ResolveOptions) => U;
+export type ConditionBuilder<T extends ISchema<any, any>> = (
+  values: any[],
+  schema: T,
+  options: ResolveOptions,
+) => ISchema<any>;
 
-export type ConditionConfig<
-  T extends ISchema<any>,
-  TThen extends ISchema<any, any> = T,
-  TOtherwise extends ISchema<any, any> = T,
-> = {
+export type ConditionConfig<T extends ISchema<any>> = {
   is: any | ((...values: any[]) => boolean);
-  then?: (schema: T) => TThen;
-  otherwise?: (schema: T) => TOtherwise;
+  then?: (schema: T) => ISchema<any>;
+  otherwise?: (schema: T) => ISchema<any>;
 };
 
 export type ResolveOptions<TContext = any> = {
@@ -23,17 +20,13 @@ export type ResolveOptions<TContext = any> = {
   context?: TContext;
 };
 
-class Condition<
-  TIn extends ISchema<any, any> = ISchema<any, any>,
-  TOut extends ISchema<any, any> = TIn,
-> {
-  fn: ConditionBuilder<TIn, TOut>;
+class Condition<TIn extends ISchema<any, any> = ISchema<any, any>> {
+  fn: ConditionBuilder<TIn>;
 
-  static fromOptions<
-    TIn extends ISchema<any, any>,
-    TThen extends ISchema<any, any>,
-    TOtherwise extends ISchema<any, any>,
-  >(refs: Reference[], config: ConditionConfig<TIn, TThen, TOtherwise>) {
+  static fromOptions<TIn extends ISchema<any, any>>(
+    refs: Reference[],
+    config: ConditionConfig<TIn>,
+  ) {
     if (!config.then && !config.otherwise)
       throw new TypeError(
         'either `then:` or `otherwise:` is required for `when()` conditions',
@@ -46,19 +39,16 @@ class Condition<
         ? is
         : (...values: any[]) => values.every((value) => value === is);
 
-    return new Condition<TIn, TThen | TOtherwise>(
-      refs,
-      (values, schema: any) => {
-        let branch = check(...values) ? then : otherwise;
+    return new Condition<TIn>(refs, (values, schema: any) => {
+      let branch = check(...values) ? then : otherwise;
 
-        return branch?.(schema) ?? schema;
-      },
-    );
+      return branch?.(schema) ?? schema;
+    });
   }
 
   constructor(
     public refs: readonly Reference[],
-    builder: ConditionBuilder<TIn, TOut>,
+    builder: ConditionBuilder<TIn>,
   ) {
     this.refs = refs;
     this.fn = builder;

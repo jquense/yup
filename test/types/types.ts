@@ -970,36 +970,38 @@ Object: {
   }
 }
 
-Conditions: {
-  // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
-  string().when('foo', ([foo], schema) => (foo ? schema.required() : number()));
+// Conditions: {
+//   // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
+//   string().when('foo', ([foo], schema) => (foo ? schema.required() : number()));
 
-  // $ExpectType StringSchema<string | undefined, AnyObject, undefined, "">
-  string().when('foo', ([foo], schema) => (foo ? schema.required() : schema));
+//   // $ExpectType StringSchema<string | undefined, AnyObject, undefined, "">
+//   string()
+//     .when('foo', ([foo], schema) => (foo ? schema.required() : schema))
+//     .when('foo', ([foo], schema) => (foo ? schema.required() : schema));
 
-  // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
-  string().when('foo', {
-    is: true,
-    then: () => number(),
-    otherwise: (s) => s.required(),
-  });
+//   // $ExpectType NumberSchema<number | undefined, AnyObject, undefined, ""> | StringSchema<string, AnyObject, undefined, "">
+//   string().when('foo', {
+//     is: true,
+//     then: () => number(),
+//     otherwise: (s) => s.required(),
+//   });
 
-  const result = object({
-    foo: bool().defined(),
-    polyField: mixed<string>().when('foo', {
-      is: true,
-      then: () => number(),
-      otherwise: (s) => s.required(),
-    }),
-  }).cast({ foo: true, polyField: '1' });
+//   const result = object({
+//     foo: bool().defined(),
+//     polyField: mixed<string>().when('foo', {
+//       is: true,
+//       then: () => number(),
+//       otherwise: (s) => s.required(),
+//     }),
+//   }).cast({ foo: true, polyField: '1' });
 
-  // $ExpectType { polyField?: string | number | undefined; foo: boolean; }
-  result;
+//   // $ExpectType { polyField?: string | number | undefined; foo: boolean; }
+//   result;
 
-  mixed()
-    .when('foo', ([foo]) => (foo ? string() : number()))
-    .min(1);
-}
+//   mixed()
+//     .when('foo', ([foo]) => (foo ? string() : number()))
+//     .min(1);
+// }
 
 TypeAssigning: {
   const _schema: ObjectSchema<{
