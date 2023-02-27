@@ -1,3 +1,14 @@
+## [1.0.2](https://github.com/jquense/yup/compare/v1.0.0...v1.0.2) (2023-02-27)
+
+
+### Bug Fixes
+
+* fix array describe not including conditions ([4040592](https://github.com/jquense/yup/commit/4040592ccd068ab71e06417b4d355007636cb78c)), closes [#1920](https://github.com/jquense/yup/issues/1920)
+
+
+
+
+
 ## [1.0.1](https://github.com/jquense/yup/compare/v1.0.0...v1.0.1) (2023-02-25)
 
 
