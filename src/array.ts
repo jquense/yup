@@ -253,7 +253,7 @@ export default class ArraySchema<
   }
 
   describe(options?: ResolveOptions<TContext>) {
-    let base = super.describe() as SchemaInnerTypeDescription;
+    let base = super.describe(options) as SchemaInnerTypeDescription;
     if (this.innerType) {
       let innerOptions = options;
       if (innerOptions?.value) {
