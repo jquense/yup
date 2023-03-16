@@ -100,7 +100,7 @@ export interface SchemaRefDescription {
 }
 
 export interface SchemaInnerTypeDescription extends SchemaDescription {
-  innerType?: SchemaFieldDescription;
+  innerType?: SchemaFieldDescription | SchemaFieldDescription[];
 }
 
 export interface SchemaObjectDescription extends SchemaDescription {
