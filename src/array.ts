@@ -141,10 +141,6 @@ export default class ArraySchema<
     const next = super.clone(spec);
     // @ts-expect-error readonly
     next.innerType = this.innerType;
-    next.spec = {
-      ...next.spec,
-      innerType: this.innerType
-    } as ArraySchemaSpec<TIn>;
     return next;
   }
 

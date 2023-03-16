@@ -160,10 +160,6 @@ export default class TupleSchema<
     const next = super.clone(spec);
     // @ts-expect-error readonly
     next.innerType = this.innerType;
-    next.spec = {
-      ...next.spec,
-      innerType: this.innerType
-    } as TupleSchemaSpec<TType>;
     return next;
   }
 
