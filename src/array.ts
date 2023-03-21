@@ -38,23 +38,17 @@ export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
   return new ArraySchema<T[] | undefined, C>(type as any);
 }
 
-interface ArraySchemaSpec<TIn> extends SchemaSpec<any> {
-  types?:  ISchema<InnerType<TIn>>;
-}
-
 export default class ArraySchema<
   TIn extends any[] | null | undefined,
   TContext,
   TDefault = undefined,
   TFlags extends Flags = '',
 > extends Schema<TIn, TContext, TDefault, TFlags> {
-  declare spec: ArraySchemaSpec<TIn>;
   readonly innerType?: ISchema<InnerType<TIn>, TContext>;
 
   constructor(type?: ISchema<InnerType<TIn>, TContext>) {
     super({
       type: 'array',
-      spec: { innerType: type } as any,
       check(v: any): v is NonNullable<TIn> {
         return Array.isArray(v);
       },
