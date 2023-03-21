@@ -39,7 +39,7 @@ export function getIn<C = any>(
       }
       parent = value;
       value = value && value[idx];
-      schema = isTuple ? schema.innerType[idx] : schema.innerType!;
+      schema = isTuple ? schema.spec.types[idx] : schema.innerType!;
     }
 
     // sometimes the array index part of a path doesn't exist: "nested.arr.child"

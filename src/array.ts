@@ -39,7 +39,7 @@ export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
 }
 
 interface ArraySchemaSpec<TIn> extends SchemaSpec<any> {
-  innerType?:  ISchema<InnerType<TIn>>;
+  types?:  ISchema<InnerType<TIn>>;
 }
 
 export default class ArraySchema<
@@ -269,7 +269,7 @@ export default class ArraySchema<
           value: innerOptions.value[0],
         };
       }
-      base.innerType = this.innerType.describe(options);
+      base.innerType = this.innerType.describe(innerOptions);
     }
     return base;
   }

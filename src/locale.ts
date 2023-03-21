@@ -136,7 +136,7 @@ export let array: Required<ArrayLocale> = {
 export let tuple: Required<TupleLocale> = {
   notType: (params) => {
     const { path, value, spec } = params;
-    const typeLen = spec.innerType.length;
+    const typeLen = spec.types.length;
     if (Array.isArray(value)) {
       if (value.length < typeLen)
         return `${path} tuple value has too few items, expected a length of ${typeLen} but got ${

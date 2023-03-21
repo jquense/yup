@@ -64,7 +64,7 @@ export default interface TupleSchema<
 }
 
 interface TupleSchemaSpec<T> extends SchemaSpec<any> {
-  innerType: T extends any[]
+  types: T extends any[]
     ? {
         [K in keyof T]: ISchema<T[K]>;
       }
@@ -78,19 +78,16 @@ export default class TupleSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   declare spec: TupleSchemaSpec<TType>;
-  readonly innerType: [ISchema<any>, ...ISchema<any>[]];
 
   constructor(schemas: [ISchema<any>, ...ISchema<any>[]]) {
     super({
       type: 'tuple',
-      spec: { innerType: schemas } as any,
+      spec: { types: schemas } as any,
       check(v: any): v is NonNullable<TType> {
-        const types = this.innerType;
+        const types = (this.spec as TupleSchemaSpec<TType>).types;
         return Array.isArray(v) && v.length === types.length;
       },
     });
-
-    this.innerType = schemas;
 
     this.withMutation(() => {
       this.typeError(tupleLocale.notType);
@@ -98,6 +95,7 @@ export default class TupleSchema<
   }
 
   protected _cast(inputValue: any, options: InternalOptions<TContext>) {
+    const { types } = this.spec;
     const value = super._cast(inputValue, options);
 
     if (!this._typeCheck(value)) {
@@ -105,7 +103,7 @@ export default class TupleSchema<
     }
 
     let isChanged = false;
-    const castArray = this.innerType.map((type, idx) => {
+    const castArray = types.map((type, idx) => {
       const castElement = type.cast(value[idx], {
         ...options,
         path: `${options.path || ''}[${idx}]`,
@@ -123,7 +121,7 @@ export default class TupleSchema<
     panic: (err: Error, value: unknown) => void,
     next: (err: ValidationError[], value: unknown) => void,
   ) {
-    let itemTypes = this.innerType;
+    let itemTypes = this.spec.types;
 
     super._validate(_value, options, panic, (tupleErrors, value) => {
       // intentionally not respecting recursive
@@ -156,16 +154,9 @@ export default class TupleSchema<
     });
   }
 
-  clone(spec?: SchemaSpec<any>) {
-    const next = super.clone(spec);
-    // @ts-expect-error readonly
-    next.innerType = this.innerType;
-    return next;
-  }
-
   describe(options?: ResolveOptions<TContext>) {
     let base = super.describe(options) as SchemaInnerTypeDescription;
-    base.innerType = this.innerType.map((schema, index) => {
+    base.innerType = this.spec.types.map((schema, index) => {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {
