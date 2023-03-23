@@ -11,7 +11,12 @@ import type {
   UnsetFlag,
   Maybe,
 } from './util/types';
-import Schema, { RunTest, SchemaSpec } from './schema';
+import type { ResolveOptions } from './Condition';
+import Schema, {
+  RunTest,
+  SchemaInnerTypeDescription,
+  SchemaSpec,
+} from './schema';
 import ValidationError from './ValidationError';
 import { tuple as tupleLocale } from './locale';
 
@@ -147,6 +152,22 @@ export default class TupleSchema<
         (innerTypeErrors) => next(innerTypeErrors.concat(tupleErrors), value),
       );
     });
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    let base = super.describe(options) as SchemaInnerTypeDescription;
+    base.innerType = this.spec.types.map((schema, index) => {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[index],
+        };
+      }
+      return schema.describe(innerOptions);
+    });
+    return base;
   }
 }
 

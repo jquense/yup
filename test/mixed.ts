@@ -9,6 +9,7 @@ import {
   ref,
   Schema,
   string,
+  tuple,
   ValidationError,
 } from '../src';
 import ObjectSchema from '../src/object';
@@ -965,6 +966,7 @@ describe('Mixed Types ', () => {
             is: 'entered',
             then: (s) => s.defined(),
           }),
+        baz: tuple([string(), number()])
       });
     });
 
@@ -976,7 +978,8 @@ describe('Mixed Types ', () => {
         default: {
           foo: undefined,
           bar: 'a',
-          lazy: undefined
+          lazy: undefined,
+          baz: undefined,
         },
         nullable: false,
         optional: true,
@@ -1035,6 +1038,41 @@ describe('Mixed Types ', () => {
               },
             ],
           },
+          baz: {
+            type: 'tuple',
+            meta: undefined,
+            label: undefined,
+            default: undefined,
+            nullable: false,
+            optional: true,
+            tests: [],
+            oneOf: [],
+            notOneOf: [],
+            innerType: [
+              {
+                type: 'string',
+                meta: undefined,
+                label: undefined,
+                default: undefined,
+                nullable: false,
+                optional: true,
+                oneOf: [],
+                notOneOf: [],
+                tests: [],
+              },
+              {
+                type: 'number',
+                meta: undefined,
+                label: undefined,
+                default: undefined,
+                nullable: false,
+                optional: true,
+                oneOf: [],
+                notOneOf: [],
+                tests: [],
+              }
+            ],
+          },
         },
       });
     });
@@ -1047,7 +1085,8 @@ describe('Mixed Types ', () => {
         default: {
           foo: undefined,
           bar: 'a',
-          lazy: undefined
+          lazy: undefined,
+          baz: undefined,
         },
         nullable: false,
         optional: true,
@@ -1109,6 +1148,41 @@ describe('Mixed Types ', () => {
                 type: 'ref',
                 key: 'foo',
               },
+            ],
+          },
+          baz: {
+            type: 'tuple',
+            meta: undefined,
+            label: undefined,
+            default: undefined,
+            nullable: false,
+            optional: true,
+            tests: [],
+            oneOf: [],
+            notOneOf: [],
+            innerType: [
+              {
+                type: 'string',
+                meta: undefined,
+                label: undefined,
+                default: undefined,
+                nullable: false,
+                optional: true,
+                oneOf: [],
+                notOneOf: [],
+                tests: [],
+              },
+              {
+                type: 'number',
+                meta: undefined,
+                label: undefined,
+                default: undefined,
+                nullable: false,
+                optional: true,
+                oneOf: [],
+                notOneOf: [],
+                tests: [],
+              }
             ],
           },
         },

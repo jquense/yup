@@ -91,7 +91,7 @@ describe('Array types', () => {
       );
     });
 
-    it('should throw useful type error for lenght', async () => {
+    it('should throw useful type error for length', async () => {
       let schema = tuple([string().label('name'), number().label('age')]);
 
       // expect(() => schema.cast(['James'])).toThrowError(
