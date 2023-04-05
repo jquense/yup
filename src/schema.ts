@@ -384,7 +384,7 @@ export default abstract class Schema<
     return result;
   }
 
-  protected _cast(rawValue: any, _options: CastOptions<TContext>): any {
+  protected _cast(rawValue: any, options: CastOptions<TContext>): any {
     let value =
       rawValue === undefined
         ? rawValue
@@ -394,7 +394,7 @@ export default abstract class Schema<
           );
 
     if (value === undefined) {
-      value = this.getDefault();
+      value = this.getDefault(options);
     }
 
     return value;
@@ -607,7 +607,9 @@ export default abstract class Schema<
     }
   }
 
-  protected _getDefault() {
+  protected _getDefault(
+    _options?: ResolveOptions<TContext>,
+  ) {
     let defaultValue = this.spec.default;
 
     if (defaultValue == null) {
@@ -624,7 +626,7 @@ export default abstract class Schema<
     // If schema is defaulted we know it's at least not undefined
   ): TDefault {
     let schema = this.resolve(options || {});
-    return schema._getDefault();
+    return schema._getDefault(options);
   }
 
   default(def: Thunk<any>): any {
