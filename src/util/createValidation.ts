@@ -28,6 +28,7 @@ export type TestContext<TContext = {}> = {
   path: string;
   options: ValidateOptions<TContext>;
   originalValue: any;
+  currentValue: any;
   parent: any;
   from?: Array<{ schema: ISchema<any, TContext>; value: any }>;
   schema: any;
@@ -74,7 +75,7 @@ export default function createValidation(config: {
   skipAbsent?: boolean;
 }) {
   function validate<TSchema extends AnySchema = AnySchema>(
-    { value, path = '', options, originalValue, schema }: TestOptions<TSchema>,
+    { value, path = '', options, schema, originalValue }: TestOptions<TSchema>,
     panic: PanicCallback,
     next: NextCallback,
   ) {
@@ -89,6 +90,7 @@ export default function createValidation(config: {
       const nextParams = {
         value,
         originalValue,
+        currentValue: schema.currentValue,
         label: schema.spec.label,
         path: overrides.path || path,
         spec: schema.spec,
@@ -121,6 +123,7 @@ export default function createValidation(config: {
       resolve,
       options,
       originalValue,
+      currentValue: schema.currentValue,
       schema,
     };
 
@@ -139,10 +142,11 @@ export default function createValidation(config: {
 
     if (!options.sync) {
       try {
-        Promise.resolve(!shouldSkip ? test.call(ctx, value, ctx) : true).then(
-          handleResult,
-          handleError,
-        );
+        Promise.resolve(!shouldSkip ? test.call(ctx, value, ctx) : true)
+          .then(handleResult, handleError)
+          .then(() => {
+            schema.setCurrentValue(value);
+          });
       } catch (err: any) {
         handleError(err);
       }

@@ -165,6 +165,7 @@ export default abstract class Schema<
   protected _typeCheck: (value: any) => value is NonNullable<TType>;
 
   spec: SchemaSpec<any>;
+  currentValue: any;
 
   constructor(options: SchemaOptions<TType, any>) {
     this.tests = [];
@@ -339,6 +340,10 @@ export default abstract class Schema<
     };
   }
 
+  setCurrentValue(value: any) {
+    this.currentValue = value;
+  }
+
   /**
    * Run the configured transform pipeline over an input value.
    */
@@ -416,6 +421,10 @@ export default abstract class Schema<
     let initialTests = [];
     for (let test of Object.values(this.internalTests)) {
       if (test) initialTests.push(test);
+    }
+
+    if (this.currentValue === undefined) {
+      this.setCurrentValue(this.getDefault());
     }
 
     this.runTests(
