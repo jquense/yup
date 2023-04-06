@@ -156,7 +156,7 @@ export default class ObjectSchema<
     let value = super._cast(_value, options);
 
     //should ignore nulls here
-    if (value === undefined) return this.getDefault();
+    if (value === undefined) return this.getDefault(options);
 
     if (!this._typeCheck(value)) return value;
 
@@ -320,7 +320,9 @@ export default class ObjectSchema<
     );
   }
 
-  protected _getDefault() {
+  protected _getDefault(
+    options?: ResolveOptions<TContext>,
+  ) {
     if ('default' in this.spec) {
       return super._getDefault();
     }
@@ -334,7 +336,7 @@ export default class ObjectSchema<
     this._nodes.forEach((key) => {
       const field = this.fields[key] as any;
       dft[key] =
-        field && 'getDefault' in field ? field.getDefault() : undefined;
+        field && 'getDefault' in field ? field.getDefault(options) : undefined;
     });
 
     return dft;
