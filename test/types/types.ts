@@ -15,7 +15,36 @@ import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
 import ObjectSchema, { create as object } from '../../src/object';
 
-import { _ } from '../../src/util/types';
+import { ResolveFlags, SetFlag, UnsetFlag, _ } from '../../src/util/types';
+
+ResolveFlags: {
+  // $ExpectType string | undefined
+  type _a = ResolveFlags<string | undefined, 'd'>;
+
+  // $ExpectType string | undefined
+  type _b = ResolveFlags<string | undefined, 's'>;
+
+  // $ExpectType string
+  type _c = ResolveFlags<string | undefined, 's' | 'd', string>;
+
+  // $ExpectType string | undefined
+  type _d = ResolveFlags<string | undefined, 's' | '', string>;
+
+  // $ExpectType string
+  type _e = ResolveFlags<string | undefined, SetFlag<'s', 'd'>, string>;
+
+  // $ExpectType ""
+  type _f = UnsetFlag<'d', 'd'>;
+
+  // $ExpectType "s"
+  type _f2 = UnsetFlag<'d' | 's', 'd'>;
+
+  // $ExpectType ""
+  type _f3 = UnsetFlag<'', 'd'>;
+
+  // $ExpectType "d"
+  type _f4 = SetFlag<'', 'd'>;
+}
 
 Base_methods: {
   // $ExpectType boolean | undefined
@@ -29,6 +58,10 @@ Base_methods: {
 
   // $ExpectType number | undefined
   number().oneOf([1, ref('$foo')]).__outputType;
+
+  // type s = StringSchema<string | undefined, any, '', 's' | 'd'>;
+
+  // type ss = s['__outputType'];
 }
 
 Mixed: {
@@ -92,7 +125,7 @@ Mixed: {
   // $ExpectType "foo" | "bar"
   string<'foo' | 'bar'>().defined().validateSync('foo');
 
-  // $ExpectType never
+  // $ExpectType string | undefined
   mixed<string>().strip().cast(undefined);
 
   // $ExpectType string | undefined
@@ -196,7 +229,7 @@ Strings: {
   // $ExpectType "foo" | "bar"
   string<'foo' | 'bar'>().defined().validateSync('foo');
 
-  // $ExpectType never
+  // $ExpectType string | undefined
   string().strip().cast(undefined);
 
   // $ExpectType string | undefined
@@ -295,7 +328,7 @@ Numbers: {
   // $ExpectType number
   numDefaultRequired.validateSync(null);
 
-  // $ExpectType never
+  // $ExpectType number | undefined
   number().strip().cast(undefined);
 
   // $ExpectType number | undefined
@@ -380,7 +413,7 @@ date: {
   // $ExpectType Date
   dtDefaultRequired.validateSync(null);
 
-  // $ExpectType never
+  // $ExpectType Date | undefined
   date().strip().cast(undefined);
 
   // $ExpectType Date | undefined
@@ -452,7 +485,7 @@ bool: {
   // $ExpectType NonNullable<boolean | null | undefined>
   blDefaultRequired.validateSync(null);
 
-  // $ExpectType never
+  // $ExpectType boolean | undefined
   bool().strip().cast(undefined);
 
   // $ExpectType boolean | undefined
@@ -584,7 +617,7 @@ Array: {
   // $ExpectType (number | undefined)[]
   array(number()).concat(array(number()).required()).validateSync([]);
 
-  // $ExpectType never
+  // $ExpectType any[] | undefined
   array().strip().cast(undefined);
 
   // $ExpectType any[] | undefined
@@ -759,7 +792,7 @@ Object: {
   const obj = object({
     string: string<'foo'>().defined(),
     number: number().default(1),
-    removed: number().strip(),
+    removed: number().strip().default(0),
     ref: ref('string'),
     nest: object({
       other: string(),
@@ -780,14 +813,19 @@ Object: {
   // $ExpectType "foo"
   cast1!.string;
 
+  // @ts-expect-error Removed doesn't exist
+  cast1!.removed;
+
   // $ExpectType number
   cast1!.number;
 
-  // $ExpectType never
-  object().strip().cast(undefined);
+  // $ExpectType string
+  string().strip().default('').cast('');
 
-  // $ExpectType {}
-  object().strip().strip(false).cast(undefined);
+  // $ExpectType { string?: string | undefined; }
+  const _cast2 = object({
+    string: string().strip().strip(false),
+  }).cast(undefined);
 
   //
   // Object Defaults
