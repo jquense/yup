@@ -1,3 +1,20 @@
+# [1.1.0](https://github.com/jquense/yup/compare/v1.0.2...v1.1.0) (2023-04-12)
+
+
+### Bug Fixes
+
+* tuple describe() method ([#1947](https://github.com/jquense/yup/issues/1947)) ([297f168](https://github.com/jquense/yup/commit/297f1682296ee0b53e5e252477d5a6d7d82df707))
+
+
+### Features
+
+* only resolve "strip()" for schema when used as an object field ([#1977](https://github.com/jquense/yup/issues/1977)) ([2ba1104](https://github.com/jquense/yup/commit/2ba1104798dcf3b9385997e5fbaa41b4d711472d))
+* respect context for object's children ([#1971](https://github.com/jquense/yup/issues/1971)) ([edfe6ac](https://github.com/jquense/yup/commit/edfe6acde9e11ec2bfe2ad41aad867daae7041ce))
+
+
+
+
+
 ## [1.0.2](https://github.com/jquense/yup/compare/v1.0.0...v1.0.2) (2023-02-27)
 
 
