@@ -890,7 +890,7 @@ First the legally required Rich Hickey quote:
 
 `withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change. Generally this isn't necessary since the vast majority of schema changes happen during the initial
 declaration, and only happen once over the lifetime of the schema, so performance isn't an issue.
-However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#Schemawhenkeys-string--arraystring-builder-object--value-schema-schema-schema)), or
+However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#schemawhenkeys-string--string-builder-object--values-any-schema--schema-schema)), or
 when instantiating a schema object.
 
 ```js
@@ -1182,7 +1182,7 @@ let schema = yup.string().test({
 #### `Schema.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](#Schemaistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](#schemaistypevalue-any-value-is-infertypeschema)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
