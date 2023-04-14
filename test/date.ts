@@ -1,7 +1,8 @@
 import { ref, date } from '../src';
+import * as TestHelpers from './helpers';
 
-function isValidDate(date: any): date is Date {
-  return date instanceof Date && !isNaN(date.getTime());
+function isInvalidDate(date: any): date is Date {
+  return date instanceof Date && isNaN(date.getTime());
 }
 
 describe('Date types', () => {
@@ -19,13 +20,18 @@ describe('Date types', () => {
     expect(inst.cast('2016-08-10T11:32:19.2125Z')).toEqual(
       new Date(1470828739212),
     );
+
+    expect(inst.cast(null, { assert: false })).toEqual(null);
   });
 
-  it('should return invalid date for failed casts', function () {
+  it('should return invalid date for failed non-null casts', function () {
     let inst = date();
 
-    expect(isValidDate(inst.cast(null, { assert: false }))).toBe(false);
-    expect(isValidDate(inst.cast('', { assert: false }))).toBe(false);
+    expect(inst.cast(null, { assert: false })).toEqual(null);
+    expect(inst.cast(undefined, { assert: false })).toEqual(undefined);
+
+    expect(isInvalidDate(inst.cast('', { assert: false }))).toBe(true);
+    expect(isInvalidDate(inst.cast({}, { assert: false }))).toBe(true);
   });
 
   it('should type check', () => {
@@ -39,7 +45,7 @@ describe('Date types', () => {
   });
 
   it('should VALIDATE correctly', () => {
-    let inst = date().required().max(new Date(2014, 5, 15));
+    let inst = date().max(new Date(2014, 5, 15));
 
     return Promise.all([
       expect(date().isValid(null)).resolves.toBe(false),
@@ -49,10 +55,26 @@ describe('Date types', () => {
       expect(inst.isValid(new Date(2014, 7, 15))).resolves.toBe(false),
       expect(inst.isValid('5')).resolves.toBe(true),
 
-      expect(inst.validate(undefined)).rejects.toEqual(
+      expect(inst.required().validate(undefined)).rejects.toEqual(
         expect.objectContaining({
           errors: ['this is a required field'],
         }),
+      ),
+
+      expect(inst.required().validate(undefined)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('required'),
+        ),
+      ),
+      expect(inst.validate(null)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('cannot be null'),
+        ),
+      ),
+      expect(inst.validate({})).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('must be a `date` type'),
+        ),
       ),
     ]);
   });

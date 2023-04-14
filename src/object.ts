@@ -320,11 +320,9 @@ export default class ObjectSchema<
     );
   }
 
-  protected _getDefault(
-    options?: ResolveOptions<TContext>,
-  ) {
+  protected _getDefault(options?: ResolveOptions<TContext>) {
     if ('default' in this.spec) {
-      return super._getDefault();
+      return super._getDefault(options);
     }
 
     // if there is no default set invent one
@@ -335,8 +333,20 @@ export default class ObjectSchema<
     let dft: any = {};
     this._nodes.forEach((key) => {
       const field = this.fields[key] as any;
+
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+
       dft[key] =
-        field && 'getDefault' in field ? field.getDefault(options) : undefined;
+        field && 'getDefault' in field
+          ? field.getDefault(innerOptions)
+          : undefined;
     });
 
     return dft;
