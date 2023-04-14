@@ -1,3 +1,16 @@
+## [1.1.1](https://github.com/jquense/yup/compare/v1.1.0...v1.1.1) (2023-04-14)
+
+
+### Bug Fixes
+
+* **docs:** Broken anchores ([#1979](https://github.com/jquense/yup/issues/1979)) ([4ed4576](https://github.com/jquense/yup/commit/4ed45762e955ac6af0dec935a91e815a5a1cf5b9))
+* make null validation errors consistent across schema ([#1982](https://github.com/jquense/yup/issues/1982)) ([f999497](https://github.com/jquense/yup/commit/f99949747456d7bf55da3dd38dcf86bbddba3169))
+* **object:** excluded edges are merged when concating schema ([c07b08f](https://github.com/jquense/yup/commit/c07b08f033be8eea00d74a5da1cf735cf97e69df)), closes [#1969](https://github.com/jquense/yup/issues/1969)
+
+
+
+
+
 # [1.1.0](https://github.com/jquense/yup/compare/v1.0.2...v1.1.0) (2023-04-12)
 
 
