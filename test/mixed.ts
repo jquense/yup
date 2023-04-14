@@ -957,7 +957,7 @@ describe('Mixed Types ', () => {
         foo: array(number().integer()).required(),
         bar: string()
           .max(2)
-          .default(()=> 'a')
+          .default(() => 'a')
           .meta({ input: 'foo' })
           .label('str!')
           .oneOf(['a', 'b'])
@@ -966,7 +966,7 @@ describe('Mixed Types ', () => {
             is: 'entered',
             then: (s) => s.defined(),
           }),
-        baz: tuple([string(), number()])
+        baz: tuple([string(), number()]),
       });
     });
 
@@ -1070,7 +1070,7 @@ describe('Mixed Types ', () => {
                 oneOf: [],
                 notOneOf: [],
                 tests: [],
-              }
+              },
             ],
           },
         },
@@ -1182,7 +1182,7 @@ describe('Mixed Types ', () => {
                 oneOf: [],
                 notOneOf: [],
                 tests: [],
-              }
+              },
             ],
           },
         },

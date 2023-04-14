@@ -316,7 +316,11 @@ export default class ObjectSchema<
     }
 
     return next.withMutation((s: any) =>
-      s.setFields(nextFields, this._excludedEdges),
+      // XXX: excludes here is wrong
+      s.setFields(nextFields, [
+        ...this._excludedEdges,
+        ...schema._excludedEdges,
+      ]),
     );
   }
 

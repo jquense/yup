@@ -1005,6 +1005,10 @@ describe('Object types', () => {
     await expect(
       schema.concat(object()).isValid({ a1: null }),
     ).resolves.toEqual(false);
+
+    await expect(
+      object().concat(schema).isValid({ a1: null }),
+    ).resolves.toEqual(false);
   });
 
   it('should handle nested conditionals', () => {

@@ -1247,7 +1247,7 @@ import { mixed, InferType } from 'yup';
 let objectIdSchema = yup
   .mixed((input): input is ObjectId => input instanceof ObjectId)
   .transform((value: any, input, ctx) => {
-    if (ctx.typeCheck(value)) return value;
+    if (ctx.isType(value)) return value;
     return new ObjectId(value);
   });
 
