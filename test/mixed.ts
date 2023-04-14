@@ -673,7 +673,7 @@ describe('Mixed Types ', () => {
   it('concat should carry over transforms', async () => {
     let inst = string().trim();
 
-    await expect(inst.concat(string().min(4)).cast(' hello  ')).toBe('hello');
+    expect(inst.concat(string().min(4)).cast(' hello  ')).toBe('hello');
 
     await expect(inst.concat(string().min(4)).isValid(' he  ')).resolves.toBe(
       false,
@@ -1215,6 +1215,40 @@ describe('Mixed Types ', () => {
       });
 
       await expect(inst.isValid({ prop: 'prop value' })).resolves.toBe(true);
+    });
+  });
+
+  describe('description options', () => {
+    const schema = object({
+      name: string(),
+      type: bool(),
+      fancy: string()
+        .label('bad label')
+        .when('type', {
+          is: true,
+          then: (schema) => schema.required().label('good label'),
+          otherwise: (schema) => schema.label('default label'),
+        }),
+    });
+
+    it('should pass options', async () => {
+      expect(
+        // @ts-ignore
+        schema.fields.fancy.describe({ parent: { type: true } }).label,
+      ).toBe('good label');
+      expect(
+        // @ts-ignore
+        schema.fields.fancy.describe({ parent: { type: true } }).optional,
+      ).toBe(false);
+
+      expect(
+        // @ts-ignore
+        schema.fields.fancy.describe({ parent: { type: false } }).label,
+      ).toEqual('default label');
+      expect(
+        // @ts-ignore
+        schema.fields.fancy.describe({ parent: { type: false } }).optional,
+      ).toBe(true);
     });
   });
 });
