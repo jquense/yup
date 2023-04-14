@@ -607,9 +607,7 @@ export default abstract class Schema<
     }
   }
 
-  protected _getDefault(
-    _options?: ResolveOptions<TContext>,
-  ) {
+  protected _getDefault(_options?: ResolveOptions<TContext>) {
     let defaultValue = this.spec.default;
 
     if (defaultValue == null) {
@@ -801,8 +799,9 @@ export default abstract class Schema<
     next.internalTests.typeError = createValidation({
       message,
       name: 'typeError',
+      skipAbsent: true,
       test(value) {
-        if (!isAbsent(value) && !this.schema._typeCheck(value))
+        if (!this.schema._typeCheck(value))
           return this.createError({
             params: {
               type: this.schema.type,

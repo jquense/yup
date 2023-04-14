@@ -193,6 +193,7 @@ const num = number().cast('1'); // 1
 const obj = object({
   firstName: string().lowercase().trim(),
 })
+  .json()
   .camelCase()
   .cast('{"first_name": "jAnE "}'); // { firstName: 'jane' }
 ```
@@ -206,14 +207,14 @@ const reversedString = string()
 ```
 
 Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
-If the end value is `undefined` yup will apply the schema default if it's configured.
+When an input value is `undefined` yup will apply the schema default if it's configured.
 
 > Watch out! values are not guaranteed to be valid types in transform functions. Previous transforms
 > may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
 
 ### Validation: Tests
 
-Yup has robust support for assertions, or "tests", over input values. Tests assert that inputs conform to some
+Yup schema run "tests" over input values. Tests assert that inputs conform to some
 criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
 and are usually reserved for checks that are hard, if not impossible, to represent in static types.
 
@@ -241,7 +242,7 @@ jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
 > Heads up: unlike transforms, `value` in a custom test is guaranteed to be the correct type
 > (in this case an optional string). It still may be `undefined` or `null` depending on your schema
 > in those cases, you may want to return `true` for absent values unless your transform makes presence
-> related assertions
+> related assertions. The test option `skipAbsent` will do this for you if set.
 
 #### Customizing errors
 

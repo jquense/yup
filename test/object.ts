@@ -336,7 +336,7 @@ describe('Object types', () => {
       });
     });
 
-    it('should pass options to children', () => {
+    it('should propagate context', () => {
       const objectWithConditions = object({
         child: string().when('$variable', {
           is: 'foo',
@@ -346,19 +346,16 @@ describe('Object types', () => {
       });
 
       expect(
-        objectWithConditions.getDefault({ context: { variable: 'foo' } }))
-          .toEqual({ child: 'is foo' },
-      );
+        objectWithConditions.getDefault({ context: { variable: 'foo' } }),
+      ).toEqual({ child: 'is foo' });
 
       expect(
-        objectWithConditions.getDefault({ context: { variable: 'somethingElse' } }))
-          .toEqual({ child: 'not foo' },
-      );
+        objectWithConditions.getDefault({
+          context: { variable: 'somethingElse' },
+        }),
+      ).toEqual({ child: 'not foo' });
 
-      expect(
-        objectWithConditions.getDefault())
-        .toEqual({ child: 'not foo' },
-      );
+      expect(objectWithConditions.getDefault()).toEqual({ child: 'not foo' });
     });
 
     it('should respect options when casting to default', () => {
@@ -371,16 +368,18 @@ describe('Object types', () => {
       });
 
       expect(
-        objectWithConditions.cast(undefined, { context: { variable: 'foo' } })
+        objectWithConditions.cast(undefined, { context: { variable: 'foo' } }),
       ).toEqual({ child: 'is foo' });
 
       expect(
-        objectWithConditions.cast(undefined, { context: { variable: 'somethingElse' } })
+        objectWithConditions.cast(undefined, {
+          context: { variable: 'somethingElse' },
+        }),
       ).toEqual({ child: 'not foo' });
 
-      expect(
-        objectWithConditions.cast(undefined)
-      ).toEqual({ child: 'not foo' });
+      expect(objectWithConditions.cast(undefined)).toEqual({
+        child: 'not foo',
+      });
     });
   });
 
