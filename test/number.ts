@@ -46,7 +46,8 @@ describe('Number types', function () {
     it('should return NaN for failed casts', () => {
       expect(number().cast('asfasf', { assert: false })).toEqual(NaN);
 
-      expect(number().cast(null, { assert: false })).toEqual(NaN);
+      expect(number().cast(new Date(), { assert: false })).toEqual(NaN);
+      expect(number().cast(null, { assert: false })).toEqual(null);
     });
   });
 
@@ -70,7 +71,7 @@ describe('Number types', function () {
   });
 
   it('should VALIDATE correctly', function () {
-    let inst = number().required().min(4);
+    let inst = number().min(4);
 
     return Promise.all([
       expect(number().isValid(null)).resolves.toBe(false),
@@ -83,9 +84,19 @@ describe('Number types', function () {
       expect(inst.isValid(5)).resolves.toBe(true),
       expect(inst.isValid(2)).resolves.toBe(false),
 
-      expect(inst.validate(undefined)).rejects.toEqual(
+      expect(inst.required().validate(undefined)).rejects.toEqual(
         TestHelpers.validationErrorWithMessages(
           expect.stringContaining('required'),
+        ),
+      ),
+      expect(inst.validate(null)).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('cannot be null'),
+        ),
+      ),
+      expect(inst.validate({})).rejects.toEqual(
+        TestHelpers.validationErrorWithMessages(
+          expect.stringContaining('must be a `number` type'),
         ),
       ),
     ]);

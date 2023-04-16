@@ -37,16 +37,14 @@ export type ToggleDefault<F extends Flags, D> = Preserve<
   ? SetFlag<F, 'd'>
   : UnsetFlag<F, 'd'>;
 
-export type ResolveFlags<T, F extends Flags, D = T> = Preserve<
+export type ResolveFlags<T, F extends Flags, D = T> = Extract<
   F,
-  's'
+  'd'
 > extends never
-  ? Extract<F, 'd'> extends never
-    ? T
-    : D extends undefined
-    ? T
-    : Defined<T>
-  : never;
+  ? T
+  : D extends undefined
+  ? T
+  : Defined<T>;
 
 export type Concat<T, U> = NonNullable<T> & NonNullable<U> extends never
   ? never

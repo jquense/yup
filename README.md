@@ -193,6 +193,7 @@ const num = number().cast('1'); // 1
 const obj = object({
   firstName: string().lowercase().trim(),
 })
+  .json()
   .camelCase()
   .cast('{"first_name": "jAnE "}'); // { firstName: 'jane' }
 ```
@@ -206,14 +207,14 @@ const reversedString = string()
 ```
 
 Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
-If the end value is `undefined` yup will apply the schema default if it's configured.
+When an input value is `undefined` yup will apply the schema default if it's configured.
 
 > Watch out! values are not guaranteed to be valid types in transform functions. Previous transforms
 > may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
 
 ### Validation: Tests
 
-Yup has robust support for assertions, or "tests", over input values. Tests assert that inputs conform to some
+Yup schema run "tests" over input values. Tests assert that inputs conform to some
 criteria. Tests are distinct from transforms, in that they do not change or alter the input (or its type)
 and are usually reserved for checks that are hard, if not impossible, to represent in static types.
 
@@ -241,7 +242,7 @@ jamesSchema.validateSync('Jane'); // ValidationError "this is not James"
 > Heads up: unlike transforms, `value` in a custom test is guaranteed to be the correct type
 > (in this case an optional string). It still may be `undefined` or `null` depending on your schema
 > in those cases, you may want to return `true` for absent values unless your transform makes presence
-> related assertions
+> related assertions. The test option `skipAbsent` will do this for you if set.
 
 #### Customizing errors
 
@@ -890,7 +891,7 @@ First the legally required Rich Hickey quote:
 
 `withMutation` allows you to mutate the schema in place, instead of the default behavior which clones before each change. Generally this isn't necessary since the vast majority of schema changes happen during the initial
 declaration, and only happen once over the lifetime of the schema, so performance isn't an issue.
-However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#Schemawhenkeys-string--arraystring-builder-object--value-schema-schema-schema)), or
+However certain mutations _do_ occur at cast/validation time, (such as conditional schema using [`when()`](#schemawhenkeys-string--string-builder-object--values-any-schema--schema-schema)), or
 when instantiating a schema object.
 
 ```js
@@ -1182,7 +1183,7 @@ let schema = yup.string().test({
 #### `Schema.transform((currentValue: any, originalValue: any) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
-default transforms for each type coerce values to the specific type (as verified by [`isType()`](#Schemaistypevalue-any-boolean)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
+default transforms for each type coerce values to the specific type (as verified by [`isType()`](#schemaistypevalue-any-value-is-infertypeschema)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
 
 Transformations are useful for arbitrarily altering how the object is cast, **however, you should take care
 not to mutate the passed in value.** Transforms are run sequentially so each `value` represents the
@@ -1246,7 +1247,7 @@ import { mixed, InferType } from 'yup';
 let objectIdSchema = yup
   .mixed((input): input is ObjectId => input instanceof ObjectId)
   .transform((value: any, input, ctx) => {
-    if (ctx.typeCheck(value)) return value;
+    if (ctx.isType(value)) return value;
     return new ObjectId(value);
   });
 

@@ -6,9 +6,19 @@ export type ObjectShape = { [k: string]: ISchema<any> | Reference };
 
 export type AnyObject = { [k: string]: any };
 
+export type ResolveStrip<T extends ISchema<any>> = T extends ISchema<
+  any,
+  any,
+  infer F
+>
+  ? Extract<F, 's'> extends never
+    ? T['__outputType']
+    : never
+  : T['__outputType'];
+
 export type TypeFromShape<S extends ObjectShape, _C> = {
-  [K in keyof S]: S[K] extends ISchema<any, any>
-    ? S[K]['__outputType']
+  [K in keyof S]: S[K] extends ISchema<any>
+    ? ResolveStrip<S[K]>
     : S[K] extends Reference<infer T>
     ? T
     : unknown;

@@ -156,7 +156,7 @@ export default class ObjectSchema<
     let value = super._cast(_value, options);
 
     //should ignore nulls here
-    if (value === undefined) return this.getDefault();
+    if (value === undefined) return this.getDefault(options);
 
     if (!this._typeCheck(value)) return value;
 
@@ -316,13 +316,17 @@ export default class ObjectSchema<
     }
 
     return next.withMutation((s: any) =>
-      s.setFields(nextFields, this._excludedEdges),
+      // XXX: excludes here is wrong
+      s.setFields(nextFields, [
+        ...this._excludedEdges,
+        ...schema._excludedEdges,
+      ]),
     );
   }
 
-  protected _getDefault() {
+  protected _getDefault(options?: ResolveOptions<TContext>) {
     if ('default' in this.spec) {
-      return super._getDefault();
+      return super._getDefault(options);
     }
 
     // if there is no default set invent one
@@ -333,8 +337,20 @@ export default class ObjectSchema<
     let dft: any = {};
     this._nodes.forEach((key) => {
       const field = this.fields[key] as any;
+
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+
       dft[key] =
-        field && 'getDefault' in field ? field.getDefault() : undefined;
+        field && 'getDefault' in field
+          ? field.getDefault(innerOptions)
+          : undefined;
     });
 
     return dft;

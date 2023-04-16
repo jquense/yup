@@ -54,7 +54,9 @@ export default class NumberSchema<
           parsed = +parsed;
         }
 
-        if (ctx.isType(parsed)) return parsed;
+        // null -> NaN isn't useful; treat all nulls as null and let it fail on
+        // nullability check vs TypeErrors
+        if (ctx.isType(parsed) || parsed === null) return parsed;
 
         return parseFloat(parsed);
       });

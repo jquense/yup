@@ -335,6 +335,52 @@ describe('Object types', () => {
         other: { x: { b: undefined } },
       });
     });
+
+    it('should propagate context', () => {
+      const objectWithConditions = object({
+        child: string().when('$variable', {
+          is: 'foo',
+          then: (s) => s.default('is foo'),
+          otherwise: (s) => s.default('not foo'),
+        }),
+      });
+
+      expect(
+        objectWithConditions.getDefault({ context: { variable: 'foo' } }),
+      ).toEqual({ child: 'is foo' });
+
+      expect(
+        objectWithConditions.getDefault({
+          context: { variable: 'somethingElse' },
+        }),
+      ).toEqual({ child: 'not foo' });
+
+      expect(objectWithConditions.getDefault()).toEqual({ child: 'not foo' });
+    });
+
+    it('should respect options when casting to default', () => {
+      const objectWithConditions = object({
+        child: string().when('$variable', {
+          is: 'foo',
+          then: (s) => s.default('is foo'),
+          otherwise: (s) => s.default('not foo'),
+        }),
+      });
+
+      expect(
+        objectWithConditions.cast(undefined, { context: { variable: 'foo' } }),
+      ).toEqual({ child: 'is foo' });
+
+      expect(
+        objectWithConditions.cast(undefined, {
+          context: { variable: 'somethingElse' },
+        }),
+      ).toEqual({ child: 'not foo' });
+
+      expect(objectWithConditions.cast(undefined)).toEqual({
+        child: 'not foo',
+      });
+    });
   });
 
   it('should handle empty keys', () => {
@@ -958,6 +1004,10 @@ describe('Object types', () => {
 
     await expect(
       schema.concat(object()).isValid({ a1: null }),
+    ).resolves.toEqual(false);
+
+    await expect(
+      object().concat(schema).isValid({ a1: null }),
     ).resolves.toEqual(false);
   });
 
