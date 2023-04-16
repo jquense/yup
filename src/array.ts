@@ -39,7 +39,7 @@ export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
 }
 
 interface ArraySchemaSpec<TIn, TContext> extends SchemaSpec<any> {
-  types?: ISchema<InnerType<TIn>, TContext>
+  types?: [ISchema<InnerType<TIn>, TContext>]
 }
 
 export default class ArraySchema<
@@ -54,7 +54,7 @@ export default class ArraySchema<
   constructor(type?: ISchema<InnerType<TIn>, TContext>) {
     super({
       type: 'array',
-      spec: { types: type } as ArraySchemaSpec<TIn, TContext>,
+      spec: { types: type ? [type] : type } as ArraySchemaSpec<TIn, TContext>,
       check(v: any): v is NonNullable<TIn> {
         return Array.isArray(v);
       },
@@ -191,7 +191,7 @@ export default class ArraySchema<
 
     next.spec = {
       ...next.spec,
-      types: schema as ISchema<InnerType<TIn>, TContext>
+      types: [schema] as [ISchema<InnerType<TIn>, TContext>]
     }
 
     return next as any;
