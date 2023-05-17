@@ -732,7 +732,7 @@ Provide `options` to more specifically control the behavior of `validate`.
 
 ```js
 interface Options {
-  // when true, parsing is skipped an the input is validated "as-is"
+  // when true, parsing is skipped and the input is validated "as-is"
   strict: boolean = false;
   // Throw on the first error or collect and return all
   abortEarly: boolean = true;
