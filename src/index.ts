@@ -15,6 +15,7 @@ import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
 import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
+import printValue from './util/printValue';
 import setLocale, { LocaleObject } from './setLocale';
 import defaultLocale from './locale';
 import Schema, {
@@ -89,6 +90,7 @@ export {
   reach,
   getIn,
   isSchema,
+  printValue,
   addMethod,
   setLocale,
   defaultLocale,
