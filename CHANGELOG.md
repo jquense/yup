@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/jquense/yup/compare/v1.1.1...v1.2.0) (2023-05-25)
+
+
+### Features
+
+* expose printValue ([#2002](https://github.com/jquense/yup/issues/2002)) ([#2008](https://github.com/jquense/yup/issues/2008)) ([1fadba1](https://github.com/jquense/yup/commit/1fadba10b0d1cad60f3708bd28282ab04a55eff6))
+* pass options to `default(options => value)` ([e5c5440](https://github.com/jquense/yup/commit/e5c5440767d32a8be6c4a12a5f6176924e058fd2)), closes [#1984](https://github.com/jquense/yup/issues/1984)
+
+
+
+
+
 ## [1.1.1](https://github.com/jquense/yup/compare/v1.1.0...v1.1.1) (2023-04-14)
 
 
