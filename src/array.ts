@@ -2,14 +2,19 @@ import isSchema from './util/isSchema';
 import printValue from './util/printValue';
 import parseJson from './util/parseJson';
 import { array as locale } from './locale';
-import type { AnyObject, InternalOptions, Message, ISchema } from './types';
+import type {
+  AnyObject,
+  InternalOptions,
+  Message,
+  ISchema,
+  DefaultThunk,
+} from './types';
 import type Reference from './Reference';
 import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   Maybe,
   Optionals,
   ToggleDefault,
@@ -39,7 +44,7 @@ export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
 }
 
 interface ArraySchemaSpec<TIn, TContext> extends SchemaSpec<any> {
-  types?: ISchema<InnerType<TIn>, TContext>
+  types?: ISchema<InnerType<TIn>, TContext>;
 }
 
 export default class ArraySchema<
@@ -191,8 +196,8 @@ export default class ArraySchema<
 
     next.spec = {
       ...next.spec,
-      types: schema as ISchema<InnerType<TIn>, TContext>
-    }
+      types: schema as ISchema<InnerType<TIn>, TContext>,
+    };
 
     return next as any;
   }
@@ -289,7 +294,7 @@ export default interface ArraySchema<
   TFlags extends Flags = '',
 > extends Schema<TIn, TContext, TDefault, TFlags> {
   default<D extends Maybe<TIn>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): ArraySchema<TIn, TContext, D, ToggleDefault<TFlags, D>>;
 
   defined(msg?: Message): ArraySchema<Defined<TIn>, TContext, TDefault, TFlags>;

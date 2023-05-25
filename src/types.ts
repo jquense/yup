@@ -29,6 +29,8 @@ export interface ISchema<T, C = any, F extends Flags = any, D = any> {
   resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
 }
 
+export type DefaultThunk<T, C = any> = T | ((options?: ResolveOptions<C>) => T);
+
 export type InferType<T extends ISchema<any, any>> = T['__outputType'];
 
 export type TransformFunction<T extends AnySchema> = (

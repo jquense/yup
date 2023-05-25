@@ -1,10 +1,9 @@
-import { AnyObject, Message } from './types';
+import { AnyObject, DefaultThunk, Message } from './types';
 import type {
   Concat,
   Defined,
   Flags,
   SetFlag,
-  Thunk,
   Maybe,
   ToggleDefault,
   UnsetFlag,
@@ -49,7 +48,7 @@ export default interface MixedSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<IT, IC, ID, IF extends Flags>(

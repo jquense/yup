@@ -28,7 +28,13 @@ import Schema, {
   SchemaFieldDescription,
   SchemaDescription,
 } from './schema';
-import type { InferType, ISchema, Message, ValidateOptions } from './types';
+import type {
+  InferType,
+  ISchema,
+  Message,
+  ValidateOptions,
+  DefaultThunk,
+} from './types';
 
 function addMethod<T extends ISchema<any>>(
   schemaType: (...arg: any[]) => T,
@@ -73,6 +79,7 @@ export type {
   SchemaDescription,
   LocaleObject,
   ValidateOptions,
+  DefaultThunk,
 };
 
 export {
@@ -128,7 +135,6 @@ export type {
   Maybe,
   Flags,
   Optionals,
-  Thunk,
   ToggleDefault,
   Defined,
   NotNull,

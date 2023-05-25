@@ -2,13 +2,12 @@
 import isoParse from './util/isodate';
 import { date as locale } from './locale';
 import Ref from './Reference';
-import type { AnyObject, Message } from './types';
+import type { AnyObject, DefaultThunk, Message } from './types';
 import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   Maybe,
   ToggleDefault,
   UnsetFlag,
@@ -120,7 +119,7 @@ export default interface DateSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): DateSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<TOther extends DateSchema<any, any>>(schema: TOther): TOther;

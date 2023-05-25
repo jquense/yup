@@ -1,11 +1,10 @@
 import Schema from './schema';
-import type { AnyObject, Message } from './types';
+import type { AnyObject, DefaultThunk, Message } from './types';
 import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   ToggleDefault,
   UnsetFlag,
   Maybe,
@@ -79,7 +78,7 @@ export default class BooleanSchema<
   }
 
   override default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): BooleanSchema<TType, TContext, D, ToggleDefault<TFlags, D>> {
     return super.default(def);
   }

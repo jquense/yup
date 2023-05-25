@@ -6,8 +6,8 @@ import { Flags, Maybe, SetFlag, ToggleDefault, UnsetFlag } from './util/types';
 import { object as locale } from './locale';
 import sortFields from './util/sortFields';
 import sortByKeyOrder from './util/sortByKeyOrder';
-import { InternalOptions, ISchema, Message } from './types';
-import type { Defined, Thunk, NotNull, _ } from './util/types';
+import { DefaultThunk, InternalOptions, ISchema, Message } from './types';
+import type { Defined, NotNull, _ } from './util/types';
 import Reference from './Reference';
 import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';
 import { ResolveOptions } from './Condition';
@@ -98,7 +98,7 @@ export default interface ObjectSchema<
   TFlags extends Flags = '',
 > extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
 
   defined(

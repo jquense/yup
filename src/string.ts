@@ -1,14 +1,13 @@
 import { MixedLocale, mixed as mixedLocale, string as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type Reference from './Reference';
-import type { Message, AnyObject } from './types';
+import type { Message, AnyObject, DefaultThunk } from './types';
 import type {
   Concat,
   Defined,
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   ToggleDefault,
   UnsetFlag,
   Maybe,
@@ -256,7 +255,7 @@ export default interface StringSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): StringSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   oneOf<U extends TType>(

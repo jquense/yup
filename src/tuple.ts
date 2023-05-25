@@ -1,12 +1,17 @@
 // @ts-ignore
 
-import type { AnyObject, InternalOptions, ISchema, Message } from './types';
+import type {
+  AnyObject,
+  DefaultThunk,
+  InternalOptions,
+  ISchema,
+  Message,
+} from './types';
 import type {
   Defined,
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   ToggleDefault,
   UnsetFlag,
   Maybe,
@@ -35,7 +40,7 @@ export default interface TupleSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): TupleSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<TOther extends TupleSchema<any, any>>(schema: TOther): TOther;

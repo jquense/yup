@@ -23,13 +23,14 @@ import {
   ExtraParams,
   ISchema,
   NestedTestConfig,
+  DefaultThunk,
 } from './types';
 
 import ValidationError from './ValidationError';
 import ReferenceSet from './util/ReferenceSet';
 import Reference from './Reference';
 import isAbsent from './util/isAbsent';
-import type { Flags, Maybe, ResolveFlags, Thunk, _ } from './util/types';
+import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
 
@@ -607,7 +608,7 @@ export default abstract class Schema<
     }
   }
 
-  protected _getDefault(_options?: ResolveOptions<TContext>) {
+  protected _getDefault(options?: ResolveOptions<TContext>) {
     let defaultValue = this.spec.default;
 
     if (defaultValue == null) {
@@ -615,7 +616,7 @@ export default abstract class Schema<
     }
 
     return typeof defaultValue === 'function'
-      ? defaultValue.call(this)
+      ? defaultValue.call(this, options)
       : cloneDeep(defaultValue);
   }
 
@@ -627,7 +628,7 @@ export default abstract class Schema<
     return schema._getDefault(options);
   }
 
-  default(def: Thunk<any>): any {
+  default(def: DefaultThunk<any>): any {
     if (arguments.length === 0) {
       return this._getDefault();
     }

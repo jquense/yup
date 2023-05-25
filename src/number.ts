@@ -1,6 +1,6 @@
 import { number as locale } from './locale';
 import isAbsent from './util/isAbsent';
-import type { AnyObject, Message } from './types';
+import type { AnyObject, DefaultThunk, Message } from './types';
 import type Reference from './Reference';
 import type {
   Concat,
@@ -8,7 +8,6 @@ import type {
   Flags,
   NotNull,
   SetFlag,
-  Thunk,
   Maybe,
   ToggleDefault,
   UnsetFlag,
@@ -167,7 +166,7 @@ export default interface NumberSchema<
   TFlags extends Flags = '',
 > extends Schema<TType, TContext, TDefault, TFlags> {
   default<D extends Maybe<TType>>(
-    def: Thunk<D>,
+    def: DefaultThunk<D, TContext>,
   ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
 
   concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
