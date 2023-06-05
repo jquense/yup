@@ -631,10 +631,30 @@ Creates a deep copy of the schema. Clone is used internally to return a new sche
 
 Overrides the key name which is used in error messages.
 
-#### `Schema.meta(metadata: object): Schema`
+#### `Schema.meta(metadata: SchemaMetadata): Schema`
 
 Adds to a metadata object, useful for storing data with a schema, that doesn't belong
-the cast object itself.
+to the cast object itself.
+
+A custom `SchemaMetadata` interface can be defined through
+[merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-interfaces)
+with the `CustomSchemaMetadata` interface. Start by creating a `yup.d.ts` file
+in your package and creating your desired `CustomSchemaMetadata` interface:
+
+```ts
+// yup.d.ts
+import 'yup';
+
+declare module 'yup' {
+  // Define your desired `SchemaMetadata` interface by merging the
+  // `CustomSchemaMetadata` interface.
+  export interface CustomSchemaMetadata {
+    placeholderText?: string
+    tooltipText?: string
+    // …
+  }
+}
+```
 
 #### `Schema.describe(options?: ResolveOptions): SchemaDescription`
 
