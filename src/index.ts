@@ -27,6 +27,8 @@ import Schema, {
   SchemaLazyDescription,
   SchemaFieldDescription,
   SchemaDescription,
+  SchemaMetadata,
+  CustomSchemaMetadata,
 } from './schema';
 import type {
   InferType,
@@ -77,6 +79,8 @@ export type {
   SchemaLazyDescription,
   SchemaFieldDescription,
   SchemaDescription,
+  SchemaMetadata,
+  CustomSchemaMetadata,
   LocaleObject,
   ValidateOptions,
   DefaultThunk,

@@ -52,7 +52,7 @@ export interface CustomSchemaMetadata {}
 // If `CustomSchemaMeta` isn't extended with any keys, we'll fall back to a
 // loose Record definition allowing free form usage.
 export type SchemaMetadata = keyof CustomSchemaMetadata extends never
-  ? Record<string | symbol, unknown>
+  ? Record<PropertyKey, any>
   : CustomSchemaMetadata;
 
 export type SchemaOptions<TType, TDefault> = {

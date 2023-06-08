@@ -95,7 +95,7 @@ const parsedUser = await userSchema.validate(
   - [`Schema`](#schema)
     - [`Schema.clone(): Schema`](#schemaclone-schema)
     - [`Schema.label(label: string): Schema`](#schemalabellabel-string-schema)
-    - [`Schema.meta(metadata: object): Schema`](#schemametametadata-object-schema)
+    - [`Schema.meta(metadata: SchemaMetadata): Schema`](#schemametametadata-schemametadata-schema)
     - [`Schema.describe(options?: ResolveOptions): SchemaDescription`](#schemadescribeoptions-resolveoptions-schemadescription)
     - [`Schema.concat(schema: Schema): Schema`](#schemaconcatschema-schema-schema)
     - [`Schema.validate(value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidatevalue-any-options-object-promiseinfertypeschema-validationerror)
