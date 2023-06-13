@@ -83,6 +83,18 @@ describe('Object types', () => {
 
       expect(inst.cast(obj)).toBe(obj);
     });
+
+    it('should allow explicitly defined type', async () => {
+      const inst = object<{ foo: number }>({ 
+        foo: number().required(),
+      });
+
+      const obj = {
+        foo: 42
+      };
+
+      await expect(inst.isValid(obj)).resolves.toBe(true);
+    });
   });
 
   describe('validation', () => {
