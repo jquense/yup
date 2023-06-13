@@ -79,10 +79,17 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
-export function create<TIn extends AnyObject, C extends Maybe<AnyObject> = AnyObject, S extends Shape<TIn, C> = Shape<TIn, C>>(spec: S): ObjectSchema<_<TypeFromShape<S, C>>, C, _<DefaultFromShape<S>>>;
-export function create(): ObjectSchema<{}, AnyObject, _<DefaultFromShape<{}>>>;
-export function create<TIn extends AnyObject, C extends Maybe<AnyObject> = AnyObject>(spec?: Shape<TIn, C>) {
-  type TDefault = _<DefaultFromShape<TIn>>;
+export function create(): ObjectSchema<{}, AnyObject, {}>;
+
+export function create<
+  TIn extends AnyObject, 
+  C extends Maybe<AnyObject> = AnyObject, 
+  S extends Shape<TIn, C> = Shape<TIn, C>
+>(spec: S): ObjectSchema<_<TypeFromShape<S, C>>, C, _<DefaultFromShape<S>>>;
+
+export function create<C extends Maybe<AnyObject> = AnyObject, S extends ObjectShape = {}>(spec?: S) {
+  type TIn = _<TypeFromShape<S, C>>;
+  type TDefault = _<DefaultFromShape<S>>;
 
   return new ObjectSchema<TIn, C, TDefault>(spec as any);
 }
