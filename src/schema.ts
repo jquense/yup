@@ -44,8 +44,16 @@ export type SchemaSpec<TDefault> = {
   strict?: boolean;
   recursive?: boolean;
   label?: string | undefined;
-  meta?: any;
+  meta?: SchemaMetadata;
 };
+
+export interface CustomSchemaMetadata {}
+
+// If `CustomSchemaMeta` isn't extended with any keys, we'll fall back to a
+// loose Record definition allowing free form usage.
+export type SchemaMetadata = keyof CustomSchemaMetadata extends never
+  ? Record<PropertyKey, any>
+  : CustomSchemaMetadata;
 
 export type SchemaOptions<TType, TDefault> = {
   type: string;
@@ -111,7 +119,7 @@ export interface SchemaObjectDescription extends SchemaDescription {
 export interface SchemaLazyDescription {
   type: string;
   label?: string;
-  meta: object | undefined;
+  meta?: SchemaMetadata;
 }
 
 export type SchemaFieldDescription =
@@ -124,7 +132,7 @@ export type SchemaFieldDescription =
 export interface SchemaDescription {
   type: string;
   label?: string;
-  meta: object | undefined;
+  meta?: SchemaMetadata;
   oneOf: unknown[];
   notOneOf: unknown[];
   default?: unknown;
@@ -234,9 +242,9 @@ export default abstract class Schema<
     return next;
   }
 
-  meta(): Record<string, unknown> | undefined;
-  meta(obj: Record<string, unknown>): this;
-  meta(...args: [Record<string, unknown>?]) {
+  meta(): SchemaMetadata | undefined;
+  meta(obj: SchemaMetadata): this;
+  meta(...args: [SchemaMetadata?]) {
     if (args.length === 0) return this.spec.meta;
 
     let next = this.clone();
