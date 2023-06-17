@@ -87,7 +87,16 @@ type IsAnonymousObject<T> = string | number extends keyof T ? true : false;
 
 // Decides between an explicitly defined target type versus resolving the shape from a schema spec
 type TypeFromTarget<Target, S extends ObjectShape> = true extends IsAnonymousObject<Target>
-  ? MakePartial<{ [K in keyof S]: S[K] extends Reference<infer R> ? R : S[K] extends ISchema<any> ? ResolveStrip<S[K]> : S[K] }>
+  ? MakePartial<{ 
+    [K in keyof S]: 
+      // If Reference, choose reference type
+      S[K] extends Reference<infer R> 
+      ? R 
+      // If schema, resolve the schema
+      : S[K] extends ISchema<any> 
+        ? ResolveStrip<S[K]> 
+        : S[K] 
+  }>
   : Target;
 
 export function create(): ObjectSchema<{}, AnyObject, {}>;
@@ -375,7 +384,7 @@ export default class ObjectSchema<
   private setFields<TInNext extends Maybe<AnyObject>, TDefaultNext>(
     shape: Shape<TInNext, TContext>,
     excludedEdges?: readonly [string, string][],
-  ): ObjectSchema<TInNext, TContext, TDefaultNext, TFlags> {
+  ): ObjectSchema<_<TInNext>, TContext, TDefaultNext, TFlags> {
     let next = this.clone() as any;
     next.fields = shape;
 
