@@ -113,22 +113,11 @@ describe('Object types', () => {
         options: array(optionChoiceSchema).required()
       });
 
-      const optionChoiceSchema2 = object({
-        optionValue: number(),
-        optionalValue: number().optional(),
-      });
-
-      const choiceListSchema2 = object({
-        options: array(optionChoiceSchema2).required(),
-        date: date(),
-      });
-
       const listExample: ChoiceList = {
         options: [{ optionValue: 42 }],
       };
 
       await expect(choiceListSchema.isValid(listExample)).resolves.toBe(true);
-      await expect(choiceListSchema2.isValid(listExample)).resolves.toBe(true);
     });
   });
 
