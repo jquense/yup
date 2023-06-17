@@ -94,6 +94,28 @@ describe('Object types', () => {
       };
 
       await expect(inst.isValid(obj)).resolves.toBe(true);
+
+      interface OptionChoice {
+        optionValue: number | undefined;
+      }
+
+      interface ChoiceList {
+        options: OptionChoice[];
+      }
+
+      const optionChoiceSchema = object<OptionChoice>({
+        optionValue: number(),
+      });
+
+      const choiceListSchema = object<ChoiceList>({
+        options: array(optionChoiceSchema).required()
+      });
+
+      const listExample: ChoiceList = {
+        options: [{ optionValue: 42 }],
+      };
+
+      await expect(choiceListSchema.isValid(listExample)).resolves.toBe(true);
     });
   });
 

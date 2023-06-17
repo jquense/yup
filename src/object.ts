@@ -79,13 +79,33 @@ function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
 
 const defaultSort = sortByKeyOrder([]);
 
+type MatchShape<T extends Maybe<AnyObject>, C = any> = {
+  [field in keyof T]: ISchema<T[field], C> | Reference;
+};
+
+type IsOptionalKey<T, K extends keyof T> = T extends { [P in K]: any | undefined } ? false : true;
+
+type TypeFromTarget<Target, S extends ObjectShape, C> = {
+  [K in keyof S & keyof Target as
+    string | number extends keyof Target
+      ? true extends IsOptionalKey<S, K> ? never : K
+      : true extends IsOptionalKey<Target, K> ? never : K
+  ]: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
+} & {
+  [K in keyof S & keyof Target as
+    string | number extends keyof Target
+      ? never
+      : true extends IsOptionalKey<Target, K> ? K : never
+  ]?: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
+};
+
 export function create(): ObjectSchema<{}, AnyObject, {}>;
 
 export function create<
-  TIn extends AnyObject, 
-  C extends Maybe<AnyObject> = AnyObject, 
-  S extends Shape<TIn, C> = Shape<TIn, C>
->(spec: S): ObjectSchema<_<TypeFromShape<S, C>>, C, _<DefaultFromShape<S>>>;
+  TIn extends AnyObject,
+  C extends Maybe<AnyObject> = AnyObject,
+  S extends MatchShape<TIn, C> = MatchShape<TIn, C>
+>(spec: S): ObjectSchema<TypeFromTarget<TIn, S, C>, C, _<DefaultFromShape<S>>>;
 
 export function create<C extends Maybe<AnyObject> = AnyObject, S extends ObjectShape = {}>(spec?: S) {
   type TIn = _<TypeFromShape<S, C>>;
