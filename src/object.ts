@@ -399,7 +399,7 @@ export default class ObjectSchema<
     additions: U,
     excludes: readonly [string, string][] = [],
   ) {
-    type UIn = TypeFromShape<U, TContext>;
+    type UIn = MakePartial<TypeFromShape<U, TContext>>;
     type UDefault = Extract<TFlags, 'd'> extends never
       ? // not defaulted then assume the default is derived and should be merged
         _<TDefault & DefaultFromShape<U>>
