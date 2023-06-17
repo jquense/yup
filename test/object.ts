@@ -108,6 +108,7 @@ describe('Object types', () => {
       });
 
       const choiceListSchema = object<ChoiceList>({
+        // Error says "Property 'optionValue' is optional in type '{ optionValue?: number | undefined; }' but required in type 'OptionChoice'"
         options: array(optionChoiceSchema).required()
       });
 

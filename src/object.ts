@@ -15,7 +15,6 @@ import type {
   AnyObject,
   ConcatObjectTypes,
   DefaultFromShape,
-  MakePartial,
   MergeObjectTypes,
   ObjectShape,
   PartialDeep,
@@ -25,8 +24,6 @@ import parseJson from './util/parseJson';
 import type { Test } from './util/createValidation';
 import type ValidationError from './ValidationError';
 export type { AnyObject };
-
-type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
 
 export type Shape<T extends Maybe<AnyObject>, C = any> = {
   [field in keyof T]-?: ISchema<T[field], C> | Reference;
@@ -83,17 +80,27 @@ type MatchShape<T extends Maybe<AnyObject>, C = any> = {
   [field in keyof T]: ISchema<T[field], C> | Reference;
 };
 
+// Equals true if T is an object without known or explicitly-defined keys (e.g. AnyObject)
+type IsAnonymousObject<T> = string | number extends keyof T ? true : false;
+
+// Equals true if key is optional (e.g. `{ foo?: string }`)
+// Equals false if key is required (even if allows undefined as value)
 type IsOptionalKey<T, K extends keyof T> = T extends { [P in K]: any | undefined } ? false : true;
 
+// Exclude property K if it is a stripped property from T
+type NotStripped<T, K extends keyof T> = T[K] extends ISchema<any, any, infer F> ? Extract<F, 's'> extends never ? K : never : K;
+
+// Creates type via Target and Shape (S) combined
+// Target is used for any property not defined on Shape (via schema definition)
 type TypeFromTarget<Target, S extends ObjectShape, C> = {
   [K in keyof S & keyof Target as
-    string | number extends keyof Target
-      ? true extends IsOptionalKey<S, K> ? never : K
+    true extends IsAnonymousObject<Target>
+      ? true extends IsOptionalKey<S, K> ? never : NotStripped<S, K>
       : true extends IsOptionalKey<Target, K> ? never : K
   ]: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
 } & {
   [K in keyof S & keyof Target as
-    string | number extends keyof Target
+    true extends IsAnonymousObject<Target>
       ? never
       : true extends IsOptionalKey<Target, K> ? K : never
   ]?: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
@@ -121,7 +128,7 @@ export default interface ObjectSchema<
   // will match object schema regardless of defaults
   TDefault = any,
   TFlags extends Flags = '',
-> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+> extends Schema<TIn, TContext, TDefault, TFlags> {
   default<D extends Maybe<AnyObject>>(
     def: DefaultThunk<D, TContext>,
   ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
@@ -152,7 +159,7 @@ export default class ObjectSchema<
   TContext = AnyObject,
   TDefault = any,
   TFlags extends Flags = '',
-> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+> extends Schema<TIn, TContext, TDefault, TFlags> {
   fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
 
   declare spec: ObjectSchemaSpec;
@@ -165,7 +172,7 @@ export default class ObjectSchema<
   constructor(spec?: Shape<TIn, TContext>) {
     super({
       type: 'object',
-      check(value): value is NonNullable<MakeKeysOptional<TIn>> {
+      check(value): value is NonNullable<TIn> {
         return isObject(value) || typeof value === 'function';
       },
     });
