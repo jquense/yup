@@ -97,6 +97,7 @@ describe('Object types', () => {
 
       interface OptionChoice {
         optionValue: number | undefined;
+        optionalValue?: number;
       }
 
       interface ChoiceList {
@@ -105,11 +106,21 @@ describe('Object types', () => {
 
       const optionChoiceSchema = object<OptionChoice>({
         optionValue: number(),
+        optionalValue: number(),
       });
 
       const choiceListSchema = object<ChoiceList>({
-        // Error says "Property 'optionValue' is optional in type '{ optionValue?: number | undefined; }' but required in type 'OptionChoice'"
         options: array(optionChoiceSchema).required()
+      });
+
+      const optionChoiceSchema2 = object({
+        optionValue: number(),
+        optionalValue: number().optional(),
+      });
+
+      const choiceListSchema2 = object({
+        options: array(optionChoiceSchema2).required(),
+        date: date(),
       });
 
       const listExample: ChoiceList = {
@@ -117,6 +128,7 @@ describe('Object types', () => {
       };
 
       await expect(choiceListSchema.isValid(listExample)).resolves.toBe(true);
+      await expect(choiceListSchema2.isValid(listExample)).resolves.toBe(true);
     });
   });
 

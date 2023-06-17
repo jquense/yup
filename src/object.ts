@@ -15,9 +15,11 @@ import type {
   AnyObject,
   ConcatObjectTypes,
   DefaultFromShape,
+  MakePartial,
   MergeObjectTypes,
   ObjectShape,
   PartialDeep,
+  ResolveStrip,
   TypeFromShape,
 } from './util/objectTypes';
 import parseJson from './util/parseJson';
@@ -83,28 +85,10 @@ type MatchShape<T extends Maybe<AnyObject>, C = any> = {
 // Equals true if T is an object without known or explicitly-defined keys (e.g. AnyObject)
 type IsAnonymousObject<T> = string | number extends keyof T ? true : false;
 
-// Equals true if key is optional (e.g. `{ foo?: string }`)
-// Equals false if key is required (even if allows undefined as value)
-type IsOptionalKey<T, K extends keyof T> = T extends { [P in K]: any | undefined } ? false : true;
-
-// Exclude property K if it is a stripped property from T
-type NotStripped<T, K extends keyof T> = T[K] extends ISchema<any, any, infer F> ? Extract<F, 's'> extends never ? K : never : K;
-
-// Creates type via Target and Shape (S) combined
-// Target is used for any property not defined on Shape (via schema definition)
-type TypeFromTarget<Target, S extends ObjectShape, C> = {
-  [K in keyof S & keyof Target as
-    true extends IsAnonymousObject<Target>
-      ? true extends IsOptionalKey<S, K> ? never : NotStripped<S, K>
-      : true extends IsOptionalKey<Target, K> ? never : K
-  ]: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
-} & {
-  [K in keyof S & keyof Target as
-    true extends IsAnonymousObject<Target>
-      ? never
-      : true extends IsOptionalKey<Target, K> ? K : never
-  ]?: unknown extends TypeFromShape<S, C>[K] ? Target[K] : TypeFromShape<S, C>[K];
-};
+// Decides between an explicitly defined target type versus resolving the shape from a schema spec
+type TypeFromTarget<Target, S extends ObjectShape> = true extends IsAnonymousObject<Target>
+  ? MakePartial<{ [K in keyof S]: S[K] extends Reference<infer R> ? R : S[K] extends ISchema<any> ? ResolveStrip<S[K]> : S[K] }>
+  : Target;
 
 export function create(): ObjectSchema<{}, AnyObject, {}>;
 
@@ -112,7 +96,7 @@ export function create<
   TIn extends AnyObject,
   C extends Maybe<AnyObject> = AnyObject,
   S extends MatchShape<TIn, C> = MatchShape<TIn, C>
->(spec: S): ObjectSchema<TypeFromTarget<TIn, S, C>, C, _<DefaultFromShape<S>>>;
+>(spec: S): ObjectSchema<_<TypeFromTarget<TIn, S>>, C, _<DefaultFromShape<S>>>;
 
 export function create<C extends Maybe<AnyObject> = AnyObject, S extends ObjectShape = {}>(spec?: S) {
   type TIn = _<TypeFromShape<S, C>>;
@@ -325,7 +309,7 @@ export default class ObjectSchema<
   concat<IIn extends Maybe<AnyObject>, IC, ID, IF extends Flags>(
     schema: ObjectSchema<IIn, IC, ID, IF>,
   ): ObjectSchema<
-    ConcatObjectTypes<TIn, IIn>,
+    _<ConcatObjectTypes<TIn, IIn>>,
     TContext & IC,
     Extract<IF, 'd'> extends never
       ? // this _attempts_ to cover the default from shape case

@@ -858,7 +858,7 @@ Object: {
     name: string(),
   });
 
-  // $ExpectType { name?: string | undefined; other: string; field: number; }
+  // $ExpectType { other: string; field: number; name?: string | undefined; }
   merge.cast({});
 
   // $ExpectType number
@@ -878,10 +878,10 @@ Object: {
       name: string(),
     }).nullable();
 
-    // $ExpectType { name?: string | undefined; other: string; field: number; } | null
+    // $ExpectType { other: string; field: number; name?: string | undefined; } | null
     obj1.concat(obj2).cast('');
 
-    // $ExpectType { name?: string | undefined; other: string; field: number; }
+    // $ExpectType { other: string; field: number; name?: string | undefined; }
     obj1.nullable().concat(obj2.nonNullable()).cast('');
 
     // $ExpectType { field: 1; other: ""; name: undefined; }
@@ -897,7 +897,7 @@ Object: {
         .default(undefined)
         .optional(),
     });
-
+    
     // $ExpectType { h: number; } | undefined
     optionalNonDefaultedObj.cast({}).nested;
   }
