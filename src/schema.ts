@@ -503,11 +503,7 @@ export default abstract class Schema<
 
       test(args!, panicOnce, function finishTestRun(err) {
         if (err) {
-          nestedErrors.splice(
-            nestedErrors.length,
-            0,
-            ...(Symbol.iterator in err ? err : [err]),
-          );
+          Array.isArray(err) ? nestedErrors.push(...err) :  nestedErrors.push(err)
         }
         if (--count <= 0) {
           nextOnce(nestedErrors);
@@ -561,8 +557,7 @@ export default abstract class Schema<
     options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']> {
     let schema = this.resolve({ ...options, value });
-    let { disableStackTrace = this.spec.disableStackTrace } =
-      options ?? this.spec;
+    let  disableStackTrace  = options?.disableStackTrace ?? schema.spec.disableStackTrace;
 
     return new Promise((resolve, reject) =>
       schema._validate(
