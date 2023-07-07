@@ -55,7 +55,7 @@ export default class ValidationError implements Error {
       if (ValidationError.isError(err)) {
         this.errors.push(...err.errors);
         const innerErrors = err.inner.length ? err.inner : [err];
-        this.inner.splice(this.inner.length, 0, ...innerErrors);
+        this.inner.push(...innerErrors);
       } else {
         this.errors.push(err);
       }
