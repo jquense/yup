@@ -268,7 +268,7 @@ export default class ArraySchema<
     );
   }
 
-  describe(options?: ResolveOptions<TContext>) {
+  protected _describe(options?: ResolveOptions<TContext>) {
     let base = super.describe(options) as SchemaInnerTypeDescription;
     if (this.innerType) {
       let innerOptions = options;
@@ -282,6 +282,11 @@ export default class ArraySchema<
       base.innerType = this.innerType.describe(innerOptions);
     }
     return base;
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    const next = options ? this.resolve(options) : this;
+    return next._describe(options)
   }
 }
 

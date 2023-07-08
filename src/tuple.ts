@@ -159,7 +159,7 @@ export default class TupleSchema<
     });
   }
 
-  describe(options?: ResolveOptions<TContext>) {
+  protected _describe(options?: ResolveOptions<TContext>) {
     let base = super.describe(options) as SchemaInnerTypeDescription;
     base.innerType = this.spec.types.map((schema, index) => {
       let innerOptions = options;
@@ -173,6 +173,11 @@ export default class TupleSchema<
       return schema.describe(innerOptions);
     });
     return base;
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    const next = options ? this.resolve(options) : this;
+    return next._describe(options)
   }
 }
 
