@@ -137,24 +137,17 @@ export default function createValidation(config: {
 
     const shouldSkip = skipAbsent && isAbsent(value);
 
-    if (!options.sync) {
-      try {
-        Promise.resolve(!shouldSkip ? test.call(ctx, value, ctx) : true).then(
-          handleResult,
-          handleError,
-        );
-      } catch (err: any) {
-        handleError(err);
-      }
-
-      return;
-    }
-
     let result: ReturnType<TestFunction>;
     try {
-      result = !shouldSkip ? test.call(ctx, value, ctx) : true;
-
-      if (typeof (result as any)?.then === 'function') {
+      result = shouldSkip ? true : test.call(ctx, value, ctx);
+      const isPromise = typeof (result as any)?.then === 'function';
+      if (isPromise) {
+        if (!options.sync) {
+          return Promise.resolve(result).then(
+            handleResult,
+            handleError,
+          );
+        }
         throw new Error(
           `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
             `This test will finish after the validate call has returned`,
