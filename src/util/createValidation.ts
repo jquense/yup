@@ -154,7 +154,7 @@ export default function createValidation(config: {
       }
     } catch (err: any) {
       handleError(err);
-      return
+      return;
     }
 
     handleResult(result);
