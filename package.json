@@ -104,6 +104,6 @@
     "property-expr": "^2.0.5",
     "tiny-case": "^1.0.3",
     "toposort": "^2.0.2",
-    "type-fest": "^2.19.0"
+    "type-fest": "^3.13.0"
   }
 }
