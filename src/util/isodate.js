@@ -16,7 +16,9 @@ export default function parseIsoDate(date) {
     timestamp,
     struct;
 
-  if ((struct = isoReg.exec(date))) {
+  if (!isNaN(new Date(date))) {
+    timestamp = +new Date(date);
+  } else if ((struct = isoReg.exec(date))) {
     // avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
     for (var i = 0, k; (k = numericKeys[i]); ++i) struct[k] = +struct[k] || 0;
 
