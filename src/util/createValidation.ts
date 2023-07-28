@@ -138,12 +138,12 @@ export default function createValidation(config: {
     const shouldSkip = skipAbsent && isAbsent(value);
 
     if (shouldSkip) {
-      handleResult(true);
-      return;
+      return handleResult(true);
     }
 
+    let result: ReturnType<TestFunction>;
     try {
-      const result: ReturnType<TestFunction> = test.call(ctx, value, ctx);
+      result = test.call(ctx, value, ctx);
       if (typeof (result as any)?.then === 'function') {
         if (options.sync) {
           throw new Error(
@@ -151,16 +151,17 @@ export default function createValidation(config: {
               `This test will finish after the validate call has returned`,
           );
         }
-        Promise.resolve(result).then(
+        return Promise.resolve(result).then(
           handleResult,
           handleError,
         );
-        return;
       }
-      handleResult(result);
     } catch (err: any) {
       handleError(err);
+      return;
     }
+
+    handleResult(result);
   }
 
   validate.OPTIONS = config;
