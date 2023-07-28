@@ -20,6 +20,7 @@ describe('Date types', () => {
     expect(inst.cast('2016-08-10T11:32:19.2125Z')).toEqual(
       new Date(1470828739212),
     );
+    expect(inst.cast(1411500325000)).toEqual(new Date(1411500325000));
 
     expect(inst.cast(null, { assert: false })).toEqual(null);
   });
