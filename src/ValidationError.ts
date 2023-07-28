@@ -5,7 +5,10 @@ let strReg = /\$\{\s*(\w+)\s*\}/g;
 
 type Params = Record<string, unknown>;
 
-export default class ValidationError extends Error {
+export default class ValidationError implements Error {
+  name: string;
+  message: string;
+  stack?: string | undefined;
   value: any;
   path?: string;
   type?: string;
@@ -38,9 +41,8 @@ export default class ValidationError extends Error {
     value?: any,
     field?: string,
     type?: string,
+    disableStack?: boolean,
   ) {
-    super();
-
     this.name = 'ValidationError';
     this.value = value;
     this.path = field;
@@ -52,7 +54,8 @@ export default class ValidationError extends Error {
     toArray(errorOrErrors).forEach((err) => {
       if (ValidationError.isError(err)) {
         this.errors.push(...err.errors);
-        this.inner = this.inner.concat(err.inner.length ? err.inner : err);
+        const innerErrors = err.inner.length ? err.inner : [err];
+        this.inner.push(...innerErrors);
       } else {
         this.errors.push(err);
       }
@@ -63,6 +66,7 @@ export default class ValidationError extends Error {
         ? `${this.errors.length} errors occurred`
         : this.errors[0];
 
-    if (Error.captureStackTrace) Error.captureStackTrace(this, ValidationError);
+    if (!disableStack && Error.captureStackTrace)
+      Error.captureStackTrace(this, ValidationError);
   }
 }
