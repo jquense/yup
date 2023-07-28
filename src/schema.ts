@@ -43,7 +43,6 @@ export type SchemaSpec<TDefault> = {
   strip?: boolean;
   strict?: boolean;
   recursive?: boolean;
-  disableStackTrace?: boolean;
   label?: string | undefined;
   meta?: SchemaMetadata;
 };
@@ -192,7 +191,6 @@ export default abstract class Schema<
       strict: false,
       abortEarly: true,
       recursive: true,
-      disableStackTrace: false,
       nullable: false,
       optional: true,
       coerce: true,
@@ -347,8 +345,6 @@ export default abstract class Schema<
       strict: options.strict ?? this.spec.strict,
       abortEarly: options.abortEarly ?? this.spec.abortEarly,
       recursive: options.recursive ?? this.spec.recursive,
-      disableStackTrace:
-        options.disableStackTrace ?? this.spec.disableStackTrace,
     };
   }
 
@@ -503,9 +499,7 @@ export default abstract class Schema<
 
       test(args!, panicOnce, function finishTestRun(err) {
         if (err) {
-          Array.isArray(err)
-            ? nestedErrors.push(...err)
-            : nestedErrors.push(err);
+          nestedErrors = nestedErrors.concat(err);
         }
         if (--count <= 0) {
           nextOnce(nestedErrors);
@@ -559,8 +553,6 @@ export default abstract class Schema<
     options?: ValidateOptions<TContext>,
   ): Promise<this['__outputType']> {
     let schema = this.resolve({ ...options, value });
-    let disableStackTrace =
-      options?.disableStackTrace ?? schema.spec.disableStackTrace;
 
     return new Promise((resolve, reject) =>
       schema._validate(
@@ -571,16 +563,7 @@ export default abstract class Schema<
           reject(error);
         },
         (errors, validated) => {
-          if (errors.length)
-            reject(
-              new ValidationError(
-                errors!,
-                validated,
-                undefined,
-                undefined,
-                disableStackTrace,
-              ),
-            );
+          if (errors.length) reject(new ValidationError(errors!, validated));
           else resolve(validated as this['__outputType']);
         },
       ),
@@ -593,8 +576,6 @@ export default abstract class Schema<
   ): this['__outputType'] {
     let schema = this.resolve({ ...options, value });
     let result: any;
-    let disableStackTrace =
-      options?.disableStackTrace ?? schema.spec.disableStackTrace;
 
     schema._validate(
       value,
@@ -604,14 +585,7 @@ export default abstract class Schema<
         throw error;
       },
       (errors, validated) => {
-        if (errors.length)
-          throw new ValidationError(
-            errors!,
-            value,
-            undefined,
-            undefined,
-            disableStackTrace,
-          );
+        if (errors.length) throw new ValidationError(errors!, value);
         result = validated;
       },
     );

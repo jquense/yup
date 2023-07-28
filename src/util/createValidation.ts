@@ -22,7 +22,6 @@ export type CreateErrorOptions = {
   message?: Message<any>;
   params?: ExtraParams;
   type?: string;
-  disableStackTrace?: boolean;
 };
 
 export type TestContext<TContext = {}> = {
@@ -80,12 +79,7 @@ export default function createValidation(config: {
     next: NextCallback,
   ) {
     const { name, test, params, message, skipAbsent } = config;
-    let {
-      parent,
-      context,
-      abortEarly = schema.spec.abortEarly,
-      disableStackTrace = schema.spec.disableStackTrace,
-    } = options;
+    let { parent, context, abortEarly = schema.spec.abortEarly } = options;
 
     function resolve<T>(item: T | Reference<T>) {
       return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
@@ -111,7 +105,6 @@ export default function createValidation(config: {
         value,
         nextParams.path,
         overrides.type || name,
-        overrides.disableStackTrace ?? disableStackTrace,
       );
       error.params = nextParams;
       return error;
