@@ -62,10 +62,6 @@ export interface ValidateOptions<TContext = {}> {
    */
   recursive?: boolean;
   /**
-   * When true ValidationError instance won't include stack trace information. Default - false
-   */
-  disableStackTrace?: boolean;
-  /**
    * Any context needed for validating schema conditions (see: when())
    */
   context?: TContext;
