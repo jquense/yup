@@ -69,4 +69,5 @@ export default class ValidationError implements Error {
     if (!disableStack && Error.captureStackTrace)
       Error.captureStackTrace(this, ValidationError);
   }
+  [Symbol.toStringTag] = 'Error';
 }

@@ -1,4 +1,12 @@
-import { string, number, object, array, StringSchema, AnySchema } from '../src';
+import {
+  string,
+  number,
+  object,
+  array,
+  StringSchema,
+  AnySchema,
+  ValidationError,
+} from '../src';
 
 describe('Array types', () => {
   describe('casting', () => {
@@ -56,6 +64,9 @@ describe('Array types', () => {
 
     let merged = array(number()).concat(array(number().required()));
 
+    const ve = new ValidationError('');
+    // expect(ve.toString()).toBe('[object Error]');
+    expect(Object.prototype.toString.call(ve)).toBe('[object Error]');
     expect((merged.innerType as AnySchema).type).toBe('number');
 
     await expect(merged.validateAt('[0]', undefined)).rejects.toThrowError();
