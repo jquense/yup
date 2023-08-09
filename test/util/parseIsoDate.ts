@@ -6,7 +6,7 @@
  * Released under MIT license.
  */
 
-import parseIsoDate from '../../src/util/isodate';
+import { parseIsoDate } from '../../src/util/parseIsoDate';
 
 const sixHours = 6 * 60 * 60 * 1000;
 const sixHoursThirty = sixHours + 30 * 60 * 1000;
