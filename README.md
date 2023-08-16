@@ -135,6 +135,8 @@ const parsedUser = await userSchema.validate(
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
     - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+    - [`string.datetime(options?: {message?: string | function, allowOffset?: boolean, precision?: number})`](#stringdatetimeoptions-message-string--function-allowoffset-boolean-precision-number)
+    - [`string.datetime(message?: string | function)`](#stringdatetimemessage-string--function)
     - [`string.ensure(): Schema`](#stringensure-schema)
     - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
@@ -649,8 +651,8 @@ declare module 'yup' {
   // Define your desired `SchemaMetadata` interface by merging the
   // `CustomSchemaMetadata` interface.
   export interface CustomSchemaMetadata {
-    placeholderText?: string
-    tooltipText?: string
+    placeholderText?: string;
+    tooltipText?: string;
     // …
   }
 }
@@ -1364,6 +1366,19 @@ Validates the value as a valid URL via a regex.
 
 Validates the value as a valid UUID via a regex.
 
+#### `string.datetime(options?: {message?: string | function, allowOffset?: boolean, precision?: number})`
+
+Validates the value as an ISO datetime via a regex. Defaults to UTC validation; timezone offsets are not permitted (see `options.allowOffset`).
+
+Unlike `.date()`, `datetime` will not convert the string to a `Date` object. `datetime` also provides greater customization over the required format of the datetime string than `date` does.
+
+`options.allowOffset`: Allow a time zone offset. False requires UTC 'Z' timezone. _(default: false)_
+`options.precision`: Require a certain sub-second precision on the date. _(default: null -- any (or no) sub-second precision)_
+
+#### `string.datetime(message?: string | function)`
+
+An alternate signature for `string.datetime` that can be used when you don't need to pass options other than `message`.
+
 #### `string.ensure(): Schema`
 
 Transforms `undefined` and `null` values to an empty string along with
@@ -1463,6 +1478,8 @@ await schema.isValid(new Date()); // => true
 
 The default `cast` logic of `date` is pass the value to the `Date` constructor, failing that, it will attempt
 to parse the date as an ISO date string.
+
+> If you would like ISO strings to not be cast to a `Date` object, use `.datetime()` instead.
 
 Failed casts return an invalid Date.
 
