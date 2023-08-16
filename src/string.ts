@@ -14,6 +14,7 @@ import type {
   Optionals,
 } from './util/types';
 import Schema from './schema';
+import { parseDateStruct } from './util/parseIsoDate';
 
 // Taken from HTML spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
 let rEmail =
@@ -28,6 +29,13 @@ let rUrl =
 let rUUID =
   /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
 
+let yearMonthDay = '^\\d{4}-\\d{2}-\\d{2}';
+let hourMinuteSecond = '\\d{2}:\\d{2}:\\d{2}';
+let zOrOffset = '(([+-]\\d{2}(:?\\d{2})?)|Z)';
+let rIsoDateTime = new RegExp(
+  `${yearMonthDay}T${hourMinuteSecond}(\\.\\d+)?${zOrOffset}$`,
+);
+
 let isTrimmed = (value: Maybe<string>) =>
   isAbsent(value) || value === value.trim();
 
@@ -35,6 +43,14 @@ export type MatchOptions = {
   excludeEmptyString?: boolean;
   message: Message<{ regex: RegExp }>;
   name?: string;
+};
+
+export type DateTimeOptions = {
+  message: Message<{ allowOffset?: boolean; precision?: number }>;
+  /** Allow a time zone offset. False requires UTC 'Z' timezone. (default: false) */
+  allowOffset?: boolean | null;
+  /** Require a certain sub-second precision on the date. (default: null -- any or no sub-second precision) */
+  precision?: number | null;
 };
 
 let objStringTag = {}.toString();
@@ -198,6 +214,54 @@ export default class StringSchema<
       message,
       excludeEmptyString: false,
     });
+  }
+
+  datetime(options?: DateTimeOptions | DateTimeOptions['message']) {
+    let message: DateTimeOptions['message'] = '';
+    let allowOffset: DateTimeOptions['allowOffset'];
+    let precision: DateTimeOptions['precision'];
+
+    if (options) {
+      if (typeof options === 'object') {
+        ({
+          message = '',
+          allowOffset = false,
+          precision = null,
+        } = options as DateTimeOptions);
+      } else {
+        message = options;
+      }
+    }
+
+    return this.matches(rIsoDateTime, {
+      name: 'datetime',
+      message: message || locale.datetime,
+      excludeEmptyString: true,
+    })
+      .test({
+        name: 'datetime_offset',
+        message: message || locale.datetime_offset,
+        params: { allowOffset },
+        skipAbsent: true,
+        test: (value: Maybe<string>) => {
+          if (!value || allowOffset) return true;
+          const struct = parseDateStruct(value);
+          if (!struct) return false;
+          return !!struct.z;
+        },
+      })
+      .test({
+        name: 'datetime_precision',
+        message: message || locale.datetime_precision,
+        params: { precision },
+        skipAbsent: true,
+        test: (value: Maybe<string>) => {
+          if (!value || precision == null) return true;
+          const struct = parseDateStruct(value);
+          if (!struct) return false;
+          return struct.precision === precision;
+        },
+      });
   }
 
   //-- transforms --

@@ -61,6 +61,7 @@ export function parseDateStruct(date: string) {
       ? // allow arbitrary sub-second precision beyond milliseconds
         toNumber(regexResult[7].substring(0, 3))
       : 0,
+    precision: regexResult[7]?.length ?? undefined,
     z: regexResult[8] || undefined,
     plusMinus: regexResult[9] || undefined,
     hourOffset: toNumber(regexResult[10]),
