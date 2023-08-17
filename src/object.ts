@@ -507,10 +507,11 @@ export default class ObjectSchema<
     return this.transformKeys((key) => snakeCase(key).toUpperCase());
   }
 
-  protected _describe(options?: ResolveOptions<TContext>) {
-    let base = super.describe(options) as SchemaObjectDescription;
+  describe(options?: ResolveOptions<TContext>) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaObjectDescription;
     base.fields = {};
-    for (const [key, value] of Object.entries(this.fields)) {
+    for (const [key, value] of Object.entries(next.fields)) {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {
@@ -522,11 +523,6 @@ export default class ObjectSchema<
       base.fields[key] = value.describe(innerOptions);
     }
     return base;
-  }
-
-  describe(options?: ResolveOptions<TContext>) {
-    const next = options ? this.resolve(options) : this;
-    return next._describe(options)
   }
 }
 
