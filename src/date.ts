@@ -1,5 +1,4 @@
-// @ts-ignore
-import isoParse from './util/isodate';
+import { parseIsoDate } from './util/parseIsoDate';
 import { date as locale } from './locale';
 import Ref from './Reference';
 import type { AnyObject, DefaultThunk, Message } from './types';
@@ -51,7 +50,7 @@ export default class DateSchema<
         if (!ctx.spec.coerce || ctx.isType(value) || value === null)
           return value;
 
-        value = isoParse(value);
+        value = parseIsoDate(value);
 
         // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
         return !isNaN(value) ? new Date(value) : DateSchema.INVALID_DATE;
