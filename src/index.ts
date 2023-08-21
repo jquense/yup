@@ -11,6 +11,7 @@ import ObjectSchema, { AnyObject, create as objectCreate } from './object';
 import ArraySchema, { create as arrayCreate } from './array';
 import TupleSchema, { create as tupleCreate } from './tuple';
 import { create as refCreate } from './Reference';
+import Reference from './Reference';
 import { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
 import reach, { getIn } from './util/reach';
@@ -118,6 +119,7 @@ export {
   ObjectSchema,
   ArraySchema,
   TupleSchema,
+  Reference,
 };
 
 export type {
