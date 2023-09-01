@@ -56,6 +56,8 @@ export default class ArraySchema<
   declare spec: ArraySchemaSpec<TIn, TContext>;
   readonly innerType?: ISchema<InnerType<TIn>, TContext>;
 
+  private indexContextKeyValue?: string;
+
   constructor(type?: ISchema<InnerType<TIn>, TContext>) {
     super({
       type: 'array',
@@ -110,6 +112,7 @@ export default class ArraySchema<
       options.originalValue != null ? options.originalValue : _value;
 
     super._validate(_value, options, panic, (arrayErrors, value) => {
+      options = this.getOptionsWithContext(options, value);
       if (!recursive || !innerType || !this._typeCheck(value)) {
         next(arrayErrors, value);
         return;
@@ -120,8 +123,19 @@ export default class ArraySchema<
       // #950 Ensure that sparse array empty slots are validated
       let tests: RunTest[] = new Array(value.length);
       for (let index = 0; index < value.length; index++) {
+        let extOptions = options;
+        if (this.indexContextKeyValue) {
+          extOptions = {
+            ...options,
+            // @ts-expect-error
+            context: {
+              ...options?.context,
+              [this.indexContextKeyValue]: index,
+            },
+          };
+        }
         tests[index] = innerType!.asNestedTest({
-          options,
+          options: extOptions,
           index,
           parent: value,
           parentPath: options.path,
@@ -146,6 +160,7 @@ export default class ArraySchema<
     const next = super.clone(spec);
     // @ts-expect-error readonly
     next.innerType = this.innerType;
+    next.indexContextKeyValue = this.indexContextKeyValue;
     return next;
   }
 
@@ -256,6 +271,12 @@ export default class ArraySchema<
         return original == null ? [] : [].concat(original);
       },
     );
+  }
+
+  indexContextKey(key: string) {
+    let next = this.clone();
+    next.indexContextKeyValue = key;
+    return next;
   }
 
   compact(rejector?: RejectorFn) {
