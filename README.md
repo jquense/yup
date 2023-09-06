@@ -351,7 +351,7 @@ interface Person {
 const schema: ObjectSchema<Person> = object({
   name: string().defined(),
   age: number().optional(),
-  sex: string<'male' | 'female' | 'other'>().nullable().defined();
+  sex: string<'male' | 'female' | 'other'>().nullable().defined(),
 });
 
 // ❌ errors:
