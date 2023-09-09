@@ -66,6 +66,7 @@ export interface LocaleObject {
   boolean?: BooleanLocale;
   object?: ObjectLocale;
   array?: ArrayLocale;
+  tuple?: TupleLocale;
 }
 
 export let mixed: Required<MixedLocale> = {
@@ -160,4 +161,5 @@ export default Object.assign(Object.create(null), {
   object,
   array,
   boolean,
+  tuple,
 }) as LocaleObject;
