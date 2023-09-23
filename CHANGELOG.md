@@ -1,3 +1,25 @@
+# [1.3.0](https://github.com/jquense/yup/compare/v1.2.0...v1.3.0) (2023-09-23)
+
+
+### Bug Fixes
+
+* add tuple to locale object ([#2100](https://github.com/jquense/yup/issues/2100)) ([809b55a](https://github.com/jquense/yup/commit/809b55a9c16e0cd567f4eced9b9ab02ad8b0bffa))
+* performance improvement ([#2043](https://github.com/jquense/yup/issues/2043)) ([#2044](https://github.com/jquense/yup/issues/2044)) ([ee1b731](https://github.com/jquense/yup/commit/ee1b7317b0a9fc0e16a7d33064c3e5584bd7f2d5))
+
+
+### Features
+
+* Allow schema metadata to be strongly typed ([#2021](https://github.com/jquense/yup/issues/2021)) ([e593f8f](https://github.com/jquense/yup/commit/e593f8f72e7195cf0ac48fa8e1cd82d95c1e6bb5))
+
+
+### Reverts
+
+* Revert "fix: performance improvement (#2043) (#2044)" (#2071) ([b940eef](https://github.com/jquense/yup/commit/b940eef48eb7456622ae384d0ffa7363d4fbad25)), closes [#2043](https://github.com/jquense/yup/issues/2043) [#2044](https://github.com/jquense/yup/issues/2044) [#2071](https://github.com/jquense/yup/issues/2071)
+
+
+
+
+
 # [1.2.0](https://github.com/jquense/yup/compare/v1.1.1...v1.2.0) (2023-05-25)
 
 
