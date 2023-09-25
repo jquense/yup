@@ -5,10 +5,7 @@ let strReg = /\$\{\s*(\w+)\s*\}/g;
 
 type Params = Record<string, unknown>;
 
-export default class ValidationError implements Error {
-  name: string;
-  message: string;
-  stack?: string | undefined;
+export default class ValidationError extends Error {
   value: any;
   path?: string;
   type?: string;
@@ -43,6 +40,8 @@ export default class ValidationError implements Error {
     type?: string,
     disableStack?: boolean,
   ) {
+    super();
+
     this.name = 'ValidationError';
     this.value = value;
     this.path = field;
