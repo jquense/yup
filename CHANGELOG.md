@@ -1,3 +1,14 @@
+## [1.3.1](https://github.com/jquense/yup/compare/v1.3.0...v1.3.1) (2023-09-26)
+
+
+### Bug Fixes
+
+* ValidationError extends Error ([bc5121b](https://github.com/jquense/yup/commit/bc5121b92d8e16baf8fe9b83f0247a4e90e169b8))
+
+
+
+
+
 # [1.3.0](https://github.com/jquense/yup/compare/v1.2.0...v1.3.0) (2023-09-23)
 
 
