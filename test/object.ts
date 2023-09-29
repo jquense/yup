@@ -1121,4 +1121,48 @@ describe('Object types', () => {
       await inst.omit(['age', 'name']).validate({ color: 'mauve' }),
     ).toEqual({ color: 'mauve' });
   });
+
+  it('should pick and omit with excluded edges', async () => {
+    const inst = object().shape(
+      {
+        a1: string().when('a2', {
+          is: undefined,
+          then: (schema) => schema.required(),
+        }),
+        a2: string().when('a1', {
+          is: undefined,
+          then: (schema) => schema.required(),
+        }),
+        a3: string().required(),
+      },
+      [['a1', 'a2']],
+    );
+
+    expect(
+      inst.pick(['a1', 'a2']).isValid({
+        a1: undefined,
+        a2: 'over9000',
+      }),
+    ).resolves.toEqual(true);
+
+    expect(
+      inst.pick(['a1', 'a3']).isValid({
+        a1: 'required',
+        a3: 'asfasf',
+      }),
+    ).resolves.toEqual(true);
+
+    expect(
+      inst.omit(['a1', 'a2']).isValid({
+        a3: 'asfasf',
+      }),
+    ).resolves.toEqual(true);
+
+    expect(
+      inst.omit(['a1']).isValid({
+        a1: undefined,
+        a3: 'asfasf',
+      }),
+    ).resolves.toEqual(false);
+  });
 });

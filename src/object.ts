@@ -419,17 +419,23 @@ export default class ObjectSchema<
       if (this.fields[key]) picked[key] = this.fields[key];
     }
 
-    return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(picked);
+    return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(
+      picked,
+      this._excludedEdges.filter(
+        ([a, b]) => keys.includes(a as TKey) && keys.includes(b as TKey),
+      ),
+    );
   }
 
   omit<TKey extends keyof TIn>(keys: readonly TKey[]) {
-    const fields = { ...this.fields };
+    const remaining: TKey[] = [];
 
-    for (const key of keys) {
-      delete fields[key];
+    for (const key of Object.keys(this.fields) as TKey[]) {
+      if (keys.includes(key)) continue;
+      remaining.push(key);
     }
 
-    return this.setFields<Omit<TIn, TKey>, TDefault>(fields);
+    return this.pick(remaining);
   }
 
   from(from: string, to: keyof TIn, alias?: boolean) {
