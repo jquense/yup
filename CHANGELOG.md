@@ -1,3 +1,14 @@
+## [1.3.2](https://github.com/jquense/yup/compare/v1.3.1...v1.3.2) (2023-09-29)
+
+
+### Bug Fixes
+
+* pick and omit with excluded edges ([6956ee7](https://github.com/jquense/yup/commit/6956ee788369dff00e5ecadb506726af3598a87e)), closes [#2097](https://github.com/jquense/yup/issues/2097)
+
+
+
+
+
 ## [1.3.1](https://github.com/jquense/yup/compare/v1.3.0...v1.3.1) (2023-09-26)
 
 
