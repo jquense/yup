@@ -269,8 +269,9 @@ export default class ArraySchema<
   }
 
   describe(options?: ResolveOptions<TContext>) {
-    let base = super.describe(options) as SchemaInnerTypeDescription;
-    if (this.innerType) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaInnerTypeDescription;
+    if (next.innerType) {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {
@@ -279,7 +280,7 @@ export default class ArraySchema<
           value: innerOptions.value[0],
         };
       }
-      base.innerType = this.innerType.describe(innerOptions);
+      base.innerType = next.innerType.describe(innerOptions);
     }
     return base;
   }

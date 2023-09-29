@@ -514,9 +514,10 @@ export default class ObjectSchema<
   }
 
   describe(options?: ResolveOptions<TContext>) {
-    let base = super.describe(options) as SchemaObjectDescription;
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaObjectDescription;
     base.fields = {};
-    for (const [key, value] of Object.entries(this.fields)) {
+    for (const [key, value] of Object.entries(next.fields)) {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {

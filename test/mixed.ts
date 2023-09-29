@@ -967,6 +967,11 @@ describe('Mixed Types ', () => {
             then: (s) => s.defined(),
           }),
         baz: tuple([string(), number()]),
+      })
+      .when(['dummy'], (_, s) => {
+        return s.shape({
+          when: string()
+        })
       });
     });
 
@@ -1087,6 +1092,7 @@ describe('Mixed Types ', () => {
           bar: 'a',
           lazy: undefined,
           baz: undefined,
+          when: undefined,
         },
         nullable: false,
         optional: true,
@@ -1185,6 +1191,17 @@ describe('Mixed Types ', () => {
               },
             ],
           },
+          when: {
+            type: 'string',
+            meta: undefined,
+            label: undefined,
+            default: undefined,
+            notOneOf: [],
+            nullable: false,
+            oneOf: [],
+            optional: true,
+            tests: [],
+          }
         },
       });
     });

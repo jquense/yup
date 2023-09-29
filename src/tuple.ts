@@ -160,8 +160,9 @@ export default class TupleSchema<
   }
 
   describe(options?: ResolveOptions<TContext>) {
-    let base = super.describe(options) as SchemaInnerTypeDescription;
-    base.innerType = this.spec.types.map((schema, index) => {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaInnerTypeDescription;
+    base.innerType = next.spec.types.map((schema, index) => {
       let innerOptions = options;
       if (innerOptions?.value) {
         innerOptions = {
