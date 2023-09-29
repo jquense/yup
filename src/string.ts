@@ -48,9 +48,9 @@ export type MatchOptions = {
 export type DateTimeOptions = {
   message: Message<{ allowOffset?: boolean; precision?: number }>;
   /** Allow a time zone offset. False requires UTC 'Z' timezone. (default: false) */
-  allowOffset?: boolean | null;
-  /** Require a certain sub-second precision on the date. (default: null -- any or no sub-second precision) */
-  precision?: number | null;
+  allowOffset?: boolean;
+  /** Require a certain sub-second precision on the date. (default: undefined -- any or no sub-second precision) */
+  precision?: number;
 };
 
 let objStringTag = {}.toString();
@@ -226,7 +226,7 @@ export default class StringSchema<
         ({
           message = '',
           allowOffset = false,
-          precision = null,
+          precision = undefined,
         } = options as DateTimeOptions);
       } else {
         message = options;
@@ -256,7 +256,7 @@ export default class StringSchema<
         params: { precision },
         skipAbsent: true,
         test: (value: Maybe<string>) => {
-          if (!value || precision == null) return true;
+          if (!value || precision == undefined) return true;
           const struct = parseDateStruct(value);
           if (!struct) return false;
           return struct.precision === precision;
