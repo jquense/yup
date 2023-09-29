@@ -435,7 +435,7 @@ export default class ObjectSchema<
       remaining.push(key);
     }
 
-    return this.pick(remaining);
+    return this.pick<keyof Omit<TIn, TKey>>(remaining as any);
   }
 
   from(from: string, to: keyof TIn, alias?: boolean) {
