@@ -58,7 +58,9 @@ export default interface TupleSchema<
   nullable(
     msg?: Message,
   ): TupleSchema<TType | null, TContext, TDefault, TFlags>;
-  nonNullable(): TupleSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message
+  ): TupleSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,

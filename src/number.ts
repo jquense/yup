@@ -192,7 +192,9 @@ export default interface NumberSchema<
   nullable(
     msg?: Message,
   ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
-  nonNullable(): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,

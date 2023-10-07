@@ -307,7 +307,9 @@ export default interface ArraySchema<
   notRequired(): ArraySchema<Maybe<TIn>, TContext, TDefault, TFlags>;
 
   nullable(msg?: Message): ArraySchema<TIn | null, TContext, TDefault, TFlags>;
-  nonNullable(): ArraySchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): ArraySchema<NotNull<TIn>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,
