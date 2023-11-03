@@ -2,6 +2,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import dts from 'rollup-plugin-dts';
 import filesize from 'rollup-plugin-filesize';
+import commonJS from 'rollup-plugin-commonjs';
 
 const base = {
   input: './src/index.ts',
@@ -13,7 +14,6 @@ const base = {
       extensions: ['.js', '.ts'],
     }),
   ],
-  external: ['tiny-case', 'toposort', 'fn-name', 'property-expr'],
 };
 
 module.exports = [
@@ -24,6 +24,7 @@ module.exports = [
   },
   {
     ...base,
+    external: ['tiny-case', 'toposort', 'fn-name', 'property-expr'],
     output: [
       {
         file: 'lib/index.js',
@@ -35,5 +36,22 @@ module.exports = [
       },
     ],
     plugins: [...base.plugins, filesize()],
+  },
+  {
+    ...base,
+    output: [
+      {
+        file: 'lib/index.umd.js',
+        format: 'umd',
+        name: 'yup',
+      },
+    ],
+    plugins: [
+      ...base.plugins,
+      filesize(),
+      commonJS({
+        include: ['node_modules/tiny-case/**', 'node_modules/toposort/**', 'node_modules/fn-name/**', 'node_modules/property-expr/**']
+      }),
+    ],
   },
 ];
