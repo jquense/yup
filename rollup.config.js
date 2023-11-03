@@ -49,9 +49,7 @@ module.exports = [
     plugins: [
       ...base.plugins,
       filesize(),
-      commonJS({
-        include: ['node_modules/tiny-case/**', 'node_modules/toposort/**', 'node_modules/fn-name/**', 'node_modules/property-expr/**']
-      }),
+
     ],
   },
 ];
