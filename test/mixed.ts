@@ -11,6 +11,7 @@ import {
   string,
   tuple,
   ValidationError,
+  ValidationErrorNoStack,
 } from '../src';
 import ObjectSchema from '../src/object';
 import { ISchema } from '../src/types';
@@ -335,6 +336,18 @@ describe('Mixed Types ', () => {
       expect(
         inst.strict().validate(' hi ', { abortEarly: false }),
       ).rejects.toThrowError(/2 errors/),
+    ]);
+  });
+
+  it('should respect disableStackTrace', () => {
+    let inst = string().trim();
+
+    return Promise.all([
+      expect(inst.strict().validate(' hi ')).rejects.toThrow(ValidationError),
+
+      expect(
+        inst.strict().validate(' hi ', { disableStackTrace: true }),
+      ).rejects.toThrow(ValidationErrorNoStack),
     ]);
   });
 
@@ -967,11 +980,10 @@ describe('Mixed Types ', () => {
             then: (s) => s.defined(),
           }),
         baz: tuple([string(), number()]),
-      })
-      .when(['dummy'], (_, s) => {
+      }).when(['dummy'], (_, s) => {
         return s.shape({
-          when: string()
-        })
+          when: string(),
+        });
       });
     });
 
@@ -1201,7 +1213,7 @@ describe('Mixed Types ', () => {
             oneOf: [],
             optional: true,
             tests: [],
-          }
+          },
         },
       });
     });

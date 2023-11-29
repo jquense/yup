@@ -10,6 +10,7 @@ import {
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
 import isAbsent from './isAbsent';
+import ValidationErrorNoStack from '../ValidationErrorNoStack';
 
 export type PanicCallback = (err: Error) => void;
 
@@ -98,6 +99,7 @@ export default function createValidation(config: {
         label: schema.spec.label,
         path: overrides.path || path,
         spec: schema.spec,
+        disableStackTrace: overrides.disableStackTrace || disableStackTrace,
         ...params,
         ...overrides.params,
       };
@@ -106,13 +108,25 @@ export default function createValidation(config: {
       for (const key of Object.keys(nextParams) as Keys)
         nextParams[key] = resolve(nextParams[key]);
 
-      const error = new ValidationError(
-        ValidationError.formatError(overrides.message || message, nextParams),
-        value,
-        nextParams.path,
-        overrides.type || name,
-        overrides.disableStackTrace ?? disableStackTrace,
-      );
+      const error = nextParams.disableStackTrace
+        ? new ValidationErrorNoStack(
+            ValidationErrorNoStack.formatError(
+              overrides.message || message,
+              nextParams,
+            ),
+            value,
+            nextParams.path,
+            overrides.type || name,
+          )
+        : new ValidationError(
+            ValidationError.formatError(
+              overrides.message || message,
+              nextParams,
+            ),
+            value,
+            nextParams.path,
+            overrides.type || name,
+          );
       error.params = nextParams;
       return error;
     }
@@ -158,10 +172,7 @@ export default function createValidation(config: {
               `This test will finish after the validate call has returned`,
           );
         }
-        return Promise.resolve(result).then(
-          handleResult,
-          handleError,
-        );
+        return Promise.resolve(result).then(handleResult, handleError);
       }
     } catch (err: any) {
       handleError(err);
