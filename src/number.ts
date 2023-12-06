@@ -91,7 +91,7 @@ export default class NumberSchema<
   lessThan(less: number | Reference<number>, message = locale.lessThan) {
     return this.test({
       message,
-      name: 'max',
+      name: 'less',
       exclusive: true,
       params: { less },
       skipAbsent: true,
