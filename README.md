@@ -1536,7 +1536,7 @@ array().ensure().cast([1]); // => [1]
 
 #### `array.compact(rejector: (value) => boolean): Schema`
 
-Removes falsey values from the array. Providing a rejecter function lets you specify the rejection criteria yourself.
+Removes falsey values from the array. Providing a rejector function lets you specify the rejection criteria yourself.
 
 ```js
 array().compact().cast(['', 1, 0, 4, false, null]); // => [1, 4]
