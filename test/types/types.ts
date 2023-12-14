@@ -10,6 +10,7 @@ import {
   bool,
   reach,
   addMethod,
+  Schema,
 } from '../../src';
 import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
@@ -1079,6 +1080,10 @@ reach: {
 }
 
 addMethod: {
+  addMethod(Schema, 'foo', function () {
+    return this.clone();
+  });
+
   addMethod(string, 'foo', function () {
     return this.clone();
   });

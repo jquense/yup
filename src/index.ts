@@ -43,7 +43,7 @@ function addMethod<T extends ISchema<any>>(
   name: string,
   fn: (this: T, ...args: any[]) => T,
 ): void;
-function addMethod<T extends new (...args: any) => ISchema<any>>(
+function addMethod<T extends abstract new (...args: any) => ISchema<any>>(
   schemaType: T,
   name: string,
   fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
