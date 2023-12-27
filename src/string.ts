@@ -288,9 +288,11 @@ export default interface StringSchema<
   notRequired(): StringSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
   nullable(
-    msg?: Message<any>,
+    msg?: Message,
   ): StringSchema<TType | null, TContext, TDefault, TFlags>;
-  nonNullable(): StringSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message
+  ): StringSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,

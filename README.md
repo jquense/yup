@@ -111,8 +111,8 @@ const parsedUser = await userSchema.validate(
     - [`Schema.withMutation(builder: (current: Schema) => void): void`](#schemawithmutationbuilder-current-schema--void-void)
     - [`Schema.default(value: any): Schema`](#schemadefaultvalue-any-schema)
     - [`Schema.getDefault(options?: object): Any`](#schemagetdefaultoptions-object-any)
-    - [`Schema.nullable(): Schema`](#schemanullable-schema)
-    - [`Schema.nonNullable(): Schema`](#schemanonnullable-schema)
+    - [`Schema.nullable(message?: string | function): Schema`](#schemanullable-schema)
+    - [`Schema.nonNullable(message?: string | function): Schema`](#schemanonnullable-schema)
     - [`Schema.defined(): Schema`](#schemadefined-schema)
     - [`Schema.optional(): Schema`](#schemaoptional-schema)
     - [`Schema.required(message?: string | function): Schema`](#schemarequiredmessage-string--function-schema)
@@ -946,7 +946,7 @@ yup.date.default(() => new Date()); // also helpful for defaults that change ove
 
 Retrieve a previously set default value. `getDefault` will resolve any conditions that may alter the default. Optionally pass `options` with `context` (for more info on `context` see `Schema.validate`).
 
-#### `Schema.nullable(): Schema`
+#### `Schema.nullable(message?: string | function): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `Schema.isType()` checks.
@@ -959,7 +959,7 @@ schema.cast(null); // null
 InferType<typeof schema>; // number | null
 ```
 
-#### `Schema.nonNullable(): Schema`
+#### `Schema.nonNullable(message?: string | function): Schema`
 
 The opposite of `nullable`, removes `null` from valid type values for the schema.
 **Schema are non nullable by default**.

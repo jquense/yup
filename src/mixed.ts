@@ -73,7 +73,9 @@ export default interface MixedSchema<
     msg?: Message,
   ): MixedSchema<TType | null, TContext, TDefault, TFlags>;
 
-  nonNullable(): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,

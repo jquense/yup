@@ -112,7 +112,9 @@ export default interface ObjectSchema<
   notRequired(): ObjectSchema<Maybe<TIn>, TContext, TDefault, TFlags>;
 
   nullable(msg?: Message): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
-  nonNullable(): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,
