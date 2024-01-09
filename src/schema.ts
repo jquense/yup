@@ -546,7 +546,7 @@ export default abstract class Schema<
       [isIndex ? 'index' : 'key']: k,
       path:
         isIndex || k.includes('.')
-          ? `${parentPath || ''}[${value ? k : `"${k}"`}]`
+          ? `${parentPath || ''}[${isIndex ? k : `"${k}"`}]`
           : (parentPath ? `${parentPath}.` : '') + key,
     };
 
