@@ -1,4 +1,22 @@
 import type { LocaleObject } from '../locale';
+import ValidationError from '../ValidationError';
+import printValue from '../util/printValue';
+import { MessageParams } from '../types';
+
+const mixedNotType = ({ path, type, value, originalValue }: MessageParams) => {
+    const castMsg =
+        originalValue != null && originalValue !== value
+            ? ` (cast from the value \`${printValue(originalValue, true)}\`).`
+            : '.';
+
+    return type !== 'mixed'
+        ? `${path} must be a \`${type}\` type, ` +
+        `but the final value was: \`${printValue(value, true)}\`` +
+        castMsg
+        : `${path} must match the configured type. ` +
+        `The validated value was: \`${printValue(value, true)}\`` +
+        castMsg;
+};
 const en: Required<LocaleObject> = {
     mixed: {
         default: '${path} is invalid',
@@ -7,20 +25,7 @@ const en: Required<LocaleObject> = {
         notNull: '${path} cannot be null',
         oneOf: '${path} must be one of the following values: ${values}',
         notOneOf: '${path} must not be one of the following values: ${values}',
-        notType: ({ path, type, value, originalValue }) => {
-            const castMsg =
-                originalValue != null && originalValue !== value
-                    ? ` (cast from the value \`${printValue(originalValue, true)}\`).`
-                    : '.';
-
-            return type !== 'mixed'
-                ? `${path} must be a \`${type}\` type, ` +
-                `but the final value was: \`${printValue(value, true)}\`` +
-                castMsg
-                : `${path} must match the configured type. ` +
-                `The validated value was: \`${printValue(value, true)}\`` +
-                castMsg;
-        }
+        notType: mixedNotType
     },
     string: {
         length: '${path} must be exactly ${length} characters',
@@ -71,7 +76,9 @@ const en: Required<LocaleObject> = {
                         } for value: \`${printValue(value, true)}\``;
             }
 
-            return ValidationError.formatError(mixed.notType, params);
+            return ValidationError.formatError(mixedNotType, params);
         },
     }
 };
+
+export default en;
