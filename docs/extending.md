@@ -47,8 +47,8 @@ Note that `addMethod` isn't magic, it mutates the prototype of the passed in sch
 
 ## Creating new Schema types
 
-If you're use case calls for creating an entirely new type. inheriting from
-and existing schema class may be best: Generally you should not inheriting from
+If you're using case calls for creating an entirely new type, inheriting from
+an existing schema class may be best: Generally you should not be inheriting from
 the abstract `Schema` unless you know what you are doing. The other types are fair game though.
 
 You should keep in mind some basic guidelines when extending schemas:
@@ -59,7 +59,7 @@ You should keep in mind some basic guidelines when extending schemas:
 - transforms should never mutate the `value` passed in, and should return an invalid object when one exists
   (`NaN`, `InvalidDate`, etc) instead of `null` for bad values.
 
-- by the time validations run the `value` is guaranteed to be the correct type, however it still may
+- by the time validations run, the `value` is guaranteed to be the correct type, however it still may
   be `null` or `undefined`
 
 ```js
