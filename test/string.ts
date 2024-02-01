@@ -203,7 +203,16 @@ describe('String types', () => {
     return Promise.all([
       expect(v.isValid('//www.github.com/')).resolves.toBe(true),
       expect(v.isValid('https://www.github.com/')).resolves.toBe(true),
+      expect(v.isValid('http://localhost:8000/')).resolves.toBe(true),
+      expect(v.isValid('http://128.0.0.1:8000')).resolves.toBe(true),
+      expect(v.isValid('http://128.0.0.1')).resolves.toBe(true),
+      expect(v.isValid('ftp://128.0.0.1')).resolves.toBe(true),
+      expect(v.isValid('http://0.0.0.0')).resolves.toBe(true),
+      expect(v.isValid('http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]')).resolves.toBe(true),
+      expect(v.isValid('http://[::255.255.255.255]')).resolves.toBe(true),
+      expect(v.isValid('http://[56FE::2159:5BBC::6594]')).resolves.toBe(false),
       expect(v.isValid('this is not a url')).resolves.toBe(false),
+      expect(v.isValid('128.0.0.1')).resolves.toBe(false),
     ]);
   });
 
