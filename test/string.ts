@@ -220,9 +220,45 @@ describe('String types', () => {
       expect(v.isValid('42c4a747-3e3e-zzzz-af30-469cfb9c1913')).resolves.toBe(
         false,
       ),
+      expect(v.isValid('1ec131c5-4069-65c0-9eee-055c04bb4f08')).resolves.toBe( // uuid v6
+        false, // in strict mode (normal mode), it should reject the uuid v6.
+      ),
       expect(v.isValid('this is not a uuid')).resolves.toBe(false),
       expect(v.isValid('')).resolves.toBe(false),
     ]);
+  });
+
+  it('should check UUID (not strict) correctly', function() {
+    let vNotStrict = string().uuid(undefined, false);
+
+    return Promise.all([
+      expect(vNotStrict.isValid('1ec131c5-4069-65c0-9eee-055c04bb4f08')).resolves.toBe( // uuid v6
+        true, // in not-strict mode, it should accept any uuid-similar value
+      ),
+      expect(vNotStrict.isValid('1eb0d1d0-126a-6495-9a93-171634969e27')).resolves.toBe( // uuid v6
+        true
+      ),
+      expect(vNotStrict.isValid('1eb0d1d5-c3fa-6b2e-8d7a-ef182baf6b94')).resolves.toBe( // uuid v6
+        true
+      ),
+      expect(vNotStrict.isValid('03bf0706-b7e9-33b8-aee5-c6142a816478')).resolves.toBe( // uuid v3
+        true,
+      ),
+      expect(vNotStrict.isValid('3c69679f-774b-4fb1-80c1-7b29c6e7d0a0')).resolves.toBe( // uuid v1
+        true,
+      ),
+      expect(vNotStrict.isValid('0c40428c-d88d-4ff0-a5dc-a6755cb4f4d1')).resolves.toBe(
+        true,
+      ),
+      expect(vNotStrict.isValid('42c4a747-3e3e-42be-af30-469cfb9c1913')).resolves.toBe(
+        true,
+      ),
+      expect(vNotStrict.isValid('42c4a747-3e3e-zzzz-af30-469cfb9c1913')).resolves.toBe(
+        false,
+      ),
+      expect(vNotStrict.isValid('this is not a uuid')).resolves.toBe(false),
+      expect(vNotStrict.isValid('')).resolves.toBe(false),
+    ])
   });
 
   xit('should check allowed values at the end', () => {
