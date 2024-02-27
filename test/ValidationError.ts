@@ -49,4 +49,11 @@ describe('ValidationError', () => {
       expect(str).toContain('0');
     });
   });
+
+  it('should disable stacks', () => {
+    const disabled = new ValidationError('error', 1, 'field', 'type', true);
+
+    expect(disabled.constructor.name).toEqual('ValidationErrorNoStack');
+    expect(disabled).toBeInstanceOf(ValidationError);
+  });
 });

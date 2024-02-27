@@ -13,7 +13,6 @@ import TupleSchema, { create as tupleCreate } from './tuple';
 import Reference, { create as refCreate } from './Reference';
 import Lazy, { create as lazyCreate } from './Lazy';
 import ValidationError from './ValidationError';
-import ValidationErrorNoStack from './ValidationErrorNoStack';
 import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
@@ -109,7 +108,6 @@ export {
   setLocale,
   defaultLocale,
   ValidationError,
-  ValidationErrorNoStack,
 };
 
 export {
