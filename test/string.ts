@@ -1,6 +1,13 @@
 import * as TestHelpers from './helpers';
 
-import { string, number, object, ref } from '../src';
+import {
+  string,
+  number,
+  object,
+  ref,
+  ValidationError,
+  AnySchema,
+} from '../src';
 
 describe('String types', () => {
   describe('casting', () => {
@@ -223,6 +230,110 @@ describe('String types', () => {
       expect(v.isValid('this is not a uuid')).resolves.toBe(false),
       expect(v.isValid('')).resolves.toBe(false),
     ]);
+  });
+
+  describe('DATETIME', function () {
+    it('should check DATETIME correctly', function () {
+      let v = string().datetime();
+
+      return Promise.all([
+        expect(v.isValid('2023-01-09T12:34:56Z')).resolves.toBe(true),
+        expect(v.isValid('1977-00-28T12:34:56.0Z')).resolves.toBe(true),
+        expect(v.isValid('1900-10-29T12:34:56.00Z')).resolves.toBe(true),
+        expect(v.isValid('1000-11-30T12:34:56.000Z')).resolves.toBe(true),
+        expect(v.isValid('4444-12-31T12:34:56.0000Z')).resolves.toBe(true),
+
+        // Should not allow time zone offset by default
+        expect(v.isValid('2010-04-10T14:06:14+00:00')).resolves.toBe(false),
+        expect(v.isValid('2000-07-11T21:06:14+07:00')).resolves.toBe(false),
+        expect(v.isValid('1999-08-16T07:06:14-07:00')).resolves.toBe(false),
+
+        expect(v.isValid('this is not a datetime')).resolves.toBe(false),
+        expect(v.isValid('2023-08-16T12:34:56')).resolves.toBe(false),
+        expect(v.isValid('2023-08-1612:34:56Z')).resolves.toBe(false),
+        expect(v.isValid('1970-01-01 00:00:00Z')).resolves.toBe(false),
+        expect(v.isValid('1970-01-01T00:00:00,000Z')).resolves.toBe(false),
+        expect(v.isValid('1970-01-01T0000')).resolves.toBe(false),
+        expect(v.isValid('1970-01-01T00:00.000')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.Z')).resolves.toBe(false),
+        expect(v.isValid('2023-08-16')).resolves.toBe(false),
+        expect(v.isValid('1970-as-df')).resolves.toBe(false),
+        expect(v.isValid('19700101')).resolves.toBe(false),
+        expect(v.isValid('197001')).resolves.toBe(false),
+      ]);
+    });
+
+    it('should support DATETIME allowOffset option', function () {
+      let v = string().datetime({ allowOffset: true });
+
+      return Promise.all([
+        expect(v.isValid('2023-01-09T12:34:56Z')).resolves.toBe(true),
+        expect(v.isValid('2010-04-10T14:06:14+00:00')).resolves.toBe(true),
+        expect(v.isValid('2000-07-11T21:06:14+07:00')).resolves.toBe(true),
+        expect(v.isValid('1999-08-16T07:06:14-07:00')).resolves.toBe(true),
+        expect(v.isValid('1970-01-01T00:00:00+0630')).resolves.toBe(true),
+      ]);
+    });
+
+    it('should support DATETIME precision option', function () {
+      let v = string().datetime({ precision: 4 });
+
+      return Promise.all([
+        expect(v.isValid('2023-01-09T12:34:56.0000Z')).resolves.toBe(true),
+        expect(v.isValid('2023-01-09T12:34:56.00000Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.000Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.00Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.0Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56Z')).resolves.toBe(false),
+        expect(v.isValid('2010-04-10T14:06:14.0000+00:00')).resolves.toBe(
+          false,
+        ),
+      ]);
+    });
+
+    describe('DATETIME error strings', function () {
+      function getErrorString(schema: AnySchema, value: string) {
+        try {
+          schema.validateSync(value);
+          fail('should have thrown validation error');
+        } catch (e) {
+          const err = e as ValidationError;
+          return err.errors[0];
+        }
+      }
+
+      it('should use the default locale string on error', function () {
+        let v = string().datetime();
+        expect(getErrorString(v, 'asdf')).toBe(
+          'this must be a valid ISO date-time',
+        );
+      });
+
+      it('should use the allowOffset locale string on error when offset caused error', function () {
+        let v = string().datetime();
+        expect(getErrorString(v, '2010-04-10T14:06:14+00:00')).toBe(
+          'this must be a valid ISO date-time with UTC "Z" timezone',
+        );
+      });
+
+      it('should use the precision locale string on error when precision caused error', function () {
+        let v = string().datetime({ precision: 2 });
+        expect(getErrorString(v, '2023-01-09T12:34:56Z')).toBe(
+          'this must be a valid ISO date-time with a sub-second precision of exactly 2 digits',
+        );
+      });
+
+      it('should prefer options.message over all default error messages', function () {
+        let msg = 'hello';
+        let v = string().datetime({ message: msg });
+        expect(getErrorString(v, 'asdf')).toBe(msg);
+        expect(getErrorString(v, '2010-04-10T14:06:14+00:00')).toBe(msg);
+
+        v = string().datetime({ message: msg, precision: 2 });
+        expect(getErrorString(v, '2023-01-09T12:34:56Z')).toBe(msg);
+      });
+    });
   });
 
   xit('should check allowed values at the end', () => {

@@ -20,6 +20,9 @@ export interface StringLocale {
   email?: Message<{ regex: RegExp }>;
   url?: Message<{ regex: RegExp }>;
   uuid?: Message<{ regex: RegExp }>;
+  datetime?: Message;
+  datetime_offset?: Message;
+  datetime_precision?: Message<{ precision: number }>;
   trim?: Message;
   lowercase?: Message;
   uppercase?: Message;
@@ -100,6 +103,11 @@ export let string: Required<StringLocale> = {
   email: '${path} must be a valid email',
   url: '${path} must be a valid URL',
   uuid: '${path} must be a valid UUID',
+  datetime: '${path} must be a valid ISO date-time',
+  datetime_precision:
+    '${path} must be a valid ISO date-time with a sub-second precision of exactly ${precision} digits',
+  datetime_offset:
+    '${path} must be a valid ISO date-time with UTC "Z" timezone',
   trim: '${path} must be a trimmed string',
   lowercase: '${path} must be a lowercase string',
   uppercase: '${path} must be a upper case string',
