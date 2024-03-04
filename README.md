@@ -111,8 +111,8 @@ const parsedUser = await userSchema.validate(
     - [`Schema.withMutation(builder: (current: Schema) => void): void`](#schemawithmutationbuilder-current-schema--void-void)
     - [`Schema.default(value: any): Schema`](#schemadefaultvalue-any-schema)
     - [`Schema.getDefault(options?: object): Any`](#schemagetdefaultoptions-object-any)
-    - [`Schema.nullable(): Schema`](#schemanullable-schema)
-    - [`Schema.nonNullable(): Schema`](#schemanonnullable-schema)
+    - [`Schema.nullable(message?: string | function): Schema`](#schemanullable-schema)
+    - [`Schema.nonNullable(message?: string | function): Schema`](#schemanonnullable-schema)
     - [`Schema.defined(): Schema`](#schemadefined-schema)
     - [`Schema.optional(): Schema`](#schemaoptional-schema)
     - [`Schema.required(message?: string | function): Schema`](#schemarequiredmessage-string--function-schema)
@@ -135,6 +135,8 @@ const parsedUser = await userSchema.validate(
     - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
     - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
     - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+    - [`string.datetime(options?: {message?: string | function, allowOffset?: boolean, precision?: number})`](#stringdatetimeoptions-message-string--function-allowoffset-boolean-precision-number)
+    - [`string.datetime(message?: string | function)`](#stringdatetimemessage-string--function)
     - [`string.ensure(): Schema`](#stringensure-schema)
     - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
     - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
@@ -649,8 +651,8 @@ declare module 'yup' {
   // Define your desired `SchemaMetadata` interface by merging the
   // `CustomSchemaMetadata` interface.
   export interface CustomSchemaMetadata {
-    placeholderText?: string
-    tooltipText?: string
+    placeholderText?: string;
+    tooltipText?: string;
     // …
   }
 }
@@ -946,7 +948,7 @@ yup.date.default(() => new Date()); // also helpful for defaults that change ove
 
 Retrieve a previously set default value. `getDefault` will resolve any conditions that may alter the default. Optionally pass `options` with `context` (for more info on `context` see `Schema.validate`).
 
-#### `Schema.nullable(): Schema`
+#### `Schema.nullable(message?: string | function): Schema`
 
 Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `Schema.isType()` checks.
@@ -959,7 +961,7 @@ schema.cast(null); // null
 InferType<typeof schema>; // number | null
 ```
 
-#### `Schema.nonNullable(): Schema`
+#### `Schema.nonNullable(message?: string | function): Schema`
 
 The opposite of `nullable`, removes `null` from valid type values for the schema.
 **Schema are non nullable by default**.
@@ -1364,6 +1366,19 @@ Validates the value as a valid URL via a regex.
 
 Validates the value as a valid UUID via a regex.
 
+#### `string.datetime(options?: {message?: string | function, allowOffset?: boolean, precision?: number})`
+
+Validates the value as an ISO datetime via a regex. Defaults to UTC validation; timezone offsets are not permitted (see `options.allowOffset`).
+
+Unlike `.date()`, `datetime` will not convert the string to a `Date` object. `datetime` also provides greater customization over the required format of the datetime string than `date` does.
+
+`options.allowOffset`: Allow a time zone offset. False requires UTC 'Z' timezone. _(default: false)_
+`options.precision`: Require a certain sub-second precision on the date. _(default: null -- any (or no) sub-second precision)_
+
+#### `string.datetime(message?: string | function)`
+
+An alternate signature for `string.datetime` that can be used when you don't need to pass options other than `message`.
+
 #### `string.ensure(): Schema`
 
 Transforms `undefined` and `null` values to an empty string along with
@@ -1463,6 +1478,8 @@ await schema.isValid(new Date()); // => true
 
 The default `cast` logic of `date` is pass the value to the `Date` constructor, failing that, it will attempt
 to parse the date as an ISO date string.
+
+> If you would like ISO strings to not be cast to a `Date` object, use `.datetime()` instead.
 
 Failed casts return an invalid Date.
 

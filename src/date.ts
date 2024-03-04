@@ -134,7 +134,9 @@ export default interface DateSchema<
   notRequired(): DateSchema<Maybe<TType>, TContext, TDefault, TFlags>;
 
   nullable(msg?: Message): DateSchema<TType | null, TContext, TDefault, TFlags>;
-  nonNullable(): DateSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): DateSchema<NotNull<TType>, TContext, TDefault, TFlags>;
 
   strip(
     enabled: false,

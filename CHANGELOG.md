@@ -1,3 +1,14 @@
+## [1.3.3](https://github.com/jquense/yup/compare/v1.3.2...v1.3.3) (2023-12-14)
+
+
+### Bug Fixes
+
+* **addMethod:** allow Schema without making TypeScript upset ([f921fe6](https://github.com/jquense/yup/commit/f921fe69a2d6ecc6e7d0101d2bd81148dfe83e64))
+
+
+
+
+
 ## [1.3.2](https://github.com/jquense/yup/compare/v1.3.1...v1.3.2) (2023-09-29)
 
 
