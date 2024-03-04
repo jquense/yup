@@ -6,7 +6,6 @@ import {
   StringSchema,
   AnySchema,
   ValidationError,
-  ValidationErrorNoStack,
 } from '../src';
 
 describe('Array types', () => {
@@ -164,11 +163,11 @@ describe('Array types', () => {
 
     const data = [{ str: undefined }, { str: undefined }];
     return Promise.all([
-      expect(inst.strict().validate(data)).rejects.toThrow(ValidationError),
+      expect(inst.strict().validate(data)).rejects.toHaveProperty('stack'),
 
       expect(
         inst.strict().validate(data, { disableStackTrace: true }),
-      ).rejects.toThrow(ValidationErrorNoStack),
+      ).rejects.not.toHaveProperty('stack'),
     ]);
   });
 

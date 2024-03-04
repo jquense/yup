@@ -33,7 +33,6 @@ import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
-import ValidationErrorNoStack from './ValidationErrorNoStack';
 
 export type SchemaSpec<TDefault> = {
   coerce: boolean;
@@ -574,14 +573,13 @@ export default abstract class Schema<
         (errors, validated) => {
           if (errors.length)
             reject(
-              disableStackTrace
-                ? new ValidationErrorNoStack(
-                    errors!,
-                    validated,
-                    undefined,
-                    undefined,
-                  )
-                : new ValidationError(errors!, validated, undefined, undefined),
+              new ValidationError(
+                errors!,
+                validated,
+                undefined,
+                undefined,
+                disableStackTrace,
+              ),
             );
           else resolve(validated as this['__outputType']);
         },
@@ -607,9 +605,13 @@ export default abstract class Schema<
       },
       (errors, validated) => {
         if (errors.length)
-          throw disableStackTrace
-            ? new ValidationErrorNoStack(errors!, value, undefined, undefined)
-            : new ValidationError(errors!, value, undefined, undefined);
+          throw new ValidationError(
+            errors!,
+            value,
+            undefined,
+            undefined,
+            disableStackTrace,
+          );
         result = validated;
       },
     );

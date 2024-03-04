@@ -10,7 +10,6 @@ import {
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
 import isAbsent from './isAbsent';
-import ValidationErrorNoStack from '../ValidationErrorNoStack';
 
 export type PanicCallback = (err: Error) => void;
 
@@ -108,25 +107,13 @@ export default function createValidation(config: {
       for (const key of Object.keys(nextParams) as Keys)
         nextParams[key] = resolve(nextParams[key]);
 
-      const error = nextParams.disableStackTrace
-        ? new ValidationErrorNoStack(
-            ValidationErrorNoStack.formatError(
-              overrides.message || message,
-              nextParams,
-            ),
-            value,
-            nextParams.path,
-            overrides.type || name,
-          )
-        : new ValidationError(
-            ValidationError.formatError(
-              overrides.message || message,
-              nextParams,
-            ),
-            value,
-            nextParams.path,
-            overrides.type || name,
-          );
+      const error = new ValidationError(
+        ValidationError.formatError(overrides.message || message, nextParams),
+        value,
+        nextParams.path,
+        overrides.type || name,
+        nextParams.disableStackTrace,
+      );
       error.params = nextParams;
       return error;
     }

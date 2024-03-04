@@ -99,6 +99,7 @@ export default class ValidationError extends Error {
 
     this.name = errorNoStack.name;
     this.message = errorNoStack.message;
+    this.type = errorNoStack.type;
     this.value = errorNoStack.value;
     this.path = errorNoStack.path;
     this.errors = errorNoStack.errors;
