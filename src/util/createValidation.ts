@@ -98,6 +98,7 @@ export default function createValidation(config: {
         label: schema.spec.label,
         path: overrides.path || path,
         spec: schema.spec,
+        disableStackTrace: overrides.disableStackTrace || disableStackTrace,
         ...params,
         ...overrides.params,
       };
@@ -111,7 +112,7 @@ export default function createValidation(config: {
         value,
         nextParams.path,
         overrides.type || name,
-        overrides.disableStackTrace ?? disableStackTrace,
+        nextParams.disableStackTrace,
       );
       error.params = nextParams;
       return error;
@@ -158,10 +159,7 @@ export default function createValidation(config: {
               `This test will finish after the validate call has returned`,
           );
         }
-        return Promise.resolve(result).then(
-          handleResult,
-          handleError,
-        );
+        return Promise.resolve(result).then(handleResult, handleError);
       }
     } catch (err: any) {
       handleError(err);

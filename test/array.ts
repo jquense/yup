@@ -158,6 +158,19 @@ describe('Array types', () => {
     );
   });
 
+  it('should respect disableStackTrace', async () => {
+    let inst = array().of(object({ str: string().required() }));
+
+    const data = [{ str: undefined }, { str: undefined }];
+    return Promise.all([
+      expect(inst.strict().validate(data)).rejects.toHaveProperty('stack'),
+
+      expect(
+        inst.strict().validate(data, { disableStackTrace: true }),
+      ).rejects.not.toHaveProperty('stack'),
+    ]);
+  });
+
   it('should compact arrays', () => {
     let arr = ['', 1, 0, 4, false, null],
       inst = array();

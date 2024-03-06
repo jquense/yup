@@ -338,6 +338,16 @@ describe('Mixed Types ', () => {
     ]);
   });
 
+  it('should respect disableStackTrace', () => {
+    // let inst = string().trim();
+    // return Promise.all([
+    //   expect(inst.strict().validate(' hi ')).rejects.toHaveProperty('stack'),
+    //   expect(
+    //     inst.strict().validate(' hi ', { disableStackTrace: true }),
+    //   ).not.toHaveProperty('stack'),
+    // ]);
+  });
+
   it('should overload test()', () => {
     let inst = mixed().test('test', noop);
 
@@ -967,11 +977,10 @@ describe('Mixed Types ', () => {
             then: (s) => s.defined(),
           }),
         baz: tuple([string(), number()]),
-      })
-      .when(['dummy'], (_, s) => {
+      }).when(['dummy'], (_, s) => {
         return s.shape({
-          when: string()
-        })
+          when: string(),
+        });
       });
     });
 
@@ -1201,7 +1210,7 @@ describe('Mixed Types ', () => {
             oneOf: [],
             optional: true,
             tests: [],
-          }
+          },
         },
       });
     });
