@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/jquense/yup/compare/v1.3.3...v1.4.0) (2024-03-06)
+
+
+### Bug Fixes
+
+* add optional message to nonNullable schema methods ([#2119](https://github.com/jquense/yup/issues/2119)) ([9e1df49](https://github.com/jquense/yup/commit/9e1df4938c1964a21e6ece0c458bb96dc5aff108))
+
+
+### Features
+
+* **string:** Create .datetime() ([#2087](https://github.com/jquense/yup/issues/2087)) ([2a9e060](https://github.com/jquense/yup/commit/2a9e060594423018f517419ef5d2f10e417c9fbd))
+
+
+
+
+
 ## [1.3.3](https://github.com/jquense/yup/compare/v1.3.2...v1.3.3) (2023-12-14)
 
 
