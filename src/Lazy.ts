@@ -136,7 +136,7 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
     return this._resolve(value, options).isValid(value, options);
   }
 
-  isValidSync(value: any, options?: ValidateOptions<TContext>) {
+  isValidSync(value: any, options?: ValidateOptions<TContext>): value is this['__outputType']  {
     return this._resolve(value, options).isValidSync(value, options);
   }
 
