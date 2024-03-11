@@ -262,13 +262,13 @@ const order = object({
     name: 'is-sku',
     skipAbsent: true,
     test(value, ctx) {
-      if (!value!.startsWith('s-')) {
+      if (!value.startsWith('s-')) {
         return ctx.createError({ message: 'SKU missing correct prefix' })
       }
-      if (!value!.endsWith('-42a')) {
+      if (!value.endsWith('-42a')) {
         return ctx.createError({ message: 'SKU missing correct suffix' })
       }
-      if (value!.length < 10) {
+      if (value.length < 10) {
         return ctx.createError({ message: 'SKU is not the right length' })
       }
       return true
