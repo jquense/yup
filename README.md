@@ -259,7 +259,7 @@ Error messages can also be constructed on the fly to customize how the schema fa
 
 ```ts
 const order = object({
-  no: number().required().
+  no: number().required(),
   sku: string().test({
     name: 'is-sku',
     skipAbsent: true,
