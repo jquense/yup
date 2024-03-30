@@ -86,7 +86,7 @@ const parsedUser = await userSchema.validate(
 - [Error message customization](#error-message-customization)
   - [localization and i18n](#localization-and-i18n)
 - [API](#api)
-  - [`yup`](#yup)
+  - [`yup`](#yup-1)
     - [`reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#reachschema-schema-path-string-value-object-context-object-schema)
     - [`addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#addmethodschematype-schema-name-string-method--schema-void)
     - [`ref(path: string, options: { contextPrefix: string }): Ref`](#refpath-string-options--contextprefix-string--ref)
