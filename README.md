@@ -1364,7 +1364,7 @@ Validates the value as a valid URL via a regex.
 
 #### `string.uuid(message?: string | function): Schema`
 
-Validates the value as a valid UUID via a regex.
+Validates the value as a valid UUID via a regex. Supports UUID 1-5 and 7.
 
 #### `string.datetime(options?: {message?: string | function, allowOffset?: boolean, precision?: number})`
 
