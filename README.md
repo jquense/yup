@@ -20,7 +20,7 @@ Validate an input value to parse it and run the configured set of assertions. Ch
 ```ts
 import { object, string, number, date, InferType } from 'yup';
 
-let userSchema = object({
+const userSchema = object({
   name: string().required(),
   age: number().required().positive().integer(),
   email: string().email(),
@@ -423,7 +423,7 @@ setLocale({
 });
 
 // now use Yup schemas AFTER you defined your custom dictionary
-let schema = yup.object().shape({
+const schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
 });
@@ -458,7 +458,7 @@ setLocale({
 
 // ...
 
-let schema = yup.object().shape({
+const schema = yup.object().shape({
   name: yup.string(),
   age: yup.number().min(18),
 });
@@ -517,7 +517,7 @@ a `context` object.
 ```js
 import { reach } from 'yup';
 
-let schema = object({
+const schema = object({
   nested: object({
     arr: array(object({ num: number().max(4) })),
   }),
@@ -564,7 +564,7 @@ the ref value is resolved before the field using the ref (be careful of circular
 ```js
 import { ref, object, string } from 'yup';
 
-let schema = object({
+const schema = object({
   baz: ref('foo.bar'),
   foo: object({
     bar: string(),
@@ -585,12 +585,12 @@ recursive schema like Trees, for polymorphic fields and arrays.
 to `null` on the child—otherwise the object will infinitely nest itself when you cast it!
 
 ```js
-let node = object({
+const node = object({
   id: number(),
   child: yup.lazy(() => node.default(undefined)),
 });
 
-let renderable = yup.lazy((value) => {
+const renderable = yup.lazy((value) => {
   switch (typeof value) {
     case 'number':
       return number();
@@ -601,7 +601,7 @@ let renderable = yup.lazy((value) => {
   }
 });
 
-let renderables = array().of(renderable);
+const renderables = array().of(renderable);
 ```
 
 #### `ValidationError(errors: string | Array<string>, value: any, path: string)`
@@ -677,7 +677,7 @@ more context to accurately return the schema description. In these cases provide
 ```ts
 import { ref, object, string, boolean } from 'yup';
 
-let schema = object({
+const schema = object({
   isBig: boolean(),
   count: number().when('isBig', {
     is: true,
@@ -776,7 +776,7 @@ Synchronous validation only works if there are no configured async tests, e.g te
 For instance this will work:
 
 ```js
-let schema = number().test(
+const schema = number().test(
   'is-42',
   "this isn't the number i want",
   (value) => value != 42,
@@ -788,7 +788,7 @@ schema.validateSync(23); // throws ValidationError
 however this will not:
 
 ```js
-let schema = number().test('is-42', "this isn't the number i want", (value) =>
+const schema = number().test('is-42', "this isn't the number i want", (value) =>
   Promise.resolve(value != 42),
 );
 
@@ -803,7 +803,7 @@ but uses the resulting schema as the subject for validation.
 > Note! The `value` here is the _root_ value relative to the starting schema, not the value at the nested path.
 
 ```js
-let schema = object({
+const schema = object({
   foo: array().of(
     object({
       loose: boolean(),
@@ -815,7 +815,7 @@ let schema = object({
   ),
 });
 
-let rootValue = {
+const rootValue = {
   foo: [{ bar: 1 }, { bar: 1, loose: true }],
 };
 
@@ -879,7 +879,7 @@ validating the value "as is".
 Marks a schema to be removed from an output object. Only works as a nested schema.
 
 ```js
-let schema = object({
+const schema = object({
   useThis: number(),
   notThis: string().strip(),
 });
@@ -891,7 +891,7 @@ Schema with `strip` enabled have an inferred type of `never`, allowing them to b
 removed from the overall type:
 
 ```ts
-let schema = object({
+const schema = object({
   useThis: number(),
   notThis: string().strip(),
 });
@@ -1026,7 +1026,7 @@ Note that `undefined` does not fail this validator, even when `undefined` is not
 If you don't want `undefined` to be a valid value, you can use `Schema.required`.
 
 ```js
-let schema = yup.mixed().oneOf(['jimmy', 42]);
+const schema = yup.mixed().oneOf(['jimmy', 42]);
 
 await schema.isValid(42); // => true
 await schema.isValid('jimmy'); // => true
@@ -1041,7 +1041,7 @@ the `${resolved}` interpolation can be used in the message argument to get the r
 at validation time.
 
 ```js
-let schema = yup.mixed().notOneOf(['jimmy', 42]);
+const schema = yup.mixed().notOneOf(['jimmy', 42]);
 
 await schema.isValid(42); // => false
 await schema.isValid(new Date()); // => true
@@ -1064,7 +1064,7 @@ on `context` passed in by `validate()` or `cast` instead of the input value.
 `then` and `otherwise` are specified functions `(schema: Schema) => Schema`.
 
 ```js
-let schema = object({
+const schema = object({
   isBig: boolean(),
   count: number()
     .when('isBig', {
@@ -1083,7 +1083,7 @@ await schema.validate(value, { context: { other: 4 } });
 You can also specify more than one dependent key, in which case each value will be spread as an argument.
 
 ```js
-let schema = object({
+const schema = object({
   isSpecial: boolean(),
   isBig: boolean(),
   count: number().when(['isBig', 'isSpecial'], {
@@ -1103,7 +1103,7 @@ await schema.validate({
 Alternatively you can provide a function that returns a schema, called with an array of values for each provided key the current schema.
 
 ```js
-let schema = yup.object({
+const schema = yup.object({
   isBig: yup.boolean(),
   count: yup.number().when('isBig', ([isBig], schema) => {
     return isBig ? schema.min(5) : schema.min(0);
@@ -1132,14 +1132,14 @@ The `test` function is called with the current `value`. For more advanced valida
 use the alternate signature to provide more options (see below):
 
 ```js
-let jimmySchema = string().test(
+const jimmySchema = string().test(
   'is-jimmy',
   '${path} is not Jimmy',
   (value, context) => value === 'jimmy',
 );
 
 // or make it async by returning a promise
-let asyncJimmySchema = string()
+const asyncJimmySchema = string()
   .label('First name')
   .test(
     'is-jimmy',
@@ -1192,8 +1192,8 @@ If an exclusive test is added to a schema with non-exclusive tests of the same n
 the previous tests are removed and further tests of the same name will replace each other.
 
 ```js
-let max = 64;
-let schema = yup.string().test({
+const max = 64;
+const schema = yup.string().test({
   name: 'max',
   exclusive: true,
   params: { max },
@@ -1212,7 +1212,7 @@ not to mutate the passed in value.** Transforms are run sequentially so each `va
 current state of the cast, you can use the `originalValue` param if you need to work on the raw initial value.
 
 ```js
-let schema = string().transform((value, originalValue) => {
+const schema = string().transform((value, originalValue) => {
   return this.isType(value) && value !== null ? value.toUpperCase() : value;
 });
 
@@ -1247,7 +1247,7 @@ anything that isn't `null` or `undefined` which yup treats distinctly.
 ```ts
 import { mixed, InferType } from 'yup';
 
-let schema = mixed().nullable();
+const schema = mixed().nullable();
 
 schema.validateSync('string'); // 'string';
 
@@ -1266,7 +1266,7 @@ narrow the TypeScript type for the schema.
 ```ts
 import { mixed, InferType } from 'yup';
 
-let objectIdSchema = yup
+const objectIdSchema = yup
   .mixed((input): input is ObjectId => input instanceof ObjectId)
   .transform((value: any, input, ctx) => {
     if (ctx.isType(value)) return value;
@@ -1285,7 +1285,7 @@ InferType<typeof objectIdSchema>; // ObjectId
 Define a string schema. Inherits from [`Schema`](#Schema).
 
 ```js
-let schema = yup.string();
+const schema = yup.string();
 
 await schema.isValid('hello'); // => true
 ```
@@ -1317,7 +1317,7 @@ Set a maximum length limit for the string value. The `${max}` interpolation can 
 Provide an arbitrary `regex` to match the value against.
 
 ```js
-let schema = string().matches(/(hi|bye)/);
+const schema = string().matches(/(hi|bye)/);
 
 await schema.isValid('hi'); // => true
 await schema.isValid('nope'); // => false
@@ -1330,7 +1330,7 @@ short circuits the regex test when the value is an empty string, making it a eas
 matching nothing without complicating the regex.
 
 ```js
-let schema = string().matches(/(hi|bye)/, { excludeEmptyString: true });
+const schema = string().matches(/(hi|bye)/, { excludeEmptyString: true });
 
 await schema.isValid(''); // => true
 ```
@@ -1404,7 +1404,7 @@ will only validate that the value is uppercase.
 Define a number schema. Inherits from [`Schema`](#Schema).
 
 ```js
-let schema = yup.number();
+const schema = yup.number();
 
 await schema.isValid(10); // => true
 ```
@@ -1459,7 +1459,7 @@ Adjusts the value via the specified method of `Math` (defaults to 'round').
 Define a boolean schema. Inherits from [`Schema`](#Schema).
 
 ```js
-let schema = yup.boolean();
+const schema = yup.boolean();
 
 await schema.isValid(true); // => true
 ```
@@ -1471,7 +1471,7 @@ for more robust parsing options see the extending schema types at the end of the
 Inherits from [`Schema`](#Schema).
 
 ```js
-let schema = yup.date();
+const schema = yup.date();
 
 await schema.isValid(new Date()); // => true
 ```
@@ -1501,7 +1501,7 @@ will apply to the elements as well. Options passed into `isValid` are also passe
 Inherits from [`Schema`](#Schema).
 
 ```js
-let schema = yup.array().of(yup.number().min(2));
+const schema = yup.array().of(yup.number().min(2));
 
 await schema.isValid([2, 3]); // => true
 await schema.isValid([1, -24]); // => false
@@ -1574,7 +1574,7 @@ Inherits from [`Schema`](#Schema).
 ```js
 import { tuple, string, number, InferType } from 'yup';
 
-let schema = tuple([
+const schema = tuple([
   string().label('name'),
   number().label('age').positive().integer(),
 ]);
@@ -1715,7 +1715,7 @@ nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 Transforms the specified key to a new key. If `alias` is `true` then the old key will be left.
 
 ```js
-let schema = object({
+const schema = object({
   myProp: mixed(),
   Other: mixed(),
 })
