@@ -29,7 +29,7 @@ let userSchema = object({
 });
 
 // parse and assert validity
-const user = await userSchema.validate(await fetchUser());
+let user = await userSchema.validate(await fetchUser());
 
 type User = InferType<typeof userSchema>;
 /* {
@@ -46,7 +46,7 @@ transform that value into more concrete and specific values, without making furt
 
 ```ts
 // Attempts to coerce values to the correct type
-const parsedUser = userSchema.cast({
+let parsedUser = userSchema.cast({
   name: 'jimmy',
   age: '24',
   createdOn: '2014-09-23T19:25:25Z',
@@ -59,7 +59,7 @@ of running parsing logic.
 
 ```ts
 // ❌  ValidationError "age is not a number"
-const parsedUser = await userSchema.validate(
+let parsedUser = await userSchema.validate(
   {
     name: 'jimmy',
     age: '24',
@@ -190,9 +190,9 @@ Each built-in type implements basic type parsing, which comes in handy when pars
 Additionally types implement type specific transforms that can be enabled.
 
 ```ts
-const num = number().cast('1'); // 1
+let num = number().cast('1'); // 1
 
-const obj = object({
+let obj = object({
   firstName: string().lowercase().trim(),
 })
   .json()
@@ -203,7 +203,7 @@ const obj = object({
 Custom transforms can be added
 
 ```ts
-const reversedString = string()
+let reversedString = string()
   .transform((currentValue) => currentValue.split('').reverse().join(''))
   .cast('dlrow olleh'); // "hello world"
 ```
@@ -230,7 +230,7 @@ string()
 As with transforms, tests can be customized on the fly
 
 ```ts
-const jamesSchema = string().test(
+let jamesSchema = string().test(
   'is-james',
   (d) => `${d.path} is not James`,
   (value) => value == null || value === 'James',
@@ -258,7 +258,7 @@ in the case of a nested validation.
 Error messages can also be constructed on the fly to customize how the schema fails.
 
 ```ts
-const order = object({
+let order = object({
   no: number().required(),
   sku: string().test({
     name: 'is-sku',
@@ -287,11 +287,11 @@ Schema are immutable, each method call returns a new schema object. Reuse and pa
 fear of mutating another instance.
 
 ```ts
-const optionalString = string().optional();
+let optionalString = string().optional();
 
-const definedString = optionalString.defined();
+let definedString = optionalString.defined();
 
-const value = undefined;
+let value = undefined;
 optionalString.isValid(value); // true
 definedString.isValid(value); // false
 ```
@@ -303,7 +303,7 @@ Yup schema produce static TypeScript interfaces. Use `InferType` to extract that
 ```ts
 import * as yup from 'yup';
 
-const personSchema = yup.object({
+let personSchema = yup.object({
   firstName: yup.string().defined(),
   nickName: yup.string().default('').nullable(),
   sex: yup
@@ -327,11 +327,11 @@ setting a default affects the output type of the schema, essentially marking it 
 ```ts
 import { string } from 'yup';
 
-const value: string = string().default('hi').validate(undefined);
+let value: string = string().default('hi').validate(undefined);
 
 // vs
 
-const value: string | undefined = string().validate(undefined);
+let value: string | undefined = string().validate(undefined);
 ```
 
 ### Ensuring a schema matches an existing type
@@ -349,7 +349,7 @@ interface Person {
 }
 
 // will raise a compile-time type error if the schema does not produce a valid Person
-const schema: ObjectSchema<Person> = object({
+let schema: ObjectSchema<Person> = object({
   name: string().defined(),
   age: number().optional(),
   sex: string<'male' | 'female' | 'other'>().nullable().defined(),
@@ -357,7 +357,7 @@ const schema: ObjectSchema<Person> = object({
 
 // ❌ errors:
 // "Type 'number | undefined' is not assignable to type 'string'."
-const badSchema: ObjectSchema<Person> = object({
+let badSchema: ObjectSchema<Person> = object({
   name: number(),
 });
 
@@ -664,11 +664,11 @@ Collects schema details (like meta, labels, and active tests) into a serializabl
 description object.
 
 ```ts
-const schema = object({
+let schema = object({
   name: string().required(),
 });
 
-const description = schema.describe();
+let description = schema.describe();
 ```
 
 For schema with dynamic components (references, lazy, or conditions), describe requires
@@ -954,7 +954,7 @@ Indicates that `null` is a valid value for the schema. Without `nullable()`
 `null` is treated as a different type and will fail `Schema.isType()` checks.
 
 ```ts
-const schema = number().nullable();
+let schema = number().nullable();
 
 schema.cast(null); // null
 
@@ -967,7 +967,7 @@ The opposite of `nullable`, removes `null` from valid type values for the schema
 **Schema are non nullable by default**.
 
 ```ts
-const schema = number().nonNullable();
+let schema = number().nonNullable();
 
 schema.cast(null); // TypeError
 
@@ -979,7 +979,7 @@ InferType<typeof schema>; // number
 Require a value for the schema. All field values apart from `undefined` meet this requirement.
 
 ```ts
-const schema = string().defined();
+let schema = string().defined();
 
 schema.cast(undefined); // TypeError
 
@@ -991,7 +991,7 @@ InferType<typeof schema>; // string
 The opposite of `defined()` allows `undefined` values for the given type.
 
 ```ts
-const schema = string().optional();
+let schema = string().optional();
 
 schema.cast(undefined); // undefined
 
@@ -1610,7 +1610,7 @@ Object schema come with a default value already set, which "builds" out the obje
 sets any defaults for fields:
 
 ```js
-const schema = object({
+let schema = object({
   name: string().default(''),
 });
 
@@ -1623,7 +1623,7 @@ one gotcha! though. For nested object schema that are optional but include non o
 may fail in unexpected ways:
 
 ```js
-const schema = object({
+let schema = object({
   id: string().required(),
   names: object({
     first: string().required(),
@@ -1685,13 +1685,13 @@ fields.
 Create a new schema from a subset of the original's fields.
 
 ```js
-const person = object({
+let person = object({
   age: number().default(30).required(),
   name: string().default('pat').required(),
   color: string().default('red').required(),
 });
 
-const nameAndAge = person.pick(['name', 'age']);
+let nameAndAge = person.pick(['name', 'age']);
 nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
 
@@ -1700,13 +1700,13 @@ nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 Create a new schema with fields omitted.
 
 ```js
-const person = object({
+let person = object({
   age: number().default(30).required(),
   name: string().default('pat').required(),
   color: string().default('red').required(),
 });
 
-const nameAndAge = person.omit(['color']);
+let nameAndAge = person.omit(['color']);
 nameAndAge.getDefault(); // => { age: 30, name: 'pat'}
 ```
 
