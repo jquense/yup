@@ -17,6 +17,7 @@ export interface StringLocale {
   min?: Message<{ min: number }>;
   max?: Message<{ max: number }>;
   matches?: Message<{ regex: RegExp }>;
+  notMatches?: Message<{ regex: RegExp }>;
   email?: Message<{ regex: RegExp }>;
   url?: Message<{ regex: RegExp }>;
   uuid?: Message<{ regex: RegExp }>;
