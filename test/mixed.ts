@@ -959,6 +959,17 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should add meta() data with function', () => {
+    expect(
+      string()
+        .meta({ list: ['foo'] })
+        .meta((prev) => ({ list: [...prev.list, 'bar'] }))
+        .meta(),
+    ).toEqual({
+      list: ['foo', 'bar'],
+    });
+  });
+
   describe('schema.describe()', () => {
     let schema: ObjectSchema<any>;
     beforeEach(() => {
