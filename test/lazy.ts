@@ -54,5 +54,29 @@ describe('lazy', function () {
         added: true,
       });
     });
+
+    it('should add meta() data', () => {
+      const schema = lazy(mapper);
+
+      expect(schema.meta({ input: 'foo' }).meta({ foo: 'bar' }).meta()).toEqual(
+        {
+          input: 'foo',
+          foo: 'bar',
+        },
+      );
+    });
+
+    it('should add meta() data with function', () => {
+      const schema = lazy(mapper);
+
+      expect(
+        schema
+          .meta({ list: ['foo'] })
+          .meta((prev: any) => ({ list: [...prev.list, 'bar'] }))
+          .meta(),
+      ).toEqual({
+        list: ['foo', 'bar'],
+      });
+    });
   });
 });
