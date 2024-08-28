@@ -213,6 +213,7 @@ describe('String types', () => {
       expect(v.isValid('https://username:password@github.com/path#fragment')).resolves.toBe(true),
       expect(v.isValid('http://127.0.0.1:8080/')).resolves.toBe(true),
       expect(v.isValid('https://www.github.com/')).resolves.toBe(true),
+      expect(v.isValid('//T.' + '0.'.repeat(3000) + '\x00')).resolves.toBe(false),
       expect(v.isValid('this is not a url')).resolves.toBe(false),
     ]);
   });

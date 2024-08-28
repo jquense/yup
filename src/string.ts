@@ -23,7 +23,7 @@ let rEmail =
 
 let rUrl =
   // eslint-disable-next-line
-  /^((https?|ftp):)?\/\/(([a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF%!$&'()*+,;=:]+)@)?(((\d{1,3}\.){3}\d{1,3})|\[(\d{1,3}\.){3}\d{1,3}\]|([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(-[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*\.)+[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,})(:\d{2,5})?(\/[a-z\d\-._~%!$&'()*+,;=:@\/]*)?(\?[a-z\d\-._~%!$&'()*+,;=:@\/?]*)?(#[a-z\d\-._~%!$&'()*+,;=:@\/?]*)?$/i
+  /^((https?|ftp):)?\/\/(([a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF%!$&'()*+,;=:]+)@)?(((\d{1,3}\.){3}\d{1,3})|\[(\d{1,3}\.){3}\d{1,3}\]|([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(-[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*\.)+[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,})(:\d{2,5})?(\/[a-z\d\-._~%!$&'()*+,;=:@\/]*)?(\?[a-z\d\-._~%!$&'()*+,;=:@\/?]*)?(#[a-z\d\-._~%!$&'()*+,;=:@\/?]*)?$/i;
 
 // eslint-disable-next-line
 let rUUID =
