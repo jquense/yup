@@ -1,12 +1,12 @@
 import * as TestHelpers from './helpers';
 
 import {
-  string,
+  AnySchema,
   number,
   object,
   ref,
+  string,
   ValidationError,
-  AnySchema,
 } from '../src';
 
 describe('String types', () => {
@@ -209,6 +209,9 @@ describe('String types', () => {
 
     return Promise.all([
       expect(v.isValid('//www.github.com/')).resolves.toBe(true),
+      expect(v.isValid('https://username:password@127.0.0.1:8080/path#fragment')).resolves.toBe(true),
+      expect(v.isValid('https://username:password@github.com/path#fragment')).resolves.toBe(true),
+      expect(v.isValid('http://127.0.0.1:8080/')).resolves.toBe(true),
       expect(v.isValid('https://www.github.com/')).resolves.toBe(true),
       expect(v.isValid('this is not a url')).resolves.toBe(false),
     ]);
