@@ -17,7 +17,16 @@ import reach, { getIn } from './util/reach';
 import isSchema from './util/isSchema';
 import printValue from './util/printValue';
 import setLocale, { LocaleObject } from './setLocale';
-import defaultLocale from './locale';
+import defaultLocale, {
+  MixedLocale,
+  StringLocale,
+  NumberLocale,
+  DateLocale,
+  ObjectLocale,
+  ArrayLocale,
+  TupleLocale,
+  BooleanLocale,
+} from './locale';
 import Schema, {
   AnySchema,
   CastOptions as BaseCastOptions,
@@ -82,6 +91,14 @@ export type {
   SchemaMetadata,
   CustomSchemaMetadata,
   LocaleObject,
+  MixedLocale,
+  StringLocale,
+  NumberLocale,
+  DateLocale,
+  ObjectLocale,
+  ArrayLocale,
+  TupleLocale,
+  BooleanLocale,
   ValidateOptions,
   DefaultThunk,
   Lazy,
