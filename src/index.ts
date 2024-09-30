@@ -31,9 +31,11 @@ import Schema, {
   CustomSchemaMetadata,
 } from './schema';
 import type {
+  AnyMessageParams,
   InferType,
   ISchema,
   Message,
+  MessageParams,
   ValidateOptions,
   DefaultThunk,
 } from './types';
@@ -65,11 +67,13 @@ export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
 export type CastOptions = Omit<BaseCastOptions, 'path' | 'resolved'>;
 
 export type {
+  AnyMessageParams,
   AnyObject,
   InferType,
   InferType as Asserts,
   ISchema,
   Message,
+  MessageParams,
   AnySchema,
   MixedOptions,
   TypeGuard as MixedTypeGuard,

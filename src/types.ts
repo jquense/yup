@@ -87,6 +87,7 @@ export interface MessageParams {
   path: string;
   value: any;
   originalValue: any;
+  originalPath: string;
   label: string;
   type: string;
   spec: SchemaSpec<any> & Record<string, unknown>;
