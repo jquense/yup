@@ -63,8 +63,11 @@ export default class ValidationError extends Error {
     message: string | ((params: Params) => string) | unknown,
     params: Params,
   ) {
+    // Attempt to make the path more friendly for error message interpolation.
     const path = params.label || params.path || 'this';
-    if (path !== params.path) params = { ...params, path };
+    // Store the original path under `originalPath` so it isn't lost to custom
+    // message functions; e.g., ones provided in `setLocale()` calls.
+    params = { ...params, path, originalPath: params.path };
 
     if (typeof message === 'string')
       return message.replace(strReg, (_, key) => printValue(params[key]));
