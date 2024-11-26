@@ -33,6 +33,11 @@ import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
+import {
+  createStandardSchemaProps,
+  type StandardSchema,
+  type StandardSchemaProps,
+} from './standardSchema';
 
 export type SchemaSpec<TDefault> = {
   coerce: boolean;
@@ -147,7 +152,9 @@ export default abstract class Schema<
   TContext = any,
   TDefault = any,
   TFlags extends Flags = '',
-> implements ISchema<TType, TContext, TFlags, TDefault>
+> implements
+    ISchema<TType, TContext, TFlags, TDefault>,
+    StandardSchema<TType, ResolveFlags<TType, TFlags, TDefault>>
 {
   readonly type: string;
 
@@ -173,6 +180,11 @@ export default abstract class Schema<
 
   protected exclusiveTests: Record<string, boolean> = Object.create(null);
   protected _typeCheck: (value: any) => value is NonNullable<TType>;
+
+  public '~standard': StandardSchemaProps<
+    TType,
+    ResolveFlags<TType, TFlags, TDefault>
+  >;
 
   spec: SchemaSpec<any>;
 
@@ -202,6 +214,11 @@ export default abstract class Schema<
     this.withMutation((s) => {
       s.nonNullable();
     });
+
+    this['~standard'] = createStandardSchemaProps<
+      TType,
+      ResolveFlags<TType, TFlags, TDefault>
+    >(this);
   }
 
   // TODO: remove
