@@ -779,7 +779,7 @@ For instance this will work:
 let schema = number().test(
   'is-42',
   "this isn't the number i want",
-  (value) => value != 42,
+  (value) => value === 42,
 );
 
 schema.validateSync(23); // throws ValidationError
@@ -789,7 +789,7 @@ however this will not:
 
 ```js
 let schema = number().test('is-42', "this isn't the number i want", (value) =>
-  Promise.resolve(value != 42),
+  Promise.resolve(value === 42),
 );
 
 schema.validateSync(42); // throws Error
