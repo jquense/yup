@@ -8,10 +8,10 @@ import {
   mixed,
   tuple,
 } from '../src';
-import type { v1 } from '@standard-schema/spec';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 
 function verifyStandardSchema<Input, Output>(
-  schema: v1.StandardSchema<Input, Output>,
+  schema: StandardSchemaV1<Input, Output>,
 ) {
   return (
     schema['~standard'].version === 1 &&
