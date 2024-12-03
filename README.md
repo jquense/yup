@@ -172,6 +172,8 @@ let parsedUser = await userSchema.validate(
     - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
     - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
     - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
+    - [`object.exact(message?: string | function): Schema`](#objectexactmessage-string--function-schema)
+    - [`object.stripUnknown(): Schema`](#objectstripunknown-schema)
     - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
     - [`object.camelCase(): Schema`](#objectcamelcase-schema)
     - [`object.constantCase(): Schema`](#objectconstantcase-schema)
