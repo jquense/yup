@@ -265,20 +265,20 @@ let order = object({
     skipAbsent: true,
     test(value, ctx) {
       if (!value.startsWith('s-')) {
-        return ctx.createError({ message: 'SKU missing correct prefix' })
+        return ctx.createError({ message: 'SKU missing correct prefix' });
       }
       if (!value.endsWith('-42a')) {
-        return ctx.createError({ message: 'SKU missing correct suffix' })
+        return ctx.createError({ message: 'SKU missing correct suffix' });
       }
       if (value.length < 10) {
-        return ctx.createError({ message: 'SKU is not the right length' })
+        return ctx.createError({ message: 'SKU is not the right length' });
       }
-      return true
-    }
-  })
-})
+      return true;
+    },
+  }),
+});
 
-order.validate({ no: 1234, sku: 's-1a45-14a' })
+order.validate({ no: 1234, sku: 's-1a45-14a' });
 ```
 
 ### Composition and Reuse
@@ -360,7 +360,6 @@ let schema: ObjectSchema<Person> = object({
 let badSchema: ObjectSchema<Person> = object({
   name: number(),
 });
-
 ```
 
 ### Extending built-in schema with new methods
@@ -1725,10 +1724,22 @@ let schema = object({
 schema.cast({ prop: 5, other: 6 }); // => { myProp: 5, other: 6, Other: 6 }
 ```
 
+#### `object.exact(message?: string | function): Schema`
+
+Validates that the object does not contain extra or unknown properties
+
+#### `object.stripUnknown(): Schema`
+
+The same as `object().validate(value, { stripUnknown: true})`, but as a transform method. When set
+any unknown properties will be removed.
+
 #### `object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`
 
 Validate that the object value only contains keys specified in `shape`, pass `false` as the first
 argument to disable the check. Restricting keys to known, also enables `stripUnknown` option, when not in strict mode.
+
+> Watch Out!: this method performs a transform and a validation, which may produce unexpected results.
+> For more explicit behavior use `object().stripUnknown` and `object().exact()`
 
 #### `object.camelCase(): Schema`
 

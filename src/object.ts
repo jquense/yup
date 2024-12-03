@@ -282,7 +282,7 @@ export default class ObjectSchema<
     });
   }
 
-  clone(spec?: ObjectSchemaSpec): this {
+  clone(spec?: Partial<ObjectSchemaSpec>): this {
     const next = super.clone(spec);
     next.fields = { ...this.fields };
     next._nodes = this._nodes;
@@ -460,6 +460,31 @@ export default class ObjectSchema<
   /** Parse an input JSON string to an object */
   json() {
     return this.transform(parseJson);
+  }
+
+  /**
+   * Similar to `noUnknown` but only validates that an object is the right shape without stripping the unknown keys
+   */
+  exact(message?: Message): this {
+    return this.test({
+      name: 'exact',
+      exclusive: true,
+      message: message || locale.exact,
+      test(value) {
+        if (value == null) return true;
+
+        const unknownKeys = unknown(this.schema, value);
+
+        return (
+          unknownKeys.length === 0 ||
+          this.createError({ params: { properties: unknownKeys.join(', ') } })
+        );
+      },
+    });
+  }
+
+  stripUnknown(): this {
+    return this.clone({ noUnknown: true });
   }
 
   noUnknown(message?: Message): this;

@@ -44,7 +44,8 @@ export interface DateLocale {
 }
 
 export interface ObjectLocale {
-  noUnknown?: Message;
+  noUnknown?: Message<{ unknown: string[] }>;
+  exact?: Message<{ properties: string[] }>;
 }
 
 export interface ArrayLocale {
@@ -134,6 +135,7 @@ export let boolean: BooleanLocale = {
 
 export let object: Required<ObjectLocale> = {
   noUnknown: '${path} field has unspecified keys: ${unknown}',
+  exact: '${path} object contains unknown properties: ${properties}',
 };
 
 export let array: Required<ArrayLocale> = {

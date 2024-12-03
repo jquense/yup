@@ -427,6 +427,18 @@ describe('Object types', () => {
     });
   });
 
+  it('should work with exact', async () => {
+    let inst = object()
+      .shape({
+        prop: mixed(),
+      })
+      .exact();
+
+    await expect(inst.validate({ extra: 'field' })).rejects.toThrowError(
+      'this object contains unknown properties: extra',
+    );
+  });
+
   it('should strip specific fields', () => {
     let inst = object().shape({
       prop: mixed().strip(false),
