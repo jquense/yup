@@ -1,3 +1,19 @@
+# [1.5.0](https://github.com/jquense/yup/compare/v1.4.0...v1.5.0) (2024-12-03)
+
+
+### Bug Fixes
+
+* **readme:** some typos and update CustomizingErrors doc ([#2163](https://github.com/jquense/yup/issues/2163)) ([5c77e0d](https://github.com/jquense/yup/commit/5c77e0d4f9373151bcf0cd558c95986b6e4800d7))
+
+
+### Features
+
+* Add exact and stripUnknown method to object() ([adcdd8d](https://github.com/jquense/yup/commit/adcdd8dd500c627b1efbe3595b6b37dec2847ad8))
+
+
+
+
+
 # [1.4.0](https://github.com/jquense/yup/compare/v1.3.3...v1.4.0) (2024-03-06)
 
 

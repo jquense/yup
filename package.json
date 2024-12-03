@@ -1,6 +1,6 @@
 {
   "name": "yup",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Dead simple Object schema validation",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",
