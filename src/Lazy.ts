@@ -33,6 +33,10 @@ export interface LazySpec {
   optional: boolean;
 }
 
+type SchemaMetadata = Record<string, unknown>;
+
+type SchemaMetadataMutator = (obj: SchemaMetadata) => SchemaMetadata;
+
 class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   implements ISchema<T, TContext, TFlags, undefined>
 {
@@ -148,12 +152,19 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
       : { type: 'lazy', meta: this.spec.meta, label: undefined };
   }
 
-  meta(): Record<string, unknown> | undefined;
-  meta(obj: Record<string, unknown>): Lazy<T, TContext, TFlags>;
-  meta(...args: [Record<string, unknown>?]) {
+  meta(): SchemaMetadata | undefined;
+  meta(fn: SchemaMetadataMutator): Lazy<T, TContext, TFlags>;
+  meta(obj: SchemaMetadata): Lazy<T, TContext, TFlags>;
+  meta(...args: [(SchemaMetadata | SchemaMetadataMutator)?]) {
     if (args.length === 0) return this.spec.meta;
 
-    let next = this.clone();
+    if (typeof args[0] === 'function') {
+      const schemaMutator = args[0] as SchemaMetadataMutator;
+      const next = this.clone();
+      next.spec.meta = schemaMutator(next.spec.meta || {});
+      return next;
+    }
+    const next = this.clone();
     next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
     return next;
   }
