@@ -93,7 +93,7 @@
     "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
     "rollup": "^2.79.1",
-    "rollup-plugin-babel": "^4.4.0",
+    "@rollup/plugin-babel": "^5.0.0",
     "rollup-plugin-dts": "^4.2.3",
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
