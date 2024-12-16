@@ -124,6 +124,7 @@ export {
   ObjectSchema,
   ArraySchema,
   TupleSchema,
+  Lazy as LazySchema,
 };
 
 export type {
