@@ -1,3 +1,14 @@
+# [1.6.0](https://github.com/jquense/yup/compare/v1.5.0...v1.6.0) (2024-12-16)
+
+
+### Features
+
+* expose LazySchema ([2b0f126](https://github.com/jquense/yup/commit/2b0f1264083fccb646f7f6bd43adfbff2caaf295))
+
+
+
+
+
 # [1.5.0](https://github.com/jquense/yup/compare/v1.4.0...v1.5.0) (2024-12-03)
 
 
