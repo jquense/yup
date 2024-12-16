@@ -1,9 +1,0 @@
-sudo: false
-language: node_js
-cache: 'yarn'
-node_js:
-  - 12
-  - 14
-branches:
-  only:
-    - master
