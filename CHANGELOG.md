@@ -1,3 +1,14 @@
+## [1.6.1](https://github.com/jquense/yup/compare/v1.6.0...v1.6.1) (2024-12-17)
+
+
+### Bug Fixes
+
+* lazy validation errors thrown in builders should resolve async like other validations ([c7d7f97](https://github.com/jquense/yup/commit/c7d7f977e02a7e578950dff192057e0b200999bd))
+
+
+
+
+
 # [1.6.0](https://github.com/jquense/yup/compare/v1.5.0...v1.6.0) (2024-12-16)
 
 
