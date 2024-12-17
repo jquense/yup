@@ -1,9 +1,16 @@
-import { lazy, object, mixed, AnyObject, MixedSchema } from '../src';
+import {
+  lazy,
+  object,
+  mixed,
+  AnyObject,
+  MixedSchema,
+  ValidationError,
+} from '../src';
 
 describe('lazy', function () {
   it('should throw on a non-schema value', () => {
     // @ts-expect-error testing incorrect usage
-    expect(() => lazy(() => undefined).validate(undefined)).toThrowError();
+    expect(() => lazy(() => undefined).validateSync(undefined)).toThrowError();
   });
 
   describe('mapper', () => {
@@ -53,6 +60,24 @@ describe('lazy', function () {
         a: 1,
         added: true,
       });
+    });
+
+    it('should allow throwing validation error in builder', async () => {
+      const schema = lazy(() => {
+        throw new ValidationError('oops');
+      });
+
+      await expect(schema.validate(value)).rejects.toThrowError('oops');
+      await expect(schema.isValid(value)).resolves.toEqual(false);
+
+      expect(() => schema.validateSync(value)).toThrowError('oops');
+
+      const schema2 = lazy(() => {
+        throw new Error('error');
+      });
+      // none validation errors are thrown sync to maintain back compat
+      expect(() => schema2.validate(value)).toThrowError('error');
+      expect(() => schema2.isValid(value)).toThrowError('error');
     });
   });
 });

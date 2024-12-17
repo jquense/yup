@@ -4,6 +4,7 @@ import type {
   ISchema,
   ValidateOptions,
   NestedTestConfig,
+  InferType,
 } from './types';
 import type { ResolveOptions } from './Condition';
 
@@ -14,7 +15,8 @@ import type {
   SchemaLazyDescription,
 } from './schema';
 import { Flags, Maybe } from './util/types';
-import { InferType, Schema } from '.';
+import ValidationError from './ValidationError';
+import Schema from './schema';
 
 export type LazyBuilder<
   TSchema extends ISchema<TContext>,
@@ -26,6 +28,15 @@ export function create<
   TContext extends Maybe<AnyObject> = AnyObject,
 >(builder: (value: any, options: ResolveOptions<TContext>) => TSchema) {
   return new Lazy<InferType<TSchema>, TContext>(builder);
+}
+
+function catchValidationError(fn: () => any) {
+  try {
+    return fn();
+  } catch (err) {
+    if (ValidationError.isError(err)) return Promise.reject(err);
+    throw err;
+  }
 }
 
 export interface LazySpec {
@@ -113,7 +124,9 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   }
 
   validate(value: any, options?: ValidateOptions<TContext>): Promise<T> {
-    return this._resolve(value, options).validate(value, options);
+    return catchValidationError(() =>
+      this._resolve(value, options).validate(value, options),
+    );
   }
 
   validateSync(value: any, options?: ValidateOptions<TContext>): T {
@@ -121,7 +134,9 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   }
 
   validateAt(path: string, value: any, options?: ValidateOptions<TContext>) {
-    return this._resolve(value, options).validateAt(path, value, options);
+    return catchValidationError(() =>
+      this._resolve(value, options).validateAt(path, value, options),
+    );
   }
 
   validateSyncAt(
@@ -133,7 +148,14 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
   }
 
   isValid(value: any, options?: ValidateOptions<TContext>) {
-    return this._resolve(value, options).isValid(value, options);
+    try {
+      return this._resolve(value, options).isValid(value, options);
+    } catch (err) {
+      if (ValidationError.isError(err)) {
+        return Promise.resolve(false);
+      }
+      throw err;
+    }
   }
 
   isValidSync(value: any, options?: ValidateOptions<TContext>) {
