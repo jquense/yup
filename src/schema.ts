@@ -56,6 +56,8 @@ export type SchemaMetadata = keyof CustomSchemaMetadata extends never
   ? Record<PropertyKey, any>
   : CustomSchemaMetadata;
 
+type SchemaMetadataMutator = (obj: SchemaMetadata) => SchemaMetadata;
+
 export type SchemaOptions<TType, TDefault> = {
   type: string;
   spec?: Partial<SchemaSpec<TDefault>>;
@@ -245,12 +247,22 @@ export default abstract class Schema<
   }
 
   meta(): SchemaMetadata | undefined;
+  meta(fn: SchemaMetadataMutator): this;
   meta(obj: SchemaMetadata): this;
-  meta(...args: [SchemaMetadata?]) {
+  meta(...args: [(SchemaMetadata | SchemaMetadataMutator)?]) {
     if (args.length === 0) return this.spec.meta;
 
-    let next = this.clone();
-    next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
+    if (typeof args[0] === 'function') {
+      const schemaMutator = args[0] as SchemaMetadataMutator;
+      const next = this.clone();
+      next.spec.meta = schemaMutator(next.spec.meta || {});
+      return next;
+    }
+    const next = this.clone();
+    next.spec.meta = Object.assign(
+      next.spec.meta || {},
+      args[0] as SchemaMetadata,
+    );
     return next;
   }
 
