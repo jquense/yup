@@ -4183,6 +4183,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cliui@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "cliui@npm:8.0.1"
+  dependencies:
+    string-width: "npm:^4.2.0"
+    strip-ansi: "npm:^6.0.1"
+    wrap-ansi: "npm:^7.0.0"
+  checksum: 10c0/4bda0f09c340cbb6dfdc1ed508b3ca080f12992c18d68c6be4d9cf51756033d5266e61ec57529e610dacbf4da1c634423b0c1b11037709cc6b09045cbd815df5
+  languageName: node
+  linkType: hard
+
 "clone@npm:^1.0.2":
   version: 1.0.4
   resolution: "clone@npm:1.0.4"
@@ -5280,15 +5291,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dts-bundle-generator@npm:^6.13.0":
-  version: 6.13.0
-  resolution: "dts-bundle-generator@npm:6.13.0"
+"dts-bundle-generator@npm:^9.5.1":
+  version: 9.5.1
+  resolution: "dts-bundle-generator@npm:9.5.1"
   dependencies:
-    typescript: "npm:>=3.0.1"
-    yargs: "npm:^17.2.1"
+    typescript: "npm:>=5.0.2"
+    yargs: "npm:^17.6.0"
   bin:
     dts-bundle-generator: dist/bin/dts-bundle-generator.js
-  checksum: 10c0/10dad909da40fb81db6caf131a0ea1b354d76f78feeb68eaacdf3a6897d02f8bbfb5215fadc5386fcc982ce63d2d4b66252b73d4f4b652a1039ec3b1c7562147
+  checksum: 10c0/3685d3797b6cd252c5a27174a504193469e2a8d82188224767e522e2e8eb03de431107836232a0ac89bcfbc38caa0dcf2ec7fb81716e781185f8ea840b956bc2
   languageName: node
   linkType: hard
 
@@ -14151,7 +14162,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3.0.1, typescript@npm:^4.5.3, typescript@npm:^4.9.5":
+"typescript@npm:>=5.0.2":
+  version: 5.7.2
+  resolution: "typescript@npm:5.7.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/a873118b5201b2ef332127ef5c63fb9d9c155e6fdbe211cbd9d8e65877283797cca76546bad742eea36ed7efbe3424a30376818f79c7318512064e8625d61622
+  languageName: node
+  linkType: hard
+
+"typescript@npm:^4.5.3, typescript@npm:^4.9.5":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
   bin:
@@ -14161,7 +14182,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A>=3.0.1#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^4.5.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^4.9.5#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A>=5.0.2#optional!builtin<compat/typescript>":
+  version: 5.7.2
+  resolution: "typescript@patch:typescript@npm%3A5.7.2#optional!builtin<compat/typescript>::version=5.7.2&hash=5786d5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/f3b8082c9d1d1629a215245c9087df56cb784f9fb6f27b5d55577a20e68afe2a889c040aacff6d27e35be165ecf9dca66e694c42eb9a50b3b2c451b36b5675cb
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^4.5.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^4.9.5#optional!builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#optional!builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
@@ -15036,10 +15067,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs-parser@npm:^21.0.0":
-  version: 21.0.0
-  resolution: "yargs-parser@npm:21.0.0"
-  checksum: 10c0/e7605acabf7a57bd382e781a83702bd2e13069b2c55bbe04d3c40aa6e8104f53ad4e3c78eabb8932306795187ef655e64ac7576f188914ce46c7c9f480155c99
+"yargs-parser@npm:^21.1.1":
+  version: 21.1.1
+  resolution: "yargs-parser@npm:21.1.1"
+  checksum: 10c0/f84b5e48169479d2f402239c59f084cfd1c3acc197a05c59b98bab067452e6b3ea46d4dd8ba2985ba7b3d32a343d77df0debd6b343e5dae3da2aab2cdf5886b2
   languageName: node
   linkType: hard
 
@@ -15076,18 +15107,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:^17.1.1, yargs@npm:^17.2.1, yargs@npm:^17.3.0":
-  version: 17.5.1
-  resolution: "yargs@npm:17.5.1"
+"yargs@npm:^17.1.1, yargs@npm:^17.3.0, yargs@npm:^17.6.0":
+  version: 17.7.2
+  resolution: "yargs@npm:17.7.2"
   dependencies:
-    cliui: "npm:^7.0.2"
+    cliui: "npm:^8.0.1"
     escalade: "npm:^3.1.1"
     get-caller-file: "npm:^2.0.5"
     require-directory: "npm:^2.1.1"
     string-width: "npm:^4.2.3"
     y18n: "npm:^5.0.5"
-    yargs-parser: "npm:^21.0.0"
-  checksum: 10c0/349c823b772bc5383d56684bca8615020ae5cc0b81bacafe1ef268b281ade93528da1982b0f2dd898e0c678932d9147b8a2e93e341733622773caf7048196de4
+    yargs-parser: "npm:^21.1.1"
+  checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
   languageName: node
   linkType: hard
 
@@ -15123,7 +15154,7 @@ __metadata:
     babel-jest: "npm:^27.5.1"
     babel-preset-env-modules: "npm:^1.0.1"
     doctoc: "npm:^2.2.1"
-    dts-bundle-generator: "npm:^6.13.0"
+    dts-bundle-generator: "npm:^9.5.1"
     eslint: "npm:^8.45.0"
     eslint-config-jason: "npm:^8.2.2"
     eslint-config-prettier: "npm:^8.8.0"
