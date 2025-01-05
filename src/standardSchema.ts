@@ -151,13 +151,13 @@ function createStandardIssues(
   error: ValidationError,
   parentPath?: string,
 ): StandardIssue[] {
+  const path = parentPath ? `${parentPath}.${error.path}` : error.path;
+
   return error.errors.map(
     (err) =>
       ({
         message: err,
-        path: createStandardPath(
-          parentPath ? `${parentPath}.${error.path}` : error.path,
-        ),
+        path: createStandardPath(path),
       } satisfies StandardIssue),
   );
 }
@@ -170,10 +170,7 @@ function issuesFromValidationError(
     return createStandardIssues(error, parentPath);
   }
 
-  return error.inner.flatMap((err) =>
-    issuesFromValidationError(
-      err,
-      parentPath ? `${parentPath}.${error.path}` : error.path,
-    ),
-  );
+  const path = parentPath ? `${parentPath}.${error.path}` : error.path;
+
+  return error.inner.flatMap((err) => issuesFromValidationError(err, path));
 }
