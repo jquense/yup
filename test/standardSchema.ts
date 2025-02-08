@@ -67,3 +67,39 @@ test('issues path is an array of property paths', async () => {
     { path: ['not.a.field'], message: '["not.a.field"] is a required field' },
   ]);
 });
+
+test('should clone correctly when using modifiers', async () => {
+  const schema = string().required();
+
+  const result = await schema['~standard'].validate('');
+
+  expect(result.issues).toEqual([
+    { path: undefined, message: 'this is a required field' },
+  ]);
+});
+
+test('should work correctly with lazy schemas', async () => {
+  let isNumber = false;
+  const schema = lazy(() => {
+    if (isNumber) {
+      return number().min(10);
+    }
+
+    return string().required().min(12);
+  });
+
+  const result = await schema['~standard'].validate('');
+
+  expect(result.issues).toEqual([
+    { path: undefined, message: 'this is a required field' },
+    { path: undefined, message: 'this must be at least 12 characters' },
+  ]);
+
+  isNumber = true;
+
+  const result2 = await schema['~standard'].validate(5);
+
+  expect(result2.issues).toEqual([
+    { path: undefined, message: 'this must be greater than or equal to 10' },
+  ]);
+});
