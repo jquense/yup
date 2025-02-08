@@ -2203,10 +2203,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@standard-schema/spec@npm:^1.0.0-rc.0":
-  version: 1.0.0-rc.0
-  resolution: "@standard-schema/spec@npm:1.0.0-rc.0"
-  checksum: 10c0/ddc5352a51704760717b91d27a5ea26724e0d36771cf3b8ac266b1ae930fe3cfb1159ad7b3cea157c3ca1e0c650aa15fd9e7b3f2540ae074c716a147a276d3f0
+"@standard-schema/spec@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@standard-schema/spec@npm:1.0.0"
+  checksum: 10c0/a1ab9a8bdc09b5b47aa8365d0e0ec40cc2df6437be02853696a0e377321653b0d3ac6f079a8c67d5ddbe9821025584b1fb71d9cc041a6666a96f1fadf2ece15f
   languageName: node
   linkType: hard
 
@@ -15124,7 +15124,7 @@ __metadata:
     "@babel/preset-typescript": "npm:^7.22.5"
     "@rollup/plugin-babel": "npm:^5.3.1"
     "@rollup/plugin-node-resolve": "npm:^13.3.0"
-    "@standard-schema/spec": "npm:^1.0.0-rc.0"
+    "@standard-schema/spec": "npm:^1.0.0"
     "@types/jest": "npm:^27.5.2"
     "@typescript-eslint/eslint-plugin": "npm:^5.62.0"
     "@typescript-eslint/parser": "npm:^5.62.0"
