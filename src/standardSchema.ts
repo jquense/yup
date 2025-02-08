@@ -3,7 +3,6 @@
  * https://github.com/standard-schema/standard-schema/blob/main/packages/spec/src/index.ts
  */
 
-import type { AnySchema } from './types';
 import ValidationError from './ValidationError';
 
 export interface StandardSchema<Input = unknown, Output = Input> {
@@ -19,67 +18,36 @@ export interface StandardSchemaProps<Input = unknown, Output = Input> {
   readonly types?: StandardTypes<Input, Output> | undefined;
 }
 
-type StandardResult<Output> =
+export type StandardResult<Output> =
   | StandardSuccessResult<Output>
   | StandardFailureResult;
 
-interface StandardSuccessResult<Output> {
+export interface StandardSuccessResult<Output> {
   readonly value: Output;
   readonly issues?: undefined;
 }
 
-interface StandardFailureResult {
+export interface StandardFailureResult {
   readonly issues: ReadonlyArray<StandardIssue>;
 }
 
-interface StandardIssue {
+export interface StandardIssue {
   readonly message: string;
   readonly path?: ReadonlyArray<PropertyKey | StandardPathSegment> | undefined;
 }
 
-interface StandardPathSegment {
+export interface StandardPathSegment {
   readonly key: PropertyKey;
 }
 
-interface StandardTypes<Input, Output> {
+export interface StandardTypes<Input, Output> {
   readonly input: Input;
   readonly output: Output;
 }
 
-export function createStandardSchemaProps<TIn, Output>(
-  schema: AnySchema,
-): StandardSchemaProps<TIn, Output> {
-  /**
-   * Adapts the schema's validate method to the standard schema's validate method.
-   */
-  async function validate(value: unknown): Promise<StandardResult<Output>> {
-    try {
-      const result = await schema.validate(value, {
-        abortEarly: false,
-      });
-
-      return {
-        value: result as Output,
-      };
-    } catch (err) {
-      if (err instanceof ValidationError) {
-        return {
-          issues: issuesFromValidationError(err),
-        };
-      }
-
-      throw err;
-    }
-  }
-
-  return {
-    version: 1,
-    vendor: 'yup',
-    validate,
-  };
-}
-
-function createStandardPath(path: string | undefined): StandardIssue['path'] {
+export function createStandardPath(
+  path: string | undefined,
+): StandardIssue['path'] {
   if (!path?.length) {
     return undefined;
   }
@@ -147,7 +115,7 @@ function createStandardPath(path: string | undefined): StandardIssue['path'] {
   return segments;
 }
 
-function createStandardIssues(
+export function createStandardIssues(
   error: ValidationError,
   parentPath?: string,
 ): StandardIssue[] {
@@ -162,7 +130,7 @@ function createStandardIssues(
   );
 }
 
-function issuesFromValidationError(
+export function issuesFromValidationError(
   error: ValidationError,
   parentPath?: string,
 ): StandardIssue[] {

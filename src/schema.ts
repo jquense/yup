@@ -35,7 +35,8 @@ import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
 import {
-  createStandardSchemaProps,
+  issuesFromValidationError,
+  StandardResult,
   type StandardSchema,
   type StandardSchemaProps,
 } from './standardSchema';
@@ -182,11 +183,6 @@ export default abstract class Schema<
   protected exclusiveTests: Record<string, boolean> = Object.create(null);
   protected _typeCheck: (value: any) => value is NonNullable<TType>;
 
-  public '~standard': StandardSchemaProps<
-    TType,
-    ResolveFlags<TType, TFlags, TDefault>
-  >;
-
   spec: SchemaSpec<any>;
 
   constructor(options: SchemaOptions<TType, any>) {
@@ -215,11 +211,6 @@ export default abstract class Schema<
     this.withMutation((s) => {
       s.nonNullable();
     });
-
-    this['~standard'] = createStandardSchemaProps<
-      TType,
-      ResolveFlags<TType, TFlags, TDefault>
-    >(this);
   }
 
   // TODO: remove
@@ -979,6 +970,41 @@ export default abstract class Schema<
     };
 
     return description;
+  }
+
+  get ['~standard']() {
+    const schema = this;
+
+    const standard: StandardSchemaProps<
+      TType,
+      ResolveFlags<TType, TFlags, TDefault>
+    > = {
+      version: 1,
+      vendor: 'yup',
+      async validate(
+        value: unknown,
+      ): Promise<StandardResult<ResolveFlags<TType, TFlags, TDefault>>> {
+        try {
+          const result = await schema.validate(value, {
+            abortEarly: false,
+          });
+
+          return {
+            value: result as ResolveFlags<TType, TFlags, TDefault>,
+          };
+        } catch (err) {
+          if (err instanceof ValidationError) {
+            return {
+              issues: issuesFromValidationError(err),
+            };
+          }
+
+          throw err;
+        }
+      },
+    };
+
+    return standard;
   }
 }
 
