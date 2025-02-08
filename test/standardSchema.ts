@@ -7,6 +7,7 @@ import {
   date,
   mixed,
   tuple,
+  lazy,
 } from '../src';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -29,6 +30,7 @@ test('is compatible with standard schema', () => {
   expect(verifyStandardSchema(date())).toBe(true);
   expect(verifyStandardSchema(mixed())).toBe(true);
   expect(verifyStandardSchema(tuple([mixed()]))).toBe(true);
+  expect(verifyStandardSchema(lazy(() => string()))).toBe(true);
 });
 
 test('issues path is an array of property paths', async () => {
