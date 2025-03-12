@@ -112,6 +112,15 @@ describe('Array types', () => {
       expect(await array().min(10).min(4).isValid(Array(5).fill(0))).toBe(true);
     });
 
+    it('message should depend on the number provided (min, max, length)', () => {
+      expect(array().min(1).validate([])).rejects.toThrowError('this field must have at least 1 item');
+      expect(array().min(2).validate([])).rejects.toThrowError('this field must have at least 2 items');
+      expect(array().max(1).validate(Array(5).fill(0))).rejects.toThrowError('this field must have less than or equal to 1 item');
+      expect(array().max(2).validate(Array(5).fill(0))).rejects.toThrowError('this field must have less than or equal to 2 items');
+      expect(array().length(1).validate(Array(5).fill(0))).rejects.toThrowError('this must have 1 item');
+      expect(array().length(2).validate(Array(5).fill(0))).rejects.toThrowError('this must have 2 items');
+    });
+
     it('should respect subtype validations', async () => {
       let inst = array().of(number().max(5));
 

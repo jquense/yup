@@ -78,3 +78,6 @@ $RECYCLE.BIN/
 # Ignore build files
 lib/
 es/
+
+# Ignore JetBrains IDE files
+.idea
