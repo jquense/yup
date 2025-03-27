@@ -831,8 +831,8 @@ describe('Object types', () => {
   it('should work with mixed field types and orders', async () => {
     let schema = object({
       alpha: string().required('Error Alpha'),
-      beta: string().when('alpha', () => string().min(5, 'Error Beta')),
       gamma: string().required('Error Gamma'),
+      beta: string().when('alpha', () => string().min(5, 'Error Beta')),
     });
 
     let data = { alpha: '', beta: '123', gamma: '' };
@@ -840,8 +840,8 @@ describe('Object types', () => {
     await expect(schema.validate(data, { abortEarly: false })).rejects.toEqual(
       validationErrorWithMessagesInner(
         'Error Alpha',
-        'Error Beta',
         'Error Gamma',
+        'Error Beta',
       ),
     );
   });
@@ -873,18 +873,10 @@ describe('Object types', () => {
       await schema.validate(data, { abortEarly: false });
     } catch (error) {
       if (error instanceof ValidationError) {
-        error.inner.sort(
-          sortByKeyOrder([
-            'testObjects.object.field',
-            'testObjects.objectB.field',
-            'testObjects.objectC.field',
-          ]),
-        );
-
         expect(error.inner.map((e) => e.message)).toEqual([
           'Error A',
-          'Error B',
           'Error C',
+          'Error B',
         ]);
         expect(error.errors).toEqual(['Error A', 'Error C', 'Error B']);
       }
