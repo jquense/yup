@@ -59,6 +59,13 @@ export function validationErrorWithMessages(...errors: any[]) {
   });
 }
 
+export const validationErrorWithMessagesInner = (...messages: string[]) =>
+  expect.objectContaining({
+    inner: expect.arrayContaining(
+      messages.map((msg) => expect.objectContaining({ message: msg })),
+    ),
+  });
+
 export function ensureSync(fn: () => Promise<any>) {
   let run = false;
   let resolve = (t: any) => {

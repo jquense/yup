@@ -33,6 +33,7 @@ import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
+import sortByKeyOrder, { collectFieldPaths } from './util/sortByKeyOrder';
 
 export type SchemaSpec<TDefault> = {
   coerce: boolean;
@@ -489,13 +490,13 @@ export default abstract class Schema<
     let nestedErrors = [] as ValidationError[];
 
     if (!count) return nextOnce([]);
-
+    const self = this as any; // Capture `this`
     let args = {
       value,
       originalValue,
       path,
       options,
-      schema: this,
+      schema: self,
     };
 
     for (let i = 0; i < tests.length; i++) {
@@ -508,6 +509,9 @@ export default abstract class Schema<
             : nestedErrors.push(err);
         }
         if (--count <= 0) {
+          // Create sort order from schema
+          const sortOrder = collectFieldPaths(self, path);
+          nestedErrors.sort(sortByKeyOrder(sortOrder));
           nextOnce(nestedErrors);
         }
       });
