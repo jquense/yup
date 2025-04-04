@@ -11,10 +11,15 @@ import {
   reach,
   StringSchema,
   MixedSchema,
+  ValidationError,
 } from '../src';
 import ObjectSchema from '../src/object';
 import { AnyObject } from '../src/types';
-import { validationErrorWithMessages } from './helpers';
+import {
+  validationErrorWithMessages,
+  validationErrorWithMessagesInner,
+} from './helpers';
+import sortByKeyOrder from '../src/util/sortByKeyOrder';
 
 describe('Object types', () => {
   describe('casting', () => {
@@ -737,6 +742,145 @@ describe('Object types', () => {
         'bar is a required field',
       ),
     );
+  });
+
+  it('should sort errors by schema order', async () => {
+    let schema = object({
+      testObjects: object().shape({
+        object: object().shape({
+          field: string().required('Error A'),
+        }),
+        objectB: object().shape({
+          field: string().required('Error B'),
+        }),
+        objectC: object().shape({
+          field: string().required('Error C'),
+        }),
+      }),
+    });
+
+    let data = {
+      testObjects: {
+        object: { field: '' },
+        objectB: { field: '' },
+        objectC: { field: '' },
+      },
+    };
+
+    await expect(schema.validate(data, { abortEarly: false })).rejects.toEqual(
+      validationErrorWithMessagesInner('Error A', 'Error B', 'Error C'),
+    );
+  });
+
+  it('should correctly order errors for similar keys', async () => {
+    let schema = object({
+      object: object().shape({
+        field: string().required('Error A'),
+      }),
+      objectC: object().shape({
+        field: string().required('Error C'),
+      }),
+      objectB: object().shape({
+        field: string().required('Error B'),
+      }),
+    });
+
+    let data = {
+      object: { field: '' },
+      objectB: { field: '' },
+      objectC: { field: '' },
+    };
+
+    await expect(schema.validate(data, { abortEarly: false })).rejects.toEqual(
+      validationErrorWithMessagesInner('Error A', 'Error C', 'Error B'),
+    );
+  });
+
+  it('should maintain correct order even when nested', async () => {
+    let schema = object({
+      parent: object().shape({
+        child1: object().shape({
+          field: string().required('Error A'),
+        }),
+        child2: object().shape({
+          field: string().required('Error B'),
+        }),
+      }),
+      parentTest: object().shape({
+        child1: object().shape({
+          field: string().required('Error A'),
+        }),
+        child2: object().shape({
+          field: string().required('Error B'),
+        }),
+      }),
+    });
+
+    let data = {
+      parent: {
+        child1: { field: '' },
+        child2: { field: '' },
+      },
+    };
+
+    await expect(schema.validate(data, { abortEarly: false })).rejects.toEqual(
+      validationErrorWithMessagesInner('Error A', 'Error B'),
+    );
+  });
+
+  it('should work with mixed field types and orders', async () => {
+    let schema = object({
+      alpha: string().required('Error Alpha'),
+      gamma: string().required('Error Gamma'),
+      beta: string().when('alpha', () => string().min(5, 'Error Beta')),
+    });
+
+    let data = { alpha: '', beta: '123', gamma: '' };
+
+    await expect(schema.validate(data, { abortEarly: false })).rejects.toEqual(
+      validationErrorWithMessagesInner(
+        'Error Alpha',
+        'Error Gamma',
+        'Error Beta',
+      ),
+    );
+  });
+
+  it('should sort errors by schema order with deep objects', async () => {
+    let schema = object({
+      testObjects: object().shape({
+        object: object().shape({
+          field: string().required('Error A'),
+        }),
+        objectC: object().shape({
+          field: string().required('Error C'),
+        }),
+        objectB: object().shape({
+          field: string().required('Error B'),
+        }),
+      }),
+    });
+
+    let data = {
+      testObjects: {
+        object: { field: '' },
+        objectC: { field: '' },
+        objectB: { field: '' },
+      },
+    };
+
+    try {
+      await schema.validate(data, { abortEarly: false });
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        expect(error.inner.map((e) => e.message)).toEqual([
+          'Error A',
+          'Error C',
+          'Error B',
+        ]);
+        expect(error.errors).toEqual(['Error A', 'Error C', 'Error B']);
+      }
+    }
   });
 
   it('should respect recursive', () => {
