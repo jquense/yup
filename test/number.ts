@@ -1,6 +1,6 @@
 import * as TestHelpers from './helpers';
 
-import { number, NumberSchema } from '../src';
+import { number, NumberSchema, object, ref } from '../src';
 
 describe('Number types', function () {
   it('is extensible', () => {
@@ -197,5 +197,40 @@ describe('Number types', function () {
         ),
       ),
     ]);
+  });
+
+  it('should resolve param refs when describing', () => {
+    let schema = number().min(ref('$foo'));
+
+    expect(schema.describe({ value: 10, context: { foo: 5 } })).toEqual(
+      expect.objectContaining({
+        tests: [
+          expect.objectContaining({
+            params: {
+              min: 5,
+            },
+          }),
+        ],
+      }),
+    );
+
+    let schema2 = object({
+      x: number().min(0),
+      y: number().min(ref('x')),
+    }).required();
+
+    expect(
+      schema2.describe({ value: { x: 10 }, context: { foo: 5 } }).fields.y,
+    ).toEqual(
+      expect.objectContaining({
+        tests: [
+          expect.objectContaining({
+            params: {
+              min: 10,
+            },
+          }),
+        ],
+      }),
+    );
   });
 });

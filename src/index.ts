@@ -21,6 +21,7 @@ import defaultLocale from './locale';
 import Schema, {
   AnySchema,
   CastOptions as BaseCastOptions,
+  SchemaSpec,
   SchemaRefDescription,
   SchemaInnerTypeDescription,
   SchemaObjectDescription,
@@ -77,6 +78,7 @@ export type {
   AnySchema,
   MixedOptions,
   TypeGuard as MixedTypeGuard,
+  SchemaSpec,
   SchemaRefDescription,
   SchemaInnerTypeDescription,
   SchemaObjectDescription,

@@ -10,6 +10,7 @@ import {
 import Reference from '../Reference';
 import type { AnySchema } from '../schema';
 import isAbsent from './isAbsent';
+import { ResolveOptions } from '../Condition';
 
 export type PanicCallback = (err: Error) => void;
 
@@ -86,26 +87,21 @@ export default function createValidation(config: {
       abortEarly = schema.spec.abortEarly,
       disableStackTrace = schema.spec.disableStackTrace,
     } = options;
-
-    function resolve<T>(item: T | Reference<T>) {
-      return Ref.isRef(item) ? item.getValue(value, parent, context) : item;
-    }
-
+    const resolveOptions = { value, parent, context };
     function createError(overrides: CreateErrorOptions = {}) {
-      const nextParams = {
-        value,
-        originalValue,
-        label: schema.spec.label,
-        path: overrides.path || path,
-        spec: schema.spec,
-        disableStackTrace: overrides.disableStackTrace || disableStackTrace,
-        ...params,
-        ...overrides.params,
-      };
-
-      type Keys = (keyof typeof nextParams)[];
-      for (const key of Object.keys(nextParams) as Keys)
-        nextParams[key] = resolve(nextParams[key]);
+      const nextParams = resolveParams(
+        {
+          value,
+          originalValue,
+          label: schema.spec.label,
+          path: overrides.path || path,
+          spec: schema.spec,
+          disableStackTrace: overrides.disableStackTrace || disableStackTrace,
+          ...params,
+          ...overrides.params,
+        },
+        resolveOptions,
+      );
 
       const error = new ValidationError(
         ValidationError.formatError(overrides.message || message, nextParams),
@@ -126,7 +122,9 @@ export default function createValidation(config: {
       type: name,
       from: options.from,
       createError,
-      resolve,
+      resolve<T>(item: T | Reference<T>) {
+        return resolveMaybeRef(item, resolveOptions);
+      },
       options,
       originalValue,
       schema,
@@ -172,4 +170,25 @@ export default function createValidation(config: {
   validate.OPTIONS = config;
 
   return validate;
+}
+
+// Warning: mutates the input
+export function resolveParams<T extends ExtraParams>(
+  params: T,
+  options: ResolveOptions,
+) {
+  if (!params) return params;
+
+  type Keys = (keyof typeof params)[];
+  for (const key of Object.keys(params) as Keys) {
+    params[key] = resolveMaybeRef(params[key], options);
+  }
+
+  return params;
+}
+
+function resolveMaybeRef<T>(item: T | Reference<T>, options: ResolveOptions) {
+  return Ref.isRef(item)
+    ? item.getValue(options.value, options.parent, options.context)
+    : item;
 }

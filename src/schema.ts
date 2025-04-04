@@ -11,6 +11,7 @@ import createValidation, {
   NextCallback,
   PanicCallback,
   TestOptions,
+  resolveParams,
 } from './util/createValidation';
 import printValue from './util/printValue';
 import Ref from './Reference';
@@ -943,10 +944,21 @@ export default abstract class Schema<
       oneOf: next._whitelist.describe(),
       notOneOf: next._blacklist.describe(),
       tests: next.tests
-        .map((fn) => ({ name: fn.OPTIONS!.name, params: fn.OPTIONS!.params }))
         .filter(
-          (n, idx, list) => list.findIndex((c) => c.name === n.name) === idx,
-        ),
+          (n, idx, list) =>
+            list.findIndex((c) => c.OPTIONS!.name === n.OPTIONS!.name) === idx,
+        )
+        .map((fn) => {
+          const params =
+            fn.OPTIONS!.params && options
+              ? resolveParams({ ...fn.OPTIONS!.params }, options)
+              : fn.OPTIONS!.params;
+
+          return {
+            name: fn.OPTIONS!.name,
+            params,
+          };
+        }),
     };
 
     return description;
