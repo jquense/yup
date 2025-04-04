@@ -14,9 +14,14 @@ import type {
   SchemaFieldDescription,
   SchemaLazyDescription,
 } from './schema';
-import { Flags, Maybe } from './util/types';
+import { Flags, Maybe, ResolveFlags } from './util/types';
 import ValidationError from './ValidationError';
 import Schema from './schema';
+import {
+  issuesFromValidationError,
+  StandardResult,
+  StandardSchemaProps,
+} from './standardSchema';
 
 export type LazyBuilder<
   TSchema extends ISchema<TContext>,
@@ -178,6 +183,41 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
     let next = this.clone();
     next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
     return next;
+  }
+
+  get ['~standard']() {
+    const schema = this;
+
+    const standard: StandardSchemaProps<
+      T,
+      ResolveFlags<T, TFlags, undefined>
+    > = {
+      version: 1,
+      vendor: 'yup',
+      async validate(
+        value: unknown,
+      ): Promise<StandardResult<ResolveFlags<T, TFlags, undefined>>> {
+        try {
+          const result = await schema.validate(value, {
+            abortEarly: false,
+          });
+
+          return {
+            value: result as ResolveFlags<T, TFlags, undefined>,
+          };
+        } catch (err) {
+          if (ValidationError.isError(err)) {
+            return {
+              issues: issuesFromValidationError(err),
+            };
+          }
+
+          throw err;
+        }
+      },
+    };
+
+    return standard;
   }
 }
 
