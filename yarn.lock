@@ -5575,14 +5575,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:^8.8.0":
-  version: 8.8.0
-  resolution: "eslint-config-prettier@npm:8.8.0"
+"eslint-config-prettier@npm:^10.1.2":
+  version: 10.1.2
+  resolution: "eslint-config-prettier@npm:10.1.2"
   peerDependencies:
     eslint: ">=7.0.0"
   bin:
     eslint-config-prettier: bin/cli.js
-  checksum: 10c0/9e3bb602184b7ec59239d2f901b1594cd7cc59ff38c3ddcd812137817e50840f4d65d62b61c515c7eae86d85f8b6fb2ebda659a3f83b2f2c5da75feb15531508
+  checksum: 10c0/c22c8e29193cc8fd70becf1c2dd072513f2b3004a175c2a49404c79d1745ba4dc0edc2afd00d16b0e26d24f95813a0469e7445a25104aec218f6d84cdb1697e9
   languageName: node
   linkType: hard
 
@@ -15126,7 +15126,7 @@ __metadata:
     dts-bundle-generator: "npm:^6.13.0"
     eslint: "npm:^8.45.0"
     eslint-config-jason: "npm:^8.2.2"
-    eslint-config-prettier: "npm:^8.8.0"
+    eslint-config-prettier: "npm:^10.1.2"
     eslint-plugin-import: "npm:^2.27.5"
     eslint-plugin-jest: "npm:^25.7.0"
     eslint-plugin-react: "npm:^7.32.2"
