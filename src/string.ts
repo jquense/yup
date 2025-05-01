@@ -191,6 +191,33 @@ export default class StringSchema<
         (value === '' && excludeEmptyString) || value!.search(regex) !== -1,
     });
   }
+  
+  notMatches(regex: RegExp, options?: MatchOptions | MatchOptions['message']) {
+    let excludeEmptyString = false;
+    let message;
+    let name;
+
+    if (options) {
+      if (typeof options === 'object') {
+        ({
+          excludeEmptyString = false,
+          message,
+          name,
+        } = options as MatchOptions);
+      } else {
+        message = options;
+      }
+    }
+
+    return this.test({
+      name: name || 'notMatches',
+      message: message || locale.notMatches,
+      params: { regex },
+      skipAbsent: true,
+      test: (value: Maybe<string>) =>
+        (value === '' && excludeEmptyString) || value!.search(regex) === -1,
+    });
+  }
 
   email(message = locale.email) {
     return this.matches(rEmail, {
