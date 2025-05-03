@@ -139,9 +139,9 @@ export let object: Required<ObjectLocale> = {
 };
 
 export let array: Required<ArrayLocale> = {
-  min: '${path} field must have at least ${min} items',
-  max: '${path} field must have less than or equal to ${max} items',
-  length: '${path} must have ${length} items',
+  min: '${path} field must have at least ${min} item${min === 1 ? "": "s"}',
+  max: '${path} field must have less than or equal to ${max} item${min === 1 ? "": "s"}',
+  length: '${path} must have ${length} item${min === 1 ? "": "s"}',
 };
 
 export let tuple: Required<TupleLocale> = {
