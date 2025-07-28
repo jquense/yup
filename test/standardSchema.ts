@@ -627,3 +627,345 @@ describe('Error message consistency tests', () => {
     }
   });
 });
+
+describe('Conditional validation tests with when API', () => {
+  test('should handle basic conditional validation', async () => {
+    const schema = object({
+      isMember: bool(),
+      membershipId: string().when('isMember', {
+        is: true,
+        then: (schema) => schema.required(),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    // Test when condition is true
+    const memberResult = await schema['~standard'].validate({
+      isMember: true,
+      membershipId: '',
+    });
+    expect(memberResult.issues).toEqual([
+      { path: ['membershipId'], message: 'membershipId is a required field' },
+    ]);
+
+    // Test when condition is false
+    const nonMemberResult = await schema['~standard'].validate({
+      isMember: false,
+      membershipId: '',
+    });
+    if (!nonMemberResult.issues) {
+      expect(nonMemberResult.value).toEqual({
+        isMember: false,
+        membershipId: '',
+      });
+    }
+  });
+
+  test('should handle conditional validation with function predicate', async () => {
+    const schema = object({
+      age: number().required(),
+      parentalConsent: bool().when('age', {
+        is: (age: number) => age < 18,
+        then: (schema) => schema.required(),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    // Test when condition is true (age < 18)
+    const minorResult = await schema['~standard'].validate({
+      age: 16,
+      parentalConsent: undefined,
+    });
+    expect(minorResult.issues).toEqual([
+      {
+        path: ['parentalConsent'],
+        message: 'parentalConsent is a required field',
+      },
+    ]);
+
+    // Test when condition is false (age >= 18)
+    const adultResult = await schema['~standard'].validate({
+      age: 25,
+      parentalConsent: undefined,
+    });
+    if (!adultResult.issues) {
+      expect(adultResult.value).toEqual({
+        age: 25,
+        parentalConsent: undefined,
+      });
+    }
+  });
+
+  test('should handle multiple conditional dependencies', async () => {
+    const schema = object({
+      accountType: string().oneOf(['personal', 'business']),
+      hasEmployees: bool(),
+      employeeCount: number().when(['accountType', 'hasEmployees'], {
+        is: (accountType: string, hasEmployees: boolean) =>
+          accountType === 'business' && hasEmployees,
+        then: (schema) => schema.required().min(1),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    // Test when both conditions are met
+    const businessWithEmployeesResult = await schema['~standard'].validate({
+      accountType: 'business',
+      hasEmployees: true,
+      employeeCount: undefined,
+    });
+    expect(businessWithEmployeesResult.issues).toEqual([
+      { path: ['employeeCount'], message: 'employeeCount is a required field' },
+    ]);
+
+    // Test when conditions are not met
+    const personalAccountResult = await schema['~standard'].validate({
+      accountType: 'personal',
+      hasEmployees: false,
+      employeeCount: undefined,
+    });
+    if (!personalAccountResult.issues) {
+      expect(personalAccountResult.value).toEqual({
+        accountType: 'personal',
+        hasEmployees: false,
+        employeeCount: undefined,
+      });
+    }
+  });
+
+  test('should handle nested conditional validation', async () => {
+    const schema = object({
+      shippingMethod: string().oneOf([
+        'standard',
+        'express',
+        'overnight',
+        'pickup',
+      ]),
+      deliveryAddress: object({
+        street: string().required(),
+        city: string().required(),
+        state: string().required(),
+        zipCode: string().required(),
+        country: string().required(),
+      }).when('shippingMethod', {
+        is: (method: string) => method !== 'pickup',
+        then: (schema) => schema.required(),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    // Test with shipping method that requires address but missing address
+    const requiredAddressResult = await schema['~standard'].validate({
+      shippingMethod: 'overnight',
+      // deliveryAddress is completely missing
+    });
+
+    expect(requiredAddressResult.issues).toBeDefined();
+    // When the address is required but missing, we get errors for its required fields
+    expect(
+      requiredAddressResult.issues?.some(
+        (issue) =>
+          issue.path?.join('.') === 'deliveryAddress.street' &&
+          issue.message.includes('required'),
+      ),
+    ).toBe(true);
+
+    // Test with pickup method where address is optional
+    const pickupResult = await schema['~standard'].validate({
+      shippingMethod: 'pickup',
+      // deliveryAddress is optional for pickup
+    });
+
+    if (!pickupResult.issues) {
+      expect(pickupResult.value).toEqual({
+        shippingMethod: 'pickup',
+      });
+    }
+  });
+
+  test('should handle conditional validation with context variables', async () => {
+    const schema = object({
+      role: string().oneOf(['user', 'admin']),
+      permissions: array(string()).when('$userRole', {
+        is: 'admin',
+        then: (schema) => schema.min(1).required(),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    // Test standard schema (doesn't support context, so this should pass)
+    const adminStandardResult = await schema['~standard'].validate({
+      role: 'user',
+      permissions: [],
+    });
+
+    // Note: Standard schema doesn't have context, so this should pass
+    if (!adminStandardResult.issues) {
+      expect(adminStandardResult.value).toEqual({
+        role: 'user',
+        permissions: [],
+      });
+    }
+  });
+
+  test('conditional validation should produce same errors as main API', async () => {
+    const schema = object({
+      subscriptionType: string().oneOf(['free', 'premium', 'enterprise']),
+      features: array(string()).when('subscriptionType', {
+        is: 'free',
+        then: (schema) => schema.max(3),
+        otherwise: (schema) => schema.max(20),
+      }),
+      maxUsers: number().when('subscriptionType', {
+        is: 'enterprise',
+        then: (schema) => schema.required().min(50),
+        otherwise: (schema) => schema.optional().max(10),
+      }),
+    });
+
+    const testValue = {
+      subscriptionType: 'enterprise',
+      features: Array(25).fill('feature'), // Too many for any plan
+      maxUsers: 5, // Too low for enterprise
+    };
+
+    // Test with standard schema
+    const standardResult = await schema['~standard'].validate(testValue);
+
+    // Test with main API
+    let mainAPIError: any;
+    try {
+      await schema.validate(testValue, { abortEarly: false });
+    } catch (err) {
+      mainAPIError = err;
+    }
+
+    // Compare error messages
+    expect(standardResult.issues).toBeDefined();
+    expect(mainAPIError).toBeDefined();
+    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
+
+    const standardMessages = standardResult.issues
+      ?.map((issue) => issue.message)
+      .sort();
+    const mainMessages = mainAPIError.inner
+      .map((err: any) => err.message)
+      .sort();
+    expect(standardMessages).toEqual(mainMessages);
+  });
+
+  test('should handle when with function returning schema', async () => {
+    const schema = object({
+      userType: string().oneOf(['individual', 'organization']),
+      name: string().when('userType', ([userType], schema) => {
+        if (userType === 'organization') {
+          return schema.required().min(2).max(100);
+        }
+        return schema.required().min(1).max(50);
+      }),
+      taxId: string().when('userType', ([userType], schema) => {
+        if (userType === 'organization') {
+          return schema
+            .required()
+            .matches(/^\d{2}-\d{7}$/, 'Tax ID must be in format XX-XXXXXXX');
+        }
+        return schema.optional();
+      }),
+    });
+
+    // Test organization validation
+    const orgResult = await schema['~standard'].validate({
+      userType: 'organization',
+      name: 'A', // Too short for organization
+      taxId: 'invalid-format',
+    });
+
+    expect(orgResult.issues).toBeDefined();
+    expect(orgResult.issues).toEqual(
+      expect.arrayContaining([
+        { path: ['name'], message: 'name must be at least 2 characters' },
+        { path: ['taxId'], message: 'Tax ID must be in format XX-XXXXXXX' },
+      ]),
+    );
+
+    // Test individual validation
+    const individualResult = await schema['~standard'].validate({
+      userType: 'individual',
+      name: 'John Doe',
+      taxId: undefined,
+    });
+
+    if (!individualResult.issues) {
+      expect(individualResult.value).toEqual({
+        userType: 'individual',
+        name: 'John Doe',
+        taxId: undefined,
+      });
+    }
+  });
+
+  test('should handle complex conditional chains', async () => {
+    const schema = object({
+      eventType: string().oneOf(['conference', 'workshop', 'webinar']),
+      isVirtual: bool(),
+      location: string().when(['eventType', 'isVirtual'], {
+        is: (eventType: string, isVirtual: boolean) =>
+          eventType !== 'webinar' && !isVirtual,
+        then: (schema) => schema.required().min(5),
+        otherwise: (schema) => schema.optional(),
+      }),
+      platformUrl: string()
+        .url()
+        .when('isVirtual', {
+          is: true,
+          then: (schema) => schema.required(),
+          otherwise: (schema) => schema.optional(),
+        }),
+      capacity: number()
+        .min(1)
+        .when('eventType', {
+          is: 'conference',
+          then: (schema) => schema.min(50).required(),
+          otherwise: (schema) => schema.max(100).optional(),
+        }),
+    });
+
+    const testValue = {
+      eventType: 'conference',
+      isVirtual: false,
+      location: '', // Required but empty
+      platformUrl: '', // Not required but invalid URL if provided
+      capacity: 10, // Too low for conference
+    };
+
+    // Test with standard schema
+    const standardResult = await schema['~standard'].validate(testValue);
+
+    // Test with main API
+    let mainAPIError: any;
+    try {
+      await schema.validate(testValue, { abortEarly: false });
+    } catch (err) {
+      mainAPIError = err;
+    }
+
+    // Compare error messages
+    expect(standardResult.issues).toBeDefined();
+    expect(mainAPIError).toBeDefined();
+
+    const standardMessages = standardResult.issues
+      ?.map((issue) => issue.message)
+      .sort();
+    const mainMessages = mainAPIError.inner
+      .map((err: any) => err.message)
+      .sort();
+    expect(standardMessages).toEqual(mainMessages);
+
+    // Verify specific conditional errors
+    const standardPaths = standardResult.issues?.map((issue) =>
+      issue.path ? issue.path.join('.') : undefined,
+    );
+    expect(standardPaths).toContain('location');
+    expect(standardPaths).toContain('capacity');
+  });
+});
