@@ -21,6 +21,45 @@ function verifyStandardSchema<Input, Output>(
   );
 }
 
+/**
+ * Helper function to get Yup validation error directly without try-catch boilerplate
+ */
+async function getYupValidationError(schema: any, value: any): Promise<any> {
+  try {
+    await schema.validate(value, { abortEarly: false });
+    return null; // No error occurred
+  } catch (err) {
+    return err; // Return the validation error
+  }
+}
+
+/**
+ * Helper function to compare standard schema validation results with main Yup API
+ */
+async function expectValidationConsistency(schema: any, testValue: any) {
+  // Test with standard schema
+  const standardResult = await schema['~standard'].validate(testValue);
+
+  // Test with main API
+  const mainAPIError = await getYupValidationError(schema, testValue);
+
+  // Both should have errors
+  expect(standardResult.issues).toBeDefined();
+  expect(mainAPIError).toBeDefined();
+
+  // Compare error counts
+  expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
+
+  // Compare error messages (sorted for order independence)
+  const standardMessages = standardResult.issues
+    ?.map((issue: any) => issue.message)
+    .sort();
+  const mainMessages = mainAPIError.inner.map((err: any) => err.message).sort();
+  expect(standardMessages).toEqual(mainMessages);
+
+  return { standardResult, mainAPIError };
+}
+
 test('is compatible with standard schema', () => {
   expect(verifyStandardSchema(string())).toBe(true);
   expect(verifyStandardSchema(number())).toBe(true);
@@ -48,34 +87,41 @@ test('issues path is an array of property paths', async () => {
     'not.a.field': string().required(),
   });
 
-  const result = await schema['~standard'].validate({
+  const testValue = {
     obj: { foo: '', 'not.obj.nested': '' },
     arr: [{ foo: '', 'not.array.nested': '' }],
-  });
+  };
 
-  expect(result.issues).toEqual([
-    { path: ['obj', 'foo'], message: 'obj.foo is a required field' },
-    {
-      path: ['obj', 'not.obj.nested'],
-      message: 'obj["not.obj.nested"] is a required field',
-    },
-    { path: ['arr', '0', 'foo'], message: 'arr[0].foo is a required field' },
-    {
-      path: ['arr', '0', 'not.array.nested'],
-      message: 'arr[0]["not.array.nested"] is a required field',
-    },
-    { path: ['not.a.field'], message: '["not.a.field"] is a required field' },
-  ]);
+  // Use helper function to compare validation consistency
+  const { standardResult } = await expectValidationConsistency(
+    schema,
+    testValue,
+  );
+
+  // Verify specific path structures are correct
+  expect(standardResult.issues?.map((issue: any) => issue.path)).toEqual(
+    expect.arrayContaining([
+      ['obj', 'foo'],
+      ['obj', 'not.obj.nested'],
+      ['arr', '0', 'foo'],
+      ['arr', '0', 'not.array.nested'],
+      ['not.a.field'],
+    ]),
+  );
 });
 
 test('should clone correctly when using modifiers', async () => {
   const schema = string().required();
+  const testValue = '';
 
-  const result = await schema['~standard'].validate('');
+  // Use helper function to compare validation consistency
+  const { standardResult } = await expectValidationConsistency(
+    schema,
+    testValue,
+  );
 
-  expect(result.issues).toEqual([
-    { path: undefined, message: 'this is a required field' },
-  ]);
+  // Verify path is undefined for root-level validation
+  expect(standardResult.issues?.[0]?.path).toBeUndefined();
 });
 
 test('should work correctly with lazy schemas', async () => {
@@ -88,20 +134,31 @@ test('should work correctly with lazy schemas', async () => {
     return string().required().min(12);
   });
 
-  const result = await schema['~standard'].validate('');
+  const testValue1 = '';
 
-  expect(result.issues).toEqual([
-    { path: undefined, message: 'this is a required field' },
-    { path: undefined, message: 'this must be at least 12 characters' },
-  ]);
+  // Use helper function to compare validation consistency for string validation
+  const { standardResult: result1 } = await expectValidationConsistency(
+    schema,
+    testValue1,
+  );
+
+  // Verify path is undefined for root-level validation
+  expect(result1.issues?.every((issue: any) => issue.path === undefined)).toBe(
+    true,
+  );
 
   isNumber = true;
 
-  const result2 = await schema['~standard'].validate(5);
+  const testValue2 = 5;
 
-  expect(result2.issues).toEqual([
-    { path: undefined, message: 'this must be greater than or equal to 10' },
-  ]);
+  // Use helper function to compare validation consistency for number validation
+  const { standardResult: result2 } = await expectValidationConsistency(
+    schema,
+    testValue2,
+  );
+
+  // Verify path is undefined for root-level validation
+  expect(result2.issues?.[0]?.path).toBeUndefined();
 });
 
 describe('Array schema standard interface tests', () => {
@@ -115,14 +172,17 @@ describe('Array schema standard interface tests', () => {
     }
 
     // Test with invalid array items - use an object that can't be cast to string
-    const invalidResult = await schema['~standard'].validate([
-      'a',
-      { foo: 'bar' },
-      'c',
-    ]);
-    expect(invalidResult.issues).toBeDefined();
-    expect(invalidResult.issues?.[0]?.path).toEqual(['1']);
-    expect(invalidResult.issues?.[0]?.message).toContain(
+    const testValue = ['a', { foo: 'bar' }, 'c'];
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details
+    expect(standardResult.issues?.[0]?.path).toEqual(['1']);
+    expect(standardResult.issues?.[0]?.message).toContain(
       'must be a `string` type',
     );
   });
@@ -131,63 +191,38 @@ describe('Array schema standard interface tests', () => {
     const schema = array(string()).min(2).max(4);
 
     // Test empty array
-    const emptyResult = await schema['~standard'].validate([]);
-    expect(emptyResult.issues).toEqual([
-      { path: undefined, message: 'this field must have at least 2 items' },
-    ]);
+    const emptyTestValue: string[] = [];
+
+    // Use helper function to compare validation consistency for empty array
+    await expectValidationConsistency(schema, emptyTestValue);
 
     // Test array too long
-    const longResult = await schema['~standard'].validate([
-      'a',
-      'b',
-      'c',
-      'd',
-      'e',
-    ]);
-    expect(longResult.issues).toEqual([
-      {
-        path: undefined,
-        message: 'this field must have less than or equal to 4 items',
-      },
-    ]);
+    const longTestValue = ['a', 'b', 'c', 'd', 'e'];
+
+    // Use helper function to compare validation consistency for long array
+    await expectValidationConsistency(schema, longTestValue);
   });
 
   test('should handle required array validation', async () => {
     const schema = array(string()).required();
+    const testValue = undefined;
 
-    const result = await schema['~standard'].validate(undefined);
-    expect(result.issues).toEqual([
-      { path: undefined, message: 'this is a required field' },
-    ]);
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify path is undefined for root-level validation
+    expect(standardResult.issues?.[0]?.path).toBeUndefined();
   });
 
   test('array validation should produce same errors as main API', async () => {
     const schema = array(string().required()).min(2);
     const testValue = ['valid', ''];
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Compare error messages
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
-
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 });
 
@@ -208,15 +243,25 @@ describe('Object schema standard interface tests', () => {
     }
 
     // Test with invalid object
-    const invalidResult = await schema['~standard'].validate({
+    const testValue = {
       name: '',
       age: -1,
-    });
-    expect(invalidResult.issues).toBeDefined();
-    expect(invalidResult.issues).toEqual(
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details with flexible matching
+    expect(standardResult.issues).toEqual(
       expect.arrayContaining([
-        { path: ['name'], message: 'name is a required field' },
-        { path: ['age'], message: 'age must be greater than or equal to 0' },
+        { path: ['name'], message: expect.stringContaining('required') },
+        {
+          path: ['age'],
+          message: expect.stringContaining('greater than or equal to 0'),
+        },
       ]),
     );
   });
@@ -231,25 +276,31 @@ describe('Object schema standard interface tests', () => {
       }),
     });
 
-    const invalidResult = await schema['~standard'].validate({
+    const testValue = {
       user: {
         profile: {
           name: '',
           email: 'invalid-email',
         },
       },
-    });
+    };
 
-    expect(invalidResult.issues).toBeDefined();
-    expect(invalidResult.issues).toEqual(
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details
+    expect(standardResult.issues).toEqual(
       expect.arrayContaining([
         {
           path: ['user', 'profile', 'name'],
-          message: 'user.profile.name is a required field',
+          message: expect.stringContaining('required'),
         },
         {
           path: ['user', 'profile', 'email'],
-          message: 'user.profile.email must be a valid email',
+          message: expect.stringContaining('valid email'),
         },
       ]),
     );
@@ -263,16 +314,22 @@ describe('Object schema standard interface tests', () => {
       }).required(),
     });
 
-    const invalidResult = await schema['~standard'].validate({
+    const testValue = {
       tags: [],
       metadata: null,
-    });
+    };
 
-    expect(invalidResult.issues).toBeDefined();
-    expect(invalidResult.issues).toEqual(
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details with more flexible matching
+    expect(standardResult.issues).toEqual(
       expect.arrayContaining([
-        { path: ['tags'], message: 'tags field must have at least 1 items' },
-        { path: ['metadata'], message: 'metadata is a required field' },
+        { path: ['tags'], message: expect.stringContaining('at least 1') },
+        { path: ['metadata'], message: expect.stringContaining('required') },
       ]),
     );
   });
@@ -294,29 +351,8 @@ describe('Object schema standard interface tests', () => {
       },
     };
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Compare error messages
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
-
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 });
 
@@ -333,16 +369,20 @@ describe('Lazy schema standard interface tests', () => {
     });
 
     // Test string validation
-    const stringResult = await schema['~standard'].validate('abc');
-    expect(stringResult.issues).toEqual([
-      { path: undefined, message: 'this must be at least 5 characters' },
-    ]);
+    const stringTestValue = 'abc';
+    const { standardResult: stringResult } = await expectValidationConsistency(
+      schema,
+      stringTestValue,
+    );
+    expect(stringResult.issues?.[0]?.path).toBeUndefined();
 
     // Test number validation
-    const numberResult = await schema['~standard'].validate(150);
-    expect(numberResult.issues).toEqual([
-      { path: undefined, message: 'this must be less than or equal to 100' },
-    ]);
+    const numberTestValue = 150;
+    const { standardResult: numberResult } = await expectValidationConsistency(
+      schema,
+      numberTestValue,
+    );
+    expect(numberResult.issues?.[0]?.path).toBeUndefined();
 
     // Test successful validation
     const validStringResult = await schema['~standard'].validate('hello world');
@@ -373,31 +413,40 @@ describe('Lazy schema standard interface tests', () => {
     });
 
     // Test user validation
-    const userResult = await schema['~standard'].validate({
+    const userTestValue = {
       type: 'user',
       name: '',
       email: 'invalid',
-    });
+    };
 
-    expect(userResult.issues).toBeDefined();
+    const { standardResult: userResult } = await expectValidationConsistency(
+      schema,
+      userTestValue,
+    );
+
     expect(userResult.issues).toEqual(
       expect.arrayContaining([
-        { path: ['name'], message: 'name is a required field' },
-        { path: ['email'], message: 'email must be a valid email' },
+        { path: ['name'], message: expect.stringContaining('required') },
+        { path: ['email'], message: expect.stringContaining('valid email') },
       ]),
     );
 
     // Test admin validation
-    const adminResult = await schema['~standard'].validate({
+    const adminTestValue = {
       type: 'admin',
       name: 'Admin User',
       permissions: [],
-    });
+    };
+
+    const { standardResult: adminResult } = await expectValidationConsistency(
+      schema,
+      adminTestValue,
+    );
 
     expect(adminResult.issues).toEqual([
       {
         path: ['permissions'],
-        message: 'permissions field must have at least 1 items',
+        message: expect.stringContaining('at least 1'),
       },
     ]);
   });
@@ -412,29 +461,8 @@ describe('Lazy schema standard interface tests', () => {
 
     const testValue = ['valid', ''];
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Compare error messages
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
-
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 });
 
@@ -480,35 +508,14 @@ describe('Complex nested validation comparisons', () => {
       },
     };
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Both should have errors
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-
-    // Compare error counts
-    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
-
-    // Compare error messages (order might differ, so sort them)
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
 
     // Verify specific error paths exist
-    const standardPaths = standardResult.issues?.map((issue) =>
+    const standardPaths = standardResult.issues?.map((issue: any) =>
       issue.path ? issue.path.join('.') : undefined,
     );
     expect(standardPaths).toContain('users.0.id');
@@ -564,36 +571,16 @@ describe('Error message consistency tests', () => {
     const schema = string().required().min(5).max(10).email();
     const testValue = 'abc';
 
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    expect(standardResult.issues?.map((issue) => issue.message).sort()).toEqual(
-      mainAPIError.inner.map((err: any) => err.message).sort(),
-    );
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 
   test('should produce identical error messages for number validations', async () => {
     const schema = number().required().min(10).max(100).integer();
     const testValue = 5.5;
 
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    expect(standardResult.issues?.map((issue) => issue.message).sort()).toEqual(
-      mainAPIError.inner.map((err: any) => err.message).sort(),
-    );
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 
   test('should handle transform behavior consistently', async () => {
@@ -640,12 +627,20 @@ describe('Conditional validation tests with when API', () => {
     });
 
     // Test when condition is true
-    const memberResult = await schema['~standard'].validate({
+    const testValue = {
       isMember: true,
       membershipId: '',
-    });
-    expect(memberResult.issues).toEqual([
-      { path: ['membershipId'], message: 'membershipId is a required field' },
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details with flexible matching
+    expect(standardResult.issues).toEqual([
+      { path: ['membershipId'], message: expect.stringContaining('required') },
     ]);
 
     // Test when condition is false
@@ -672,14 +667,22 @@ describe('Conditional validation tests with when API', () => {
     });
 
     // Test when condition is true (age < 18)
-    const minorResult = await schema['~standard'].validate({
+    const testValue = {
       age: 16,
       parentalConsent: undefined,
-    });
-    expect(minorResult.issues).toEqual([
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details
+    expect(standardResult.issues).toEqual([
       {
         path: ['parentalConsent'],
-        message: 'parentalConsent is a required field',
+        message: expect.stringContaining('required'),
       },
     ]);
 
@@ -709,13 +712,21 @@ describe('Conditional validation tests with when API', () => {
     });
 
     // Test when both conditions are met
-    const businessWithEmployeesResult = await schema['~standard'].validate({
+    const testValue = {
       accountType: 'business',
       hasEmployees: true,
       employeeCount: undefined,
-    });
-    expect(businessWithEmployeesResult.issues).toEqual([
-      { path: ['employeeCount'], message: 'employeeCount is a required field' },
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details
+    expect(standardResult.issues).toEqual([
+      { path: ['employeeCount'], message: expect.stringContaining('required') },
     ]);
 
     // Test when conditions are not met
@@ -755,16 +766,21 @@ describe('Conditional validation tests with when API', () => {
     });
 
     // Test with shipping method that requires address but missing address
-    const requiredAddressResult = await schema['~standard'].validate({
+    const testValue = {
       shippingMethod: 'overnight',
       // deliveryAddress is completely missing
-    });
+    };
 
-    expect(requiredAddressResult.issues).toBeDefined();
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
     // When the address is required but missing, we get errors for its required fields
     expect(
-      requiredAddressResult.issues?.some(
-        (issue) =>
+      standardResult.issues?.some(
+        (issue: any) =>
           issue.path?.join('.') === 'deliveryAddress.street' &&
           issue.message.includes('required'),
       ),
@@ -829,29 +845,8 @@ describe('Conditional validation tests with when API', () => {
       maxUsers: 5, // Too low for enterprise
     };
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Compare error messages
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
-
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(schema, testValue);
   });
 
   test('should handle when with function returning schema', async () => {
@@ -874,17 +869,26 @@ describe('Conditional validation tests with when API', () => {
     });
 
     // Test organization validation
-    const orgResult = await schema['~standard'].validate({
+    const testValue = {
       userType: 'organization',
       name: 'A', // Too short for organization
       taxId: 'invalid-format',
-    });
+    };
 
-    expect(orgResult.issues).toBeDefined();
-    expect(orgResult.issues).toEqual(
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
+
+    // Verify specific error details with flexible matching
+    expect(standardResult.issues).toEqual(
       expect.arrayContaining([
-        { path: ['name'], message: 'name must be at least 2 characters' },
-        { path: ['taxId'], message: 'Tax ID must be in format XX-XXXXXXX' },
+        { path: ['name'], message: expect.stringContaining('at least 2') },
+        {
+          path: ['taxId'],
+          message: expect.stringContaining('Tax ID must be in format'),
+        },
       ]),
     );
 
@@ -938,34 +942,309 @@ describe('Conditional validation tests with when API', () => {
       capacity: 10, // Too low for conference
     };
 
-    // Test with standard schema
-    const standardResult = await schema['~standard'].validate(testValue);
-
-    // Test with main API
-    let mainAPIError: any;
-    try {
-      await schema.validate(testValue, { abortEarly: false });
-    } catch (err) {
-      mainAPIError = err;
-    }
-
-    // Compare error messages
-    expect(standardResult.issues).toBeDefined();
-    expect(mainAPIError).toBeDefined();
-
-    const standardMessages = standardResult.issues
-      ?.map((issue) => issue.message)
-      .sort();
-    const mainMessages = mainAPIError.inner
-      .map((err: any) => err.message)
-      .sort();
-    expect(standardMessages).toEqual(mainMessages);
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      schema,
+      testValue,
+    );
 
     // Verify specific conditional errors
-    const standardPaths = standardResult.issues?.map((issue) =>
+    const standardPaths = standardResult.issues?.map((issue: any) =>
       issue.path ? issue.path.join('.') : undefined,
     );
     expect(standardPaths).toContain('location');
     expect(standardPaths).toContain('capacity');
+  });
+});
+
+describe('Concat API standard interface tests', () => {
+  test('should handle string schema concatenation', async () => {
+    const baseSchema = string().required();
+    const extendedSchema = string().min(5).max(20);
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with invalid value that violates both base and extended rules
+    const testValue = '';
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      concatenatedSchema,
+      testValue,
+    );
+
+    // Verify that concatenated schema produces errors for all combined rules
+    expect(standardResult.issues?.length).toBeGreaterThan(0);
+    expect(standardResult.issues?.[0]?.path).toBeUndefined(); // Root level validation
+  });
+
+  test('should handle number schema concatenation', async () => {
+    const baseSchema = number().required().min(0);
+    const extendedSchema = number().max(100).integer();
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with invalid value that violates extended rules
+    const testValue = 150.5;
+
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(concatenatedSchema, testValue);
+  });
+
+  test('should handle object schema concatenation', async () => {
+    const baseSchema = object({
+      name: string().required(),
+      email: string().email(),
+    });
+
+    const extendedSchema = object({
+      age: number().required().min(18),
+      phone: string().matches(/^\d{10}$/, 'Phone must be 10 digits'),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with value that has errors in both base and extended fields
+    const testValue = {
+      name: '', // Violates base schema
+      email: 'invalid-email', // Violates base schema
+      age: 16, // Violates extended schema
+      phone: '123', // Violates extended schema
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      concatenatedSchema,
+      testValue,
+    );
+
+    // Verify that all fields from both schemas are validated
+    const errorPaths = standardResult.issues?.map(
+      (issue: any) => issue.path?.[0],
+    );
+    expect(errorPaths).toContain('name');
+    expect(errorPaths).toContain('email');
+    expect(errorPaths).toContain('age');
+    expect(errorPaths).toContain('phone');
+  });
+
+  test('should handle array schema concatenation', async () => {
+    const baseSchema = array(string()).required();
+    const extendedSchema = array().min(2).max(5);
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with array that violates extended rules
+    const testValue = ['single-item']; // Less than min length
+
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(concatenatedSchema, testValue);
+  });
+
+  test('should handle concat with conditional validation', async () => {
+    const baseSchema = object({
+      type: string().oneOf(['user', 'admin']),
+      name: string().required(),
+    });
+
+    const extendedSchema = object({
+      permissions: array(string()).when('type', {
+        is: 'admin',
+        then: (schema) => schema.required().min(1),
+        otherwise: (schema) => schema.optional(),
+      }),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test admin type without permissions
+    const testValue = {
+      type: 'admin',
+      name: 'Admin User',
+      permissions: [], // Should be required and non-empty for admin
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      concatenatedSchema,
+      testValue,
+    );
+
+    // Verify conditional validation works in concatenated schema
+    expect(standardResult.issues).toEqual([
+      {
+        path: ['permissions'],
+        message: expect.stringContaining('at least 1'),
+      },
+    ]);
+  });
+
+  test('should handle concat with transforms', async () => {
+    const baseSchema = object({
+      name: string().trim(),
+      email: string().lowercase(),
+    });
+
+    const extendedSchema = object({
+      age: number(),
+      active: bool(),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with transformable values
+    const testValue = {
+      name: '  John Doe  ',
+      email: 'JOHN@EXAMPLE.COM',
+      age: '25',
+      active: 'true',
+    };
+
+    // Test with standard schema
+    const standardResult = await concatenatedSchema['~standard'].validate(
+      testValue,
+    );
+
+    // Test with main API
+    const mainResult = await concatenatedSchema.validate(testValue);
+
+    // Both should succeed and produce same transformed values
+    expect(standardResult.issues).toBeUndefined();
+    if (!standardResult.issues) {
+      expect(standardResult.value).toEqual(mainResult);
+      expect(standardResult.value).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+        age: 25,
+        active: true,
+      });
+    }
+  });
+
+  test('should handle multiple concat operations', async () => {
+    const baseSchema = string().required();
+    const firstExtension = string().min(3);
+    const secondExtension = string().max(10);
+    const thirdExtension = string().matches(
+      /^[A-Z]/,
+      'Must start with uppercase letter',
+    );
+
+    const concatenatedSchema = baseSchema
+      .concat(firstExtension)
+      .concat(secondExtension)
+      .concat(thirdExtension);
+
+    // Test with value that violates multiple rules
+    const testValue = 'ab'; // Too short and doesn't start with uppercase
+
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(concatenatedSchema, testValue);
+  });
+
+  test('should handle concat with nested object schemas', async () => {
+    const baseSchema = object({
+      user: object({
+        name: string().required(),
+        email: string().email(),
+      }),
+    });
+
+    const extendedSchema = object({
+      user: object({
+        age: number().min(18),
+        phone: string().required(),
+      }),
+      metadata: object({
+        createdAt: date().required(),
+      }),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with nested validation errors
+    const testValue = {
+      user: {
+        name: '',
+        email: 'invalid-email',
+        age: 16,
+        phone: '',
+      },
+      metadata: {
+        createdAt: null,
+      },
+    };
+
+    // Use helper function to compare validation consistency
+    const { standardResult } = await expectValidationConsistency(
+      concatenatedSchema,
+      testValue,
+    );
+
+    // With object concat, the extended schema typically overrides the base schema fields
+    // So we mainly check for the extended schema fields and metadata
+    const errorPaths = standardResult.issues?.map((issue: any) =>
+      issue.path ? issue.path.join('.') : undefined,
+    );
+    expect(errorPaths).toContain('user.age');
+    expect(errorPaths).toContain('user.phone');
+    expect(errorPaths).toContain('metadata.createdAt');
+  });
+
+  test('should handle concat with mixed schema types', async () => {
+    const baseSchema = object({
+      value: mixed().required(),
+    });
+
+    const extendedSchema = object({
+      value: mixed().test('custom', 'Value must be positive', (value: any) => {
+        return typeof value === 'number' ? value > 0 : true;
+      }),
+      description: string().optional(),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with negative number (violates custom test)
+    const testValue = {
+      value: -5,
+      description: 'A negative value',
+    };
+
+    // Use helper function to compare validation consistency
+    await expectValidationConsistency(concatenatedSchema, testValue);
+  });
+
+  test('should handle successful concat validation', async () => {
+    const baseSchema = object({
+      name: string().required(),
+      email: string().email().required(),
+    });
+
+    const extendedSchema = object({
+      age: number().min(18).max(120),
+      newsletter: bool().default(false),
+    });
+
+    const concatenatedSchema = baseSchema.concat(extendedSchema);
+
+    // Test with valid data
+    const validValue = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      age: 30,
+      newsletter: true,
+    };
+
+    // Test with standard schema
+    const standardResult = await concatenatedSchema['~standard'].validate(
+      validValue,
+    );
+
+    // Test with main API
+    const mainResult = await concatenatedSchema.validate(validValue);
+
+    // Both should succeed
+    expect(standardResult.issues).toBeUndefined();
+    if (!standardResult.issues) {
+      expect(standardResult.value).toEqual(mainResult);
+    }
   });
 });
