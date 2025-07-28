@@ -8,6 +8,7 @@ import {
   mixed,
   tuple,
   lazy,
+  addMethod,
 } from '../src';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 
@@ -24,9 +25,13 @@ function verifyStandardSchema<Input, Output>(
 /**
  * Helper function to get Yup validation error directly without try-catch boilerplate
  */
-async function getYupValidationError(schema: any, value: any): Promise<any> {
+async function getYupValidationError(
+  schema: any,
+  value: any,
+  options?: any,
+): Promise<any> {
   try {
-    await schema.validate(value, { abortEarly: false });
+    await schema.validate(value, { abortEarly: false, ...options });
     return null; // No error occurred
   } catch (err) {
     return err; // Return the validation error
@@ -36,26 +41,53 @@ async function getYupValidationError(schema: any, value: any): Promise<any> {
 /**
  * Helper function to compare standard schema validation results with main Yup API
  */
-async function expectValidationConsistency(schema: any, testValue: any) {
+async function expectValidationConsistency(
+  schema: any,
+  testValue: any,
+  shouldBeValid?: boolean,
+  expectedMessage?: string,
+  options?: any,
+) {
   // Test with standard schema
   const standardResult = await schema['~standard'].validate(testValue);
 
   // Test with main API
-  const mainAPIError = await getYupValidationError(schema, testValue);
+  const mainAPIError = await getYupValidationError(schema, testValue, options);
 
-  // Both should have errors
-  expect(standardResult.issues).toBeDefined();
-  expect(mainAPIError).toBeDefined();
+  if (shouldBeValid === true) {
+    // Both should succeed
+    expect(standardResult.issues).toBeUndefined();
+    expect(mainAPIError).toBeNull();
+  } else if (shouldBeValid === false) {
+    // Both should have errors
+    expect(standardResult.issues).toBeDefined();
+    expect(mainAPIError).toBeDefined();
 
-  // Compare error counts
-  expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
+    if (expectedMessage) {
+      expect(mainAPIError?.message).toEqual(
+        expect.stringContaining(expectedMessage),
+      );
+      expect(standardResult.issues?.[0]?.message).toEqual(
+        expect.stringContaining(expectedMessage),
+      );
+    }
+  } else {
+    // Original behavior - just compare that both have errors
+    expect(standardResult.issues).toBeDefined();
+    expect(mainAPIError).toBeDefined();
 
-  // Compare error messages (sorted for order independence)
-  const standardMessages = standardResult.issues
-    ?.map((issue: any) => issue.message)
-    .sort();
-  const mainMessages = mainAPIError.inner.map((err: any) => err.message).sort();
-  expect(standardMessages).toEqual(mainMessages);
+    // Compare error counts
+    expect(standardResult.issues?.length).toBe(mainAPIError.inner.length);
+
+    // Compare error messages (sorted for order independence)
+    const standardMessages = standardResult.issues
+      ?.map((issue: any) => issue.message)
+      .sort();
+    const mainMessages = mainAPIError.inner
+      .map((err: any) => err.message)
+      .sort();
+    expect(standardMessages).toEqual(mainMessages);
+  }
 
   return { standardResult, mainAPIError };
 }
@@ -1246,5 +1278,342 @@ describe('Concat API standard interface tests', () => {
     if (!standardResult.issues) {
       expect(standardResult.value).toEqual(mainResult);
     }
+  });
+});
+
+describe('AddMethod API standard interface tests', () => {
+  beforeAll(() => {
+    // Add custom methods to string schema
+    addMethod(string, 'isUpperCase', function (message = 'Must be uppercase') {
+      return this.test('isUpperCase', message, function (value: any) {
+        return value == null || value === value.toUpperCase();
+      });
+    });
+
+    addMethod(
+      string,
+      'hasMinWords',
+      function (minWords: number, message?: string) {
+        const defaultMessage = `Must have at least ${minWords} words`;
+        return this.test(
+          'hasMinWords',
+          message || defaultMessage,
+          function (value: any) {
+            if (value == null) return true;
+            return value.trim().split(/\s+/).length >= minWords;
+          },
+        );
+      },
+    );
+
+    addMethod(
+      string,
+      'startsWithCapital',
+      function (message = 'Must start with capital letter') {
+        return this.test('startsWithCapital', message, function (value: any) {
+          return value == null || /^[A-Z]/.test(value);
+        });
+      },
+    );
+
+    addMethod(
+      string,
+      'endsWithPeriod',
+      function (message = 'Must end with period') {
+        return this.test('endsWithPeriod', message, function (value: any) {
+          return value == null || value.endsWith('.');
+        });
+      },
+    );
+
+    // Add custom methods to number schema
+    addMethod(number, 'isEven', function (message = 'Must be an even number') {
+      return this.test('isEven', message, function (value: any) {
+        return value == null || value % 2 === 0;
+      });
+    });
+
+    addMethod(
+      number,
+      'isPositiveWhenDefined',
+      function (message = 'Must be positive when defined') {
+        return this.test(
+          'isPositiveWhenDefined',
+          message,
+          function (value: any) {
+            return value == null || value > 0;
+          },
+        );
+      },
+    );
+
+    // Add custom methods to object schema
+    addMethod(
+      object,
+      'hasRequiredFields',
+      function (fields: string[], message = 'Missing required fields') {
+        return this.test('hasRequiredFields', message, function (value: any) {
+          if (value == null) return true;
+          return fields.every((field) =>
+            Object.prototype.hasOwnProperty.call(value, field),
+          );
+        });
+      },
+    ); // Add custom methods to array schema
+    addMethod(
+      array,
+      'hasNoDuplicates',
+      function (message = 'Array must not contain duplicates') {
+        return this.test('hasNoDuplicates', message, function (value: any) {
+          if (value == null) return true;
+          return new Set(value).size === value.length;
+        });
+      },
+    );
+
+    // Add custom methods to mixed schema
+    addMethod(
+      mixed,
+      'isNotEmpty',
+      function (message = 'Value cannot be empty') {
+        return this.test('isNotEmpty', message, function (value: any) {
+          if (value == null) return false;
+          if (typeof value === 'string') return value.trim().length > 0;
+          if (Array.isArray(value)) return value.length > 0;
+          if (typeof value === 'object') return Object.keys(value).length > 0;
+          return true;
+        });
+      },
+    );
+  });
+
+  it('should maintain validation consistency with basic string addMethod', async () => {
+    const customStringSchema = (string().nullable() as any).isUpperCase();
+
+    const validValues = ['HELLO', 'WORLD', 'TEST', '', undefined, null];
+    const invalidValues = ['hello', 'Hello', 'HELLO world', 'test'];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customStringSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customStringSchema,
+        value,
+        false,
+        'Must be uppercase',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with number addMethod', async () => {
+    const customNumberSchema = (number().nullable() as any).isEven();
+
+    const validValues = [2, 4, 6, 0, -2, undefined, null];
+    const invalidValues = [1, 3, 5, -1, 7.5];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customNumberSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customNumberSchema,
+        value,
+        false,
+        'Must be an even number',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with object addMethod', async () => {
+    const customObjectSchema = (object().nullable() as any).hasRequiredFields([
+      'name',
+      'email',
+    ]);
+
+    const validValues = [
+      { name: 'John', email: 'john@example.com' },
+      { name: 'Jane', email: 'jane@example.com', age: 30 },
+      undefined,
+      null,
+    ];
+    const invalidValues = [
+      { name: 'John' },
+      { email: 'john@example.com' },
+      { age: 30 },
+      {},
+    ];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customObjectSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customObjectSchema,
+        value,
+        false,
+        'Missing required fields',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with array addMethod', async () => {
+    const customArraySchema = (array().nullable() as any).hasNoDuplicates();
+
+    const validValues = [[1, 2, 3], ['a', 'b', 'c'], [], [1], undefined, null];
+    const invalidValues = [
+      [1, 2, 2],
+      ['a', 'b', 'a'],
+      [1, 1, 2, 3],
+    ];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customArraySchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customArraySchema,
+        value,
+        false,
+        'Array must not contain duplicates',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with chained addMethod', async () => {
+    const customStringSchema = (string().nullable() as any)
+      .startsWithCapital()
+      .endsWithPeriod();
+
+    const validValues = ['Hello world.', 'Test.', 'A.', undefined, null];
+    const invalidValues = ['hello world.', 'Test', 'Hello world', 'a.'];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customStringSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(customStringSchema, value, false);
+    }
+  });
+
+  it('should maintain validation consistency with parameterized addMethod', async () => {
+    const customStringSchema = (string().nullable() as any).hasMinWords(3);
+
+    const validValues = [
+      'hello world test',
+      'one two three',
+      'a b c d',
+      undefined,
+      null,
+    ];
+    const invalidValues = ['hello', 'hello world', '', '  '];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customStringSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customStringSchema,
+        value,
+        false,
+        'Must have at least 3 words',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with addMethod on mixed schema', async () => {
+    const customMixedSchema = (mixed().nullable() as any).isNotEmpty();
+
+    const validValues = ['hello', 123, [1, 2], { a: 1 }, true];
+    const invalidValues = ['', '  ', [], {}, null, undefined];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customMixedSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customMixedSchema,
+        value,
+        false,
+        'Value cannot be empty',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with addMethod and conditional logic', async () => {
+    const customNumberSchema = (
+      number().nullable() as any
+    ).isPositiveWhenDefined();
+
+    // Test without conditional logic first
+    const validValues = [1, 5.5, 100, undefined, null];
+    const invalidValues = [0, -1, -5.5];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(customNumberSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(
+        customNumberSchema,
+        value,
+        false,
+        'Must be positive when defined',
+      );
+    }
+  });
+
+  it('should maintain validation consistency with multiple custom methods', async () => {
+    const complexSchema = (string().nullable() as any)
+      .isUpperCase('Must be uppercase')
+      .hasMinWords(2, 'Must have at least 2 words');
+
+    const validValues = ['HELLO WORLD', 'TEST CASE', 'A B', undefined, null];
+    const invalidValues = [
+      'hello world', // not uppercase
+      'HELLO', // not enough words
+      'hello', // both violations
+      '', // not enough words
+      'HELLO world', // not uppercase
+    ];
+
+    for (const value of validValues) {
+      await expectValidationConsistency(complexSchema, value, true);
+    }
+
+    for (const value of invalidValues) {
+      await expectValidationConsistency(complexSchema, value, false);
+    }
+  });
+
+  it('should maintain validation consistency with addMethod cast behavior', async () => {
+    // Test that custom methods work with casting
+    const customStringSchema = (string().nullable() as any).isUpperCase();
+
+    // Test casting behavior
+    expect(customStringSchema.cast(123)).toBe('123');
+    expect(customStringSchema.cast(true)).toBe('true');
+
+    // Test that casting works correctly with validation
+    const castValue = customStringSchema.cast('TEST');
+    expect(castValue).toBe('TEST');
+    await expectValidationConsistency(customStringSchema, 'TEST', true);
+
+    // Test that non-uppercase strings still fail validation even after casting
+    const nonUpperCase = customStringSchema.cast('hello');
+    expect(nonUpperCase).toBe('hello');
+    await expectValidationConsistency(
+      customStringSchema,
+      'hello',
+      false,
+      'Must be uppercase',
+    );
   });
 });
