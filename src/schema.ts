@@ -34,6 +34,12 @@ import isAbsent from './util/isAbsent';
 import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
 import toArray from './util/toArray';
 import cloneDeep from './util/cloneDeep';
+import {
+  issuesFromValidationError,
+  StandardResult,
+  type StandardSchema,
+  type StandardSchemaProps,
+} from './standardSchema';
 
 export type SchemaSpec<TDefault> = {
   coerce: boolean;
@@ -148,7 +154,9 @@ export default abstract class Schema<
   TContext = any,
   TDefault = any,
   TFlags extends Flags = '',
-> implements ISchema<TType, TContext, TFlags, TDefault>
+> implements
+    ISchema<TType, TContext, TFlags, TDefault>,
+    StandardSchema<TType, ResolveFlags<TType, TFlags, TDefault>>
 {
   readonly type: string;
 
@@ -962,6 +970,41 @@ export default abstract class Schema<
     };
 
     return description;
+  }
+
+  get ['~standard']() {
+    const schema = this;
+
+    const standard: StandardSchemaProps<
+      TType,
+      ResolveFlags<TType, TFlags, TDefault>
+    > = {
+      version: 1,
+      vendor: 'yup',
+      async validate(
+        value: unknown,
+      ): Promise<StandardResult<ResolveFlags<TType, TFlags, TDefault>>> {
+        try {
+          const result = await schema.validate(value, {
+            abortEarly: false,
+          });
+
+          return {
+            value: result as ResolveFlags<TType, TFlags, TDefault>,
+          };
+        } catch (err) {
+          if (err instanceof ValidationError) {
+            return {
+              issues: issuesFromValidationError(err),
+            };
+          }
+
+          throw err;
+        }
+      },
+    };
+
+    return standard;
   }
 }
 

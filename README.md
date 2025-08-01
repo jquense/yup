@@ -11,6 +11,7 @@ Yup is a schema builder for runtime value parsing and validation. Define a schem
 - Built-in async validation support. Model server-side and client-side validation equally well
 - Extensible: add your own type-safe methods and schema
 - Rich error details, make debugging a breeze
+- Compatible with [Standard Schema](https://github.com/standard-schema/standard-schema)
 
 ## Getting Started
 
@@ -470,6 +471,10 @@ try {
   messages = err.errors.map((err) => i18next.t(err.key));
 }
 ```
+
+## Standard Schema Support
+
+Yup is compatible with [Standard Schema](https://github.com/standard-schema/standard-schema).
 
 ## API
 
