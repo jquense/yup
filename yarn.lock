@@ -130,7 +130,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@4c/rollout@npm:^4.0.2":
+"@4c/rollout@npm:4.0.2":
   version: 4.0.2
   resolution: "@4c/rollout@npm:4.0.2"
   dependencies:
@@ -151,6 +151,30 @@ __metadata:
   bin:
     rollout: cli.js
   checksum: 10c0/d9fe7425a22d8bcee00bc052760b1bd1f5ce3edd456a69b167bd7ee96114bd6d01b547930c1b273e6d2950612b3577488bfb20057fb8ccb7440679bd2a72ae4e
+  languageName: node
+  linkType: hard
+
+"@4c/rollout@patch:@4c/rollout@npm%3A4.0.2#~/.yarn/patches/@4c-rollout-npm-4.0.2-ab2b6d0bab.patch":
+  version: 4.0.2
+  resolution: "@4c/rollout@patch:@4c/rollout@npm%3A4.0.2#~/.yarn/patches/@4c-rollout-npm-4.0.2-ab2b6d0bab.patch::version=4.0.2&hash=8ff963"
+  dependencies:
+    "@4c/cli-core": "npm:^4.0.0"
+    "@4c/file-butler": "npm:^6.0.0"
+    async-exit-hook: "npm:^2.0.1"
+    conventional-changelog: "npm:^3.1.24"
+    conventional-recommended-bump: "npm:^6.1.0"
+    execa: "npm:^6.0.0"
+    fs-extra: "npm:^10.0.0"
+    has-yarn: "npm:^3.0.0"
+    listr: "npm:^0.14.3"
+    listr-input: "npm:^0.2.0"
+    read-pkg-up: "npm:^9.0.0"
+    rimraf: "npm:^3.0.0"
+    rxjs: "npm:^7.3.0"
+    semver: "npm:^7.3.5"
+  bin:
+    rollout: cli.js
+  checksum: 10c0/0e743211a21a0bdcddc35bbb4a69f288ba1bf1f53ea5a42217ffcd0c19f219585bca0562955e9122e8f12f92e4268fb90e62417c31093b376375d9cf0be33ada
   languageName: node
   linkType: hard
 
@@ -15117,7 +15141,7 @@ __metadata:
   resolution: "yup@workspace:."
   dependencies:
     "@4c/cli": "npm:^4.0.4"
-    "@4c/rollout": "npm:^4.0.2"
+    "@4c/rollout": "patch:@4c/rollout@npm%3A4.0.2#~/.yarn/patches/@4c-rollout-npm-4.0.2-ab2b6d0bab.patch"
     "@4c/tsconfig": "npm:^0.4.1"
     "@babel/cli": "npm:^7.22.9"
     "@babel/core": "npm:^7.22.9"

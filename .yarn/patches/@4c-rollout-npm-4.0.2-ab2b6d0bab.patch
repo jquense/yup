@@ -1,0 +1,14 @@
+diff --git a/command.js b/command.js
+index 9608bffb4a52e5b8066e263d1286420ae92988bb..86ca58d70f315dae45fc739707dcff07a99a2be4 100644
+--- a/command.js
++++ b/command.js
+@@ -292,8 +292,7 @@ const handlerImpl = async (argv) => {
+                 task: () =>
+                   exec('yarn', [
+                     'install',
+-                    '--frozen-lockfile',
+-                    '--production=false',
++                    '--immutable',
+                   ]),
+               }
+             : {
