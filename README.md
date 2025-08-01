@@ -86,6 +86,7 @@ let parsedUser = await userSchema.validate(
   - [TypeScript configuration](#typescript-configuration)
 - [Error message customization](#error-message-customization)
   - [localization and i18n](#localization-and-i18n)
+- [Standard Schema Support](#standard-schema-support)
 - [API](#api)
   - [`yup`](#yup)
     - [`reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#reachschema-schema-path-string-value-object-context-object-schema)
