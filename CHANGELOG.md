@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/jquense/yup/compare/v1.6.1...v1.7.0) (2025-08-01)
+
+
+### Features
+
+* Implement standard schema interface ([#2258](https://github.com/jquense/yup/issues/2258)) ([ced5f51](https://github.com/jquense/yup/commit/ced5f514a6033a96f5de3b4ae9c17fe0de86d68f))
+* resolve ref params if present when describing ([ef53030](https://github.com/jquense/yup/commit/ef5303025c38e6e0dc0de53c990e7277cc74164e)), closes [#2276](https://github.com/jquense/yup/issues/2276)
+
+
+
+
+
 ## [1.6.1](https://github.com/jquense/yup/compare/v1.6.0...v1.6.1) (2024-12-17)
 
 
