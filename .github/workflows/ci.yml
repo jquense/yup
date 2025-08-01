@@ -14,5 +14,7 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'yarn'
+      - run: |
+          corepack enable
       - run: yarn install --frozen-lockfile
       - run: yarn test
