@@ -24,27 +24,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@4c/cli-core@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@4c/cli-core@npm:3.0.0"
-  dependencies:
-    chalk: "npm:^4.1.2"
-    execa: "npm:^5.1.1"
-    fs-extra: "npm:^10.0.0"
-    git-default-branch: "npm:^1.0.0"
-    globby: "npm:^12.0.2"
-    inquirer: "npm:^8.1.5"
-    is-ci: "npm:^3.0.0"
-    log-symbols: "npm:^5.0.0"
-    ora: "npm:^6.0.1"
-    slash: "npm:^4.0.0"
-    strip-ansi: "npm:^7.0.1"
-    text-table: "npm:^0.2.0"
-    yargs: "npm:^17.1.1"
-  checksum: 10c0/f85eba9165e1134be388301f51e81d2c522aab4088c5d8ad4a9a63fab5f27ddf61b71ff53b5e441a5c5389b4cf8502bc12710b3d2d7a891330a40b3f711ca9c2
-  languageName: node
-  linkType: hard
-
 "@4c/cli-core@npm:^4.0.0":
   version: 4.0.0
   resolution: "@4c/cli-core@npm:4.0.0"
@@ -5940,7 +5919,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execa@npm:^5.0.0, execa@npm:^5.1.1":
+"execa@npm:^5.0.0":
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
   dependencies:
@@ -6362,7 +6341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-up@npm:^6.0.0, find-up@npm:^6.3.0":
+"find-up@npm:^6.2.0, find-up@npm:^6.3.0":
   version: 6.3.0
   resolution: "find-up@npm:6.3.0"
   dependencies:
@@ -7208,18 +7187,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hookem@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "hookem@npm:2.0.1"
+"hookem@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "hookem@npm:3.0.4"
   dependencies:
-    "@4c/cli-core": "npm:^3.0.0"
-    find-up: "npm:^6.0.0"
+    "@4c/cli-core": "npm:^4.0.0"
+    find-up: "npm:^6.2.0"
     has-yarn: "npm:^3.0.0"
-    read-pkg-up: "npm:^8.0.0"
-    yargs: "npm:^17.1.1"
+    read-pkg-up: "npm:^9.0.0"
+    yargs: "npm:^17.3.0"
   bin:
     hookem: cli.js
-  checksum: 10c0/bc01f141569eb55a07d3e6c13b081196e517917e7e09d3b77749b9e4f2ee66de0cffe26070331afee81ac8348d4b058c2df7725f5e61680b1c744f9f8b961aee
+  checksum: 10c0/d6ce1353067c911bfbb66cee74bfc56a4981759ed42a5fe20186fefde5b6c4b4c5473d5b35fe7dbf271b93cf1921f379b54c6ceac29ec9ced562d2bf11609a8e
   languageName: node
   linkType: hard
 
@@ -7651,7 +7630,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:^8.1.5, inquirer@npm:^8.2.0":
+"inquirer@npm:^8.2.0":
   version: 8.2.4
   resolution: "inquirer@npm:8.2.4"
   dependencies:
@@ -7849,7 +7828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-ci@npm:^3.0.0, is-ci@npm:^3.0.1":
+"is-ci@npm:^3.0.1":
   version: 3.0.1
   resolution: "is-ci@npm:3.0.1"
   dependencies:
@@ -11948,17 +11927,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"read-pkg-up@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "read-pkg-up@npm:8.0.0"
-  dependencies:
-    find-up: "npm:^5.0.0"
-    read-pkg: "npm:^6.0.0"
-    type-fest: "npm:^1.0.1"
-  checksum: 10c0/cf3905ccbe5cd602f23192cc7ca65ed17561bab117eadb9aed817441d5bfc6b9a11215c2a3e9505f501d046818f3c4180dbea61fa83c42083e0b4e407d5cc745
-  languageName: node
-  linkType: hard
-
 "read-pkg-up@npm:^9.0.0":
   version: 9.1.0
   resolution: "read-pkg-up@npm:9.1.0"
@@ -11990,18 +11958,6 @@ __metadata:
     parse-json: "npm:^5.0.0"
     type-fest: "npm:^0.6.0"
   checksum: 10c0/b51a17d4b51418e777029e3a7694c9bd6c578a5ab99db544764a0b0f2c7c0f58f8a6bc101f86a6fceb8ba6d237d67c89acf6170f6b98695d0420ddc86cf109fb
-  languageName: node
-  linkType: hard
-
-"read-pkg@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "read-pkg@npm:6.0.0"
-  dependencies:
-    "@types/normalize-package-data": "npm:^2.4.0"
-    normalize-package-data: "npm:^3.0.2"
-    parse-json: "npm:^5.2.0"
-    type-fest: "npm:^1.0.1"
-  checksum: 10c0/b51ee5eed75324f4fac34c9a40b5e4b403de4c532242be01959c9bbdb1ff9db1c6c2aefaba569622fec49d1ead866e97ba856ab145f6e11039b11f7bec1318ba
   languageName: node
   linkType: hard
 
@@ -14133,13 +14089,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^1.0.1":
-  version: 1.4.0
-  resolution: "type-fest@npm:1.4.0"
-  checksum: 10c0/a3c0f4ee28ff6ddf800d769eafafcdeab32efa38763c1a1b8daeae681920f6e345d7920bf277245235561d8117dab765cb5f829c76b713b4c9de0998a5397141
-  languageName: node
-  linkType: hard
-
 "type-fest@npm:^2.0.0, type-fest@npm:^2.19.0, type-fest@npm:^2.5.0":
   version: 2.19.0
   resolution: "type-fest@npm:2.19.0"
@@ -15107,7 +15056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:^17.1.1, yargs@npm:^17.2.1, yargs@npm:^17.3.0":
+"yargs@npm:^17.2.1, yargs@npm:^17.3.0":
   version: 17.5.1
   resolution: "yargs@npm:17.5.1"
   dependencies:
@@ -15165,7 +15114,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^4.6.0"
     eslint-plugin-ts-expect: "npm:^2.1.0"
     eslint-plugin-typescript: "npm:^0.14.0"
-    hookem: "npm:^2.0.1"
+    hookem: "npm:^3.0.4"
     jest: "npm:^27.5.1"
     lint-staged: "npm:^13.2.3"
     prettier: "npm:^2.8.8"
