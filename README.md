@@ -562,6 +562,19 @@ import { addMethod, Schema } from 'yup';
 addMethod(Schema, 'myMethod', ...)
 ```
 
+
+You can add your test methods to the schema using `addMethod` by returning `this.test()`.  This will allow you to reuse them as well. 
+
+```ts
+Yup.addMethod(Yup.mixed, 'myLength', function(myLength, msg) {
+   return this.test({
+      name: 'myLength',
+      message: msg,
+      test: value => value && value.toString().length === myLength
+   });
+});
+```
+
 #### `ref(path: string, options: { contextPrefix: string }): Ref`
 
 Creates a reference to another sibling or sibling descendant field. Refs are resolved
