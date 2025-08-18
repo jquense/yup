@@ -93,7 +93,7 @@ let parsedUser = await userSchema.validate(
     - [`addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#addmethodschematype-schema-name-string-method--schema-void)
     - [`ref(path: string, options: { contextPrefix: string }): Ref`](#refpath-string-options--contextprefix-string--ref)
     - [`lazy((value: any) => Schema): Lazy`](#lazyvalue-any--schema-lazy)
-    - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
+    - [`ValidationError(errors: string | Array<string>, value?: any, path?: string, type?: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
   - [`Schema`](#schema)
     - [`Schema.clone(): Schema`](#schemaclone-schema)
     - [`Schema.label(label: string): Schema`](#schemalabellabel-string-schema)
@@ -215,7 +215,7 @@ let reversedString = string()
 Transforms form a "pipeline", where the value of a previous transform is piped into the next one.
 When an input value is `undefined` yup will apply the schema default if it's configured.
 
-> Watch out! values are not guaranteed to be valid types in transform functions. Previous transforms
+> Watch out! Values are not guaranteed to be valid types in transform functions. Previous transforms
 > may have failed. For example a number transform may be receive the input value, `NaN`, or a number.
 
 ### Validation: Tests
@@ -372,7 +372,7 @@ You can use TypeScript's interface merging behavior to extend the schema types
 if needed. Type extensions should go in an "ambient" type definition file such as your
 `globals.d.ts`. Remember to actually extend the yup type in your application code!
 
-> Watch out! merging only works if the type definition is _exactly_ the same, including
+> Watch out! Merging only works if the type definition is _exactly_ the same, including
 > generics. Consult the yup source code for each type to ensure you are defining it correctly
 
 ```ts
@@ -611,15 +611,15 @@ let renderable = yup.lazy((value) => {
 let renderables = array().of(renderable);
 ```
 
-#### `ValidationError(errors: string | Array<string>, value: any, path: string)`
+#### `ValidationError(errors: string | Array<string>, value?: any, path?: string, type?: string)`
 
 Thrown on failed validations, with the following properties
 
 - `name`: "ValidationError"
-- `type`: the specific test type or test "name", that failed.
+- `type`?: the specific test type or test "name", that failed.
 - `value`: The field value that was tested;
 - `params`?: The test inputs, such as max value, regex, etc;
-- `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
+- `path`?: a string, indicating where there error was thrown. `path` is empty at the root level.
 - `errors`: array of error messages
 - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
   validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
@@ -1185,7 +1185,7 @@ Options = {
   // the validation error message
   message: string;
   // values passed to message for interpolation
-  params: ?object;
+  params: object;
   // mark the test as exclusive, meaning only one test of the same name can be active at once
   exclusive: boolean = false;
 }
@@ -1299,7 +1299,7 @@ await schema.isValid('hello'); // => true
 
 By default, the `cast` logic of `string` is to call `toString` on the value if it exists.
 
-empty values are not coerced (use `ensure()` to coerce empty values to empty strings).
+Empty values are not coerced (use `ensure()` to coerce empty values to empty strings).
 
 Failed casts return the input value.
 
@@ -1483,7 +1483,7 @@ let schema = yup.date();
 await schema.isValid(new Date()); // => true
 ```
 
-The default `cast` logic of `date` is pass the value to the `Date` constructor, failing that, it will attempt
+The default `cast` logic of `date` is to pass the value to the `Date` constructor. Failing that, it will attempt
 to parse the date as an ISO date string.
 
 > If you would like ISO strings to not be cast to a `Date` object, use `.datetime()` instead.
@@ -1593,7 +1593,7 @@ await schema.validate(['James', -24]); // => ValidationError: age must be a posi
 InferType<typeof schema> // [string, number] | undefined
 ```
 
-tuples have no default casting behavior.
+Tuples have no default casting behavior.
 
 ### object
 
@@ -1609,11 +1609,11 @@ yup.object({
 });
 ```
 
-object schema do not have any default transforms applied.
+Object schema do not have any default transforms applied.
 
 #### Object schema defaults
 
-Object schema come with a default value already set, which "builds" out the object shape, a
+Object schema come with a default value already set, which "builds" out the object shape, and
 sets any defaults for fields:
 
 ```js
@@ -1626,7 +1626,7 @@ schema.default(); // -> { name: '' }
 
 This may be a bit surprising, but is usually helpful since it allows large, nested
 schema to create default values that fill out the whole shape and not just the root object. There is
-one gotcha! though. For nested object schema that are optional but include non optional fields
+one gotcha! though. Nested object schema that are optional but include non optional fields
 may fail in unexpected ways:
 
 ```js
@@ -1649,7 +1649,7 @@ During the validation phase `names` exists, and is validated, finding `names.fir
 If you wish to avoid this behavior do one of the following:
 
 - Set the nested default to undefined: `names.default(undefined)`
-- mark it nullable and default to null: `names.nullable().default(null)`
+- Mark it nullable and default to null: `names.nullable().default(null)`
 
 #### `object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`
 
