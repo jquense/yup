@@ -167,10 +167,10 @@ export default class StringSchema<
 
   matches(regex: RegExp, options?: MatchOptions | MatchOptions['message']) {
     let excludeEmptyString = false;
-    let message;
-    let name;
+    let message = locale.matches;
+    let name = 'matches';
 
-    if (options) {
+    if (options !== undefined) {
       if (typeof options === 'object') {
         ({
           excludeEmptyString = false,
@@ -183,8 +183,8 @@ export default class StringSchema<
     }
 
     return this.test({
-      name: name || 'matches',
-      message: message || locale.matches,
+      name,
+      message,
       params: { regex },
       skipAbsent: true,
       test: (value: Maybe<string>) =>
