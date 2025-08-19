@@ -214,6 +214,44 @@ describe('Array types', () => {
     await array().of(itemSchema).validate(value);
   });
 
+  it('should pass deeply resolved path to descendants', async () => {
+    let value = ['2', '3'];
+    let expectedPaths = ['items[0]', 'items[1]'];
+
+    let itemSchema = string().when([], function (_, _s, opts: any) {
+      let path = opts.path;
+      expect(expectedPaths).toContain(path);
+      return string().required();
+    });
+
+    const schema = object({
+      items: array().of(itemSchema)
+    })
+
+    await schema.validate({ items: value });
+  });
+
+  it('should pass array options to descendants when casting', async () => {
+    let value = ['1', '2'];
+
+    let itemSchema = string().when([], function (_, _s, opts: any) {
+
+      const parent = opts.parent;
+      const idx = opts.index;
+      const val = opts.value;
+      const originalValue = opts.originalValue;
+      
+      expect(parent).toEqual(value);
+      expect(typeof idx).toBe('number');
+      expect(val).toEqual(parent[idx]);
+      expect(originalValue).toEqual(parent[idx]);
+
+      return string();
+    });
+
+    await array().of(itemSchema).validate(value);
+  });
+
   it('should maintain array sparseness through validation', async () => {
     let sparseArray = new Array(2);
     sparseArray[1] = 1;
