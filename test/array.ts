@@ -29,6 +29,27 @@ describe('Array types', () => {
         'false',
       ]);
     });
+
+    it('should pass array options to descendants when casting', async () => {
+      let value = ['1', '2'];
+
+      let itemSchema = string().when([], function (_, _s, opts: any) {
+
+        const parent = opts.parent;
+        const idx = opts.index;
+        const val = opts.value;
+        const originalValue = opts.originalValue;
+        
+        expect(parent).toEqual(value);
+        expect(typeof idx).toBe('number');
+        expect(val).toEqual(parent[idx]);
+        expect(originalValue).toEqual(parent[idx]);
+
+        return string();
+      });
+
+      await array().of(itemSchema).validate(value);
+    });
   });
 
   it('should handle DEFAULT', () => {
@@ -229,27 +250,6 @@ describe('Array types', () => {
     })
 
     await schema.validate({ items: value });
-  });
-
-  it('should pass array options to descendants when casting', async () => {
-    let value = ['1', '2'];
-
-    let itemSchema = string().when([], function (_, _s, opts: any) {
-
-      const parent = opts.parent;
-      const idx = opts.index;
-      const val = opts.value;
-      const originalValue = opts.originalValue;
-      
-      expect(parent).toEqual(value);
-      expect(typeof idx).toBe('number');
-      expect(val).toEqual(parent[idx]);
-      expect(originalValue).toEqual(parent[idx]);
-
-      return string();
-    });
-
-    await array().of(itemSchema).validate(value);
   });
 
   it('should maintain array sparseness through validation', async () => {

@@ -81,11 +81,11 @@ export default class ArraySchema<
     const castArray = value.map((v, idx) => {
       const castElement = this.innerType!.cast(v, {
         ..._opts,
+        path: `${_opts.path || ''}[${idx}]`,
         parent: value,
         originalValue: v,
         value: v,
         index: idx,
-        path: `${_opts.path || ''}[${idx}]`,
 
       });
       
