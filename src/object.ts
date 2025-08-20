@@ -181,10 +181,10 @@ export default class ObjectSchema<
     for (const prop of props) {
       let field = fields[prop];
       let exists = prop in (value as {})!;
+      let inputValue = value[prop];
 
       if (field) {
         let fieldValue;
-        let inputValue = value[prop];
 
         // safe to mutate since this is fired in sequence
         innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
@@ -205,20 +205,19 @@ export default class ObjectSchema<
 
         fieldValue =
           !options.__validating || !strict
-            ? // TODO: use _cast, this is double resolving
-              (field as ISchema<any>).cast(value[prop], innerOptions)
-            : value[prop];
+            ? (field as ISchema<any>).cast(inputValue, innerOptions)
+            : inputValue;
 
         if (fieldValue !== undefined) {
           intermediateValue[prop] = fieldValue;
         }
       } else if (exists && !strip) {
-        intermediateValue[prop] = value[prop];
+        intermediateValue[prop] = inputValue;
       }
 
       if (
         exists !== prop in intermediateValue ||
-        intermediateValue[prop] !== value[prop]
+        intermediateValue[prop] !== inputValue
       ) {
         isChanged = true;
       }
