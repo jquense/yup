@@ -42,8 +42,8 @@ export default class NumberSchema<
     });
 
     this.withMutation(() => {
-      this.transform((value, _raw, ctx) => {
-        if (!ctx.spec.coerce) return value;
+      this.transform((value, _raw) => {
+        if (!this.spec.coerce) return value;
 
         let parsed = value;
         if (typeof parsed === 'string') {
@@ -55,7 +55,7 @@ export default class NumberSchema<
 
         // null -> NaN isn't useful; treat all nulls as null and let it fail on
         // nullability check vs TypeErrors
-        if (ctx.isType(parsed) || parsed === null) return parsed;
+        if (this.isType(parsed) || parsed === null) return parsed;
 
         return parseFloat(parsed);
       });

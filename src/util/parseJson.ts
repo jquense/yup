@@ -1,6 +1,6 @@
 import type { AnySchema, TransformFunction } from '../types';
 
-const parseJson: TransformFunction<any> = (value, _, ctx: AnySchema<any>) => {
+const parseJson: TransformFunction<any> = (value, _, schema: AnySchema<any>) => {
   if (typeof value !== 'string') {
     return value;
   }
@@ -11,7 +11,7 @@ const parseJson: TransformFunction<any> = (value, _, ctx: AnySchema<any>) => {
   } catch (err) {
     /* */
   }
-  return ctx.isType(parsed) ? parsed : value;
+  return schema.isType(parsed) ? parsed : value;
 };
 
 export default parseJson;

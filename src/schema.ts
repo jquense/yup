@@ -173,7 +173,7 @@ export default abstract class Schema<
   readonly deps: readonly string[] = [];
 
   tests: Test[];
-  transforms: TransformFunction<AnySchema>[];
+  transforms: TransformFunction<AnySchema, TContext>[];
 
   private conditions: Condition[] = [];
 
@@ -415,7 +415,7 @@ export default abstract class Schema<
       rawValue === undefined
         ? rawValue
         : this.transforms.reduce(
-            (prevValue, fn) => fn.call(this, prevValue, rawValue, this),
+            (prevValue, fn) => fn.call(this, prevValue, rawValue, this, options),
             rawValue,
           );
 
