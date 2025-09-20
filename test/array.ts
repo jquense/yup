@@ -1,3 +1,4 @@
+import { describe, it, expect, test, vi } from 'vitest';
 import {
   string,
   number,
@@ -125,7 +126,7 @@ describe('Array types', () => {
 
     it('should prevent recursive casting', async () => {
       // @ts-ignore
-      let castSpy = jest.spyOn(StringSchema.prototype, '_cast');
+      let castSpy = vi.spyOn(StringSchema.prototype, '_cast');
 
       let value = await array(string()).defined().validate([5]);
 

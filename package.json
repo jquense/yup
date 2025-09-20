@@ -6,11 +6,10 @@
   "module": "lib/index.esm.js",
   "runkitExampleFilename": "./runkit-example.js",
   "scripts": {
-    "test": "yarn lint && yarn test-all --runInBand",
-    "testonly": "jest",
-    "test-sync": "yarn  testonly --projects ./jest-sync.config.json",
-    "test-all": "yarn testonly --projects ./jest-sync.config.json --projects ./package.json",
-    "tdd": "jest --watch",
+    "test": "yarn lint && yarn testonly",
+    "testonly": "vitest run",
+    "test-sync": "vitest run --project sync",
+    "tdd": "vitest --project async",
     "lint": "eslint src test",
     "precommit": "lint-staged",
     "toc": "doctoc README.md --github",
@@ -45,24 +44,6 @@
       "git add"
     ]
   },
-  "jest": {
-    "globals": {
-      "YUP_USE_SYNC": false
-    },
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": [
-      "./test-setup.js"
-    ],
-    "roots": [
-      "test"
-    ],
-    "testRegex": "\\.(j|t)s$",
-    "testPathIgnorePatterns": [
-      "helpers\\.ts",
-      "\\.eslintrc\\.js",
-      "types\\.ts"
-    ]
-  },
   "devDependencies": {
     "@4c/cli": "^4.0.4",
     "@4c/rollout": "patch:@4c/rollout@npm%3A4.0.2#~/.yarn/patches/@4c-rollout-npm-4.0.2-ab2b6d0bab.patch",
@@ -73,7 +54,6 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@standard-schema/spec": "^1.0.0",
-    "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "babel-jest": "^27.5.1",
@@ -90,7 +70,6 @@
     "eslint-plugin-ts-expect": "^2.1.0",
     "eslint-plugin-typescript": "^0.14.0",
     "hookem": "^2.0.1",
-    "jest": "^27.5.1",
     "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
     "rollup": "^2.79.1",
@@ -99,7 +78,8 @@
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "synchronous-promise": "^2.0.17",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "property-expr": "^2.0.5",

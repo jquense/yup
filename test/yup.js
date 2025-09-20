@@ -1,3 +1,4 @@
+import { describe, it, expect, test } from 'vitest';
 import reach, { getIn } from '../src/util/reach';
 
 import {
@@ -117,7 +118,9 @@ describe('Yup', function () {
       'Yup.reach cannot implicitly index into a tuple type. the path part ".nested" must contain an index to the tuple element, e.g. ".nested[0]"',
     );
 
-    expect(reach(inst, 'nested[1].arr[0].num').isValid(5)).resolves.toBe(true);
+    await expect(reach(inst, 'nested[1].arr[0].num').isValid(5)).resolves.toBe(
+      true,
+    );
   });
 
   it('should REACH conditionally correctly', async function () {

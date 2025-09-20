@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+import { describe, it, expect } from 'vitest';
 import { setLocale } from '../src';
+import locale from '../src/locale';
 
 describe('Custom locale', () => {
   it('should get default locale', () => {
-    const locale = require('../src/locale').default;
-    expect(locale.string.email).toBe('${path} must be a valid email');
+    expect(locale.string?.email).toBe('${path} must be a valid email');
   });
 
   it('should set a new locale', () => {
-    const locale = require('../src/locale').default;
     const dict = {
       string: {
         email: 'Invalid email',
@@ -17,12 +16,11 @@ describe('Custom locale', () => {
 
     setLocale(dict);
 
-    expect(locale.string.email).toBe(dict.string.email);
+    expect(locale.string?.email).toBe(dict.string.email);
   });
 
   it('should update the main locale', () => {
-    const locale = require('../src/locale').default;
-    expect(locale.string.email).toBe('Invalid email');
+    expect(locale.string?.email).toBe('Invalid email');
   });
 
   it('should not allow prototype pollution', () => {

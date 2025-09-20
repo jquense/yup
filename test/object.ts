@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   mixed,
   string,
@@ -121,7 +122,7 @@ describe('Object types', () => {
     });
 
     it('should prevent recursive casting', async () => {
-      let castSpy = jest.spyOn(StringSchema.prototype, '_cast' as any);
+      let castSpy = vi.spyOn(StringSchema.prototype, '_cast' as any);
 
       let inst = object({
         field: string(),
@@ -551,27 +552,31 @@ describe('Object types', () => {
       expect(reach(inst, 'x.y').resolve({})).toBe(inst);
     });
 
-    it('should be passed the value', (done) => {
+    it('should be passed the value', () => {
+      let passed = false;
       let inst = object({
         nested: lazy((value) => {
           expect(value).toBe('foo');
-          done();
+          passed = true;
           return string();
         }),
       });
 
       inst.cast({ nested: 'foo' });
+      expect(passed).toBe(true);
     });
 
-    it('should be passed the options', (done) => {
+    it('should be passed the options', () => {
       let opts = {};
+      let passed = false;
       let inst = lazy((_, options) => {
         expect(options).toBe(opts);
-        done();
+        passed = true;
         return object();
       });
 
       inst.cast({ nested: 'foo' }, opts);
+      expect(passed).toBe(true);
     });
 
     it('should always return a schema', () => {
@@ -702,7 +707,7 @@ describe('Object types', () => {
       .catch((e) => e);
 
     expect(error.inner).toMatchInlineSnapshot(`
-      Array [
+      [
         [ValidationError: str is a required field],
         [ValidationError: nest.innerStr is a required field],
         [ValidationError: nest.num must be greater than 5],
@@ -1150,27 +1155,27 @@ describe('Object types', () => {
       [['a1', 'a2']],
     );
 
-    expect(
+    await expect(
       inst.pick(['a1', 'a2']).isValid({
         a1: undefined,
         a2: 'over9000',
       }),
     ).resolves.toEqual(true);
 
-    expect(
+    await expect(
       inst.pick(['a1', 'a3']).isValid({
         a1: 'required',
         a3: 'asfasf',
       }),
     ).resolves.toEqual(true);
 
-    expect(
+    await expect(
       inst.omit(['a1', 'a2']).isValid({
         a3: 'asfasf',
       }),
     ).resolves.toEqual(true);
 
-    expect(
+    await expect(
       inst.omit(['a1']).isValid({
         a1: undefined,
         a3: 'asfasf',
