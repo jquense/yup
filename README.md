@@ -125,7 +125,7 @@ let parsedUser = await userSchema.validate(
     - [`Schema.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`](#schemawhenkeys-string--string-builder-object--values-any-schema--schema-schema)
     - [`Schema.test(name: string, message: string | function | any, test: function): Schema`](#schematestname-string-message-string--function--any-test-function-schema)
     - [`Schema.test(options: object): Schema`](#schematestoptions-object-schema)
-    - [`Schema.transform((currentValue: any, originalValue: any) => any): Schema`](#schematransformcurrentvalue-any-originalvalue-any--any-schema)
+    - [`Schema.transform((currentValue: any, originalValue: any, schema: Schema,  options: object) => any): Schema`](#schematransformcurrentvalue-any-originalvalue-any-schema-schema--options-object--any-schema)
   - [mixed](#mixed)
   - [string](#string)
     - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
