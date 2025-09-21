@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { ref, date } from '../src';
 import * as TestHelpers from './helpers';
 

@@ -6,6 +6,7 @@
  * Released under MIT license.
  */
 
+import { describe, test, expect } from 'vitest';
 import { parseIsoDate } from '../../src/util/parseIsoDate';
 
 const sixHours = 6 * 60 * 60 * 1000;

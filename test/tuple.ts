@@ -1,3 +1,4 @@
+import { describe, it, expect, test } from 'vitest';
 import { string, number, object, tuple, mixed } from '../src';
 
 describe('Array types', () => {
@@ -115,9 +116,6 @@ describe('Array types', () => {
     it('should throw useful type error for length', async () => {
       let schema = tuple([string().label('name'), number().label('age')]);
 
-      // expect(() => schema.cast(['James'])).toThrowError(
-      //   'this tuple value has too few items, expected a length of 2 but got 1 for value',
-      // );
       await expect(schema.validate(['James'])).rejects.toThrowError(
         'this tuple value has too few items, expected a length of 2 but got 1 for value',
       );
@@ -125,9 +123,6 @@ describe('Array types', () => {
       await expect(schema.validate(['James', 2, 4])).rejects.toThrowError(
         'this tuple value has too many items, expected a length of 2 but got 3 for value',
       );
-      // expect(() => schema.validate(['James', 2, 4])).rejects.toThrowError(
-      //   'this tuple value has too many items, expected a length of 2 but got 3 for value',
-      // );
     });
   });
 });

@@ -1,3 +1,4 @@
+import { describe, it, expect, assert } from 'vitest';
 import * as TestHelpers from './helpers';
 
 import {
@@ -296,7 +297,7 @@ describe('String types', () => {
       function getErrorString(schema: AnySchema, value: string) {
         try {
           schema.validateSync(value);
-          fail('should have thrown validation error');
+          assert.fail('should have thrown validation error');
         } catch (e) {
           const err = e as ValidationError;
           return err.errors[0];
@@ -336,7 +337,8 @@ describe('String types', () => {
     });
   });
 
-  xit('should check allowed values at the end', () => {
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip('should check allowed values at the end', () => {
     return Promise.all([
       expect(
         string()

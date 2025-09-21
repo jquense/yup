@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import * as TestHelpers from './helpers';
 
 import { number, NumberSchema, object, ref } from '../src';

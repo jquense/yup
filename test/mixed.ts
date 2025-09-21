@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   array,
   bool,
@@ -437,7 +438,7 @@ describe('Mixed Types ', () => {
   });
 
   it('exclusive tests should replace previous ones', async () => {
-    let inst = mixed().test({
+    let inst = mixed<number>().test({
       message: 'invalid',
       exclusive: true,
       name: 'max',
@@ -578,7 +579,7 @@ describe('Mixed Types ', () => {
   describe('withMutation', () => {
     it('should pass the same instance to a provided function', () => {
       let inst = mixed();
-      let func = jest.fn();
+      let func = vi.fn();
 
       inst.withMutation(func);
 
@@ -709,7 +710,7 @@ describe('Mixed Types ', () => {
 
     baseSchema = baseSchema.concat(otherSchema);
     expect(baseSchema.spec.label).toBe(testLabel);
-    expect(baseSchema.spec.meta.testField).toBe(testMeta.testField);
+    expect(baseSchema.spec.meta?.testField).toBe(testMeta.testField);
   });
 
   it('concat should allow mixed and other type', function () {
