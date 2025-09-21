@@ -114,6 +114,10 @@ export default class TupleSchema<
       const castElement = type.cast(value[idx], {
         ...options,
         path: `${options.path || ''}[${idx}]`,
+        parent: value,
+        originalValue: value[idx],
+        value: value[idx],
+        index: idx,
       });
       if (castElement !== value[idx]) isChanged = true;
       return castElement;

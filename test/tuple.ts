@@ -16,6 +16,27 @@ describe('Array types', () => {
         tuple([string(), string(), string()]).cast(['4', 5, false]),
       ).toEqual(['4', '5', 'false']);
     });
+
+    it('should pass array options to descendants when casting', async () => {
+      let value = ['1', '2'];
+  
+      let itemSchema = string().when([], function (_, _s, opts: any) {
+  
+        const parent = opts.parent;
+        const idx = opts.index;
+        const val = opts.value;
+        const originalValue = opts.originalValue;
+        
+        expect(parent).toEqual(value);
+        expect(typeof idx).toBe('number');
+        expect(val).toEqual(parent[idx]);
+        expect(originalValue).toEqual(parent[idx]);
+  
+        return string();
+      });
+
+      await tuple([itemSchema, itemSchema]).validate(value);
+    });
   });
 
   it('should handle DEFAULT', () => {

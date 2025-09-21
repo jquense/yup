@@ -83,6 +83,10 @@ export interface CastOptions<C = {}> {
   stripUnknown?: boolean;
   // XXX: should be private?
   path?: string;
+  index?: number;
+  key?: string;
+  originalValue?: any;
+  value?: any;
   resolved?: boolean;
 }
 
@@ -374,8 +378,8 @@ export default abstract class Schema<
     options: CastOptions<TContext> | CastOptionalityOptions<TContext> = {},
   ): this['__outputType'] {
     let resolvedSchema = this.resolve({
-      value,
       ...options,
+      value,
       // parent: options.parent,
       // context: options.context,
     });

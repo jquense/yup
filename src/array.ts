@@ -82,7 +82,13 @@ export default class ArraySchema<
       const castElement = this.innerType!.cast(v, {
         ..._opts,
         path: `${_opts.path || ''}[${idx}]`,
+        parent: value,
+        originalValue: v,
+        value: v,
+        index: idx,
+
       });
+      
       if (castElement !== v) {
         isChanged = true;
       }
