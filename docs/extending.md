@@ -9,8 +9,8 @@ import * as yup from 'yup';
 const requiredString = yup.string().required().default('');
 
 const momentDate = (parseFormats = ['MMM dd, yyy']) =>
-  yup.date().transform(function (value, originalValue) {
-    if (this.isType(value)) return value;
+  yup.date().transform((value, originalValue, schema) => {
+    if (schema.isType(value)) return value;
 
     // the default coercion transform failed so let's try it with Moment instead
     value = Moment(originalValue, parseFormats);
@@ -28,8 +28,8 @@ Schema are immutable so each can be configured further without changing the orig
 
 ```js
 function parseDateFromFormats(formats, parseStrict) {
-  return this.transform(function (value, originalValue) {
-    if (this.isType(value)) return value;
+  return this.transform((value, originalValue, schema) => {
+    if (schema.isType(value)) return value;
 
     value = Moment(originalValue, formats, parseStrict);
 
@@ -75,7 +75,7 @@ class MomentDateSchema extends DateSchema {
     this._validFormats = [];
 
     this.withMutation(() => {
-      this.transform(function (value, originalvalue) {
+      this.transform(function (value, originalValue) {
         if (this.isType(value))
           // we have a valid value
           return value;

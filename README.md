@@ -1209,7 +1209,7 @@ let schema = yup.string().test({
 });
 ```
 
-#### `Schema.transform((currentValue: any, originalValue: any) => any): Schema`
+#### `Schema.transform((currentValue: any, originalValue: any, schema: Schema,  options: object) => any): Schema`
 
 Adds a transformation to the transform chain. Transformations are central to the casting process,
 default transforms for each type coerce values to the specific type (as verified by [`isType()`](#schemaistypevalue-any-value-is-infertypeschema)). transforms are run before validations and only applied when the schema is not marked as `strict` (the default). Some types have built in transformations.
