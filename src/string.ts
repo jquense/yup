@@ -265,10 +265,10 @@ export default class StringSchema<
   }
 
   //-- transforms --
-  ensure(): StringSchema<NonNullable<TType>> {
-    return this.default('' as Defined<TType>).transform((val) =>
+  ensure() {
+    return this.default('' as Extract<"", TType>).transform((val) =>
       val === null ? '' : val,
-    ) as any;
+    );
   }
 
   trim(message = locale.trim) {
