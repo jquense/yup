@@ -6121,12 +6121,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:^4.6.2":
-  version: 4.6.2
-  resolution: "eslint-plugin-react-hooks@npm:4.6.2"
+"eslint-plugin-react-hooks@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "eslint-plugin-react-hooks@npm:5.2.0"
   peerDependencies:
-    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
-  checksum: 10c0/4844e58c929bc05157fb70ba1e462e34f1f4abcbc8dd5bbe5b04513d33e2699effb8bca668297976ceea8e7ebee4e8fc29b9af9d131bcef52886feaa2308b2cc
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
+  checksum: 10c0/1c8d50fa5984c6dea32470651807d2922cc3934cf3425e78f84a24c2dfd972e7f019bee84aefb27e0cf2c13fea0ac1d4473267727408feeb1c56333ca1489385
   languageName: node
   linkType: hard
 
@@ -15564,7 +15564,7 @@ __metadata:
     eslint-plugin-import: "npm:^2.32.0"
     eslint-plugin-jest: "npm:^25.7.0"
     eslint-plugin-react: "npm:^7.37.5"
-    eslint-plugin-react-hooks: "npm:^4.6.2"
+    eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-ts-expect: "npm:^2.1.0"
     eslint-plugin-typescript: "npm:^0.14.0"
     hookem: "npm:^2.0.1"
