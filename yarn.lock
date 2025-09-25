@@ -2148,23 +2148,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.3.0":
-  version: 13.3.0
-  resolution: "@rollup/plugin-node-resolve@npm:13.3.0"
+"@rollup/plugin-node-resolve@npm:^6.0.0":
+  version: 6.1.0
+  resolution: "@rollup/plugin-node-resolve@npm:6.1.0"
   dependencies:
-    "@rollup/pluginutils": "npm:^3.1.0"
-    "@types/resolve": "npm:1.17.1"
-    deepmerge: "npm:^4.2.2"
-    is-builtin-module: "npm:^3.1.0"
+    "@rollup/pluginutils": "npm:^3.0.0"
+    "@types/resolve": "npm:0.0.8"
+    builtin-modules: "npm:^3.1.0"
     is-module: "npm:^1.0.0"
-    resolve: "npm:^1.19.0"
+    resolve: "npm:^1.11.1"
   peerDependencies:
-    rollup: ^2.42.0
-  checksum: 10c0/6caa32a8304a20f1c9953111b25e9543f4de7d254958d81ce0158ad909e4493946bc2060c4ace23d9748b560ebc84c920ee7bc1b7d50dbf8ba852ef13c91af58
+    rollup: ^1.20.0
+  checksum: 10c0/6a8e3493f2193b738d53482167e857c060804a4581a891b3bea65b276e6273d60c4248f4264a0f4ed07a044188cff32172bee167744ec6b44000335e30c0c75b
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^3.1.0":
+"@rollup/pluginutils@npm:^3.0.0, @rollup/pluginutils@npm:^3.1.0":
   version: 3.1.0
   resolution: "@rollup/pluginutils@npm:3.1.0"
   dependencies:
@@ -2594,15 +2593,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/ead6902f01e7240918e6f6dabf0e2bc37035492b1da16f605bbd1e153c17d0639df77981b2ec042480361be76c9e967543287d9b312cd668ed9123524994c344
-  languageName: node
-  linkType: hard
-
-"@types/resolve@npm:1.17.1":
-  version: 1.17.1
-  resolution: "@types/resolve@npm:1.17.1"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/6eeb9c27d99bf4b393bf168d43208f63e78cefca5644662a0bdb2bdbf8352386f4f3aca66add138fc41bce5f66fd48a0de430a1473f11b612fbed0375ae78031
   languageName: node
   linkType: hard
 
@@ -3987,7 +3977,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"builtin-modules@npm:^3.0.0, builtin-modules@npm:^3.1.0":
+"builtin-modules@npm:^3.1.0":
   version: 3.2.0
   resolution: "builtin-modules@npm:3.2.0"
   checksum: 10c0/01bddc89cb9608884afb6c6be66f3dfa5c2576e3fe6850aa656f1282b68e4930dd67174fc764ea6fc3f5890436e370e6d6cdc4ce4c16b9576a3965860960b7e9
@@ -8332,15 +8322,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-builtin-module@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "is-builtin-module@npm:3.1.0"
-  dependencies:
-    builtin-modules: "npm:^3.0.0"
-  checksum: 10c0/3e6c74d1af635bfcb95474aabb1b626bbf816c47719acab99e97eae7771a7b600df2241fddead1fc610c6c3e6c3c43f59b7964fcf3c8d4d94cd78928b3e71bfd
-  languageName: node
-  linkType: hard
-
 "is-callable@npm:^1.2.7":
   version: 1.2.7
   resolution: "is-callable@npm:1.2.7"
@@ -12463,7 +12444,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@npm:^1.10.0, resolve@npm:^1.11.1, resolve@npm:^1.14.2, resolve@npm:^1.19.0, resolve@npm:^1.20.0, resolve@npm:^1.22.4":
+"resolve@npm:^1.10.0, resolve@npm:^1.11.1, resolve@npm:^1.14.2, resolve@npm:^1.20.0, resolve@npm:^1.22.4":
   version: 1.22.10
   resolution: "resolve@npm:1.22.10"
   dependencies:
@@ -12489,7 +12470,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@npm%3A^1.10.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.11.1#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.14.2#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.19.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>":
+"resolve@patch:resolve@npm%3A^1.10.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.11.1#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.14.2#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>":
   version: 1.22.10
   resolution: "resolve@patch:resolve@npm%3A1.22.10#optional!builtin<compat/resolve>::version=1.22.10&hash=c3c19d"
   dependencies:
@@ -12648,21 +12629,6 @@ __metadata:
     pacote: "npm:^11.2.7"
     terser: "npm:^5.6.0"
   checksum: 10c0/c456b8c37aa538c567eff19c22a26fbe3995c7d290bab9947eab5c78cce08d69a28a91bc62755de2e59fce98eda195a64ecdec8e8e669e0423a91ab352615481
-  languageName: node
-  linkType: hard
-
-"rollup-plugin-node-resolve@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "rollup-plugin-node-resolve@npm:5.2.0"
-  dependencies:
-    "@types/resolve": "npm:0.0.8"
-    builtin-modules: "npm:^3.1.0"
-    is-module: "npm:^1.0.0"
-    resolve: "npm:^1.11.1"
-    rollup-pluginutils: "npm:^2.8.1"
-  peerDependencies:
-    rollup: ">=1.11.0"
-  checksum: 10c0/4f9903a1042f6eab1495e044ac64540c054d89add7b3f09ea98cfef869628ad0749aebffd946fb4793cb29841c4711bbdd5e6f7fcaecf1eb9c30f67968e1dcb5
   languageName: node
   linkType: hard
 
@@ -15550,7 +15516,7 @@ __metadata:
     "@babel/core": "npm:^7.28.4"
     "@babel/preset-typescript": "npm:^7.27.1"
     "@rollup/plugin-babel": "npm:^5.3.1"
-    "@rollup/plugin-node-resolve": "npm:^13.3.0"
+    "@rollup/plugin-node-resolve": "npm:^6.0.0"
     "@standard-schema/spec": "npm:^1.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^5.62.0"
     "@typescript-eslint/parser": "npm:^5.62.0"
@@ -15575,7 +15541,6 @@ __metadata:
     rollup-plugin-babel: "npm:^4.4.0"
     rollup-plugin-dts: "npm:^4.2.3"
     rollup-plugin-filesize: "npm:^9.1.2"
-    rollup-plugin-node-resolve: "npm:^5.2.0"
     synchronous-promise: "npm:^2.0.17"
     tiny-case: "npm:^1.0.3"
     toposort: "npm:^2.0.2"
