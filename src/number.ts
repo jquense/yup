@@ -47,9 +47,10 @@ export default class NumberSchema<
 
         let parsed = value;
         if (typeof parsed === 'string') {
-          parsed = parsed.replace(/\s/g, '');
-          if (parsed === '') return NaN;
-          // don't use parseFloat to avoid positives on alpha-numeric strings
+          //Trim leading and trailing whitespace
+          parsed = parsed.trim();
+          //Only allow strings that consist of digits, possibly with a single decimal point
+          if (!/^\d+(\.\d+)?$/.test(parsed)) return NaN;
           parsed = +parsed;
         }
 
