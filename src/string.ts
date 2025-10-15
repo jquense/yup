@@ -85,16 +85,19 @@ export default class StringSchema<
       this.transform((value, _raw) => {
         if (!this.spec.coerce || this.isType(value)) return value;
 
-        // don't ever convert arrays
         if (Array.isArray(value)) return value;
-
+        if(typeof value=="number"){
+         return value
+        } else {
         const strValue =
           value != null && value.toString ? value.toString() : value;
+        
 
-        // no one wants plain objects converted to [Object object]
-        if (strValue === objStringTag) return value;
+          // no one wants plain objects converted to [Object object]
+          if (strValue === objStringTag) return value;
 
-        return strValue;
+          return strValue;
+        }
       });
     });
   }
