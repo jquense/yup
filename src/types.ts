@@ -22,6 +22,8 @@ export interface ISchema<T, C = any, F extends Flags = any, D = any> {
   cast(value: any, options: CastOptionalityOptions<C>): T | null | undefined;
 
   validate(value: any, options?: ValidateOptions<C>): Promise<T>;
+  isValid(value: any, options?: ValidateOptions<C>): Promise<boolean>;
+  isValidSync(value: any, options?: ValidateOptions<C>): value is T;
 
   asNestedTest(config: NestedTestConfig): Test;
 
