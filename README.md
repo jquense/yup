@@ -1621,7 +1621,7 @@ let schema = object({
   name: string().default(''),
 });
 
-schema.default(); // -> { name: '' }
+schema.getDefault(); // -> { name: '' }
 ```
 
 This may be a bit surprising, but is usually helpful since it allows large, nested
