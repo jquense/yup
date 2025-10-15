@@ -621,6 +621,7 @@ Thrown on failed validations, with the following properties
 - `params`?: The test inputs, such as max value, regex, etc;
 - `path`: a string, indicating where there error was thrown. `path` is empty at the root level.
 - `errors`: array of error messages
+- `message`: error message
 - `inner`: in the case of aggregate errors, inner is an array of `ValidationErrors` throw earlier in the
   validation chain. When the `abortEarly` option is `false` this is where you can inspect each error thrown,
   alternatively, `errors` will have all of the messages from each inner error.
