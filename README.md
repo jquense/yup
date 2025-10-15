@@ -1416,7 +1416,7 @@ let schema = yup.number();
 await schema.isValid(10); // => true
 ```
 
-The default `cast` logic of `number` is: [`parseFloat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat).
+The default `cast` logic of `number` is: [`parseFloat`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat). If you want a different logic you can implement your own [`transform`]((#mixedtransformcurrentvalue-any-originalvalue-any--any-schema)
 
 Failed casts return `NaN`.
 
