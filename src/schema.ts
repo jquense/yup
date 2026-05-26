@@ -1030,10 +1030,10 @@ export default interface Schema<
     value: any,
     options?: ValidateOptions<TContext>,
   ): any;
-  equals: Schema['oneOf'];
-  is: Schema['oneOf'];
-  not: Schema['notOneOf'];
-  nope: Schema['notOneOf'];
+  equals: this['oneOf'];
+  is: this['oneOf'];
+  not: this['notOneOf'];
+  nope: this['notOneOf'];
 }
 
 // @ts-expect-error
