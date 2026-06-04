@@ -359,6 +359,14 @@ describe('Object types', () => {
       expect(objectWithConditions.getDefault()).toEqual({ child: 'not foo' });
     });
 
+    it('should resolve lazy field defaults', () => {
+      const objectWithLazyDefault = object({
+        child: lazy(() => number().default(1)),
+      });
+
+      expect(objectWithLazyDefault.getDefault()).toEqual({ child: 1 });
+    });
+
     it('should respect options when casting to default', () => {
       const objectWithConditions = object({
         child: string().when('$variable', {

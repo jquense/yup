@@ -117,6 +117,10 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
     return this._resolve(value, options).cast(value, options as any);
   }
 
+  getDefault(options?: ResolveOptions<TContext>): any {
+    return this._resolve(options?.value, options).getDefault(options);
+  }
+
   asNestedTest(config: NestedTestConfig) {
     let { key, index, parent, options } = config;
     let value = parent[index ?? key!];
