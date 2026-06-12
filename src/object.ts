@@ -179,7 +179,13 @@ export default class ObjectSchema<
 
     let isChanged = false;
     for (const prop of props) {
-      let field = fields[prop];
+      // Only treat own properties as fields. A bare lookup walks the prototype
+      // chain, so an input key matching an inherited `Object.prototype` member
+      // (e.g. `constructor`, `hasOwnProperty`) resolves to that function and
+      // crashes downstream with "field.resolve is not a function".
+      let field = Object.prototype.hasOwnProperty.call(fields, prop)
+        ? fields[prop]
+        : undefined;
       let exists = prop in (value as {})!;
       let inputValue = value[prop];
 

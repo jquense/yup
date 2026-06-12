@@ -1182,4 +1182,28 @@ describe('Object types', () => {
       }),
     ).resolves.toEqual(false);
   });
+
+  describe('inherited Object.prototype keys (issue #660)', () => {
+    it('does not treat an undeclared `constructor` key as a field', async () => {
+      const schema = object().shape({});
+      // previously threw `TypeError: field.resolve is not a function`
+      await expect(schema.validate({ constructor: 'bar' })).resolves.toEqual({
+        constructor: 'bar',
+      });
+    });
+
+    it('does not treat other inherited keys as fields', async () => {
+      const schema = object().shape({});
+      await expect(
+        schema.validate({ hasOwnProperty: 'x', toString: 'y' }),
+      ).resolves.toEqual({ hasOwnProperty: 'x', toString: 'y' });
+    });
+
+    it('still validates a field explicitly named `constructor`', async () => {
+      const schema = object().shape({ constructor: number() });
+      await expect(schema.validate({ constructor: '5' })).resolves.toEqual({
+        constructor: 5,
+      });
+    });
+  });
 });
