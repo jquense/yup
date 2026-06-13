@@ -35,27 +35,30 @@ describe('Array types', () => {
       let value = ['1', '2'];
 
       let itemSchema = string().when([], function (_, _s, opts: any) {
-
         const parent = opts.parent;
         const idx = opts.index;
         const val = opts.value;
         const originalValue = opts.originalValue;
-        
+
         expect(parent).toEqual(value);
         expect(typeof idx).toBe('number');
         expect(val).toEqual(parent[idx]);
         expect(originalValue).toEqual(parent[idx]);
 
-        return string().transform((value, _originalValue, _schema, options: any) => {
-          expect(parent).toEqual(options.parent);
-          expect(typeof options.index).toBe('number');
-          expect(val).toEqual(value);
+        return string().transform(
+          (value, _originalValue, _schema, options: any) => {
+            expect(parent).toEqual(options.parent);
+            expect(typeof options.index).toBe('number');
+            expect(val).toEqual(value);
 
-          return value;
-        });
+            return value;
+          },
+        );
       });
 
-      await array().of(itemSchema).validate(value, { context: { name: 'test'} });
+      await array()
+        .of(itemSchema)
+        .validate(value, { context: { name: 'test' } });
     });
   });
 
@@ -130,6 +133,29 @@ describe('Array types', () => {
       await expect(
         array().of(number().max(5)).isValid(undefined),
       ).resolves.toBe(true);
+    });
+
+    it('should validate the inner type against the default when input is undefined', async () => {
+      let inst = array().of(number().required()).default([1]);
+
+      expect(inst.validateSync(undefined)).toEqual([1]);
+      await expect(inst.validate(undefined)).resolves.toEqual([1]);
+      await expect(inst.isValid(undefined)).resolves.toBe(true);
+    });
+
+    it('should surface inner type errors for an invalid default', async () => {
+      let inst = array()
+        .of(number().required())
+        // @ts-expect-error testing an invalid default
+        .default([1, 'not a number', null]);
+
+      await expect(
+        inst.validate(undefined, { abortEarly: false }),
+      ).rejects.toEqual(
+        expect.objectContaining({
+          errors: expect.arrayContaining([expect.stringContaining('[2]')]),
+        }),
+      );
     });
 
     it('max should replace earlier tests', async () => {
@@ -253,8 +279,8 @@ describe('Array types', () => {
     });
 
     const schema = object({
-      items: array().of(itemSchema)
-    })
+      items: array().of(itemSchema),
+    });
 
     await schema.validate({ items: value });
   });
