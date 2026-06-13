@@ -86,9 +86,8 @@ export default class ArraySchema<
         originalValue: v,
         value: v,
         index: idx,
-
       });
-      
+
       if (castElement !== v) {
         isChanged = true;
       }
@@ -131,7 +130,7 @@ export default class ArraySchema<
           index,
           parent: value,
           parentPath: options.path,
-          originalParent: options.originalValue ?? _value,
+          originalParent: originalValue,
         });
       }
 
@@ -139,7 +138,7 @@ export default class ArraySchema<
         {
           value,
           tests,
-          originalValue: options.originalValue ?? _value,
+          originalValue,
           options,
         },
         panic,
