@@ -153,6 +153,26 @@ describe('Number types', function () {
     });
   });
 
+  it('should not override min when moreThan is chained after it', async () => {
+    // moreThan shares name 'min' with min (exclusive), so it replaces it —
+    // this test asserts the BUG is FIXED: both constraints must remain active.
+    const schema = number().min(5).moreThan(3);
+    // 4 > 3 (passes moreThan) but 4 < 5 (fails min) → must be invalid
+    await expect(schema.isValid(4)).resolves.toBe(false);
+    // 6 >= 5 and 6 > 3 → must be valid
+    await expect(schema.isValid(6)).resolves.toBe(true);
+  });
+
+  it('should not override max when lessThan is chained after it', async () => {
+    // lessThan shares name 'max' with max (exclusive), so it replaces it —
+    // this test asserts the BUG is FIXED: both constraints must remain active.
+    const schema = number().max(10).lessThan(15);
+    // 11 < 15 (passes lessThan) but 11 > 10 (fails max) → must be invalid
+    await expect(schema.isValid(11)).resolves.toBe(false);
+    // 9 <= 10 and 9 < 15 → must be valid
+    await expect(schema.isValid(9)).resolves.toBe(true);
+  });
+
   describe('integer', () => {
     let schema = number().integer();
 
