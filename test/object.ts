@@ -709,8 +709,8 @@ describe('Object types', () => {
     expect(error.inner).toMatchInlineSnapshot(`
       [
         [ValidationError: str is a required field],
-        [ValidationError: nest.innerStr is a required field],
         [ValidationError: nest.num must be greater than 5],
+        [ValidationError: nest.innerStr is a required field],
         [ValidationError: oops],
         [ValidationError: this must be a valid email],
         [ValidationError: this must be at least 3 characters],
@@ -719,8 +719,8 @@ describe('Object types', () => {
 
     expect(error.errors).toEqual([
       'str is a required field',
-      'nest.innerStr is a required field',
       'nest.num must be greater than 5',
+      'nest.innerStr is a required field',
       'oops',
       'this must be a valid email',
       'this must be at least 3 characters',
@@ -740,6 +740,26 @@ describe('Object types', () => {
       validationErrorWithMessages(
         'foo must be at least 5 characters',
         'bar is a required field',
+      ),
+    );
+  });
+
+  it('should sort errors by insertion order when keys share a prefix', async () => {
+    // `foo` is a substring of `fooBar`/`fooBiz`, which previously collided in
+    // the error sort and returned the errors out of order. See #2252.
+    let inst = object({
+      foo: string().required(),
+      fooBar: string().required(),
+      fooBiz: string().required(),
+    });
+
+    await expect(
+      inst.validate({ foo: '', fooBar: '', fooBiz: '' }, { abortEarly: false }),
+    ).rejects.toEqual(
+      validationErrorWithMessages(
+        'foo is a required field',
+        'fooBar is a required field',
+        'fooBiz is a required field',
       ),
     );
   });
