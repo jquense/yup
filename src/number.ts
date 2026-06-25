@@ -132,7 +132,9 @@ export default class NumberSchema<
   }
 
   truncate() {
-    return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
+    return this.transform((value) =>
+      !isAbsent(value) ? Math.trunc(value) : value,
+    );
   }
 
   round(method?: 'ceil' | 'floor' | 'round' | 'trunc') {
