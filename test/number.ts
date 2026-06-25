@@ -44,6 +44,12 @@ describe('Number types', function () {
       expect(schema.truncate().cast(45.55)).toBe(45);
     });
 
+    it('should truncate values outside the 32-bit integer range', () => {
+      expect(schema.truncate().cast(3000000000.7)).toBe(3000000000);
+      expect(schema.truncate().cast(-3000000000.7)).toBe(-3000000000);
+      expect(schema.round('trunc').cast(3000000000.7)).toBe(3000000000);
+    });
+
     it('should return NaN for failed casts', () => {
       expect(number().cast('asfasf', { assert: false })).toEqual(NaN);
 
