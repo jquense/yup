@@ -1042,14 +1042,24 @@ Schema.prototype.__isYupSchema__ = true;
 for (const method of ['validate', 'validateSync'])
   Schema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
     function (path: string, value: any, options: ValidateOptions = {}) {
-      const { parent, parentPath, schema } = getIn(
+      const { parent, parentPath, parentPathIsArray, schema } = getIn(
         this,
         path,
         value,
         options.context,
       );
+      // Mirror the key/index that the normal validation path exposes on
+      // `testContext.options` for a field/array element (see `asNestedTest`),
+      // so tests behave the same whether reached via `validate` or `validateAt`.
+      const keyOptions =
+        parentPath === ''
+          ? {}
+          : parentPathIsArray
+            ? { index: parseInt(parentPath, 10) }
+            : { key: parentPath };
       return (schema as any)[method](parent && parent[parentPath], {
         ...options,
+        ...keyOptions,
         parent,
         path,
       });

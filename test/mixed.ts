@@ -136,6 +136,44 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('validateAt should expose `key`/`index` on test options like validate', async () => {
+    let keyViaValidate: any;
+    let keyViaValidateAt: any;
+    let indexViaValidateAt: any;
+    let indexType: string | undefined;
+
+    const schema = object({
+      name: string().test('captures-key', '', function () {
+        keyViaValidate = this.options.key;
+        return true;
+      }),
+      list: array().of(
+        string().test('captures-index', '', function () {
+          indexViaValidateAt = this.options.index;
+          indexType = typeof this.options.index;
+          return true;
+        }),
+      ),
+    });
+
+    const value = { name: 'a', list: ['x', 'y'] };
+
+    // normal validation path exposes the field key on test options
+    await schema.validate(value);
+    expect(keyViaValidate).toBe('name');
+
+    // validateAt should expose the same key for the targeted field
+    keyViaValidate = undefined;
+    await schema.validateAt('name', value);
+    keyViaValidateAt = keyViaValidate;
+    expect(keyViaValidateAt).toBe('name');
+
+    // array element paths expose a numeric `index` (matching validate)
+    await schema.validateAt('list[1]', value);
+    expect(indexViaValidateAt).toBe(1);
+    expect(indexType).toBe('number');
+  });
+
   // xit('should castAt', async () => {
   //   const schema = object({
   //     foo: array().of(
