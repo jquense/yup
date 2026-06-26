@@ -12,11 +12,14 @@ export function getIn<C = any>(
   schema: ISchema<any> | Reference<any>;
   parent: any;
   parentPath: string;
+  parentPathIsArray: boolean;
 } {
   let parent: any, lastPart: string, lastPartDebug: string;
+  let lastPartIsArray = false;
 
   // root path: ''
-  if (!path) return { parent, parentPath: path, schema };
+  if (!path)
+    return { parent, parentPath: path, parentPathIsArray: false, schema };
 
   forEach(path, (_part, isBracket, isArray) => {
     let part = isBracket ? _part.slice(1, _part.length - 1) : _part;
@@ -59,10 +62,16 @@ export function getIn<C = any>(
     }
 
     lastPart = part;
+    lastPartIsArray = isArray;
     lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
   });
 
-  return { schema, parent, parentPath: lastPart! };
+  return {
+    schema,
+    parent,
+    parentPath: lastPart!,
+    parentPathIsArray: lastPartIsArray,
+  };
 }
 
 function reach<P extends string, S extends ISchema<any>>(
