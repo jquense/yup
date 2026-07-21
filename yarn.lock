@@ -11777,12 +11777,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.5.1, prettier@npm:^2.8.8":
+"prettier@npm:^2.5.1":
   version: 2.8.8
   resolution: "prettier@npm:2.8.8"
   bin:
     prettier: bin-prettier.js
   checksum: 10c0/463ea8f9a0946cd5b828d8cf27bd8b567345cf02f56562d5ecde198b91f47a76b7ac9eae0facd247ace70e927143af6135e8cf411986b8cb8478784a4d6d724a
+  languageName: node
+  linkType: hard
+
+"prettier@npm:^3.9.6":
+  version: 3.9.6
+  resolution: "prettier@npm:3.9.6"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
   languageName: node
   linkType: hard
 
@@ -15569,7 +15578,7 @@ __metadata:
     eslint-plugin-typescript: "npm:^0.14.0"
     hookem: "npm:^2.0.1"
     lint-staged: "npm:^13.3.0"
-    prettier: "npm:^2.8.8"
+    prettier: "npm:^3.9.6"
     property-expr: "npm:^2.0.5"
     rollup: "npm:^2.79.2"
     rollup-plugin-babel: "npm:^4.4.0"
