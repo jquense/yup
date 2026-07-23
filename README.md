@@ -1474,7 +1474,7 @@ await schema.isValid(true); // => true
 ### date
 
 Define a Date schema. By default ISO date strings will parse correctly,
-for more robust parsing options see the extending schema types at the end of the readme.
+for more robust parsing options see [Extending built-in schema with new methods](#extending-built-in-schema-with-new-methods).
 Inherits from [`Schema`](#Schema).
 
 ```js
