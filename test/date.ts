@@ -25,6 +25,31 @@ describe('Date types', () => {
     expect(inst.cast(null, { assert: false })).toEqual(null);
   });
 
+  it('should parse sub-3-digit fractional seconds', () => {
+    let inst = date();
+
+    // `.5` is 500ms, not 5ms (ISO 8601 / native Date)
+    expect(inst.cast('2020-01-01T00:00:00.5Z')).toEqual(
+      new Date(Date.UTC(2020, 0, 1, 0, 0, 0, 500)),
+    );
+    expect(inst.cast('2020-01-01T00:00:00.12Z')).toEqual(
+      new Date(Date.UTC(2020, 0, 1, 0, 0, 0, 120)),
+    );
+    expect(inst.cast('2020-01-01T00:00:00.05Z')).toEqual(
+      new Date(Date.UTC(2020, 0, 1, 0, 0, 0, 50)),
+    );
+    expect(inst.cast('2020-01-01T00:00:00.1Z')).toEqual(
+      new Date(Date.UTC(2020, 0, 1, 0, 0, 0, 100)),
+    );
+    // 3+ digits keep existing first-three-digits behavior
+    expect(inst.cast('2020-01-01T00:00:00.500Z')).toEqual(
+      new Date(Date.UTC(2020, 0, 1, 0, 0, 0, 500)),
+    );
+    expect(inst.cast('2016-08-10T11:32:19.2125Z')).toEqual(
+      new Date(1470828739212),
+    );
+  });
+
   it('should return invalid date for failed non-null casts', function () {
     let inst = date();
 
