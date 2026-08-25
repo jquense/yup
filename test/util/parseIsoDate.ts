@@ -125,6 +125,30 @@ describe('date-time', () => {
       const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 7);
       expect(result).toBe(expected);
     });
+
+    describe('fractional seconds shorter than 3 digits', () => {
+      // a fraction shorter than 3 digits must be right-padded with zeros
+      // before being read as milliseconds, matching the native ISO 8601
+      // parser (`new Date` / `Date.parse`), e.g. ".5" -> 500ms, not 5ms
+      test('2001-02-03T04:05:06.5Z', () => {
+        const result = parseIsoDate('2001-02-03T04:05:06.5Z');
+        const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 500);
+        expect(result).toBe(expected);
+        expect(result).toBe(Date.parse('2001-02-03T04:05:06.5Z'));
+      });
+      test('2001-02-03T04:05:06.05Z', () => {
+        const result = parseIsoDate('2001-02-03T04:05:06.05Z');
+        const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 50);
+        expect(result).toBe(expected);
+        expect(result).toBe(Date.parse('2001-02-03T04:05:06.05Z'));
+      });
+      test('2001-02-03T04:05:06.12Z', () => {
+        const result = parseIsoDate('2001-02-03T04:05:06.12Z');
+        const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 120);
+        expect(result).toBe(expected);
+        expect(result).toBe(Date.parse('2001-02-03T04:05:06.12Z'));
+      });
+    });
   });
 
   describe('offset time zone', () => {
