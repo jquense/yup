@@ -125,6 +125,25 @@ describe('date-time', () => {
       const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 7);
       expect(result).toBe(expected);
     });
+
+    // Fractional seconds shorter than 3 digits denote tenths/hundredths, so
+    // ".5" is 500ms, not 5ms. They must match the native ISO 8601 parser.
+    describe('sub-3-digit fractional seconds', () => {
+      test.each([
+        ['2001-02-03T04:05:06.5Z', 500],
+        ['2001-02-03T04:05:06.05Z', 50],
+        ['2001-02-03T04:05:06.1Z', 100],
+        ['2001-02-03T04:05:06.12Z', 120],
+        // exactly 3 digits and truncation of extra precision stay correct
+        ['2001-02-03T04:05:06.123Z', 123],
+        ['2001-02-03T04:05:06.1239Z', 123],
+      ])('%s -> %ims', (input, ms) => {
+        const expected = Date.UTC(2001, 1, 3, 4, 5, 6, ms);
+        expect(parseIsoDate(input)).toBe(expected);
+        // parity with the native parser
+        expect(parseIsoDate(input)).toBe(new Date(input).valueOf());
+      });
+    });
   });
 
   describe('offset time zone', () => {
