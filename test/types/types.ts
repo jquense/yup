@@ -11,6 +11,7 @@ import {
   reach,
   addMethod,
   Schema,
+  InferType,
 } from '../../src';
 import { create as tuple } from '../../src/tuple';
 import { create as lazy } from '../../src/Lazy';
@@ -623,6 +624,68 @@ Array: {
 
   // $ExpectType any[] | undefined
   array().strip().strip(false).cast(undefined);
+
+  ArrayEnsure: {
+    const ensured = array().of(string().required()).ensure();
+
+    // $ExpectType string[]
+    type _Ensured = InferType<typeof ensured>;
+
+    // $ExpectType "d"
+    ensured.__flags;
+
+    // $ExpectType string[]
+    ensured.getDefault();
+
+    // $ExpectType string[]
+    ensured.cast(undefined);
+
+    // $ExpectType string[]
+    ensured.validateSync(undefined);
+
+    // $ExpectType string[]
+    ensured.optional().__outputType;
+
+    // $ExpectType string[] | undefined
+    ensured.default(undefined).__outputType;
+
+    // $ExpectType undefined
+    ensured.default(undefined).getDefault();
+
+    // $ExpectType ""
+    ensured.default(undefined).__flags;
+
+    // $ExpectType string[] | null
+    array(string().required()).nullable().ensure().__outputType;
+
+    // $ExpectType string[]
+    array(string().required()).nullable().ensure().getDefault();
+
+    // $ExpectType (string | null | undefined)[]
+    array(string().nullable()).ensure().__outputType;
+
+    // $ExpectType { prefix: string; }
+    array(string<string, { prefix: string }>().defined()).ensure().__context;
+
+    // $ExpectType string[]
+    array(string().required()).concat(ensured).__outputType;
+
+    // $ExpectType {}
+    object({ values: ensured.strip() }).__outputType;
+
+    const schema: ObjectSchema<{
+      array1?: string[];
+      array2: string[];
+      array3: string[];
+    }> = object({
+      array1: array().of(string().required()),
+      array2: array().of(string().required()).default([]),
+      array3: ensured,
+    });
+
+    // $ExpectType string[]
+    schema.cast({}).array3;
+  }
 
   ArrayConcat: {
     const arrReq = array(number()).required();
