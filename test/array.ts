@@ -220,6 +220,9 @@ describe('Array types', () => {
     const a = [1, 4];
     expect(inst.cast(a)).toBe(a);
 
+    expect(inst.cast(undefined)).toEqual([]);
+    expect(inst.getDefault()).toEqual([]);
+    expect(inst.getDefault()).not.toBe(inst.getDefault());
     expect(inst.cast(null)).toEqual([]);
     // nullable is redundant since this should always produce an array
     // but we want to ensure that null is actually turned into an array
@@ -227,6 +230,39 @@ describe('Array types', () => {
 
     expect(inst.cast(1)).toEqual([1]);
     expect(inst.nullable().cast(1)).toEqual([1]);
+  });
+
+  it('should preserve presence and default overrides when ensuring arrays', async () => {
+    const original = array(string().required()).label('values');
+    const ensured = original.ensure();
+    const value = ['one'];
+
+    expect(original.getDefault()).toBeUndefined();
+    expect(original.cast(undefined)).toBeUndefined();
+    expect(ensured.cast(value)).toBe(value);
+
+    await expect(ensured.validate(undefined)).resolves.toEqual([]);
+    await expect(ensured.validate(null)).resolves.toEqual([]);
+    await expect(ensured.validate('one')).resolves.toEqual(value);
+    await expect(ensured.validate(value)).resolves.toBe(value);
+    await expect(ensured.optional().validate(undefined)).resolves.toEqual([]);
+    await expect(
+      ensured.default(undefined).validate(undefined),
+    ).resolves.toBeUndefined();
+
+    await expect(ensured.strict().validate(undefined)).resolves.toBeUndefined();
+    await expect(ensured.strict().validate(null)).rejects.toThrow(
+      'values cannot be null',
+    );
+    await expect(ensured.strict().validate('one')).rejects.toThrow(
+      'values must be a `array` type',
+    );
+    await expect(
+      ensured.nullable().strict().validate(null),
+    ).resolves.toBeNull();
+    await expect(
+      ensured.defined().strict().validate(undefined),
+    ).rejects.toThrow('values must be defined');
   });
 
   it('should pass resolved path to descendants', async () => {

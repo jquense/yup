@@ -255,7 +255,7 @@ export default class ArraySchema<
   }
 
   ensure() {
-    return this.default<TIn>(() => [] as any).transform(
+    return this.default<NonNullable<TIn>>(() => [] as any).transform(
       (val: TIn, original: any) => {
         // We don't want to return `null` for nullable schema
         if (this._typeCheck(val)) return val;
