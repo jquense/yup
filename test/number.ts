@@ -184,6 +184,27 @@ describe('Number types', function () {
     ]);
   });
 
+  describe('oneOf', () => {
+    it('should limit values', async () => {
+      let inst = number().oneOf([1, 2, 3]);
+
+      await expect(inst.validate(1)).resolves.toBe(1);
+      await expect(inst.validate(2)).resolves.toBe(2);
+      await expect(inst.validate(3)).resolves.toBe(3);
+      await expect(inst.validate(4)).rejects.toThrowError();
+      await expect(inst.validate(null)).rejects.toThrowError();
+      await expect(inst.nullable().validate(null)).resolves.toBeNull();
+
+      let withRef = number().oneOf([1, ref('$allowed')]);
+      await expect(
+        withRef.validate(1, { context: { allowed: 1 } }),
+      ).resolves.toBe(1);
+      await expect(
+        withRef.validate(2, { context: { allowed: 1 } }),
+      ).rejects.toThrowError();
+    });
+  });
+
   it('should check NEGATIVE correctly', function () {
     let v = number().negative();
 
