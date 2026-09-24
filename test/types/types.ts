@@ -60,6 +60,18 @@ Base_methods: {
   // $ExpectType number | undefined
   number().oneOf([1, ref('$foo')]).__outputType;
 
+  // $ExpectType NonNullable<1 | 2 | 3 | undefined>
+  number().oneOf([1, 2, 3]).required().__outputType;
+
+  // $ExpectType 1 | 2 | 3 | undefined
+  number().oneOf([1, 2, 3]).optional().__outputType;
+
+  // $ExpectType 1 | 2 | 3 | null | undefined
+  number().oneOf([1, 2, 3]).nullable().__outputType;
+
+  // $ExpectType NonNullable<1 | 2 | 3 | null | undefined>
+  number().oneOf([1, 2, 3]).nullable().required().__outputType;
+
   // type s = StringSchema<string | undefined, any, '', 's' | 'd'>;
 
   // type ss = s['__outputType'];

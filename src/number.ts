@@ -1,4 +1,4 @@
-import { number as locale } from './locale';
+import { MixedLocale, number as locale } from './locale';
 import isAbsent from './util/isAbsent';
 import type { AnyObject, DefaultThunk, Message } from './types';
 import type Reference from './Reference';
@@ -9,12 +9,21 @@ import type {
   NotNull,
   SetFlag,
   Maybe,
+  Optionals,
   ToggleDefault,
   UnsetFlag,
 } from './util/types';
 import Schema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
+
+type OneOfType<T, TType> = T extends Reference<infer R>
+  ? unknown extends R
+    ? TType
+    : R extends TType
+    ? R
+    : TType
+  : T;
 
 export function create(): NumberSchema;
 export function create<
@@ -168,6 +177,15 @@ export default interface NumberSchema<
   default<D extends Maybe<TType>>(
     def: DefaultThunk<D, TContext>,
   ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  oneOf<U extends TType | Reference<any>>(
+    arrayOfValues: ReadonlyArray<U>,
+    message?: MixedLocale['oneOf'],
+  ): NumberSchema<OneOfType<U, TType> | Optionals<TType>, TContext, TDefault, TFlags>;
+  oneOf(
+    enums: ReadonlyArray<TType | Reference>,
+    message: Message<{ values: any }>,
+  ): this;
 
   concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
     schema: NumberSchema<UType, UContext, UDefault, UFlags>,
