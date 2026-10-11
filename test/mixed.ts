@@ -609,6 +609,75 @@ describe('Mixed Types ', () => {
       expect(inst.tests).toHaveLength(0);
     });
 
+    it('should restore immutability when the callback throws', () => {
+      const inst = mixed();
+      const error = new Error('mutation failed');
+
+      expect(() =>
+        inst.withMutation(() => {
+          throw error;
+        }),
+      ).toThrow(error);
+
+      const required = inst.required();
+      expect(required).not.toBe(inst);
+      expect(inst.isValidSync(undefined)).toBe(true);
+      expect(required.isValidSync(undefined)).toBe(false);
+    });
+
+    it('should retain completed changes but isolate later changes after an error', () => {
+      const inst = mixed();
+
+      expect(() =>
+        inst.withMutation((schema) => {
+          schema.default('kept');
+          throw new Error('mutation failed');
+        }),
+      ).toThrow('mutation failed');
+
+      const next = inst.default('next');
+      expect(inst.getDefault()).toBe('kept');
+      expect(next.getDefault()).toBe('next');
+    });
+
+    it('should restore immutability after an uncaught nested error', () => {
+      const inst = mixed();
+
+      expect(() =>
+        inst.withMutation((schema) => {
+          schema.withMutation(() => {
+            throw new Error('nested mutation failed');
+          });
+        }),
+      ).toThrow('nested mutation failed');
+
+      expect(inst.clone()).not.toBe(inst);
+    });
+
+    it('should retain the outer mutation scope after catching an inner error', () => {
+      const inst = mixed();
+
+      inst.withMutation((schema) => {
+        expect(() =>
+          schema.withMutation(() => {
+            throw new Error('nested mutation failed');
+          }),
+        ).toThrow('nested mutation failed');
+        expect(schema.test('after error', () => true)).toBe(inst);
+      });
+
+      expect(inst.tests).toHaveLength(1);
+      expect(inst.clone()).not.toBe(inst);
+    });
+
+    it('should preserve the callback return value', () => {
+      const inst = mixed();
+      const result = {};
+
+      expect(inst.withMutation(() => result)).toBe(result);
+      expect(inst.clone()).not.toBe(inst);
+    });
+
     it('should work with nesting', () => {
       let inst = mixed();
 
