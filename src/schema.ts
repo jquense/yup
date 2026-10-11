@@ -270,9 +270,11 @@ export default abstract class Schema<
   withMutation<T>(fn: (schema: this) => T): T {
     let before = this._mutate;
     this._mutate = true;
-    let result = fn(this);
-    this._mutate = before;
-    return result;
+    try {
+      return fn(this);
+    } finally {
+      this._mutate = before;
+    }
   }
 
   concat(schema: this): this;
@@ -415,7 +417,8 @@ export default abstract class Schema<
       rawValue === undefined
         ? rawValue
         : this.transforms.reduce(
-            (prevValue, fn) => fn.call(this, prevValue, rawValue, this, options),
+            (prevValue, fn) =>
+              fn.call(this, prevValue, rawValue, this, options),
             rawValue,
           );
 
