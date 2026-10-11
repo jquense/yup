@@ -1,4 +1,5 @@
 import isSchema from './util/isSchema';
+import cloneDeep from './util/cloneDeep';
 import type {
   AnyObject,
   ISchema,
@@ -69,7 +70,7 @@ class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
 
   clone(spec?: Partial<LazySpec>): Lazy<T, TContext, TFlags> {
     const next = new Lazy<T, TContext, TFlags>(this.builder);
-    next.spec = { ...this.spec, ...spec };
+    next.spec = cloneDeep({ ...this.spec, ...spec });
     return next;
   }
 
