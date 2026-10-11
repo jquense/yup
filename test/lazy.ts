@@ -48,12 +48,52 @@ describe('lazy', function () {
 
       expect(schema.meta()).toEqual(meta);
 
-      expect(schema.meta({ added: true })).not.toEqual(schema.meta());
-
-      expect(schema.meta({ added: true }).meta()).toEqual({
+      const next = schema.meta({ added: true });
+      expect(next).not.toBe(schema);
+      expect(next.meta()).toEqual({
         a: 1,
         added: true,
       });
+      expect(schema.meta()).toEqual(meta);
+    });
+
+    it('should keep metadata independent between branches', () => {
+      const schema = lazy(mapper).meta({ label: 'base' });
+      const first = schema.meta({ label: 'first' });
+      const second = schema.meta({ label: 'second' });
+
+      expect(schema.meta()).toEqual({ label: 'base' });
+      expect(first.meta()).toEqual({ label: 'first' });
+      expect(second.meta()).toEqual({ label: 'second' });
+      expect(mapper).not.toHaveBeenCalled();
+    });
+
+    it('should deeply clone metadata', () => {
+      const field = mixed();
+      const meta = {
+        settings: { label: 'base' },
+        tags: ['first'],
+        field,
+      };
+      const schema = lazy(mapper).meta(meta);
+      const next = schema.clone();
+
+      expect(next.meta()).toEqual(meta);
+      expect(next.meta()).not.toBe(schema.meta());
+      expect(next.meta()!.settings).not.toBe(schema.meta()!.settings);
+      expect(next.meta()!.tags).not.toBe(schema.meta()!.tags);
+      expect(next.meta()!.field).toBe(field);
+      expect(mapper).not.toHaveBeenCalled();
+    });
+
+    it('should preserve metadata when making a lazy schema optional', () => {
+      const schema = lazy(() => mixed().required()).meta({ label: 'base' });
+      const next = schema.optional().meta({ label: 'optional' });
+
+      expect(next.meta()).toEqual({ label: 'optional' });
+      expect(schema.meta()).toEqual({ label: 'base' });
+      expect(next.isValidSync(undefined)).toBe(true);
+      expect(schema.isValidSync(undefined)).toBe(false);
     });
 
     it('should allow throwing validation error in builder', async () => {
