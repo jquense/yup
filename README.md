@@ -1333,8 +1333,8 @@ await schema.isValid('nope'); // => false
 #### `string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`
 
 An alternate signature for `string.matches` with an options object. `excludeEmptyString`, when true,
-short circuits the regex test when the value is an empty string, making it a easier to avoid
-matching nothing without complicating the regex.
+skips the regex test for empty strings, allowing them to pass this test even if the regex does
+not match an empty string. Other validations, such as `required()`, still apply.
 
 ```js
 let schema = string().matches(/(hi|bye)/, { excludeEmptyString: true });
