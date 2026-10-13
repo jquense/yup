@@ -1380,7 +1380,7 @@ Validates the value as an ISO datetime via a regex. Defaults to UTC validation; 
 Unlike `.date()`, `datetime` will not convert the string to a `Date` object. `datetime` also provides greater customization over the required format of the datetime string than `date` does.
 
 `options.allowOffset`: Allow a time zone offset. False requires UTC 'Z' timezone. _(default: false)_
-`options.precision`: Require a certain sub-second precision on the date. _(default: null -- any (or no) sub-second precision)_
+`options.precision`: Require a certain sub-second precision on the date. Use `0` to disallow fractional seconds. _(default: null -- any (or no) sub-second precision)_
 
 #### `string.datetime(message?: string | function)`
 

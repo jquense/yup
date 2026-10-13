@@ -259,7 +259,7 @@ export default class StringSchema<
           if (!value || precision == undefined) return true;
           const struct = parseDateStruct(value);
           if (!struct) return false;
-          return struct.precision === precision;
+          return (struct.precision ?? 0) === precision;
         },
       });
   }
