@@ -293,6 +293,30 @@ describe('String types', () => {
       ]);
     });
 
+    it('should support zero DATETIME precision', function () {
+      let v = string().datetime({ precision: 0 });
+
+      return Promise.all([
+        expect(v.isValid('2023-01-09T12:34:56Z')).resolves.toBe(true),
+        expect(v.isValid('2023-01-09T12:34:56.0Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.000Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56.Z')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56')).resolves.toBe(false),
+        expect(v.isValid('2023-01-09T12:34:56+00:00')).resolves.toBe(false),
+      ]);
+    });
+
+    it('should support zero DATETIME precision with offsets', function () {
+      let v = string().datetime({ precision: 0, allowOffset: true });
+
+      return Promise.all([
+        expect(v.isValid('2023-01-09T12:34:56Z')).resolves.toBe(true),
+        expect(v.isValid('2023-01-09T12:34:56+07:30')).resolves.toBe(true),
+        expect(v.isValid('2023-01-09T12:34:56-0730')).resolves.toBe(true),
+        expect(v.isValid('2023-01-09T12:34:56.0+07:30')).resolves.toBe(false),
+      ]);
+    });
+
     describe('DATETIME error strings', function () {
       function getErrorString(schema: AnySchema, value: string) {
         try {
