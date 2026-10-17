@@ -265,7 +265,7 @@ export default class StringSchema<
   }
 
   //-- transforms --
-  ensure(): StringSchema<NonNullable<TType>> {
+  ensure(): StringSchema<NonNullable<TType>, TContext> {
     return this.default('' as Defined<TType>).transform((val) =>
       val === null ? '' : val,
     ) as any;

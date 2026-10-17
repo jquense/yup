@@ -170,6 +170,10 @@ Mixed: {
 }
 
 Strings: {
+  const ensured = string<string, { locale: string }>().nullable().ensure();
+  const _ensuredContext: { locale: string } = ensured.__context;
+  const _ensuredValue: string = ensured.cast(null);
+
   const strRequired = string().required();
 
   // $ExpectType string
@@ -1080,6 +1084,10 @@ reach: {
 }
 
 addMethod: {
+  addMethod(string, 'ensureRequired', function () {
+    return this.ensure().required();
+  });
+
   addMethod(Schema, 'foo', function () {
     return this.clone();
   });
