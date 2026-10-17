@@ -624,6 +624,49 @@ Array: {
   // $ExpectType any[] | undefined
   array().strip().strip(false).cast(undefined);
 
+  ArrayOf: {
+    // $ExpectType undefined
+    array().of(string()).getDefault();
+
+    const withDefault = array().default(['seed']).of(string().required());
+
+    // $ExpectType string[]
+    withDefault.getDefault();
+
+    // $ExpectType string[]
+    withDefault.cast(undefined);
+
+    // $ExpectType string[]
+    withDefault.validateSync(undefined);
+
+    // $ExpectType string[] | null
+    withDefault.nullable().optional().__outputType;
+
+    // $ExpectType string[] | undefined
+    withDefault.default(undefined).__outputType;
+
+    const changedType = array().default(() => [1]).of(string().required());
+
+    // $ExpectType number[]
+    changedType.getDefault();
+
+    // $ExpectType string[]
+    changedType.cast(undefined);
+
+    // $ExpectType {}
+    object({ values: array().strip().of(string()) }).__outputType;
+
+    // $ExpectType "s"
+    array().strip().of(string()).__flags;
+
+    // $ExpectType ""
+    array().strip().of(string()).strip(false).__flags;
+
+    // $ExpectType { prefix: string; }
+    array<{ prefix: string }>().of(string<string, { prefix: string }>())
+      .__context;
+  }
+
   ArrayConcat: {
     const arrReq = array(number()).required();
 
