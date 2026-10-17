@@ -69,6 +69,25 @@ describe('Array types', () => {
     ).toEqual([1, 2, 3]);
   });
 
+  it('should preserve defaults when changing the subtype', () => {
+    const original = array().default(() => [1]);
+    const schema = original.of(string().required());
+
+    expect(schema.getDefault()).toEqual([1]);
+    expect(schema.cast(undefined)).toEqual(['1']);
+    expect(original.cast(undefined)).toEqual([1]);
+    expect(array().of(string()).getDefault()).toBeUndefined();
+  });
+
+  it('should preserve strip when changing the subtype', () => {
+    const schema = array().strip().of(string());
+
+    expect(object({ values: schema }).cast({ values: ['one'] })).toEqual({});
+    expect(
+      object({ values: schema.strip(false) }).cast({ values: ['one'] }),
+    ).toEqual({ values: ['one'] });
+  });
+
   it('should type check', () => {
     let inst = array();
 
