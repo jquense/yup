@@ -283,7 +283,7 @@ export default class ObjectSchema<
 
   clone(spec?: Partial<ObjectSchemaSpec>): this {
     const next = super.clone(spec);
-    next.fields = { ...this.fields };
+    next.fields = Object.assign(Object.create(null), this.fields);
     next._nodes = this._nodes;
     next._excludedEdges = this._excludedEdges;
     next._sortErrors = this._sortErrors;
@@ -362,7 +362,7 @@ export default class ObjectSchema<
     excludedEdges?: readonly [string, string][],
   ): ObjectSchema<TInNext, TContext, TDefaultNext, TFlags> {
     let next = this.clone() as any;
-    next.fields = shape;
+    next.fields = Object.assign(Object.create(null), shape);
 
     next._nodes = sortFields(shape, excludedEdges);
     next._sortErrors = sortByKeyOrder(Object.keys(shape));

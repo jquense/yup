@@ -87,6 +87,33 @@ describe('Object types', () => {
   });
 
   describe('validation', () => {
+    it('should safely handle unknown fields named after Object.prototype properties', async () => {
+      const schema = object().shape({});
+
+      await expect(
+        schema.validate({ constructor: 'bar', toString: 'baz' }),
+      ).resolves.toEqual({ constructor: 'bar', toString: 'baz' });
+    });
+
+    it('should strip unknown fields named after Object.prototype properties', async () => {
+      const schema = object().shape({}).noUnknown();
+
+      await expect(
+        schema.validate({ constructor: 'bar', toString: 'baz' }),
+      ).resolves.toEqual({});
+    });
+
+    it('should validate explicitly defined fields named after Object.prototype properties', async () => {
+      const schema = object().shape({
+        constructor: string().required(),
+        toString: string().required(),
+      });
+
+      await expect(
+        schema.validate({ constructor: 'bar', toString: 'baz' }),
+      ).resolves.toEqual({ constructor: 'bar', toString: 'baz' });
+    });
+
     it('should run validations recursively', async () => {
       let inst = object({
         num: number(),
