@@ -14,17 +14,33 @@ export function parseIsoDate(date: string): number {
   const struct = parseDateStruct(date);
   if (!struct) return Date.parse ? Date.parse(date) : Number.NaN;
 
+  // Only years 0-99 need setters to avoid the Date constructor's 1900 offset.
+  // Other years must be constructed in one step so intermediate dates do not
+  // exceed the Date range before the time and timezone offset are applied.
+  const isEarlyYear = struct.year >= 0 && struct.year < 100;
+
   // timestamps without timezone identifiers should be considered local time
   if (struct.z === undefined && struct.plusMinus === undefined) {
-    return new Date(
-      struct.year,
-      struct.month,
-      struct.day,
+    if (!isEarlyYear)
+      return new Date(
+        struct.year,
+        struct.month,
+        struct.day,
+        struct.hour,
+        struct.minute,
+        struct.second,
+        struct.millisecond,
+      ).valueOf();
+
+    const result = new Date(0);
+    result.setFullYear(struct.year, struct.month, struct.day);
+    result.setHours(
       struct.hour,
       struct.minute,
       struct.second,
       struct.millisecond,
-    ).valueOf();
+    );
+    return result.valueOf();
   }
 
   let totalMinutesOffset = 0;
@@ -33,15 +49,26 @@ export function parseIsoDate(date: string): number {
     if (struct.plusMinus === '+') totalMinutesOffset = 0 - totalMinutesOffset;
   }
 
-  return Date.UTC(
-    struct.year,
-    struct.month,
-    struct.day,
+  if (!isEarlyYear)
+    return Date.UTC(
+      struct.year,
+      struct.month,
+      struct.day,
+      struct.hour,
+      struct.minute + totalMinutesOffset,
+      struct.second,
+      struct.millisecond,
+    );
+
+  const result = new Date(0);
+  result.setUTCFullYear(struct.year, struct.month, struct.day);
+  result.setUTCHours(
     struct.hour,
     struct.minute + totalMinutesOffset,
     struct.second,
     struct.millisecond,
   );
+  return result.valueOf();
 }
 
 export function parseDateStruct(date: string) {
