@@ -7,6 +7,33 @@ function isInvalidDate(date: any): date is Date {
 }
 
 describe('Date types', () => {
+  it.each(['0000', '0001', '0099'])(
+    'should preserve the ISO year %s in local dates',
+    (year) => {
+      const value = date().cast(`${year}-02-28T12:30:00`);
+      expect(value.getFullYear()).toBe(Number(year));
+      expect(value.getMonth()).toBe(1);
+      expect(value.getDate()).toBe(28);
+      expect(value.getHours()).toBe(12);
+      expect(value.getMinutes()).toBe(30);
+    },
+  );
+
+  it.each([
+    ['0000-02-29T12:30:00Z', '0000-02-29T12:30:00.000Z'],
+    ['0099-01-01T00:00:00Z', '0099-01-01T00:00:00.000Z'],
+    ['0000-01-01T00:00:00+01:00', '-000001-12-31T23:00:00.000Z'],
+    ['0099-12-31T23:00:00-02:00', '0100-01-01T01:00:00.000Z'],
+  ])('should cast early ISO dates with offsets: %s', (input, expected) => {
+    expect(date().cast(input).toISOString()).toBe(expected);
+  });
+
+  it('should reject first-century dates below a minimum', async () => {
+    expect(
+      await date().min('1900-01-01').isValid('0099-01-01'),
+    ).toBe(false);
+  });
+
   it('should CAST correctly', () => {
     let inst = date();
 

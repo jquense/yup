@@ -16,15 +16,15 @@ export function parseIsoDate(date: string): number {
 
   // timestamps without timezone identifiers should be considered local time
   if (struct.z === undefined && struct.plusMinus === undefined) {
-    return new Date(
-      struct.year,
-      struct.month,
-      struct.day,
+    const result = new Date(0);
+    result.setFullYear(struct.year, struct.month, struct.day);
+    result.setHours(
       struct.hour,
       struct.minute,
       struct.second,
       struct.millisecond,
-    ).valueOf();
+    );
+    return result.valueOf();
   }
 
   let totalMinutesOffset = 0;
@@ -33,15 +33,15 @@ export function parseIsoDate(date: string): number {
     if (struct.plusMinus === '+') totalMinutesOffset = 0 - totalMinutesOffset;
   }
 
-  return Date.UTC(
-    struct.year,
-    struct.month,
-    struct.day,
+  const result = new Date(0);
+  result.setUTCFullYear(struct.year, struct.month, struct.day);
+  result.setUTCHours(
     struct.hour,
     struct.minute + totalMinutesOffset,
     struct.second,
     struct.millisecond,
   );
+  return result.valueOf();
 }
 
 export function parseDateStruct(date: string) {
