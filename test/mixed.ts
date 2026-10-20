@@ -41,6 +41,40 @@ global.YUP_USE_SYNC &&
   });
 
 describe('Mixed Types ', () => {
+  it('should report validation errors for bigint values', async () => {
+    const schema = number().strict();
+    const value = BigInt('9007199254740993');
+
+    expect(schema.isValidSync(value)).toBe(false);
+    await expect(schema.isValid(value)).resolves.toBe(false);
+    await expect(schema.validate(value)).rejects.toMatchObject({
+      name: 'ValidationError',
+      value,
+      message: expect.stringContaining('9007199254740993n'),
+    });
+  });
+
+  it('should format bigint values nested in invalid input', async () => {
+    const value = { id: BigInt('-9007199254740993') };
+
+    await expect(string().strict().isValid(value)).resolves.toBe(false);
+    await expect(string().strict().validate(value)).rejects.toMatchObject({
+      name: 'ValidationError',
+      value,
+      message: expect.stringContaining('-9007199254740993n'),
+    });
+  });
+
+  it('should report bigint oneOf failures without serialization errors', async () => {
+    const schema = mixed().oneOf([BigInt(1)]);
+
+    await expect(schema.validate(BigInt(1))).resolves.toBe(BigInt(1));
+    await expect(schema.isValid(BigInt(2))).resolves.toBe(false);
+    await expect(schema.validate(BigInt(2))).rejects.toBeInstanceOf(
+      ValidationError,
+    );
+  });
+
   it('is not nullable by default', async () => {
     let inst = mixed();
 

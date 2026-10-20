@@ -16,6 +16,7 @@ function printSimpleValue(val: any, quoteStrings = false) {
   if (val == null || val === true || val === false) return '' + val;
 
   const typeOf = typeof val;
+  if (typeOf === 'bigint') return `${val}n`;
   if (typeOf === 'number') return printNumber(val);
   if (typeOf === 'string') return quoteStrings ? `"${val}"` : val;
   if (typeOf === 'function')
