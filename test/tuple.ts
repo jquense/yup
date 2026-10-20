@@ -72,6 +72,44 @@ describe('Array types', () => {
   });
 
   describe('validation', () => {
+    it('should validate tuple defaults when the input is undefined', async () => {
+      const schema = tuple([number().required(), string().required()]).default([
+        1,
+        'hello',
+      ]);
+
+      expect(schema.validateSync(undefined)).toEqual([1, 'hello']);
+      await expect(schema.validate(undefined)).resolves.toEqual([1, 'hello']);
+      await expect(schema.isValid(undefined)).resolves.toBe(true);
+    });
+
+    it('should report validation errors for invalid tuple defaults', async () => {
+      const schema = tuple([number().min(2), string().required()]).default([
+        1,
+        '',
+      ]);
+
+      await expect(
+        schema.validate(undefined, { abortEarly: false }),
+      ).rejects.toMatchObject({
+        errors: [
+          '[0] must be greater than or equal to 2',
+          '[1] is a required field',
+        ],
+      });
+      expect(schema.isValidSync(undefined)).toBe(false);
+    });
+
+    it('should preserve original tuple values for nested tests', async () => {
+      const schema = tuple([
+        number().test('original', 'original value was lost', function (value) {
+          return value === 1 && this.originalValue === '1';
+        }),
+      ]);
+
+      await expect(schema.validate(['1'])).resolves.toEqual([1]);
+    });
+
     test.each([
       ['required', undefined, tuple([mixed()]).required()],
       ['required', null, tuple([mixed()]).required()],
