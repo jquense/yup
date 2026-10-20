@@ -7,6 +7,42 @@ function isInvalidDate(date: any): date is Date {
 }
 
 describe('Date types', () => {
+  it.each([
+    ['-271821-04-19T23:00:00-02:00', '-271821-04-20T01:00:00.000Z'],
+    ['-271821-04-19T23:00:00-01:00', '-271821-04-20T00:00:00.000Z'],
+    ['+275760-09-13T01:00:00+02:00', '+275760-09-12T23:00:00.000Z'],
+    ['+275760-09-13T01:00:00+01:00', '+275760-09-13T00:00:00.000Z'],
+  ])(
+    'should apply offsets before checking the Date range: %s',
+    (input, expected) => {
+      expect(date().cast(input).toISOString()).toBe(expected);
+    },
+  );
+
+  it.each([
+    '-271821-04-19T23:59:59.999Z',
+    '+275760-09-13T00:00:00.001Z',
+    '-271821-04-20T00:00:00+00:01',
+    '+275760-09-13T00:00:00-00:01',
+  ])('should reject instants outside the Date range: %s', (input) => {
+    expect(isInvalidDate(date().cast(input, { assert: false }))).toBe(true);
+  });
+
+  it.each([
+    [-271821, 3, 20, 12],
+    [275760, 8, 13, 0],
+  ])(
+    'should preserve local Date boundary behavior for year %s',
+    (year, month, day, hour) => {
+      const input = `${year < 0 ? '-' : '+'}${Math.abs(year)}-${String(
+        month + 1,
+      ).padStart(2, '0')}-${day}T${String(hour).padStart(2, '0')}:00:00`;
+      expect(date().cast(input, { assert: false }).valueOf()).toBe(
+        new Date(year, month, day, hour).valueOf(),
+      );
+    },
+  );
+
   it.each(['0000', '0001', '0099'])(
     'should preserve the ISO year %s in local dates',
     (year) => {
@@ -29,9 +65,7 @@ describe('Date types', () => {
   });
 
   it('should reject first-century dates below a minimum', async () => {
-    expect(
-      await date().min('1900-01-01').isValid('0099-01-01'),
-    ).toBe(false);
+    expect(await date().min('1900-01-01').isValid('0099-01-01')).toBe(false);
   });
 
   it('should CAST correctly', () => {
