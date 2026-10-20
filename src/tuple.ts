@@ -141,6 +141,7 @@ export default class TupleSchema<
         return;
       }
 
+      const originalValue = options.originalValue ?? _value ?? value;
       let tests: RunTest[] = [];
       for (let [index, itemSchema] of itemTypes.entries()) {
         tests[index] = itemSchema!.asNestedTest({
@@ -148,7 +149,7 @@ export default class TupleSchema<
           index,
           parent: value,
           parentPath: options.path,
-          originalParent: options.originalValue ?? _value,
+          originalParent: originalValue,
         });
       }
 
@@ -156,7 +157,7 @@ export default class TupleSchema<
         {
           value,
           tests,
-          originalValue: options.originalValue ?? _value,
+          originalValue,
           options,
         },
         panic,
