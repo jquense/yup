@@ -272,7 +272,9 @@ export default class StringSchema<
   }
 
   trim(message = locale.trim) {
-    return this.transform((val) => (val != null ? val.trim() : val)).test({
+    return this.transform((val) =>
+      typeof val === 'string' || val instanceof String ? val.trim() : val,
+    ).test({
       message,
       name: 'trim',
       test: isTrimmed,
@@ -281,7 +283,9 @@ export default class StringSchema<
 
   lowercase(message = locale.lowercase) {
     return this.transform((value) =>
-      !isAbsent(value) ? value.toLowerCase() : value,
+      typeof value === 'string' || value instanceof String
+        ? value.toLowerCase()
+        : value,
     ).test({
       message,
       name: 'string_case',
@@ -294,7 +298,9 @@ export default class StringSchema<
 
   uppercase(message = locale.uppercase) {
     return this.transform((value) =>
-      !isAbsent(value) ? value.toUpperCase() : value,
+      typeof value === 'string' || value instanceof String
+        ? value.toUpperCase()
+        : value,
     ).test({
       message,
       name: 'string_case',
