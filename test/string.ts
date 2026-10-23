@@ -68,6 +68,19 @@ describe('String types', () => {
     });
   });
 
+  it('should report type errors for non-string values instead of throwing', async () => {
+    for (const schema of [
+      string().trim(),
+      string().lowercase(),
+      string().uppercase(),
+    ]) {
+      await expect(schema.validate({})).rejects.toThrow(ValidationError);
+      await expect(schema.validate(5, { strict: true })).rejects.toThrow(
+        ValidationError,
+      );
+    }
+  });
+
   it('should handle DEFAULT', function () {
     let inst = string();
 
