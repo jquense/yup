@@ -25,6 +25,16 @@ describe('Date types', () => {
     expect(inst.cast(null, { assert: false })).toEqual(null);
   });
 
+  it('should CAST millisecond timestamps', () => {
+    let inst = date();
+
+    expect(inst.cast(0)).toEqual(new Date(0));
+    expect(inst.cast(1411500325000)).toEqual(new Date(1411500325000));
+    expect(inst.cast(-1)).toEqual(new Date(-1));
+
+    expect(isInvalidDate(inst.cast(NaN, { assert: false }))).toBe(true);
+  });
+
   it('should return invalid date for failed non-null casts', function () {
     let inst = date();
 
