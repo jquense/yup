@@ -50,6 +50,11 @@ export default class DateSchema<
         if (!this.spec.coerce || this.isType(value) || value === null)
           return value;
 
+        // The Date constructor accepts millisecond timestamps, while
+        // Date.parse() coerces numbers to strings and fails to parse them.
+        if (typeof value === 'number')
+          return isNaN(value) ? DateSchema.INVALID_DATE : new Date(value);
+
         value = parseIsoDate(value);
 
         // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
