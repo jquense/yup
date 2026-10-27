@@ -24,6 +24,7 @@ import type {
 import parseJson from './util/parseJson';
 import type { Test } from './util/createValidation';
 import type ValidationError from './ValidationError';
+import siblingResolvers from './util/siblingResolvers';
 export type { AnyObject };
 
 type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
@@ -178,49 +179,92 @@ export default class ObjectSchema<
     };
 
     let isChanged = false;
-    for (const prop of props) {
-      let field = fields[prop];
-      let exists = prop in (value as {})!;
-      let inputValue = value[prop];
+    const casted = new Set<string>();
+    const casting = new Set<string>();
+    const failures = new Map<string, unknown>();
+    const available = new Set(props);
+    let currentProp: string;
+    const castProp = (prop: string) => {
+      if (casted.has(prop)) return;
+      if (failures.has(prop)) throw failures.get(prop);
+      if (casting.has(prop))
+        throw new Error(`Cyclic dependency, node was:"${prop}"`);
 
-      if (field) {
-        let fieldValue;
+      casting.add(prop);
+      const previousProp = currentProp;
+      currentProp = prop;
+      try {
+        let field = fields[prop];
+        let exists = prop in (value as {})!;
+        let inputValue = value[prop];
 
-        // safe to mutate since this is fired in sequence
-        innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
+        if (field) {
+          let fieldValue;
 
-        field = field.resolve({
-          value: inputValue,
-          context: options.context,
-          parent: intermediateValue,
-        });
+          if (Reference.isRef(field) && field.isSibling)
+            siblingResolvers.get(intermediateValue)?.(field.path);
 
-        let fieldSpec = field instanceof Schema ? field.spec : undefined;
-        let strict = fieldSpec?.strict;
+          // safe to mutate since this is fired in sequence
+          innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
 
-        if (fieldSpec?.strip) {
-          isChanged = isChanged || prop in (value as {});
-          continue;
+          field = field.resolve({
+            value: inputValue,
+            context: options.context,
+            parent: intermediateValue,
+          });
+
+          let fieldSpec = field instanceof Schema ? field.spec : undefined;
+          let strict = fieldSpec?.strict;
+
+          if (fieldSpec?.strip) {
+            isChanged = isChanged || prop in (value as {});
+            casted.add(prop);
+            return;
+          }
+
+          innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
+          fieldValue =
+            !options.__validating || !strict
+              ? (field as ISchema<any>).cast(inputValue, innerOptions)
+              : inputValue;
+
+          if (fieldValue !== undefined) {
+            intermediateValue[prop] = fieldValue;
+          }
+        } else if (exists && !strip) {
+          intermediateValue[prop] = inputValue;
         }
 
-        fieldValue =
-          !options.__validating || !strict
-            ? (field as ISchema<any>).cast(inputValue, innerOptions)
-            : inputValue;
-
-        if (fieldValue !== undefined) {
-          intermediateValue[prop] = fieldValue;
+        if (
+          exists !== prop in intermediateValue ||
+          intermediateValue[prop] !== inputValue
+        ) {
+          isChanged = true;
         }
-      } else if (exists && !strip) {
-        intermediateValue[prop] = inputValue;
+        casted.add(prop);
+      } catch (error) {
+        failures.set(prop, error);
+        throw error;
+      } finally {
+        casting.delete(prop);
+        currentProp = previousProp;
       }
+    };
 
+    siblingResolvers.set(intermediateValue, (path) => {
+      const dependency = normalizePath(path)[0];
       if (
-        exists !== prop in intermediateValue ||
-        intermediateValue[prop] !== inputValue
-      ) {
-        isChanged = true;
-      }
+        available.has(dependency) &&
+        !this._excludedEdges.some(
+          ([key, dep]) => key === currentProp && dep === dependency,
+        )
+      )
+        castProp(dependency);
+    });
+    try {
+      props.forEach(castProp);
+    } finally {
+      siblingResolvers.delete(intermediateValue);
     }
 
     return isChanged ? intermediateValue : value;
