@@ -1,6 +1,7 @@
 import isSchema from './util/isSchema';
 import Reference from './Reference';
 import type { ISchema } from './types';
+import siblingResolvers from './util/siblingResolvers';
 
 export type ConditionBuilder<T extends ISchema<any, any>> = (
   values: any[],
@@ -55,10 +56,11 @@ class Condition<TIn extends ISchema<any, any> = ISchema<any, any>> {
   }
 
   resolve(base: TIn, options: ResolveOptions) {
-    let values = this.refs.map((ref) =>
-      // TODO: ? operator here?
-      ref.getValue(options?.value, options?.parent, options?.context),
-    );
+    let resolveSibling = siblingResolvers.get(options?.parent);
+    let values = this.refs.map((ref) => {
+      if (ref.isSibling) resolveSibling?.(ref.path);
+      return ref.getValue(options?.value, options?.parent, options?.context);
+    });
 
     let schema = this.fn(values, base, options);
 
