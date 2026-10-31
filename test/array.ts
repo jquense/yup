@@ -1,4 +1,4 @@
-import { describe, it, expect, test, vi } from 'vitest';
+import { describe, it, expect, expectTypeOf, test, vi } from 'vitest';
 import {
   string,
   number,
@@ -10,6 +10,22 @@ import {
 } from '../src';
 
 describe('Array types', () => {
+  it('preserves defaults and strip flags when setting an element schema', () => {
+    const schema = array(number()).default([1, 2]).of(number());
+    expectTypeOf(schema.getDefault()).toEqualTypeOf<number[]>();
+    expectTypeOf(schema.cast(undefined)).toEqualTypeOf<(number | undefined)[]>();
+    expect(schema.getDefault()).toEqual([1, 2]);
+    expect(schema.cast(undefined)).toEqual([1, 2]);
+
+    const wrapped = object({
+      kept: string().required(),
+      removed: array().strip().of(number()),
+    });
+    const result = wrapped.cast({ kept: 'yes', removed: [1] });
+    expectTypeOf(result).toEqualTypeOf<{ kept: string }>();
+    expect(result).toEqual({ kept: 'yes' });
+  });
+
   describe('casting', () => {
     it('should parse json strings', () => {
       expect(array().json().cast('[2,3,5,6]')).toEqual([2, 3, 5, 6]);

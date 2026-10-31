@@ -1,8 +1,33 @@
-import { describe, it, expect } from 'vitest';
-import { bool } from '../src';
+import { describe, it, expect, expectTypeOf } from 'vitest';
+import { bool, object } from '../src';
 import * as TestHelpers from './helpers';
 
 describe('Boolean types', () => {
+  it('preserves defaults and flags when narrowing to true or false', () => {
+    const trueSchema = bool().default(true).isTrue();
+    const falseSchema = bool().default(false).isFalse();
+
+    expectTypeOf(trueSchema.cast(undefined)).toEqualTypeOf<true>();
+    expectTypeOf(falseSchema.cast(undefined)).toEqualTypeOf<false>();
+    expectTypeOf(trueSchema.getDefault()).toEqualTypeOf<true>();
+    expectTypeOf(falseSchema.getDefault()).toEqualTypeOf<false>();
+    expect(trueSchema.cast(undefined)).toBe(true);
+    expect(falseSchema.cast(undefined)).toBe(false);
+
+    const schema = object({
+      kept: bool().required(),
+      trueField: bool().strip().isTrue(),
+      falseField: bool().strip().isFalse(),
+    });
+    const result = schema.cast({
+      kept: true,
+      trueField: true,
+      falseField: false,
+    });
+    expectTypeOf(result).toEqualTypeOf<{ kept: boolean }>();
+    expect(result).toEqual({ kept: true });
+  });
+
   it('should CAST correctly', () => {
     let inst = bool();
 

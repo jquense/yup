@@ -51,7 +51,7 @@ export default class BooleanSchema<
 
   isTrue(
     message = locale.isValue,
-  ): BooleanSchema<true | Optionals<TType>, TContext, TFlags> {
+  ): BooleanSchema<true | Optionals<TType>, TContext, TDefault, TFlags> {
     return this.test({
       message,
       name: 'is-value',
@@ -65,7 +65,7 @@ export default class BooleanSchema<
 
   isFalse(
     message = locale.isValue,
-  ): BooleanSchema<false | Optionals<TType>, TContext, TFlags> {
+  ): BooleanSchema<false | Optionals<TType>, TContext, TDefault, TFlags> {
     return this.test({
       message,
       name: 'is-value',

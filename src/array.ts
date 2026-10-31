@@ -187,7 +187,7 @@ export default class ArraySchema<
 
   of<U>(
     schema: ISchema<U, TContext>,
-  ): ArraySchema<U[] | Optionals<TIn>, TContext, TFlags> {
+  ): ArraySchema<U[] | Optionals<TIn>, TContext, TDefault, TFlags> {
     // FIXME: this should return a new instance of array without the default to be
     let next = this.clone();
 
