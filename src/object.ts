@@ -61,12 +61,16 @@ function deepPartial(schema: any) {
   return schema;
 }
 
+const isObjectLike = (value: any) =>
+  value !== null && (typeof value === 'object' || typeof value === 'function');
+
 const deepHas = (obj: any, p: string) => {
+  if (!isObjectLike(obj)) return false;
   const path = [...normalizePath(p)];
   if (path.length === 1) return path[0] in obj;
   let last = path.pop()!;
   let parent = getter(join(path), true)(obj);
-  return !!(parent && last in parent);
+  return isObjectLike(parent) && last in parent;
 };
 
 let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
