@@ -12,6 +12,7 @@ import {
   reach,
   StringSchema,
   MixedSchema,
+  ValidationError,
 } from '../src';
 import ObjectSchema from '../src/object';
 import { AnyObject } from '../src/types';
@@ -845,6 +846,72 @@ describe('Object types', () => {
       foobar: 'quz',
       foo: { bar: 'quz' },
     });
+  });
+
+  it('should report object type errors for primitive inputs when moving keys', async () => {
+    for (const path of ['prop', 'foo.bar']) {
+      const inst = object().from(path, 'myProp');
+
+      for (const value of ['value', 123, true]) {
+        expect(inst.isValidSync(value)).toBe(false);
+        await expect(inst.isValid(value)).resolves.toBe(false);
+        expect(() => inst.validateSync(value)).toThrowError(ValidationError);
+        await expect(inst.validate(value)).rejects.toThrowError(
+          ValidationError,
+        );
+        expect(inst.cast(value, { assert: false })).toBe(value);
+      }
+    }
+  });
+
+  it('should leave missing paths through primitive values unchanged', async () => {
+    const inst = object().from('foo.bar', 'myProp');
+
+    for (const foo of ['value', 123, true, false, 0, null, undefined]) {
+      const value = { foo };
+
+      expect(inst.cast(value)).toBe(value);
+      await expect(inst.validate(value)).resolves.toEqual(value);
+    }
+  });
+
+  it('should preserve moving keys from object-like inputs', () => {
+    const inst = object().from('prop', 'myProp');
+    const prop = 5;
+
+    for (const value of [
+      Object.assign(() => undefined, { prop }),
+      Object.assign(new Date(0), { prop }),
+      Object.assign(Object(5), { prop }),
+      Object.create({ prop }),
+    ]) {
+      expect(inst.cast(value)).toEqual({ myProp: prop });
+      expect(value.prop).toBe(prop);
+    }
+
+    expect(object().from('0', 'first').cast(['value'])).toEqual({
+      first: 'value',
+    });
+  });
+
+  it('should preserve aliasing through object-like parent values', () => {
+    const inst = object().from('foo.bar', 'myProp', true);
+
+    for (const foo of [
+      Object.assign(() => undefined, { bar: 5 }),
+      Object.create({ bar: 5 }),
+    ]) {
+      const value = { foo };
+
+      expect(inst.cast(value)).toEqual({ foo, myProp: 5 });
+      expect(value).toEqual({ foo });
+    }
+
+    expect(
+      object()
+        .from('foo[0].bar', 'myProp', true)
+        .cast({ foo: [{ bar: 5 }] }),
+    ).toEqual({ foo: [{ bar: 5 }], myProp: 5 });
   });
 
   it('should not move keys when it does not exist', () => {
