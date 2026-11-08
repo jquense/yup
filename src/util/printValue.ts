@@ -40,7 +40,14 @@ export default function printValue(value: any, quoteStrings?: boolean) {
   return JSON.stringify(
     value,
     function (key, value) {
-      let result = printSimpleValue(this[key], quoteStrings);
+      let raw = this[key];
+      // JSON already prints these correctly, keep them as is
+      if (raw === null || typeof raw === 'boolean' || typeof raw === 'string')
+        return raw;
+      if (typeof raw === 'number' && isFinite(raw) && !Object.is(raw, -0))
+        return raw;
+
+      let result = printSimpleValue(raw, quoteStrings);
       if (result !== null) return result;
       return value;
     },
