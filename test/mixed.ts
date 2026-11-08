@@ -160,6 +160,14 @@ describe('Mixed Types ', () => {
     );
   });
 
+  it('should print nested values with their original types', async () => {
+    await expect(
+      string().strict().validate({ id: 1, ok: true, tag: 'a', none: null }),
+    ).rejects.toThrowError(
+      'the final value was: `{\n  "id": 1,\n  "ok": true,\n  "tag": "a",\n  "none": null\n}`',
+    );
+  });
+
   it('should allow function messages', async () => {
     await expect(
       string()
