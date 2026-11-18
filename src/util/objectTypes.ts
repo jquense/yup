@@ -60,7 +60,7 @@ export type PartialDeep<T> = T extends
   : { [K in keyof T]?: PartialDeep<T[K]> };
 
 type OptionalKeys<T extends {}> = {
-  [k in keyof T]: undefined extends T[k] ? k : never;
+  [k in keyof T]-?: undefined extends T[k] ? k : never;
 }[keyof T];
 
 type RequiredKeys<T extends object> = Exclude<keyof T, OptionalKeys<T>>;

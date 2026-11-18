@@ -10,6 +10,7 @@ import {
   bool,
   reach,
   addMethod,
+  InferType,
   Schema,
 } from '../../src';
 import { create as tuple } from '../../src/tuple';
@@ -1050,6 +1051,19 @@ TypeAssigning: {
     mtime: date().nullable(),
     toJSON: mixed<() => any>().required(),
   });
+}
+
+TypeAssigningOptionalKeys: {
+  const schema: ObjectSchema<{
+    email: string;
+    newsletter?: string;
+  }> = object({
+    email: string().required(),
+    newsletter: string(),
+  });
+
+  // $ExpectType "email" | "newsletter"
+  const _key = 'email' as keyof InferType<typeof schema>;
 }
 
 reach: {
