@@ -166,6 +166,18 @@ describe('Number types', function () {
         TestHelpers.validationErrorWithMessages('this must be an integer'),
       );
     });
+
+    it('should reject strings that coerce to integers by precision loss', async () => {
+      await expect(schema.isValid('4.9999999999999999999')).resolves.toBe(false);
+      await expect(schema.isValid('5.0000000000000000000001')).resolves.toBe(
+        false,
+      );
+      // exact integer spellings still pass
+      await expect(schema.isValid('5.0')).resolves.toBe(true);
+      await expect(schema.isValid('1e3')).resolves.toBe(true);
+      await expect(schema.isValid(' 5 ')).resolves.toBe(true);
+      await expect(schema.isValid('-4.99e2')).resolves.toBe(true);
+    });
   });
 
   it('should check POSITIVE correctly', function () {

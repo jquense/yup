@@ -16,6 +16,28 @@ import Schema from './schema';
 
 let isNaN = (value: Maybe<number>) => value != +value!;
 
+// decimal strings only; non-decimal notations (+Infinity, hex, etc.) keep the
+// parsed result as before
+const decimalPattern = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
+// whether a numeric string denotes an integer exactly, i.e. all digits that
+// fall in fractional positions are zero. "4.9999999999999999999" parses to 5
+// by precision loss but does not denote an integer
+function denotesInteger(value: string): boolean {
+  const match = decimalPattern.exec(value.trim());
+  if (!match) return true;
+
+  const mantissa = match[1]!;
+  const dot = mantissa.indexOf('.');
+  const fractionLength = dot === -1 ? 0 : mantissa.length - dot - 1;
+  const exponent = match[2] ? parseInt(match[2].slice(1), 10) : 0;
+  const fractionDigits = Math.max(0, fractionLength - exponent);
+
+  if (fractionDigits === 0) return true;
+
+  return /^0+$/.test(mantissa.replace('.', '').slice(-fractionDigits));
+}
+
 export function create(): NumberSchema;
 export function create<
   T extends number,
@@ -127,7 +149,13 @@ export default class NumberSchema<
       name: 'integer',
       message,
       skipAbsent: true,
-      test: (val) => Number.isInteger(val),
+      test(val) {
+        if (!Number.isInteger(val)) return false;
+        if (typeof this.originalValue === 'string') {
+          return denotesInteger(this.originalValue);
+        }
+        return true;
+      },
     });
   }
 
