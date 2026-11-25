@@ -58,8 +58,9 @@ export function parseDateStruct(date: string) {
     minute: toNumber(regexResult[5]),
     second: toNumber(regexResult[6]),
     millisecond: regexResult[7]
-      ? // allow arbitrary sub-second precision beyond milliseconds
-        toNumber(regexResult[7].substring(0, 3))
+      ? // allow arbitrary sub-second precision beyond milliseconds, right-padding
+        // fractions shorter than 3 digits so ".5" is 500ms and not 5ms
+        toNumber(regexResult[7].substring(0, 3).padEnd(3, '0'))
       : 0,
     precision: regexResult[7]?.length ?? undefined,
     z: regexResult[8] || undefined,

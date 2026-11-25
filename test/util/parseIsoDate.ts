@@ -107,6 +107,21 @@ describe('date-time', () => {
       const expected = new Date(2001, 1, 3, 4, 5, 6, 7).valueOf();
       expect(result).toBe(expected);
     });
+    test('2001-02-03T04:05:06.5', () => {
+      const result = parseIsoDate('2001-02-03T04:05:06.5');
+      const expected = new Date(2001, 1, 3, 4, 5, 6, 500).valueOf();
+      expect(result).toBe(expected);
+    });
+    test('2001-02-03T04:05:06.05', () => {
+      const result = parseIsoDate('2001-02-03T04:05:06.05');
+      const expected = new Date(2001, 1, 3, 4, 5, 6, 50).valueOf();
+      expect(result).toBe(expected);
+    });
+    test('2001-02-03T04:05:06.12', () => {
+      const result = parseIsoDate('2001-02-03T04:05:06.12');
+      const expected = new Date(2001, 1, 3, 4, 5, 6, 120).valueOf();
+      expect(result).toBe(expected);
+    });
   });
 
   describe('Z time zone', () => {
@@ -123,6 +138,11 @@ describe('date-time', () => {
     test('2001-02-03T04:05:06.007Z', () => {
       const result = parseIsoDate('2001-02-03T04:05:06.007Z');
       const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 7);
+      expect(result).toBe(expected);
+    });
+    test('2001-02-03T04:05:06.5Z', () => {
+      const result = parseIsoDate('2001-02-03T04:05:06.5Z');
+      const expected = Date.UTC(2001, 1, 3, 4, 5, 6, 500);
       expect(result).toBe(expected);
     });
   });
