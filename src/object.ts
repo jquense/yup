@@ -188,6 +188,9 @@ export default class ObjectSchema<
 
         // safe to mutate since this is fired in sequence
         innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
+        innerOptions.value = inputValue;
+        innerOptions.originalValue = inputValue;
+        innerOptions.key = prop;
 
         field = field.resolve({
           value: inputValue,

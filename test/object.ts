@@ -84,6 +84,43 @@ describe('Object types', () => {
 
       expect(inst.cast(obj)).toBe(obj);
     });
+
+    it('should pass field value and originalValue to transforms when casting', () => {
+      let seen: any[] = [];
+
+      let inst = object({
+        str: string().transform((value, _originalValue, _schema, options: any) => {
+          seen.push(options);
+          return value;
+        }),
+      });
+
+      inst.cast({ str: 'hello' });
+
+      expect(seen).toHaveLength(1);
+      expect(seen[0].path).toBe('str');
+      expect(seen[0].value).toBe('hello');
+      expect(seen[0].originalValue).toBe('hello');
+    });
+
+    it('should pass field value and originalValue to transforms when validating', async () => {
+      let seen: any[] = [];
+
+      let inst = object({
+        str: string().transform((value, _originalValue, _schema, options: any) => {
+          seen.push({ ...options });
+          return value;
+        }),
+      });
+
+      await inst.validate({ str: 'hello' });
+
+      expect(seen.length).toBeGreaterThan(0);
+      const opts = seen[seen.length - 1];
+      expect(opts.path).toBe('str');
+      expect(opts.value).toBe('hello');
+      expect(opts.originalValue).toBe('hello');
+    });
   });
 
   describe('validation', () => {
